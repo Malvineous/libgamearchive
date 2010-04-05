@@ -1,0 +1,9 @@
+AM_CFLAGS = -g
+
+INCLUDES = -I$(top_srcdir)/include
+
+bin_PROGRAMS = gamearch
+gamearch_SOURCES = gamearch.cpp
+gamearch_CPPFLAGS = $(BOOST_CPPFLAGS)
+gamearch_LDFLAGS = $(BOOST_SYSTEM_LDFLAGS) $(BOOST_FILESYSTEM_LDFLAGS) $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
+gamearch_LDADD = $(BOOST_SYSTEM_LIBS) $(BOOST_FILESYSTEM_LIBS) $(BOOST_PROGRAM_OPTIONS_LIBS) -L../src/ -lgamearchive
