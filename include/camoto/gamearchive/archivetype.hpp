@@ -29,6 +29,13 @@
 namespace camoto {
 namespace gamearchive {
 
+enum E_CERTAINTY {
+	EC_DEFINITELY_NO,
+	EC_UNSURE,
+	EC_POSSIBLY_YES,
+	EC_DEFINITELY_YES
+};
+
 class ArchiveType {
 
 	public:

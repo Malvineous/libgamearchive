@@ -42,13 +42,6 @@ enum E_ATTRIBUTE {
 	EA_COMPRESSED = 0x04
 };
 
-enum E_CERTAINTY {
-	EC_DEFINITELY_NO,
-	EC_UNSURE,
-	EC_POSSIBLY_YES,
-	EC_DEFINITELY_YES
-};
-
 class ENotFound: public std::exception {
 };
 class EInvalidFormat: public std::exception {
