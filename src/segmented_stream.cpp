@@ -25,6 +25,7 @@
 #include <boost/iostreams/categories.hpp>   // seekable_device_tag
 #include <boost/iostreams/positioning.hpp>  // stream_offset
 #include <boost/shared_ptr.hpp>
+#include <vector>
 
 #include "iostream_helpers.hpp"  // streamMove
 #include "segmented_stream.hpp"

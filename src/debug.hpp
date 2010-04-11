@@ -18,17 +18,14 @@
  */
 
 // Compile in debugging output?
-#define DEBUG
-
+//#define DEBUG
 
 #ifndef _CAMOTO_DEBUG_HPP_
 #define _CAMOTO_DEBUG_HPP_
 
-#ifdef DEBUG
-
-#include <iostream>
-#include <sstream>
-#include <vector>
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #define CLR_NORM   "\e[22;39m"
 #define CLR_GREY   "\e[1;30m"
@@ -38,6 +35,12 @@
 #define CLR_MAG    "\e[1;35m"
 #define CLR_CYAN   "\e[1;36m"
 #define CLR_WHITE  "\e[1;37m"
+
+#ifdef DEBUG
+
+#include <iostream>
+//#include <sstream>
+//#include <vector>
 
 #define refcount_declclass(x) \
 	int g_iRefCount_##x = 0; \
