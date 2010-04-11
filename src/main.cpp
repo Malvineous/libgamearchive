@@ -22,6 +22,7 @@
 
 // Include all the file formats for the Manager to load
 #include "fmt-grp-duke3d.hpp"
+#include "fmt-vol-cosmo.hpp"
 #include "debug.hpp"
 
 namespace camoto {
@@ -57,6 +58,7 @@ Manager::Manager()
 	}
 #endif
 	this->vcTypes.push_back(arch_sptr(new GRPType()));
+	this->vcTypes.push_back(arch_sptr(new VOLType()));
 }
 
 Manager::~Manager()
