@@ -1,0 +1,28 @@
+Camoto: Classic-game Modding Tools
+Copyright 2010 Adam Nielsen <malvineous@shikadi.net>
+http://www.shikadi.net/camoto/
+
+Camoto is a collection of utilities for editing (modding) "classic games",
+those from the early to mid 1990s.
+
+This is libgamearchive, one component of the Camoto suite.  libgamearchive
+is a library that provides access to different "archive" files used by games
+to store all their data files.  Just like a .zip file, many games squash all
+their data files together into one big data file, and this library provides
+access to those data files.  It currently supports full editing, so files can
+be extracted, added, removed and replaced from supported archive formats.
+
+This library is still in the preliminary stages, so only the following formats
+have been implemented:
+
+  * Cosmo's Cosmic Adventures (.vol, .stn)
+  * Duke Nukem II (.cmp)
+  * Duke Nukem 3D (.grp)
+  * Major Stryker (.ms[123])
+
+Many more formats are planned.
+
+All supported archive formats are fully documented on the ModdingWiki - see
+http://www.shikadi.net/moddingwiki/
+
+This library is released under the GPLv3 license.
