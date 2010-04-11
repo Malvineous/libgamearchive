@@ -33,7 +33,7 @@ void default_sample::printNice(boost::test_tools::predicate_result& res, const s
 	for (int i = 0; i < s.length(); i++) {
 		if (s[i] < 32) {
 			res.message() << "\\x" << std::setfill('0') << std::setw(2)
-				<< std::hex << (int)s[i];
+				<< std::hex << (int)((uint8_t)s[i]);
 		} else {
 			res.message() << s[i];
 		}

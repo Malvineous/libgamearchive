@@ -102,11 +102,11 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(open_invalid))
 {
 	BOOST_TEST_MESSAGE("Opening invalid archive");
 
-	// Find the GRP file handler
+	// Find the archive handler
 	boost::shared_ptr<ga::Manager> pManager(ga::getManager());
-	ga::Manager::arch_sptr pTestType(pManager->getArchiveTypeByCode("grp-duke3d"));
+	ga::Manager::arch_sptr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE));
 
-	// Prepare an invalid GRP file
+	// Prepare an invalid archive
 	boost::shared_ptr<std::stringstream> psstrBase(new std::stringstream);
 	(*psstrBase) << makeString(TEST_RESULT(invalidcontent));
 	camoto::iostream_sptr psBase(psstrBase);
@@ -174,9 +174,21 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long))
 {
 	BOOST_TEST_MESSAGE("Inserting file with name too long");
 
+	// Find the file we're going to insert before
+	ga::Archive::EntryPtr epb = pArchive->find("ONE.DAT");
+
+	// Make sure we found it
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(epb),
+		"Couldn't find ONE.DAT in sample archive");
+
 	BOOST_CHECK_THROW(
-		ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), "123456789.DAT", 5),
+		ga::Archive::EntryPtr ep = pArchive->insert(epb, "123456789.DAT", 5),
 		std::ios::failure
+	);
+
+	BOOST_CHECK_MESSAGE(
+		is_equal(makeString(INITIALSTATE_NAME)),
+		"File corrupted after failed insert"
 	);
 
 	BOOST_CHECK_NO_THROW(
