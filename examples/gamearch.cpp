@@ -454,8 +454,6 @@ finishTesting:
 				std::string& strParam = i->value[0];
 				std::string strArchFile, strLocalFile;
 				bool bAltDest = split(strParam, '=', &strArchFile, &strLocalFile);
-				std::cout << "dest: " << strArchFile << ", local file: "
-					<< strLocalFile << std::endl;
 
 				if (i->string_key.compare("add") == 0) {
 					std::cout << "     adding: " << strArchFile;
@@ -463,14 +461,6 @@ finishTesting:
 					std::cout << std::endl;
 
 					insertFile(pArchive.get(), strLocalFile, strArchFile, ga::Archive::EntryPtr());
-
-				/*} else if (i->string_key.compare("insert") == 0) {
-					//bool br = split(strParam, '=', &strArchFile, &strLocalFile);
-
-					std::cout << "inserting file" << std::endl;
-					std::cout << "  inserting: " << strArchFile;
-					if (bAltDest) std::cout << " (from " << strLocalFile << ")";
-					std::cout << std::endl;*/
 
 				} else if (i->string_key.compare("rename") == 0) {
 					if ((!bAltDest) || (boost::iequals(strArchFile, strLocalFile))) {
@@ -514,8 +504,6 @@ finishTesting:
 							boost::iostreams::stream_offset iIncomingSize = sSrc.tellg();
 							sSrc.seekg(0, std::ios::beg);
 							if (iIncomingSize != id->iSize) {
-								//std::cerr << "TODO: resize (cur limit is " << id->iSize
-								//	<< ", need " << iIncomingSize << " bytes)\n";
 								pArchive->resize(id, iIncomingSize);
 							}
 							// Now the file has been resized it's safe to open (if we opened
