@@ -24,6 +24,7 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/progress.hpp>
 #include <boost/shared_array.hpp>
+#include <boost/algorithm/string.hpp>
 #include <iostream>
 #include <exception>
 #include <string.h>
@@ -33,7 +34,7 @@
 #include "debug.hpp"
 
 #define GRP_MAX_FILENAME_LEN  12
-#define GRP_FAT_ENTRY_LEN     16  // filename + u32le offset
+#define GRP_FAT_ENTRY_LEN     16  // filename + u32le size
 
 namespace camoto {
 namespace gamearchive {
@@ -72,6 +73,7 @@ std::vector<std::string> GRPType::getFileExtensions() const
 	vcExtensions.push_back("grp");
 	return vcExtensions;
 }
+
 std::vector<std::string> GRPType::getGameList() const
 	throw ()
 {
@@ -109,9 +111,9 @@ GRPArchive::GRPArchive(iostream_sptr psArchive)
 {
 	psArchive->seekg(12, std::ios::beg); // skip "KenSilverman" sig
 
-	// If we can't seek to the 12th char, we can't have gotten here because the
-	// signature check would've failed.
-	assert(psArchive->tellg() == 12);
+	// We still have to perform sanity checks in case the user forced an archive
+	// to open even though it failed the signature check.
+	if (psArchive->tellg() != 12) throw std::ios::failure("File too short");
 
 	uint32_t iFileCount = read_u32le(psArchive);
 	boost::shared_array<uint8_t> pFATBuf;
@@ -209,23 +211,26 @@ void GRPArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 		throw std::ios::failure("maximum filename length is 12 chars");
 	}
 
-	io::stream_offset offset;
 	this->psArchive->seekp((pNewEntry->iIndex + 1) * GRP_FAT_ENTRY_LEN);
 	this->psArchive->insert(GRP_FAT_ENTRY_LEN);
+	boost::to_upper(pNewEntry->strName);
 	this->psArchive->write(pNewEntry->strName.c_str(), pNewEntry->strName.length());
 
 	// Pad out to GRP_MAX_FILENAME_LEN chars, the null string must be at least
 	// this long.
-	this->psArchive->write("\0\0\0\0\0\0\0\0\0\0\0\0", GRP_MAX_FILENAME_LEN - pNewEntry->strName.length());
+	char blank[GRP_FAT_ENTRY_LEN];
+	memset(blank, 0, GRP_FAT_ENTRY_LEN);
+	this->psArchive->write(blank, GRP_MAX_FILENAME_LEN - pNewEntry->strName.length());
 	write_u32le(this->psArchive, pNewEntry->iSize);
 
 	// Update the offsets now there's a new FAT entry taking up space.  We need
-	// to +1 to the vector size to take into account the KenSilverman header,
-	// but the vector already has the new file in it, so we need to -1 again,
-	// cancelling it out.
-	this->shiftFiles(this->vcFAT.size() * GRP_FAT_ENTRY_LEN, GRP_FAT_ENTRY_LEN, 0);
+	// to +1 to the vector size to take into account the KenSilverman header.
+	this->shiftFiles((this->vcFAT.size() + 1) * GRP_FAT_ENTRY_LEN, GRP_FAT_ENTRY_LEN, 0);
 
-	this->updateFileCount(this->vcFAT.size());
+	// Because the new entry isn't in the vector yet we need to shift it manually
+	pNewEntry->iOffset += GRP_FAT_ENTRY_LEN;
+
+	this->updateFileCount(this->vcFAT.size() + 1);
 	return;
 }
 

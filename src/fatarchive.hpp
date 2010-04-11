@@ -122,9 +122,6 @@ class FATArchive: virtual public Archive {
 
 		// move() uses implementation from Archive
 
-		/*virtual void move(const EntryPtr& idBeforeThis, EntryPtr& id)
-			throw (std::ios::failure);*/
-
 		virtual void resize(EntryPtr& id, size_t iNewSize)
 			throw (std::ios::failure);
 
@@ -156,13 +153,14 @@ class FATArchive: virtual public Archive {
 
 		// Insert a new entry in the on-disk FAT.  It should be inserted before
 		// idBeforeThis, or at the end of the archive if idBeforeThis is not valid.
-		// All the FAT entries have already been updated with new offsets to
-		// reflect a new file being added, however the offsets have not taken into
-		// account any changes resulting from the FAT moving around, which must be
-		// handled by this function.  The FAT vector already contains the new entry,
-		// and pNewEntry->iIndex is already valid (although it may be the same as
-		// an existing file, but this should no longer be the case after this
-		// function returns.)
+		// All the FAT entries will be updated with new offsets after this function
+		// returns, however the offsets will not take into account any changes
+		// resulting from the FAT changing size, which must be handled by this
+		// function.  The FAT vector does not contain the new entry, so
+		// pNewEntry->iIndex may be the same as an existing file (but the existing
+		// file will have its index moved after this function returns.)
+		// All this function has to do is make room in the FAT and write out the
+		// new entry.
 		// Invalidates existing EntryPtrs.
 		virtual void insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 			throw (std::ios::failure) = 0;
