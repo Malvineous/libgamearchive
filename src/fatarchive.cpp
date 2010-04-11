@@ -55,7 +55,9 @@ FATArchive::FATArchive(iostream_sptr psArchive)
 FATArchive::~FATArchive()
 	throw ()
 {
-	this->flush(); // make sure it saves on close just in case
+	// Can't flush here as it could throw std::ios::failure and we have no way
+	// of handling it.
+	//this->flush(); // make sure it saves on close just in case
 	refcount_exitclass(FATArchive);
 }
 
