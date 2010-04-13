@@ -212,6 +212,9 @@ void GRPArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 		throw std::ios::failure("maximum filename length is 12 chars");
 	}
 
+	// Because the new entry isn't in the vector yet we need to shift it manually
+	pNewEntry->iOffset += GRP_FAT_ENTRY_LEN;
+
 	this->psArchive->seekp((pNewEntry->iIndex + 1) * GRP_FAT_ENTRY_LEN);
 	this->psArchive->insert(GRP_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
@@ -224,12 +227,8 @@ void GRPArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 	this->psArchive->write(blank, GRP_MAX_FILENAME_LEN - pNewEntry->strName.length());
 	write_u32le(this->psArchive, pNewEntry->iSize);
 
-	// Update the offsets now there's a new FAT entry taking up space.  We need
-	// to +1 to the vector size to take into account the KenSilverman header.
-	this->shiftFiles((this->vcFAT.size() + 1) * GRP_FAT_ENTRY_LEN, GRP_FAT_ENTRY_LEN, 0);
-
-	// Because the new entry isn't in the vector yet we need to shift it manually
-	pNewEntry->iOffset += GRP_FAT_ENTRY_LEN;
+	// Update the offsets now there's a new FAT entry taking up space.
+	this->shiftFiles(GRP_FAT_OFFSET + this->vcFAT.size() * GRP_FAT_ENTRY_LEN, GRP_FAT_ENTRY_LEN, 0);
 
 	this->updateFileCount(this->vcFAT.size() + 1);
 	return;
@@ -239,11 +238,15 @@ void GRPArchive::removeFATEntry(const FATEntry *pid)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_grp_duke3d_remove*
+
+	// Update the offsets now there's one less FAT entry taking up space.  This
+	// must be called before the FAT is altered, because it will write a new
+	// offset into the FAT entry we're about to erase (and if we erase it first
+	// it'll overwrite something else.)
+	this->shiftFiles(GRP_FAT_OFFSET + this->vcFAT.size() * GRP_FAT_ENTRY_LEN, -GRP_FAT_ENTRY_LEN, 0);
+
 	this->psArchive->seekp((pid->iIndex + 1) * GRP_FAT_ENTRY_LEN);
 	this->psArchive->remove(GRP_FAT_ENTRY_LEN);
-
-	// Update the offsets now there's one less FAT entry taking up space
-	this->shiftFiles((this->vcFAT.size() + 1) * GRP_FAT_ENTRY_LEN, -GRP_FAT_ENTRY_LEN, 0);
 
 	this->updateFileCount(this->vcFAT.size() - 1);
 	return;
