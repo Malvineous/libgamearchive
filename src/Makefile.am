@@ -2,11 +2,11 @@ lib_LTLIBRARIES = libgamearchive.la
 
 libgamearchive_la_SOURCES = main.cpp archive.cpp segmented_stream.cpp \
 	substream.cpp iostream_helpers.cpp \
-	fatarchive.cpp fmt-grp-duke3d.cpp fmt-vol-cosmo.cpp
+	fatarchive.cpp fmt-grp-duke3d.cpp fmt-vol-cosmo.cpp fmt-pod-tv.cpp
 
 EXTRA_libgamearchive_la_SOURCES = debug.hpp byteorder.h segmented_stream.hpp \
 	substream.hpp iostream_helpers.hpp \
-	fatarchive.hpp fmt-grp-duke3d.hpp fmt-vol-cosmo.hpp
+	fatarchive.hpp fmt-grp-duke3d.hpp fmt-vol-cosmo.hpp fmt-pod-tv.hpp
 
 AM_CPPFLAGS = $(DEBUG_CPPFLAGS) $(BOOST_CPPFLAGS) -I $(top_srcdir)/include
 AM_CXXFLAGS = $(DEBUG_CXXFLAGS)
