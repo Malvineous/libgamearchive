@@ -85,7 +85,7 @@ class GRPArchive: virtual public FATArchive {
 			throw (std::ios_base::failure);
 
 	protected:
-		// Update the header with the number of files in the .grp
+		// Update the header with the number of files in the archive
 		void updateFileCount(uint32_t iNewCount)
 			throw (std::ios_base::failure);
 

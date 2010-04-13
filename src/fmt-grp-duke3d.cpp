@@ -33,6 +33,7 @@
 #include "iostream_helpers.hpp"
 #include "debug.hpp"
 
+#define GRP_FAT_OFFSET        16  // "KenSilverman" header + u32le file count
 #define GRP_MAX_FILENAME_LEN  12
 #define GRP_FAT_ENTRY_LEN     16  // filename + u32le size
 
@@ -123,14 +124,14 @@ GRPArchive::GRPArchive(iostream_sptr psArchive)
 	} catch (std::bad_alloc) {
 		std::cerr << "Unable to allocate enough memory for " << iFileCount
 			<< " files." << std::endl;
-		throw std::ios::failure("Memory allocation failure (.grp file corrupted?)");
+		throw std::ios::failure("Memory allocation failure (archive corrupted?)");
 	}
 
 	// Read in all the FAT in one operation
 	psArchive->read((char *)pFATBuf.get(), iFileCount * GRP_FAT_ENTRY_LEN);
 	if (psArchive->gcount() != iFileCount * GRP_FAT_ENTRY_LEN) {
 		std::cerr << "GRP file only " << psArchive->tellg()
-			<< " bytes long (FAT is meant to be first " << (iFileCount + 1) * 16
+			<< " bytes long (FAT is meant to be first " << (iFileCount + 1) * GRP_FAT_ENTRY_LEN
 			<< " bytes.)" << std::endl;
 		throw std::ios::failure("File has been truncated, it stops in the middle "
 			"of the FAT!");
@@ -140,9 +141,9 @@ GRPArchive::GRPArchive(iostream_sptr psArchive)
 	for (int i = 0; i < iFileCount; i++) {
 		FATEntry *pEntry = new FATEntry();
 		pEntry->iIndex = i;
-		pEntry->strName = string_from_buf(&pFATBuf[i*GRP_FAT_ENTRY_LEN], 12);
+		pEntry->strName = string_from_buf(&pFATBuf[i*GRP_FAT_ENTRY_LEN], GRP_MAX_FILENAME_LEN);
 		pEntry->iOffset = iNextOffset;
-		pEntry->iSize = u32le_from_buf(&pFATBuf[i*GRP_FAT_ENTRY_LEN + 12]);
+		pEntry->iSize = u32le_from_buf(&pFATBuf[i*GRP_FAT_ENTRY_LEN + GRP_MAX_FILENAME_LEN]);
 		pEntry->eType = EFT_USEFILENAME;
 		pEntry->fAttr = 0;
 		pEntry->bValid = true;
@@ -198,7 +199,7 @@ void GRPArchive::updateFileSize(const FATEntry *pid)
 {
 	// TESTED BY: fmt_grp_duke3d_insert*
 	// TESTED BY: fmt_grp_duke3d_resize*
-	this->psArchive->seekp((pid->iIndex + 1) * GRP_FAT_ENTRY_LEN + 12);
+	this->psArchive->seekp((pid->iIndex + 1) * GRP_FAT_ENTRY_LEN + GRP_MAX_FILENAME_LEN);
 	write_u32le(this->psArchive, pid->iSize);
 	return;
 }

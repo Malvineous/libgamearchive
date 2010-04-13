@@ -155,10 +155,11 @@ VOLArchive::VOLArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
 		FATArchive(psArchive)
 {
-	psArchive->seekg(12, std::ios::beg); // skip to offset of first file
+	psArchive->seekg(12, std::ios::beg); // skip to offset of first filesize
 
 	// We still have to perform sanity checks in case the user forced an archive
 	// to open even though it failed the signature check.
+	// TODO: This could be allowed if the VOL file is empty
 	if (psArchive->tellg() != 12) throw std::ios::failure("File too short");
 
 	// TODO: Do we assume the files are in order and read up until the first one,
@@ -174,7 +175,7 @@ VOLArchive::VOLArchive(iostream_sptr psArchive)
 	} catch (std::bad_alloc) {
 		std::cerr << "Unable to allocate enough memory for " << numFiles
 			<< " files." << std::endl;
-		throw std::ios::failure("Memory allocation failure (.grp file corrupted?)");
+		throw std::ios::failure("Memory allocation failure (archive corrupted?)");
 	}
 
 	// Read in all the FAT in one operation
@@ -191,9 +192,9 @@ VOLArchive::VOLArchive(iostream_sptr psArchive)
 	for (int i = 0; i < numFiles; i++) {
 		FATEntry *pEntry = new FATEntry();
 		pEntry->iIndex = i;
-		pEntry->strName = string_from_buf(&pFATBuf[i*VOL_FAT_ENTRY_LEN], 12);
-		pEntry->iOffset = u32le_from_buf(&pFATBuf[i*VOL_FAT_ENTRY_LEN + 12]);
-		pEntry->iSize = u32le_from_buf(&pFATBuf[i*VOL_FAT_ENTRY_LEN + 16]);
+		pEntry->strName = string_from_buf(&pFATBuf[i*VOL_FAT_ENTRY_LEN], VOL_MAX_FILENAME_LEN);
+		pEntry->iOffset = u32le_from_buf(&pFATBuf[i*VOL_FAT_ENTRY_LEN + VOL_MAX_FILENAME_LEN]);
+		pEntry->iSize = u32le_from_buf(&pFATBuf[i*VOL_FAT_ENTRY_LEN + VOL_MAX_FILENAME_LEN + 4]);
 		pEntry->eType = EFT_USEFILENAME;
 		pEntry->fAttr = 0;
 		pEntry->bValid = true;
