@@ -181,8 +181,12 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long))
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(epb),
 		"Couldn't find ONE.DAT in sample archive");
 
+	char name[MAX_FILENAME_LEN + 2];
+	memset(name, 65, MAX_FILENAME_LEN + 1);
+	name[MAX_FILENAME_LEN + 1] = 0;
+
 	BOOST_CHECK_THROW(
-		ga::Archive::EntryPtr ep = pArchive->insert(epb, "123456789.DAT", 5),
+		ga::Archive::EntryPtr ep = pArchive->insert(epb, name, 5),
 		std::ios::failure
 	);
 
@@ -191,8 +195,11 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long))
 		"File corrupted after failed insert"
 	);
 
+	memset(name, 65, MAX_FILENAME_LEN);
+	name[MAX_FILENAME_LEN] = 0;
+
 	BOOST_CHECK_NO_THROW(
-		ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), "12345678.DAT", 5)
+		ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), name, 5)
 	);
 
 }

@@ -359,6 +359,8 @@
 	"Now resized to 23 chars" \
 	"This is two.dat"
 
+#define MAX_FILENAME_LEN  12
+
 #define ARCHIVE_CLASS fmt_vol_cosmo
 #define ARCHIVE_TYPE  "vol-cosmo"
 #include "test-archive.hpp"
