@@ -52,8 +52,11 @@ class PODType: virtual public ArchiveType {
 		virtual E_CERTAINTY isInstance(iostream_sptr fsArchive) const
 			throw (std::ios::failure);
 
-		virtual Archive *open(iostream_sptr fsArchive) const
+		virtual Archive *open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
 			throw (std::ios::failure);
+
+		virtual MP_SUPPLIST getRequiredSupps(const std::string& filenameArchive) const
+			throw ();
 
 };
 

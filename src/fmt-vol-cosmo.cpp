@@ -142,10 +142,17 @@ E_CERTAINTY VOLType::isInstance(iostream_sptr psArchive) const
 }
 
 // Preconditions: isInstance() has returned > EC_DEFINITELY_NO
-Archive *VOLType::open(iostream_sptr psArchive) const
+Archive *VOLType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
 	throw (std::ios::failure)
 {
 	return new VOLArchive(psArchive);
+}
+
+MP_SUPPLIST VOLType::getRequiredSupps(const std::string& filenameArchive) const
+	throw ()
+{
+	// No supplemental types/empty list
+	return MP_SUPPLIST();
 }
 
 

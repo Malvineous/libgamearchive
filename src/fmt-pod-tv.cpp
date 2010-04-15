@@ -140,11 +140,17 @@ E_CERTAINTY PODType::isInstance(iostream_sptr psArchive) const
 	return EC_DEFINITELY_YES;
 }
 
-// Preconditions: isInstance() has returned > EC_DEFINITELY_NO
-Archive *PODType::open(iostream_sptr psArchive) const
+Archive *PODType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
 	throw (std::ios::failure)
 {
 	return new PODArchive(psArchive);
+}
+
+MP_SUPPLIST PODType::getRequiredSupps(const std::string& filenameArchive) const
+	throw ()
+{
+	// No supplemental types/empty list
+	return MP_SUPPLIST();
 }
 
 

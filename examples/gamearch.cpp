@@ -235,17 +235,20 @@ int main(int iArgC, char *cArgV[])
 			<< (strType.empty() ? "<autodetect>" : strType) << std::endl;
 
 		boost::shared_ptr<std::fstream> psArchive(new std::fstream());
+		psArchive->exceptions(std::ios::badbit | std::ios::failbit);
 		try {
 			psArchive->open(strFilename.c_str(), std::ios::in | std::ios::out | std::ios::binary);
-		} catch (std::ios::failure e) {
-			std::cerr << "Error opening " << strFilename << ": " << e.what() << std::endl;
+		} catch (std::ios::failure& e) {
+			std::cerr << "Error opening " << strFilename << std::endl;
+			#ifdef DEBUG
+				std::cerr << "e.what(): " << e.what() << std::endl;
+			#endif
 			return RET_SHOWSTOPPER;
 		}
 
 		// Get the format handler for this file format
 		boost::shared_ptr<ga::Manager> pManager(ga::getManager());
 
-		//const ga::ArchiveType *rpArchType;
 		ga::Manager::arch_sptr pArchType;
 		if (strType.empty()) {
 			// Need to autodetect the file format.
@@ -293,7 +296,6 @@ finishTesting:
 			}
 			pArchType = pTestType;
 		}
-		//boost::shared_ptr<const ga::ArchiveType> pArchType(rpArchType);
 
 		assert(pArchType != NULL);
 
@@ -304,8 +306,29 @@ finishTesting:
 			return 3;
 		}
 
+		// See if the format requires any supplemental files
+		ga::MP_SUPPLIST suppList = pArchType->getRequiredSupps(strFilename);
+		ga::MP_SUPPDATA suppData;
+		if (suppList.size() > 0) {
+			for (ga::MP_SUPPLIST::iterator i = suppList.begin(); i != suppList.end(); i++) {
+				try {
+					boost::shared_ptr<std::fstream> suppStream(new std::fstream());
+					suppStream->exceptions(std::ios::badbit | std::ios::failbit);
+					std::cout << "Opening supplemental file " << i->second << std::endl;
+					suppStream->open(i->second.c_str(), std::ios::in | std::ios::out | std::ios::binary);
+					suppData[i->first] = suppStream;
+				} catch (std::ios::failure e) {
+					std::cerr << "Error opening supplemental file " << i->second.c_str() << std::endl;
+					#ifdef DEBUG
+						std::cerr << "e.what(): " << e.what() << std::endl;
+					#endif
+					return RET_SHOWSTOPPER;
+				}
+			}
+		}
+
 		// Open the archive file
-		boost::shared_ptr<ga::Archive> pArchive(pArchType->open(psArchive));
+		boost::shared_ptr<ga::Archive> pArchive(pArchType->open(psArchive, suppData));
 		assert(pArchive);
 
 		int iRet = RET_OK;

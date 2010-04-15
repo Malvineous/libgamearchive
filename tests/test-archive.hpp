@@ -49,37 +49,53 @@ namespace ga = camoto::gamearchive;
 
 struct FIXTURE_NAME: public default_sample {
 
-	boost::shared_ptr<std::stringstream> psstrBase;
+	typedef boost::shared_ptr<std::stringstream> sstr_ptr;
+
+	sstr_ptr psstrBase;
 	void *_do; // unused var, but allows a statement to run in constructor init
 	camoto::iostream_sptr psBase;
 	boost::shared_ptr<ga::Archive> pArchive;
+	ga::MP_SUPPDATA suppData;
+	std::map<ga::E_SUPPTYPE, sstr_ptr> suppBase;
 
 	FIXTURE_NAME() :
 		psstrBase(new std::stringstream),
 		_do((*this->psstrBase) << makeString(INITIALSTATE_NAME)),
 		psBase(this->psstrBase)
 	{
+		#ifdef HAS_FAT
+		{
+			boost::shared_ptr<std::stringstream> suppSS(new std::stringstream);
+			suppSS->exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
+			(*suppSS) << makeString(TEST_VAR(FAT_initialstate));
+			camoto::iostream_sptr suppStream(suppSS);
+			this->suppData[ga::EST_FAT] = suppStream;
+			this->suppBase[ga::EST_FAT] = suppSS;
+		}
+		#endif
+
 		BOOST_REQUIRE_NO_THROW(
 			this->psstrBase->exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
 
 			boost::shared_ptr<ga::Manager> pManager(ga::getManager());
 			ga::Manager::arch_sptr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE));
-			this->pArchive = boost::shared_ptr<ga::Archive>(pTestType->open(psBase));
+			this->pArchive = boost::shared_ptr<ga::Archive>(pTestType->open(psBase, this->suppData));
 			BOOST_REQUIRE_MESSAGE(this->pArchive, "Could not create archive class");
 		);
 	}
 
-	FIXTURE_NAME(const char *data) :
+	FIXTURE_NAME(const char *data, ga::MP_SUPPDATA& suppData) :
 		psstrBase(new std::stringstream),
 		_do((*this->psstrBase) << data),
-		psBase(this->psstrBase)
+		psBase(this->psstrBase),
+		suppData(suppData)
 	{
 		BOOST_REQUIRE_NO_THROW(
 			this->psstrBase->exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
 
 			boost::shared_ptr<ga::Manager> pManager(ga::getManager());
 			ga::Manager::arch_sptr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE));
-			this->pArchive = boost::shared_ptr<ga::Archive>(pTestType->open(psBase));
+			this->pArchive = boost::shared_ptr<ga::Archive>(pTestType->open(psBase, this->suppData));
 			BOOST_REQUIRE_MESSAGE(this->pArchive, "Could not create archive class");
 		);
 	}
@@ -92,6 +108,13 @@ struct FIXTURE_NAME: public default_sample {
 		);
 
 		return this->default_sample::is_equal(strExpected, psstrBase->str());
+	}
+
+	boost::test_tools::predicate_result is_supp_equal(ga::E_SUPPTYPE type, const std::string& strExpected)
+	{
+		// Do we need to flush any changes here?  Hopefully not if the
+		// main archive was flushed first.
+		return this->default_sample::is_equal(strExpected, this->suppBase[type]->str());
 	}
 
 };
@@ -111,11 +134,22 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(open_invalid))
 	(*psstrBase) << makeString(TEST_RESULT(invalidcontent));
 	camoto::iostream_sptr psBase(psstrBase);
 
+	ga::MP_SUPPDATA suppData;
+	#ifdef HAS_FAT
+	{
+		boost::shared_ptr<std::stringstream> suppSS(new std::stringstream);
+		suppSS->exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
+		(*suppSS) << makeString(TEST_RESULT(FAT_invalidcontent));
+		camoto::iostream_sptr suppStream(suppSS);
+		suppData[ga::EST_FAT] = suppStream;
+	}
+	#endif
+
 	// Try to open the invalid file.  This will result in an attempt to allocate
 	// ~16GB of memory.  This is an error condition (the file is corrupt/invalid)
 	// but it may succeed on a system with a lot of RAM!
 	BOOST_CHECK_THROW(
-		boost::shared_ptr<ga::Archive> pArchive(pTestType->open(psBase)),
+		boost::shared_ptr<ga::Archive> pArchive(pTestType->open(psBase, suppData)),
 		std::ios::failure
 	);
 }
@@ -168,6 +202,13 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(rename))
 		is_equal(makeString(TEST_RESULT(rename))),
 		"Error renaming file"
 	);
+
+#ifdef HAS_FAT
+	BOOST_CHECK_MESSAGE(
+		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_rename))),
+		"Error renaming file"
+	);
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long))
