@@ -24,6 +24,7 @@
 #include "fmt-grp-duke3d.hpp"
 #include "fmt-vol-cosmo.hpp"
 #include "fmt-pod-tv.hpp"
+#include "fmt-bnk-harry.hpp"
 #include "debug.hpp"
 
 namespace camoto {
@@ -61,6 +62,7 @@ Manager::Manager()
 	this->vcTypes.push_back(arch_sptr(new GRPType()));
 	this->vcTypes.push_back(arch_sptr(new VOLType()));
 	this->vcTypes.push_back(arch_sptr(new PODType()));
+	this->vcTypes.push_back(arch_sptr(new BNKType()));
 }
 
 Manager::~Manager()

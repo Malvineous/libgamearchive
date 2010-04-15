@@ -1,7 +1,8 @@
 check_PROGRAMS = tests
 
 tests_SOURCES = tests.cpp test-streamMove.cpp test-substream.cpp test-segmented_stream.cpp \
-	test-fmt-grp-duke3d.cpp test-fmt-vol-cosmo.cpp test-fmt-pod-tv.cpp
+	test-fmt-grp-duke3d.cpp test-fmt-vol-cosmo.cpp test-fmt-pod-tv.cpp \
+	test-fmt-bnk-harry.cpp
 
 EXTRA_tests_SOURCES = tests.hpp test-archive.hpp
 
