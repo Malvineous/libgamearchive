@@ -48,6 +48,7 @@ void Archive::move(const EntryPtr& idBeforeThis, EntryPtr& id)
 
 	// Remove the original file
 	EntryPtr orig = this->entryPtrFromStream(src);
+	assert(orig);
 	assert(orig->bValid);
 	this->remove(orig);
 

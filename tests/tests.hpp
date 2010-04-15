@@ -1,5 +1,5 @@
 /*
- * test-fmt-grp-duke3d.cpp - test code for GRPArchive class.
+ * tests.hpp - generic test code for Archive descendent classes.
  *
  * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -37,4 +37,4 @@ struct default_sample {
 
 };
 
-#endif // _CAMOTO_FATARCHIVE_HPP_
+#endif // _CAMOTO_TESTS_HPP_
