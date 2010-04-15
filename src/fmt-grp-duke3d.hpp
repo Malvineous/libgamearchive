@@ -52,6 +52,9 @@ class GRPType: virtual public ArchiveType {
 		virtual E_CERTAINTY isInstance(iostream_sptr fsArchive) const
 			throw (std::ios::failure);
 
+		virtual Archive *newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+			throw (std::ios::failure);
+
 		virtual Archive *open(iostream_sptr fsArchive, MP_SUPPDATA& suppData) const
 			throw (std::ios::failure);
 

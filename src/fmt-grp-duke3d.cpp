@@ -96,6 +96,14 @@ E_CERTAINTY GRPType::isInstance(iostream_sptr psArchive) const
 	return EC_DEFINITELY_NO;
 }
 
+Archive *GRPType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+	throw (std::ios::failure)
+{
+	psArchive->seekg(0, std::ios::beg);
+	psArchive->write("KenSilverman\0\0\0\0", 20);
+	return new GRPArchive(psArchive);
+}
+
 // Preconditions: isInstance() has returned > EC_DEFINITELY_NO
 Archive *GRPType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
 	throw (std::ios::failure)

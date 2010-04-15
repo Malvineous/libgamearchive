@@ -140,6 +140,21 @@ E_CERTAINTY PODType::isInstance(iostream_sptr psArchive) const
 	return EC_DEFINITELY_YES;
 }
 
+Archive *PODType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+	throw (std::ios::failure)
+{
+#define fmt_pod_empty \
+	"\x00\x00\x00\x00" \
+	"Empty POD file\0\0" \
+	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
+	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
+	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
+	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+	psArchive->seekg(0, std::ios::beg);
+	psArchive->write(fmt_pod_empty, strlen(fmt_pod_empty));
+	return new PODArchive(psArchive);
+}
+
 Archive *PODType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
 	throw (std::ios::failure)
 {

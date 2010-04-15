@@ -33,6 +33,7 @@
 #include "iostream_helpers.hpp"
 #include "debug.hpp"
 
+#define VOL_FAT_LENGTH        4000
 #define VOL_MAX_FILENAME_LEN  12
 #define VOL_FAT_ENTRY_LEN     20  // filename + u32le offset + u32le size
 
@@ -139,6 +140,16 @@ E_CERTAINTY VOLType::isInstance(iostream_sptr psArchive) const
 	// If we've made it this far, this is almost certainly a VOL file.
 	// TESTED BY: fmt_vol_cosmo_isinstance_c00
 	return EC_DEFINITELY_YES;
+}
+
+Archive *VOLType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+	throw (std::ios::failure)
+{
+	char emptyFAT[VOL_FAT_LENGTH];
+	memset(emptyFAT, 0, VOL_FAT_LENGTH);
+	psArchive->seekg(0, std::ios::beg);
+	psArchive->write(emptyFAT, VOL_FAT_LENGTH);
+	return new VOLArchive(psArchive);
 }
 
 // Preconditions: isInstance() has returned > EC_DEFINITELY_NO
