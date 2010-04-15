@@ -159,6 +159,7 @@ GRPArchive::GRPArchive(iostream_sptr psArchive)
 		pEntry->strName = string_from_buf(&pFATBuf[i*GRP_FAT_ENTRY_LEN], GRP_MAX_FILENAME_LEN);
 		pEntry->iOffset = iNextOffset;
 		pEntry->iSize = u32le_from_buf(&pFATBuf[i*GRP_FAT_ENTRY_LEN + GRP_MAX_FILENAME_LEN]);
+		pEntry->lenHeader = 0;
 		pEntry->eType = EFT_USEFILENAME;
 		pEntry->fAttr = 0;
 		pEntry->bValid = true;
@@ -226,6 +227,9 @@ void GRPArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 	if (pNewEntry->strName.length() > GRP_MAX_FILENAME_LEN) {
 		throw std::ios::failure("maximum filename length is 12 chars");
 	}
+
+	// Set the format-specific variables
+	pNewEntry->lenHeader = 0;
 
 	// Because the new entry isn't in the vector yet we need to shift it manually
 	pNewEntry->iOffset += GRP_FAT_ENTRY_LEN;

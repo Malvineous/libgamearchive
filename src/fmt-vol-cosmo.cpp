@@ -213,6 +213,7 @@ VOLArchive::VOLArchive(iostream_sptr psArchive)
 		pEntry->strName = string_from_buf(&pFATBuf[i*VOL_FAT_ENTRY_LEN], VOL_MAX_FILENAME_LEN);
 		pEntry->iOffset = u32le_from_buf(&pFATBuf[i*VOL_FAT_ENTRY_LEN + VOL_MAX_FILENAME_LEN]);
 		pEntry->iSize = u32le_from_buf(&pFATBuf[i*VOL_FAT_ENTRY_LEN + VOL_MAX_FILENAME_LEN + 4]);
+		pEntry->lenHeader = 0;
 		pEntry->eType = EFT_USEFILENAME;
 		pEntry->fAttr = 0;
 		pEntry->bValid = true;
@@ -282,6 +283,9 @@ void VOLArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 	if (pNewEntry->strName.length() > VOL_MAX_FILENAME_LEN) {
 		throw std::ios::failure("maximum filename length is 12 chars");
 	}
+
+	// Set the format-specific variables
+	pNewEntry->lenHeader = 0;
 
 	// TODO: See if this is in fact a hard limitation
 	if (this->vcFAT.size() >= 200) {

@@ -50,17 +50,12 @@ namespace io = boost::iostreams;
 class FATArchive: virtual public Archive {
 
 	protected:
-		typedef unsigned long size_t;
-
-		//typedef boost::shared_ptr<segmented_stream> segstream_sptr;
-		//std::iostream *psArchive;
 		segstream_sptr psArchive;
-		//iostream_sptr psArchive;
 
 		struct FATEntry: public FileEntry {
 			int iIndex; // can't use vector order as entries are passed around outside the vector
 			offset_t iOffset;
-			//bool bValid;
+			offset_t lenHeader;  // length of embedded FAT entry at start of file data
 
 			FATEntry();
 			virtual ~FATEntry();

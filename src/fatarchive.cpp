@@ -95,7 +95,7 @@ boost::shared_ptr<std::iostream> FATArchive::open(const EntryPtr& id)
 	substream_sptr psSub(
 		new substream(
 			this->psArchive,
-			pFAT->iOffset,
+			pFAT->iOffset + pFAT->lenHeader,
 			pFAT->iSize
 		)
 	);
@@ -133,7 +133,8 @@ FATArchive::EntryPtr FATArchive::insert(const EntryPtr& idBeforeThis, std::strin
 		// TESTED BY: fmt_grp_duke3d_insert_end
 		FATEntry *pFATAfterThis = FATEntryPtr_from_EntryPtr(this->vcFAT.back());
 		assert(pFATAfterThis);
-		pNewFile->iOffset = pFATAfterThis->iOffset + pFATAfterThis->iSize;
+		pNewFile->iOffset = pFATAfterThis->iOffset
+			+ pFATAfterThis->lenHeader + pFATAfterThis->iSize;
 		pNewFile->iIndex = pFATAfterThis->iIndex + 1;
 	}
 
@@ -144,7 +145,7 @@ FATArchive::EntryPtr FATArchive::insert(const EntryPtr& idBeforeThis, std::strin
 	if (this->isValid(idBeforeThis)) {
 		// Update the offsets of any files located after this one (since they will
 		// all have been shifted forward to make room for the insert.)
-		this->shiftFiles(pNewFile->iOffset, pNewFile->iSize, 1);
+		this->shiftFiles(pNewFile->iOffset + pNewFile->lenHeader, pNewFile->iSize, 1);
 	}
 
 	// Add the new file to the vector now all the existing offsets have been
@@ -159,8 +160,11 @@ FATArchive::EntryPtr FATArchive::insert(const EntryPtr& idBeforeThis, std::strin
 		this->vcFAT.push_back(ep);
 	}
 
-	// Insert space for the file's data into the archive
-	this->psArchive->seekp(pNewFile->iOffset);
+	// Insert space for the file's data into the archive.  If there is a header
+	// (e.g. embedded FAT) then insertFATEntry() will have inserted space for
+	// this and written the data, so our insert should start just after the
+	// header.
+	this->psArchive->seekp(pNewFile->iOffset + pNewFile->lenHeader);
 	this->psArchive->insert(pNewFile->iSize);
 
 	return ep;
@@ -185,7 +189,7 @@ void FATArchive::remove(EntryPtr& id)
 
 	// Remove the file's data from the archive
 	this->psArchive->seekp(pFATDel->iOffset);
-	this->psArchive->remove(pFATDel->iSize);
+	this->psArchive->remove(pFATDel->iSize + pFATDel->lenHeader);
 
 	// Remove the entry from the vector
 	VC_ENTRYPTR::iterator itErase = std::find(this->vcFAT.begin(), this->vcFAT.end(), id);
@@ -194,7 +198,7 @@ void FATArchive::remove(EntryPtr& id)
 
 	// Update the offsets of any files located after this one (since they will
 	// all have been shifted back to fill the gap made by the removal.)
-	this->shiftFiles(pFATDel->iOffset, -pFATDel->iSize, -1);
+	this->shiftFiles(pFATDel->iOffset, -(pFATDel->iSize + pFATDel->lenHeader), -1);
 
 	// Mark it as invalid in case some other code is still holding on to it.
 	pFATDel->bValid = false;
@@ -215,12 +219,12 @@ void FATArchive::resize(EntryPtr& id, size_t iNewSize)
 	io::stream_offset iStart;
 	if (iDelta > 0) { // inserting data
 		// TESTED BY: fmt_grp_duke3d_resize_larger
-		iStart = pFAT->iOffset + pFAT->iSize;
+		iStart = pFAT->iOffset + pFAT->lenHeader + pFAT->iSize;
 		this->psArchive->seekp(iStart);
 		this->psArchive->insert(iDelta);
 	} else if (iDelta < 0) { // removing data
 		// TESTED BY: fmt_grp_duke3d_resize_smaller
-		iStart = pFAT->iOffset + iNewSize;
+		iStart = pFAT->iOffset + pFAT->lenHeader + iNewSize;
 		this->psArchive->seekp(iStart);
 		this->psArchive->remove(-iDelta);
 	} else {
@@ -258,7 +262,7 @@ FATArchive::EntryPtr FATArchive::entryPtrFromStream(const iostream_sptr openFile
 	// Find an EntryPtr with the same offset
 	for (VC_ENTRYPTR::iterator i = this->vcFAT.begin(); i != this->vcFAT.end(); i++) {
 		FATEntry *pFAT = FATEntryPtr_from_EntryPtr(*i);
-		if (pFAT->iOffset >= offStart) {
+		if (pFAT->iOffset + pFAT->lenHeader >= offStart) {
 			return *i;
 		}
 	}

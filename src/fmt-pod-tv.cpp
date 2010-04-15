@@ -214,15 +214,11 @@ PODArchive::PODArchive(iostream_sptr psArchive)
 		pEntry->strName = string_from_buf(&pFATBuf[i*POD_FAT_ENTRY_LEN], POD_MAX_FILENAME_LEN);
 		pEntry->iSize = u32le_from_buf(&pFATBuf[i*POD_FAT_ENTRY_LEN + POD_FAT_ENTRY_SIZE_POS]);
 		pEntry->iOffset = u32le_from_buf(&pFATBuf[i*POD_FAT_ENTRY_LEN + POD_FAT_ENTRY_OFFSET_POS]);
+		pEntry->lenHeader = 0;
 		pEntry->eType = EFT_USEFILENAME;
 		pEntry->fAttr = 0;
 		pEntry->bValid = true;
-		// Blank FAT entries have an offset of zero
-		if (pEntry->iOffset > 0) {
-			this->vcFAT.push_back(EntryPtr(pEntry));
-		} else {
-			delete pEntry;  // ergh, inefficient
-		}
+		this->vcFAT.push_back(EntryPtr(pEntry));
 	}
 	refcount_qenterclass(PODArchive);
 }
@@ -283,6 +279,9 @@ void PODArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 	if (pNewEntry->strName.length() > POD_MAX_FILENAME_LEN) {
 		throw std::ios::failure("maximum filename/path length is 32 chars");
 	}
+
+	// Set the format-specific variables
+	pNewEntry->lenHeader = 0;
 
 	// Because the new entry isn't in the vector yet we need to shift it manually
 	pNewEntry->iOffset += POD_FAT_ENTRY_LEN;
