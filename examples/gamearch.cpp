@@ -83,6 +83,28 @@ std::string sanitisePath(const std::string& strInput)
 	return strInput;
 }
 
+// Find the given file, or if it starts with an '@', the file at that index.
+ga::Archive::EntryPtr findFile(const ga::archive_sptr& archive, const std::string& filename)
+{
+	ga::Archive::EntryPtr id = archive->find(filename);
+	if (archive->isValid(id)) return id;
+
+	// The file doesn't exist, so see if it's an index.
+	if ((filename[0] == '@') && (filename.length() > 1)) {
+		char *endptr;
+		// strtoul allows arbitrary whitespace at the start, so if ever there is
+		// a file called "@5" which gets extracted instead of the fifth file,
+		// giving -x "@ 5" should do the trick.
+		unsigned long index = strtoul(&(filename.c_str()[1]), &endptr, 10);
+		if (*endptr == '\0') {
+			// The number was entirely valid (no junk at end)
+			ga::Archive::VC_ENTRYPTR files = archive->getFileList();
+			if (index < files.size()) return files[index];
+		}
+	}
+	return ga::Archive::EntryPtr();
+}
+
 // Insert a file at the given location.  Shared by --insert and --add.
 bool insertFile(ga::Archive *pArchive, const std::string& strLocalFile,
 	const std::string& strArchFile, const camoto::gamearchive::Archive::EntryPtr& idBeforeThis)
@@ -400,7 +422,7 @@ finishTesting:
 				std::cout << std::flush;
 
 				// Find the file
-				camoto::gamearchive::Archive::EntryPtr id = pArchive->find(strArchFile);
+				ga::Archive::EntryPtr id = findFile(pArchive, strArchFile);
 				if (!pArchive->isValid(id)) {
 					std::cout << " [failed; file not found]";
 					iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
@@ -424,7 +446,7 @@ finishTesting:
 				std::string& strArchFile = i->value[0];
 				std::cout << "   deleting: " << strArchFile << std::flush;
 
-				camoto::gamearchive::Archive::EntryPtr id = pArchive->find(strArchFile);
+				ga::Archive::EntryPtr id = findFile(pArchive, strArchFile);
 				if (!pArchive->isValid(id)) {
 					std::cout << " [failed; file not found]";
 					iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
@@ -451,8 +473,7 @@ finishTesting:
 				std::cout << ")" << std::flush;
 
 				// Try to find strInsertBefore
-				camoto::gamearchive::Archive::EntryPtr idBeforeThis =
-					pArchive->find(strInsertBefore);
+				ga::Archive::EntryPtr idBeforeThis = findFile(pArchive, strInsertBefore);
 				if (!pArchive->isValid(idBeforeThis)) {
 					std::cout << " [failed; could not find " << strInsertBefore << "]";
 					iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
@@ -493,7 +514,7 @@ finishTesting:
 						std::cout << "   renaming: " << strArchFile << " to "
 							<< strLocalFile << std::flush;
 
-						camoto::gamearchive::Archive::EntryPtr id = pArchive->find(strArchFile);
+						ga::Archive::EntryPtr id = findFile(pArchive, strArchFile);
 						if (!pArchive->isValid(id)) {
 							std::cout << " [failed; file not found inside archive]";
 							iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
@@ -514,7 +535,7 @@ finishTesting:
 					std::cout << std::flush;
 
 					// Find the file
-					camoto::gamearchive::Archive::EntryPtr id = pArchive->find(strArchFile);
+					ga::Archive::EntryPtr id = findFile(pArchive, strArchFile);
 					if (!pArchive->isValid(id)) {
 						std::cout << " [failed; file not found inside archive]";
 						iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
