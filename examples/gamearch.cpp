@@ -100,9 +100,10 @@ ga::Archive::EntryPtr findFile(const ga::archive_sptr& archive, const std::strin
 			// The number was entirely valid (no junk at end)
 			ga::Archive::VC_ENTRYPTR files = archive->getFileList();
 			if (index < files.size()) return files[index];
+			throw std::ios::failure("index too large");
 		}
 	}
-	return ga::Archive::EntryPtr();
+	return ga::Archive::EntryPtr(); // file not found
 }
 
 // Insert a file at the given location.  Shared by --insert and --add.
@@ -421,24 +422,23 @@ finishTesting:
 				if (bAltDest) std::cout << " (into " << strLocalFile << ")";
 				std::cout << std::flush;
 
-				// Find the file
-				ga::Archive::EntryPtr id = findFile(pArchive, strArchFile);
-				if (!pArchive->isValid(id)) {
-					std::cout << " [failed; file not found]";
-					iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
-				} else {
-					// Found it, open on disk
-					try {
+				try {
+					// Find the file
+					ga::Archive::EntryPtr id = findFile(pArchive, strArchFile);
+					if (!id) {
+						std::cout << " [failed; file not found]";
+						iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
+					} else {
+						// Found it, open on disk
 						boost::shared_ptr<std::iostream> pfsIn(pArchive->open(id));
 						std::ofstream fsOut;
 						fsOut.exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
 						fsOut.open(strLocalFile.c_str(), std::ios::trunc | std::ios::binary);
 						boost::iostreams::copy(*pfsIn, fsOut);
-					} catch (std::ios_base::failure& e) {
-						std::cout << " [failed; " << e.what() << "]";
-						iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
 					}
-
+				} catch (std::ios_base::failure& e) {
+					std::cout << " [failed; " << e.what() << "]";
+					iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
 				}
 				std::cout << std::endl;
 
@@ -446,15 +446,20 @@ finishTesting:
 				std::string& strArchFile = i->value[0];
 				std::cout << "   deleting: " << strArchFile << std::flush;
 
-				ga::Archive::EntryPtr id = findFile(pArchive, strArchFile);
-				if (!pArchive->isValid(id)) {
-					std::cout << " [failed; file not found]";
-					iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
-				} else {
-					pArchive->remove(id);
+				try {
+					ga::Archive::EntryPtr id = findFile(pArchive, strArchFile);
+					if (!id) {
+						std::cout << " [failed; file not found]";
+						iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
+					} else {
+						pArchive->remove(id);
+					}
+				} catch (std::ios_base::failure& e) {
+					std::cout << " [failed; " << e.what() << "]";
+					iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
 				}
-
 				std::cout << std::endl;
+
 			} else if (i->string_key.compare("insert") == 0) {
 				std::string strSource, strInsertBefore;
 				if (!split(i->value[0], ':', &strSource, &strInsertBefore)) {
@@ -474,13 +479,18 @@ finishTesting:
 
 				// Try to find strInsertBefore
 				ga::Archive::EntryPtr idBeforeThis = findFile(pArchive, strInsertBefore);
-				if (!pArchive->isValid(idBeforeThis)) {
+				if (!idBeforeThis) {
 					std::cout << " [failed; could not find " << strInsertBefore << "]";
 					iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
 					continue;
 				}
 
-				insertFile(pArchive.get(), strLocalFile, strArchFile, idBeforeThis);
+				try {
+					insertFile(pArchive.get(), strLocalFile, strArchFile, idBeforeThis);
+				} catch (std::ios_base::failure& e) {
+					std::cout << " [failed; " << e.what() << "]";
+					iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
+				}
 
 				std::cout << std::endl;
 
@@ -504,7 +514,12 @@ finishTesting:
 					if (bAltDest) std::cout << " (from " << strLocalFile << ")";
 					std::cout << std::endl;
 
-					insertFile(pArchive.get(), strLocalFile, strArchFile, ga::Archive::EntryPtr());
+					try {
+						insertFile(pArchive.get(), strLocalFile, strArchFile, ga::Archive::EntryPtr());
+					} catch (std::ios_base::failure& e) {
+						std::cout << " [failed; " << e.what() << "]";
+						iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
+					}
 
 				} else if (i->string_key.compare("rename") == 0) {
 					if ((!bAltDest) || (boost::iequals(strArchFile, strLocalFile))) {
@@ -514,17 +529,17 @@ finishTesting:
 						std::cout << "   renaming: " << strArchFile << " to "
 							<< strLocalFile << std::flush;
 
-						ga::Archive::EntryPtr id = findFile(pArchive, strArchFile);
-						if (!pArchive->isValid(id)) {
-							std::cout << " [failed; file not found inside archive]";
-							iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
-						} else {
-							try {
+						try {
+							ga::Archive::EntryPtr id = findFile(pArchive, strArchFile);
+							if (!id) {
+								std::cout << " [failed; file not found inside archive]";
+								iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
+							} else {
 								pArchive->rename(id, strLocalFile);
-							} catch (std::ios_base::failure& e) {
-								std::cout << " [failed; " << e.what() << "]";
-								iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a common way
 							}
+						} catch (std::ios_base::failure& e) {
+							std::cout << " [failed; " << e.what() << "]";
+							iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a common way
 						}
 						std::cout << std::endl;
 					}
@@ -534,36 +549,36 @@ finishTesting:
 					if (bAltDest) std::cout << " (from " << strLocalFile << ")";
 					std::cout << std::flush;
 
-					// Find the file
-					ga::Archive::EntryPtr id = findFile(pArchive, strArchFile);
-					if (!pArchive->isValid(id)) {
-						std::cout << " [failed; file not found inside archive]";
-						iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
-					} else {
-						// Found it, open replacement file
-						std::ifstream sSrc(strLocalFile.c_str(), std::ios::binary);
-						if (sSrc.is_open()) {
-							// Figure out how big our incoming file is
-							sSrc.seekg(0, std::ios::end);
-							boost::iostreams::stream_offset iIncomingSize = sSrc.tellg();
-							sSrc.seekg(0, std::ios::beg);
-							if (iIncomingSize != id->iSize) {
-								pArchive->resize(id, iIncomingSize);
-							}
-							// Now the file has been resized it's safe to open (if we opened
-							// it before the resize it'd be stuck at the old size)
-							boost::shared_ptr<std::iostream> psDest(pArchive->open(id));
-							try {
-								boost::iostreams::copy(sSrc, *psDest);
-								psDest->flush();
-							} catch (std::ios_base::failure& e) {
-								std::cout << " [failed; " << e.what() << "]";
-								iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a common way
-							}
-						} else {
-							std::cout << " [failed; unable to open replacement file]";
+					try {
+						// Find the file
+						ga::Archive::EntryPtr id = findFile(pArchive, strArchFile);
+						if (!id) {
+							std::cout << " [failed; file not found inside archive]";
 							iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
+						} else {
+							// Found it, open replacement file
+							std::ifstream sSrc(strLocalFile.c_str(), std::ios::binary);
+							if (sSrc.is_open()) {
+								// Figure out how big our incoming file is
+								sSrc.seekg(0, std::ios::end);
+								boost::iostreams::stream_offset iIncomingSize = sSrc.tellg();
+								sSrc.seekg(0, std::ios::beg);
+								if (iIncomingSize != id->iSize) {
+									pArchive->resize(id, iIncomingSize);
+								}
+								// Now the file has been resized it's safe to open (if we opened
+								// it before the resize it'd be stuck at the old size)
+								boost::shared_ptr<std::iostream> psDest(pArchive->open(id));
+									boost::iostreams::copy(sSrc, *psDest);
+									psDest->flush();
+							} else {
+								std::cout << " [failed; unable to open replacement file]";
+								iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
+							}
 						}
+					} catch (std::ios_base::failure& e) {
+						std::cout << " [failed; " << e.what() << "]";
+						iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a common way
 					}
 					std::cout << std::endl;
 				}
