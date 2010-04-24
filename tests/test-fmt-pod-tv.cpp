@@ -29,6 +29,13 @@
 	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
 
+#define POD_DESC2 \
+	"This is a test\0\0" \
+	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
+	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
+	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
+	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+
 #define testdata_initialstate \
 	"\x02\x00\x00\x00" POD_DESC \
 	"ONE.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xa4\x00\x00\x00" \
@@ -128,6 +135,19 @@
 	"ONE.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x17\x00\x00\x00" "\xa4\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xbb\x00\x00\x00" \
 	"Now resized to 23 chars" \
+	"This is two.dat"
+
+#define testdata_get_metadata_description \
+	"Startup 1.1 Gold"
+
+#define testdata_set_metadata_description_target \
+	"This is a test"
+
+#define testdata_set_metadata_description \
+	"\x02\x00\x00\x00" POD_DESC2 \
+	"ONE.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xa4\x00\x00\x00" \
+	"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xb3\x00\x00\x00" \
+	"This is one.dat" \
 	"This is two.dat"
 
 #define MAX_FILENAME_LEN  32

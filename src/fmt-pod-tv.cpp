@@ -33,6 +33,7 @@
 #include "iostream_helpers.hpp"
 #include "debug.hpp"
 
+#define POD_DESCRIPTION_OFFSET    4
 #define POD_DESCRIPTION_LEN       80
 #define POD_FAT_OFFSET            84
 #define POD_FAT_ENTRY_LEN         40  // filename + u32le offset + u32le size
@@ -250,6 +251,58 @@ void PODArchive::rename(EntryPtr& id, const std::string& strNewName)
 	this->psArchive->rdbuf()->sputn(cBuffer, POD_MAX_FILENAME_LEN);
 	pEntry->strName = strNewName;
 
+	return;
+}
+
+VC_METADATA_ITEMS PODArchive::getMetadataList() const
+	throw ()
+{
+	// TESTED BY: fmt_pod_tv_get_metadata_description
+	VC_METADATA_ITEMS m;
+	m.push_back(EM_DESCRIPTION);
+	return m;
+}
+
+std::string PODArchive::getMetadata(E_METADATA item) const
+	throw (std::ios::failure)
+{
+	// TESTED BY: fmt_pod_tv_get_metadata_description
+	switch (item) {
+		case EM_DESCRIPTION: {
+			psArchive->seekg(POD_DESCRIPTION_OFFSET, std::ios::beg);
+			char description[POD_DESCRIPTION_LEN + 1];
+			psArchive->read(description, POD_DESCRIPTION_LEN);
+			description[POD_DESCRIPTION_LEN] = 0;
+			return std::string(description);
+		}
+		default:
+			assert(false);
+			throw std::ios::failure("unsupported metadata item");
+	}
+}
+
+void PODArchive::setMetadata(E_METADATA item, const std::string& value) const
+	throw (std::ios::failure)
+{
+	// TESTED BY: fmt_pod_tv_set_metadata_description
+	// TESTED BY: fmt_pod_tv_new_to_initialstate
+	switch (item) {
+		case EM_DESCRIPTION: {
+			if (value.length() > POD_DESCRIPTION_LEN) {
+				throw std::ios::failure("description too long");
+			}
+			psArchive->seekp(POD_DESCRIPTION_OFFSET, std::ios::beg);
+			psArchive->write(value.c_str(), value.length());
+			// Pad out to POD_DESCRIPTION_LEN chars
+			char blank[POD_DESCRIPTION_LEN];
+			memset(blank, 0, POD_DESCRIPTION_LEN);
+			this->psArchive->write(blank, POD_DESCRIPTION_LEN - value.length());
+			break;
+		}
+		default:
+			assert(false);
+			throw std::ios::failure("unsupported metadata item");
+	}
 	return;
 }
 

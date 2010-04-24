@@ -102,6 +102,13 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(new_to_initialstate))
 	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
 	BOOST_REQUIRE_EQUAL(files.size(), 2);
 
+#ifdef testdata_get_metadata_description
+	// If this format has metadata, set it to the same value used when comparing
+	// against the initialstate, so that this new archive will hopefully match
+	// the initialstate itself.
+	pArchive->setMetadata(ga::EM_DESCRIPTION, TEST_RESULT(get_metadata_description));
+#endif
+
 	BOOST_CHECK_MESSAGE(
 		is_equal(makeString(TEST_RESULT(initialstate))),
 		"Error inserting files in new/empty archive"

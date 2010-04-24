@@ -42,6 +42,12 @@ enum E_ATTRIBUTE {
 	EA_COMPRESSED = 0x04
 };
 
+enum E_METADATA {
+	EM_DESCRIPTION  // Archive description
+};
+
+typedef std::vector<E_METADATA> VC_METADATA_ITEMS;
+
 class ENotFound: public std::exception {
 };
 class EInvalidFormat: public std::exception {
@@ -152,6 +158,19 @@ class Archive {
 		// recovered from the open stream with this function.
 		virtual EntryPtr entryPtrFromStream(const iostream_sptr openFile)
 			throw () = 0;
+
+		// The metadata functions all have no-op defaults, they only need to be
+		// overridden for archive formats that have metadata.
+
+		// Get a list of supported metadata elements that can be set.
+		virtual VC_METADATA_ITEMS getMetadataList() const
+			throw ();
+		// Get the value of a metadata element.
+		virtual std::string getMetadata(E_METADATA item) const
+			throw (std::ios::failure);
+		// Change the value of a metadata element.
+		virtual void setMetadata(E_METADATA item, const std::string& value) const
+			throw (std::ios::failure);
 
 };
 

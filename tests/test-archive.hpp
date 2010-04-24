@@ -731,6 +731,68 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_all_re_add))
 #endif
 }
 
+//
+// Metadata tests
+//
+
+#ifdef testdata_get_metadata_description
+BOOST_AUTO_TEST_CASE(TEST_NAME(get_metadata_description))
+{
+	BOOST_TEST_MESSAGE("get 'description' metadata field");
+
+	// Make sure this format reports having a 'description' metadata field
+	ga::VC_METADATA_ITEMS items = pArchive->getMetadataList();
+	bool bFound = false;
+	for (ga::VC_METADATA_ITEMS::iterator i = items.begin(); i != items.end(); i++) {
+		if (*i == ga::EM_DESCRIPTION) {
+			bFound = true;
+			break;
+		}
+	}
+	BOOST_REQUIRE_EQUAL(bFound, true);
+
+	// Change the field's value
+	std::string value = pArchive->getMetadata(ga::EM_DESCRIPTION);
+
+	// Put it in a stringstream to allow use of the standard checking mechanism
+	std::ostringstream out;
+	out << value;
+
+	BOOST_CHECK_MESSAGE(
+		default_sample::is_equal(makeString(
+			TEST_RESULT(get_metadata_description)
+		), out.str()),
+		"Error getting 'description' metadata field"
+	);
+
+}
+#endif
+
+#ifdef testdata_set_metadata_description
+BOOST_AUTO_TEST_CASE(TEST_NAME(set_metadata_description))
+{
+	BOOST_TEST_MESSAGE("Set 'description' metadata field");
+
+	// We assume the format supports this metadata type, as this is checked in
+	// get_metadata_description above.
+
+	// Change the field's value
+	pArchive->setMetadata(ga::EM_DESCRIPTION, TEST_RESULT(set_metadata_description_target));
+
+	BOOST_CHECK_MESSAGE(
+		is_equal(makeString(TEST_RESULT(set_metadata_description))),
+		"Error setting 'description' metadata field"
+	);
+
+#ifdef HAS_FAT
+	BOOST_CHECK_MESSAGE(
+		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_set_metadata_description))),
+		"Error setting 'description' metadata field"
+	);
+#endif
+}
+#endif
+
 BOOST_AUTO_TEST_SUITE_END()
 
 #include "test-archive_new.hpp"
