@@ -273,7 +273,7 @@ void BNKArchive::updateFileOffset(const FATEntry *pid)
 
 	// Only the external FAT file has offsets, not the embedded FAT
 	this->psFAT->seekp(pid->iIndex * BNK_FAT_ENTRY_LEN + BNK_FAT_FILEOFFSET_OFFSET);
-	write_u32le(this->psFAT, pid->iOffset);
+	write_u32le(this->psFAT, pid->iOffset + BNK_EFAT_ENTRY_LEN);
 	return;
 }
 
@@ -305,23 +305,14 @@ void BNKArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 	// Set the format-specific variables
 	pNewEntry->lenHeader = BNK_EFAT_ENTRY_LEN;
 
-	this->psFAT->seekp(pNewEntry->iIndex * BNK_FAT_ENTRY_LEN + BNK_FAT_FILENAME_OFFSET);
-	this->psFAT->insert(BNK_FAT_ENTRY_LEN);
 	uint8_t lenByte = pNewEntry->strName.length();
-	this->psFAT->rdbuf()->sputn((char *)&lenByte, 1);
 	boost::to_upper(pNewEntry->strName);
-	this->psFAT->write(pNewEntry->strName.c_str(), lenByte);
-
 	// Pad out to BNK_MAX_FILENAME_LEN chars, the null string must be at least
 	// this long.
 	char blank[BNK_FAT_ENTRY_LEN];
 	memset(blank, 0, BNK_FAT_ENTRY_LEN);
-	this->psFAT->write(blank, BNK_MAX_FILENAME_LEN - lenByte);
 
-	// Write out the file size
-	write_u32le(this->psFAT, pNewEntry->iSize);
-
-	// Write out same again but into the BNK file's embedded FAT
+	// Write out the new embedded FAT entry
 	// Insert some space for the embedded header
 /*	if (this->vcFAT.size() == 0) {
 		// This is the first file, so overwrite the signature
@@ -340,8 +331,23 @@ void BNKArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 	write_u32le(this->psArchive, pNewEntry->iSize);
 
 	// Since we've inserted some data for the embedded header, we need to update
-	// the other file offsets accordingly.
+	// the other file offsets accordingly.  This call updates the offset of the
+	// files, then calls updateFileOffset() on them, using the *new* offset, so
+	// we need to do this after the insert() call above to make sure the extra
+	// data has been inserted.  Then when updateFileOffset() writes data out it
+	// will go into the correct spot.
 	this->shiftFiles(pNewEntry->iOffset, pNewEntry->lenHeader, 0);
+
+	// Write out same again but into the BNK file's external FAT
+	this->psFAT->seekp(pNewEntry->iIndex * BNK_FAT_ENTRY_LEN);
+	this->psFAT->insert(BNK_FAT_ENTRY_LEN);
+	this->psFAT->rdbuf()->sputn((char *)&lenByte, 1);
+	this->psFAT->write(pNewEntry->strName.c_str(), lenByte);
+	this->psFAT->write(blank, BNK_MAX_FILENAME_LEN - lenByte);
+
+	// Write out the file size
+	write_u32le(this->psFAT, pNewEntry->iOffset + BNK_EFAT_ENTRY_LEN);
+	write_u32le(this->psFAT, pNewEntry->iSize);
 
 	return;
 }
