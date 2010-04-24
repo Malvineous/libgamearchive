@@ -91,8 +91,14 @@ E_CERTAINTY GRPType::isInstance(iostream_sptr psArchive) const
 	char sig[12];
 	psArchive->seekg(0, std::ios::beg);
 	psArchive->read(sig, 12);
+
+	// TESTED BY: fmt_grp_duke3d_isinstance_c02
 	if (psArchive->gcount() < 12) return EC_DEFINITELY_NO; // short read
+
+	// TESTED BY: fmt_grp_duke3d_isinstance_c00
 	if (strncmp(sig, "KenSilverman", 12) == 0) return EC_DEFINITELY_YES;
+
+	// TESTED BY: fmt_grp_duke3d_isinstance_c01
 	return EC_DEFINITELY_NO;
 }
 

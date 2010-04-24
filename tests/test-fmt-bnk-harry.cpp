@@ -164,3 +164,18 @@
 #define ARCHIVE_CLASS fmt_bnk_harry
 #define ARCHIVE_TYPE  "bnk-harry"
 #include "test-archive.hpp"
+
+// Test some invalid formats to make sure they're not identified as valid
+// archives.  Note that they can still be opened though (by 'force'), this
+// only checks whether they look like valid files or not.
+
+// The "c00" test has already been performed in test-archive.hpp to ensure the
+// initial state is correctly identified as a valid archive.
+
+ISINSTANCE_TEST(c01,
+	"\x05-ID-" "\x07ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
+	"This is one.dat" \
+	"\x04-ID-" "\x07TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
+	"This is two.dat",
+	ga::EC_DEFINITELY_NO
+);

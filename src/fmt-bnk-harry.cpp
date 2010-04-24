@@ -109,11 +109,11 @@ std::vector<std::string> BNKType::getGameList() const
 E_CERTAINTY BNKType::isInstance(iostream_sptr psArchive) const
 	throw (std::ios::failure)
 {
-	// TESTED BY: fmt_bnk_harry_isinstance_c01
-
 	char sig[5];
 	psArchive->seekg(0, std::ios::beg);
 	psArchive->read(sig, 5);
+
+	// TESTED BY: fmt_bnk_harry_isinstance_c01
 	if (strncmp(sig, "\x04-ID-", 5)) return EC_DEFINITELY_NO;
 
 	// If we've made it this far, this is almost certainly a BNK file.

@@ -136,35 +136,12 @@
 #define ARCHIVE_TYPE  "pod-tv"
 #include "test-archive.hpp"
 
-#define ISINSTANCE_TEST(c, d, r) \
-	BOOST_AUTO_TEST_CASE(TEST_NAME(isinstance_ ## c)) \
-	{ \
-		BOOST_TEST_MESSAGE("isInstance check (" ARCHIVE_TYPE "; " #c ")"); \
-		\
-		boost::shared_ptr<ga::Manager> pManager(ga::getManager()); \
-		ga::Manager::arch_sptr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE)); \
-		\
-		boost::shared_ptr<std::stringstream> psstrBase(new std::stringstream); \
-		(*psstrBase) << makeString(d); \
-		camoto::iostream_sptr psBase(psstrBase); \
-		\
-		BOOST_CHECK_EQUAL(pTestType->isInstance(psBase), r); \
-	}
-
 // Test some invalid formats to make sure they're not identified as valid
 // archives.  Note that they can still be opened though (by 'force'), this
 // only checks whether they look like valid files or not.
 
-// Make sure the base data is correct, as we're only changing a couple of bytes
-// later on and we want to make sure those bytes are causing the failure.
-ISINSTANCE_TEST(c00,
-	"\x02\x00\x00\x00" POD_DESC
-	"ONE.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xa4\x00\x00\x00"
-	"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xb3\x00\x00\x00"
-	"This is one.dat"
-	"This is two.dat",
-	ga::EC_DEFINITELY_YES
-);
+// The "c00" test has already been performed in test-archive.hpp to ensure the
+// initial state is correctly identified as a valid archive.
 
 ISINSTANCE_TEST(c01,
 	"\x02\x00\x00\x00" POD_DESC

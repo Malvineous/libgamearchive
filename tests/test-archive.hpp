@@ -120,6 +120,26 @@ struct FIXTURE_NAME: public default_sample {
 };
 BOOST_FIXTURE_TEST_SUITE(SUITE_NAME, FIXTURE_NAME)
 
+// Define an ISINSTANCE_TEST macro which we use to confirm the initial state
+// is a valid instance of this format.  This is defined as a macro so the
+// format-specific code can reuse it later to test various invalid formats.
+#define ISINSTANCE_TEST(c, d, r) \
+	BOOST_AUTO_TEST_CASE(TEST_NAME(isinstance_ ## c)) \
+	{ \
+		BOOST_TEST_MESSAGE("isInstance check (" ARCHIVE_TYPE "; " #c ")"); \
+		\
+		boost::shared_ptr<ga::Manager> pManager(ga::getManager()); \
+		ga::Manager::arch_sptr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE)); \
+		\
+		boost::shared_ptr<std::stringstream> psstrBase(new std::stringstream); \
+		(*psstrBase) << makeString(d); \
+		camoto::iostream_sptr psBase(psstrBase); \
+		\
+		BOOST_CHECK_EQUAL(pTestType->isInstance(psBase), r); \
+	}
+
+ISINSTANCE_TEST(c00, INITIALSTATE_NAME, ga::EC_DEFINITELY_YES);
+
 #ifdef testdata_invalidcontent
 // Make sure a corrupted file doesn't segfault
 BOOST_AUTO_TEST_CASE(TEST_NAME(open_invalid))
