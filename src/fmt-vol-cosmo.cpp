@@ -96,9 +96,7 @@ E_CERTAINTY VOLType::isInstance(iostream_sptr psArchive) const
 {
 	psArchive->seekg(0, std::ios::end);
 	io::stream_offset lenArchive = psArchive->tellg();
-
-	// An empty file could just be an archive with no files in it
-	if (lenArchive == 0) return EC_POSSIBLY_YES;
+	if (lenArchive < VOL_FAT_ENTRY_LEN) return EC_DEFINITELY_NO; // too short
 
 	psArchive->seekg(12, std::ios::beg);
 	uint32_t lenFAT = read_u32le(psArchive);
@@ -106,16 +104,10 @@ E_CERTAINTY VOLType::isInstance(iostream_sptr psArchive) const
 	// If the FAT is larger than the entire archive then it's not a VOL file
 	if (lenFAT > lenArchive) return EC_DEFINITELY_NO;
 
-	// If the FAT is smaller than a single entry then it's not a VOL file
+	// If the FAT is smaller than a single entry then it's not a VOL file, but
+	// allow a zero-length FAT in the case of an empty archive.
 	// TESTED BY: fmt_vol_cosmo_isinstance_c02
-	if (lenFAT < VOL_FAT_ENTRY_LEN) return EC_DEFINITELY_NO;
-
-	// The FAT is not an even multiple of FAT entries.  Not sure whether this
-	// is a requirement.
-	//if (lenFAT % VOL_FAT_ENTRY_LEN) return EC_POSSIBLY_YES;
-
-	// The FAT is not 4000 bytes.  Not sure whether this is a requirement.
-	//if (lenFAT != 4000) return EC_DEFINITELY_NO;
+	if ((lenFAT > 0) && (lenFAT < VOL_FAT_ENTRY_LEN)) return EC_DEFINITELY_NO;
 
 	// Check each FAT entry
 	char fn[VOL_MAX_FILENAME_LEN];
@@ -139,6 +131,16 @@ E_CERTAINTY VOLType::isInstance(iostream_sptr psArchive) const
 	}
 
 	// If we've made it this far, this is almost certainly a VOL file.
+
+	// The FAT is not an even multiple of FAT entries.  Not sure whether this
+	// is a requirement.
+	//if (lenFAT % VOL_FAT_ENTRY_LEN) return EC_POSSIBLY_YES;
+
+	if (lenArchive < VOL_FAT_LENGTH) return EC_POSSIBLY_YES; // too short though
+
+	// The FAT is not 4000 bytes.  Not sure whether this is a requirement.
+	if (lenFAT != 4000) return EC_POSSIBLY_YES;
+
 	// TESTED BY: fmt_vol_cosmo_isinstance_c00
 	return EC_DEFINITELY_YES;
 }
@@ -172,59 +174,59 @@ refcount_declclass(VOLArchive);
 
 VOLArchive::VOLArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
-		FATArchive(psArchive)
+		FATArchive(psArchive, VOL_FIRST_FILE_OFFSET)
 {
-	psArchive->seekg(12, std::ios::beg); // skip to offset of first filesize
+	psArchive->seekg(0, std::ios::end);
+	io::stream_offset lenArchive = psArchive->tellg();
+	if (lenArchive > 0) {
 
-	// We still have to perform sanity checks in case the user forced an archive
-	// to open even though it failed the signature check.
-	// TODO: This could be allowed if the VOL file is empty
-	if (psArchive->tellg() != 12) throw std::ios::failure("File too short");
+		psArchive->seekg(12, std::ios::beg); // skip to offset of first filesize
 
-	// TODO: Do we assume the files are in order and read up until the first one,
-	// or do we read 4000 chars, or do we somehow scan the probable files and
-	// read up until the first one in case they're out of order...?
-	// I guess it depends on what works with the games.
-	uint32_t lenFAT = read_u32le(psArchive);
-	uint32_t numFiles = lenFAT / VOL_FAT_ENTRY_LEN;
-	boost::shared_array<uint8_t> pFATBuf;
-	try {
-		pFATBuf.reset(new uint8_t[lenFAT]);
-		this->vcFAT.reserve(numFiles);
-	} catch (std::bad_alloc) {
-		std::cerr << "Unable to allocate enough memory for " << numFiles
-			<< " files." << std::endl;
-		throw std::ios::failure("Memory allocation failure (archive corrupted?)");
-	}
-
-	// Read in all the FAT in one operation
-	psArchive->seekg(0, std::ios::beg);
-	psArchive->read((char *)pFATBuf.get(), lenFAT);
-	if (psArchive->gcount() != lenFAT) {
-		std::cerr << "VOL file only " << psArchive->gcount()
-			<< " bytes long (FAT is meant to be first " << lenFAT
-			<< " bytes.)" << std::endl;
-		throw std::ios::failure("File has been truncated, it stops in the middle "
-			"of the FAT!");
-	}
-
-	for (int i = 0; i < numFiles; i++) {
-		FATEntry *pEntry = new FATEntry();
-		pEntry->iIndex = i;
-		pEntry->strName = string_from_buf(&pFATBuf[i*VOL_FAT_ENTRY_LEN], VOL_MAX_FILENAME_LEN);
-		pEntry->iOffset = u32le_from_buf(&pFATBuf[i*VOL_FAT_ENTRY_LEN + VOL_MAX_FILENAME_LEN]);
-		pEntry->iSize = u32le_from_buf(&pFATBuf[i*VOL_FAT_ENTRY_LEN + VOL_MAX_FILENAME_LEN + 4]);
-		pEntry->lenHeader = 0;
-		pEntry->eType = EFT_USEFILENAME;
-		pEntry->fAttr = 0;
-		pEntry->bValid = true;
-		// Blank FAT entries have an offset of zero
-		if (pEntry->iOffset > 0) {
-			this->vcFAT.push_back(EntryPtr(pEntry));
-		} else {
-			delete pEntry;  // ergh, inefficient
+		// TODO: Do we assume the files are in order and read up until the first one,
+		// or do we read 4000 chars, or do we somehow scan the probable files and
+		// read up until the first one in case they're out of order...?
+		// I guess it depends on what works with the games.
+		uint32_t lenFAT = read_u32le(psArchive);
+		uint32_t numFiles = lenFAT / VOL_FAT_ENTRY_LEN;
+		boost::shared_array<uint8_t> pFATBuf;
+		try {
+			pFATBuf.reset(new uint8_t[lenFAT]);
+			this->vcFAT.reserve(numFiles);
+		} catch (std::bad_alloc) {
+			std::cerr << "Unable to allocate enough memory for " << numFiles
+				<< " files." << std::endl;
+			throw std::ios::failure("Memory allocation failure (archive corrupted?)");
 		}
-	}
+
+		// Read in all the FAT in one operation
+		psArchive->seekg(0, std::ios::beg);
+		psArchive->read((char *)pFATBuf.get(), lenFAT);
+		if (psArchive->gcount() != lenFAT) {
+			std::cerr << "VOL file only " << psArchive->gcount()
+				<< " bytes long (FAT is meant to be first " << lenFAT
+				<< " bytes.)" << std::endl;
+			throw std::ios::failure("File has been truncated, it stops in the middle "
+				"of the FAT!");
+		}
+
+		for (int i = 0; i < numFiles; i++) {
+			FATEntry *pEntry = new FATEntry();
+			pEntry->iIndex = i;
+			pEntry->strName = string_from_buf(&pFATBuf[i*VOL_FAT_ENTRY_LEN], VOL_MAX_FILENAME_LEN);
+			pEntry->iOffset = u32le_from_buf(&pFATBuf[i*VOL_FAT_ENTRY_LEN + VOL_MAX_FILENAME_LEN]);
+			pEntry->iSize = u32le_from_buf(&pFATBuf[i*VOL_FAT_ENTRY_LEN + VOL_MAX_FILENAME_LEN + 4]);
+			pEntry->lenHeader = 0;
+			pEntry->eType = EFT_USEFILENAME;
+			pEntry->fAttr = 0;
+			pEntry->bValid = true;
+			// Blank FAT entries have an offset of zero
+			if (pEntry->iOffset > 0) {
+				this->vcFAT.push_back(EntryPtr(pEntry));
+			} else {
+				delete pEntry;  // ergh, inefficient
+			}
+		}
+	} // else empty archive
 	refcount_qenterclass(VOLArchive);
 }
 
