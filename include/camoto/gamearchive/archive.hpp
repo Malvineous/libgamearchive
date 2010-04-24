@@ -71,7 +71,7 @@ class Archive {
 			}
 		};
 
-		typedef boost::shared_ptr<const FileEntry> EntryPtr;
+		typedef boost::shared_ptr<FileEntry> EntryPtr;
 		typedef std::vector<EntryPtr> VC_ENTRYPTR;
 
 		virtual ~Archive()
@@ -79,7 +79,7 @@ class Archive {
 
 		// Find the given file.  Returns empty EntryPtr() if the file can't be
 		// found (EntryPtr::bValid will be false.)
-		virtual EntryPtr find(std::string strFilename)
+		virtual EntryPtr find(const std::string& strFilename)
 			throw () = 0;
 
 		virtual const VC_ENTRYPTR& getFileList(void)
@@ -91,8 +91,8 @@ class Archive {
 		virtual bool isValid(const EntryPtr& id)
 			throw () = 0;
 
-		virtual iostream_sptr open(const EntryPtr& id) // fstream, or something else? (see below)
-			throw () = 0;//ENotFound); // old entry ID?
+		virtual iostream_sptr open(const EntryPtr& id)
+			throw () = 0;
 
 		// Insert a new file into the archive.  It will be inserted before
 		// idBeforeThis, or at the end of the archive if idBeforeThis is not valid.
@@ -105,7 +105,9 @@ class Archive {
 		// Preconditions: strFilename is not used by a file already in the archive.
 		// Postconditions: Existing EntryPtrs become invalid.  Any open files
 		//   remain valid.
-		virtual EntryPtr insert(const EntryPtr& idBeforeThis, std::string strFilename, offset_t iSize)
+		virtual EntryPtr insert(const EntryPtr& idBeforeThis,
+			const std::string& strFilename, offset_t iSize
+		)
 			throw (std::ios::failure) = 0;
 
 		// Delete the given entry from the archive.
@@ -152,6 +154,9 @@ class Archive {
 			throw () = 0;
 
 };
+
+typedef boost::shared_ptr<Archive> ArchivePtr;
+typedef std::vector<ArchivePtr> VC_ARCHIVE;
 
 } // namespace gamearchive
 } // namespace camoto

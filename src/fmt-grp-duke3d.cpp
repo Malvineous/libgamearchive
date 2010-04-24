@@ -96,19 +96,19 @@ E_CERTAINTY GRPType::isInstance(iostream_sptr psArchive) const
 	return EC_DEFINITELY_NO;
 }
 
-Archive *GRPType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr GRPType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
 	throw (std::ios::failure)
 {
 	psArchive->seekg(0, std::ios::beg);
 	psArchive->write("KenSilverman\0\0\0\0", 20);
-	return new GRPArchive(psArchive);
+	return ArchivePtr(new GRPArchive(psArchive));
 }
 
 // Preconditions: isInstance() has returned > EC_DEFINITELY_NO
-Archive *GRPType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr GRPType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
 	throw (std::ios::failure)
 {
-	return new GRPArchive(psArchive);
+	return ArchivePtr(new GRPArchive(psArchive));
 }
 
 MP_SUPPLIST GRPType::getRequiredSupps(const std::string& filenameArchive) const
@@ -183,7 +183,7 @@ void GRPArchive::rename(EntryPtr& id, const std::string& strNewName)
 {
 	// TESTED BY: fmt_grp_duke3d_rename
 	assert(this->isValid(id));
-	FATEntry *pEntry = FATEntryPtr_from_EntryPtr(id);
+	FATEntry *pEntry = dynamic_cast<FATEntry *>(id.get());
 
 	int iLen = strNewName.length();
 	if (iLen > GRP_MAX_FILENAME_LEN) throw std::ios_base::failure("name too long");

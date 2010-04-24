@@ -84,7 +84,7 @@ std::string sanitisePath(const std::string& strInput)
 }
 
 // Find the given file, or if it starts with an '@', the file at that index.
-ga::Archive::EntryPtr findFile(const ga::archive_sptr& archive, const std::string& filename)
+ga::Archive::EntryPtr findFile(const ga::ArchivePtr& archive, const std::string& filename)
 {
 	ga::Archive::EntryPtr id = archive->find(filename);
 	if (archive->isValid(id)) return id;

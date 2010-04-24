@@ -121,7 +121,7 @@ E_CERTAINTY BNKType::isInstance(iostream_sptr psArchive) const
 	return EC_DEFINITELY_YES;
 }
 
-Archive *BNKType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr BNKType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
 	throw (std::ios::failure)
 {
 	assert(suppData.find(EST_FAT) != suppData.end());
@@ -140,14 +140,14 @@ Archive *BNKType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) con
 	char blank[BNK_AC_FAT_ENTRY_LEN];
 	psFAT->write(blank, BNK_AC_FAT_ENTRY_LEN);
 
-	return new BNKArchive(psArchive, psFAT);
+	return ArchivePtr(new BNKArchive(psArchive, psFAT));
 }
 
-Archive *BNKType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr BNKType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
 	throw (std::ios::failure)
 {
 	assert(suppData.find(EST_FAT) != suppData.end());
-	return new BNKArchive(psArchive, suppData.find(EST_FAT)->second);
+	return ArchivePtr(new BNKArchive(psArchive, suppData.find(EST_FAT)->second));
 }
 
 MP_SUPPLIST BNKType::getRequiredSupps(const std::string& filenameArchive) const
@@ -229,7 +229,7 @@ void BNKArchive::rename(EntryPtr& id, const std::string& strNewName)
 {
 	// TESTED BY: fmt_bnk_harry_rename
 	assert(this->isValid(id));
-	FATEntry *pEntry = FATEntryPtr_from_EntryPtr(id);
+	FATEntry *pEntry = dynamic_cast<FATEntry *>(id.get());
 
 	int iLen = strNewName.length();
 	if (iLen > BNK_MAX_FILENAME_LEN) throw std::ios_base::failure("name too long");

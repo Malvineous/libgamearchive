@@ -142,21 +142,21 @@ E_CERTAINTY VOLType::isInstance(iostream_sptr psArchive) const
 	return EC_DEFINITELY_YES;
 }
 
-Archive *VOLType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr VOLType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
 	throw (std::ios::failure)
 {
 	char emptyFAT[VOL_FAT_LENGTH];
 	memset(emptyFAT, 0, VOL_FAT_LENGTH);
 	psArchive->seekg(0, std::ios::beg);
 	psArchive->write(emptyFAT, VOL_FAT_LENGTH);
-	return new VOLArchive(psArchive);
+	return ArchivePtr(new VOLArchive(psArchive));
 }
 
 // Preconditions: isInstance() has returned > EC_DEFINITELY_NO
-Archive *VOLType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr VOLType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
 	throw (std::ios::failure)
 {
-	return new VOLArchive(psArchive);
+	return ArchivePtr(new VOLArchive(psArchive));
 }
 
 MP_SUPPLIST VOLType::getRequiredSupps(const std::string& filenameArchive) const
@@ -238,7 +238,7 @@ void VOLArchive::rename(EntryPtr& id, const std::string& strNewName)
 {
 	// TESTED BY: fmt_vol_cosmo_rename
 	assert(this->isValid(id));
-	FATEntry *pEntry = FATEntryPtr_from_EntryPtr(id);
+	FATEntry *pEntry = dynamic_cast<FATEntry *>(id.get());
 
 	int iLen = strNewName.length();
 	if (iLen > VOL_MAX_FILENAME_LEN) throw std::ios_base::failure("name too long");
@@ -310,7 +310,7 @@ void VOLArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 	// compensate for the entry we just added.
 	int indexLast = 200;
 	for (VC_ENTRYPTR::reverse_iterator i = this->vcFAT.rbegin(); i != this->vcFAT.rend(); i++) {
-		FATEntry *pFAT = FATEntryPtr_from_EntryPtr(*i);
+		FATEntry *pFAT = dynamic_cast<FATEntry *>(i->get());
 		if (pFAT->iIndex != indexLast) {
 			// The previous slot is free, so delete it
 			this->psArchive->seekp(indexLast * VOL_FAT_ENTRY_LEN);
@@ -339,7 +339,7 @@ void VOLArchive::removeFATEntry(const FATEntry *pid)
 	this->psArchive->remove(VOL_FAT_ENTRY_LEN);
 
 	// Add an empty FAT entry onto the end to keep the FAT the same size
-	FATEntry *pFAT = FATEntryPtr_from_EntryPtr(this->vcFAT.back());
+	const FATEntry *pFAT = dynamic_cast<const FATEntry *>(this->vcFAT.back().get());
 	this->psArchive->seekp((pFAT->iIndex + 1) * VOL_FAT_ENTRY_LEN);
 	this->psArchive->insert(VOL_FAT_ENTRY_LEN);
 

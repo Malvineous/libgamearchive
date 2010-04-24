@@ -20,11 +20,9 @@
 #ifndef _CAMOTO_FATARCHIVE_HPP_
 #define _CAMOTO_FATARCHIVE_HPP_
 
-#include <camoto/gamearchive.hpp>
+#include <camoto/gamearchive/archive.hpp>
 
 #include <iostream>
-//#include <fstream>
-//#include <sstream>
 #include <vector>
 #include <boost/iostreams/stream.hpp>
 
@@ -36,23 +34,12 @@ namespace gamearchive {
 
 namespace io = boost::iostreams;
 
-// Convert generic entry pointers into the type extended by this class
-#define FATEntryPtr_from_EntryPtr(eid) \
-	static_cast<FATEntry *>( \
-		const_cast<FileEntry *>( \
-			(eid).get() \
-		) \
-	);
-#define const_FATEntryPtr_from_EntryPtr(eid) \
-	static_cast<const FATEntry *>((eid).get());
-
-
 class FATArchive: virtual public Archive {
 
 	protected:
 		segstream_sptr psArchive;
 
-		struct FATEntry: public FileEntry {
+		struct FATEntry: virtual public FileEntry {
 			int iIndex; // can't use vector order as entries are passed around outside the vector
 			offset_t iOffset;
 			offset_t lenHeader;  // length of embedded FAT entry at start of file data
@@ -61,11 +48,6 @@ class FATArchive: virtual public Archive {
 			virtual ~FATEntry();
 			virtual std::string getContent() const;
 		};
-
-		// Don't think we need this as we won't be passing around FATEntry pointers
-		// outside our descendent classes.  (They'll all be converted to base
-		// FileEntry pointers first.
-		//typedef boost::shared_ptr<FATEntry> FATEntry_sptr;
 
 		// This is a vector of file entries.  Although we have a specific FAT type
 		// for each entry we can't use a vector of them here because getFileList()
@@ -77,8 +59,6 @@ class FATArchive: virtual public Archive {
 		// order on-disk.  Use the iIndex member for that.)
 		VC_ENTRYPTR vcFAT;
 
-		//typedef boost::iostreams::stream<substream_device> substream_str;
-		//typedef boost::shared_ptr<substream_str> substream_sptr;
 		typedef std::vector<substream_sptr> substream_vc;
 		substream_vc vcSubStream; // List of substreams currently open
 
@@ -92,7 +72,7 @@ class FATArchive: virtual public Archive {
 		virtual ~FATArchive()
 			throw ();
 
-		virtual EntryPtr find(std::string strFilename)
+		virtual EntryPtr find(const std::string& strFilename)
 			throw ();
 
 		virtual const VC_ENTRYPTR& getFileList(void)
@@ -104,9 +84,9 @@ class FATArchive: virtual public Archive {
 		virtual boost::shared_ptr<std::iostream> open(const EntryPtr& id)
 			throw ();
 
-		// Does not check if this filename already exists - check first yourself
-		// and don't add duplicates!
-		virtual EntryPtr insert(const EntryPtr& idBeforeThis, std::string strFilename, offset_t iSize)
+		virtual EntryPtr insert(const EntryPtr& idBeforeThis,
+			const std::string& strFilename, offset_t iSize
+		)
 			throw (std::ios::failure);
 
 		virtual void remove(EntryPtr& id)

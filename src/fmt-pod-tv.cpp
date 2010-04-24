@@ -140,7 +140,7 @@ E_CERTAINTY PODType::isInstance(iostream_sptr psArchive) const
 	return EC_DEFINITELY_YES;
 }
 
-Archive *PODType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr PODType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
 	throw (std::ios::failure)
 {
 #define fmt_pod_empty \
@@ -152,13 +152,13 @@ Archive *PODType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) con
 	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
 	psArchive->seekg(0, std::ios::beg);
 	psArchive->write(fmt_pod_empty, strlen(fmt_pod_empty));
-	return new PODArchive(psArchive);
+	return ArchivePtr(new PODArchive(psArchive));
 }
 
-Archive *PODType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr PODType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
 	throw (std::ios::failure)
 {
-	return new PODArchive(psArchive);
+	return ArchivePtr(new PODArchive(psArchive));
 }
 
 MP_SUPPLIST PODType::getRequiredSupps(const std::string& filenameArchive) const
@@ -234,7 +234,7 @@ void PODArchive::rename(EntryPtr& id, const std::string& strNewName)
 {
 	// TESTED BY: fmt_pod_tv_rename
 	assert(this->isValid(id));
-	FATEntry *pEntry = FATEntryPtr_from_EntryPtr(id);
+	FATEntry *pEntry = dynamic_cast<FATEntry *>(id.get());
 
 	int iLen = strNewName.length();
 	if (iLen > POD_MAX_FILENAME_LEN) throw std::ios_base::failure("name too long");

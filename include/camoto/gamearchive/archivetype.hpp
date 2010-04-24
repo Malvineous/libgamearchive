@@ -72,13 +72,13 @@ class ArchiveType {
 			throw (std::ios::failure) = 0;
 
 		// Write out the necessary headers to create a blank archive in this format
-		virtual Archive *newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+		virtual ArchivePtr newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
 			throw (std::ios::failure) = 0;
 
 		// Preconditions: isInstance() has returned > EC_DEFINITELY_NO, any
 		// supplemental files returned by getRequiredSupps() have been set by
 		// setSupplementalFile().
-		virtual Archive *open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+		virtual ArchivePtr open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
 			throw (std::ios::failure) = 0;
 
 		// Get a list of the required supplemental files.  The archive filename is

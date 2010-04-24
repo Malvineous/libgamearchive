@@ -67,12 +67,12 @@ const FATArchive::VC_ENTRYPTR& FATArchive::getFileList()
 	return this->vcFAT;
 }
 
-FATArchive::EntryPtr FATArchive::find(std::string strFilename)
+FATArchive::EntryPtr FATArchive::find(const std::string& strFilename)
 	throw ()
 {
 	// TESTED BY: fmt_grp_duke3d_*
 	for (VC_ENTRYPTR::iterator i = this->vcFAT.begin(); i != this->vcFAT.end(); i++) {
-		const FATEntry *pFAT = const_FATEntryPtr_from_EntryPtr(*i);
+		const FATEntry *pFAT = dynamic_cast<const FATEntry *>(i->get());
 		if (boost::iequals(pFAT->strName, strFilename)) {
 			return *i;  // *i is the original shared_ptr
 		}
@@ -83,7 +83,7 @@ FATArchive::EntryPtr FATArchive::find(std::string strFilename)
 bool FATArchive::isValid(const EntryPtr& id)
 	throw ()
 {
-	const FATEntry *id2 = static_cast<const FATEntry *>(id.get());
+	const FATEntry *id2 = dynamic_cast<const FATEntry *>(id.get());
 	return ((id2) && (id2->bValid));
 }
 
@@ -91,7 +91,7 @@ boost::shared_ptr<std::iostream> FATArchive::open(const EntryPtr& id)
 	throw ()
 {
 	// TESTED BY: fmt_grp_duke3d_open
-	const FATEntry *pFAT = const_FATEntryPtr_from_EntryPtr(id);
+	const FATEntry *pFAT = dynamic_cast<const FATEntry *>(id.get());
 	substream_sptr psSub(
 		new substream(
 			this->psArchive,
@@ -103,7 +103,7 @@ boost::shared_ptr<std::iostream> FATArchive::open(const EntryPtr& id)
 	return psSub;
 }
 
-FATArchive::EntryPtr FATArchive::insert(const EntryPtr& idBeforeThis, std::string strFilename, offset_t iSize)
+FATArchive::EntryPtr FATArchive::insert(const EntryPtr& idBeforeThis, const std::string& strFilename, offset_t iSize)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_grp_duke3d_insert2
@@ -120,18 +120,18 @@ FATArchive::EntryPtr FATArchive::insert(const EntryPtr& idBeforeThis, std::strin
 	pNewFile->bValid = true;
 
 	// Figure out where the new file is going to go
-	FATEntry *pFATBeforeThis = NULL;
+	const FATEntry *pFATBeforeThis = NULL;
 	if (this->isValid(idBeforeThis)) {
 		// Insert just after idBefore
 		// TESTED BY: fmt_grp_duke3d_insert_mid
-		pFATBeforeThis = FATEntryPtr_from_EntryPtr(idBeforeThis);
+		pFATBeforeThis = dynamic_cast<const FATEntry *>(idBeforeThis.get());
 		assert(pFATBeforeThis);
 		pNewFile->iOffset = pFATBeforeThis->iOffset;
 		pNewFile->iIndex = pFATBeforeThis->iIndex;
 	} else {
 		// Append to end of archive
 		// TESTED BY: fmt_grp_duke3d_insert_end
-		FATEntry *pFATAfterThis = FATEntryPtr_from_EntryPtr(this->vcFAT.back());
+		const FATEntry *pFATAfterThis = dynamic_cast<const FATEntry *>(this->vcFAT.back().get());
 		assert(pFATAfterThis);
 		pNewFile->iOffset = pFATAfterThis->iOffset
 			+ pFATAfterThis->lenHeader + pFATAfterThis->iSize;
@@ -181,7 +181,7 @@ void FATArchive::remove(EntryPtr& id)
 	// Make sure the caller doesn't try to remove something that doesn't exist!
 	assert(this->isValid(id));
 
-	FATEntry *pFATDel = FATEntryPtr_from_EntryPtr(id);
+	FATEntry *pFATDel = dynamic_cast<FATEntry *>(id.get());
 	assert(pFATDel);
 
 	// Remove the file's entry from the FAT
@@ -213,7 +213,7 @@ void FATArchive::resize(EntryPtr& id, size_t iNewSize)
 {
 	assert(this->isValid(id));
 	std::streamsize iDelta = iNewSize - id->iSize;
-	FATEntry *pFAT = FATEntryPtr_from_EntryPtr(id);
+	FATEntry *pFAT = dynamic_cast<FATEntry *>(id.get());
 
 	// Add or remove the data in the underlying stream
 	io::stream_offset iStart;
@@ -261,7 +261,7 @@ FATArchive::EntryPtr FATArchive::entryPtrFromStream(const iostream_sptr openFile
 
 	// Find an EntryPtr with the same offset
 	for (VC_ENTRYPTR::iterator i = this->vcFAT.begin(); i != this->vcFAT.end(); i++) {
-		FATEntry *pFAT = FATEntryPtr_from_EntryPtr(*i);
+		FATEntry *pFAT = dynamic_cast<FATEntry *>(i->get());
 		if (pFAT->iOffset + pFAT->lenHeader >= offStart) {
 			return *i;
 		}
@@ -274,7 +274,7 @@ void FATArchive::shiftFiles(io::stream_offset offStart, std::streamsize deltaOff
 	throw (std::ios::failure)
 {
 	for (VC_ENTRYPTR::iterator i = this->vcFAT.begin(); i != this->vcFAT.end(); i++) {
-		FATEntry *pFAT = FATEntryPtr_from_EntryPtr(*i);
+		FATEntry *pFAT = dynamic_cast<FATEntry *>(i->get());
 		if (pFAT->iOffset >= offStart) {
 			// This file is located after the one we're deleting, so tweak its offset
 			pFAT->iOffset += deltaOffset;
