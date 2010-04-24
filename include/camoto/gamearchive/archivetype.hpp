@@ -71,9 +71,12 @@ class ArchiveType {
 		virtual E_CERTAINTY isInstance(iostream_sptr psArchive) const
 			throw (std::ios::failure) = 0;
 
-		// Write out the necessary headers to create a blank archive in this format
+		// Write out the necessary headers to create a blank archive in this
+		// format.  This function only needs to be overridden if there are headers
+		// to write, otherwise an empty stream is passed to open() which is
+		// expected to succeed.
 		virtual ArchivePtr newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
-			throw (std::ios::failure) = 0;
+			throw (std::ios::failure);
 
 		// Preconditions: isInstance() has returned > EC_DEFINITELY_NO, any
 		// supplemental files returned by getRequiredSupps() have been set by

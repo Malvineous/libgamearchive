@@ -18,10 +18,17 @@
  */
 
 #include <boost/iostreams/copy.hpp>
+#include <camoto/gamearchive/archivetype.hpp>
 #include <camoto/gamearchive/archive.hpp>
 
 namespace camoto {
 namespace gamearchive {
+
+ArchivePtr ArchiveType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+	throw (std::ios::failure)
+{
+	return this->open(psArchive, suppData);
+}
 
 Archive::~Archive()
 	throw ()
