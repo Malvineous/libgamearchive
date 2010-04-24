@@ -89,12 +89,15 @@ std::vector<std::string> GRPType::getGameList() const
 E_CERTAINTY GRPType::isInstance(iostream_sptr psArchive) const
 	throw (std::ios::failure)
 {
+	psArchive->seekg(0, std::ios::end);
+	io::stream_offset lenArchive = psArchive->tellg();
+
+	// TESTED BY: fmt_grp_duke3d_isinstance_c02
+	if (lenArchive < GRP_FAT_ENTRY_LEN) return EC_DEFINITELY_NO; // too short
+
 	char sig[12];
 	psArchive->seekg(0, std::ios::beg);
 	psArchive->read(sig, 12);
-
-	// TESTED BY: fmt_grp_duke3d_isinstance_c02
-	if (psArchive->gcount() < 12) return EC_DEFINITELY_NO; // short read
 
 	// TESTED BY: fmt_grp_duke3d_isinstance_c00
 	if (strncmp(sig, "KenSilverman", 12) == 0) return EC_DEFINITELY_YES;
@@ -106,8 +109,8 @@ E_CERTAINTY GRPType::isInstance(iostream_sptr psArchive) const
 ArchivePtr GRPType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
 	throw (std::ios::failure)
 {
-	psArchive->seekg(0, std::ios::beg);
-	psArchive->write("KenSilverman\0\0\0\0", 20);
+	psArchive->seekp(0, std::ios::beg);
+	psArchive->write("KenSilverman\0\0\0\0", 16);
 	return ArchivePtr(new GRPArchive(psArchive));
 }
 
