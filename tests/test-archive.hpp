@@ -38,11 +38,11 @@ namespace ga = camoto::gamearchive;
 
 #define TEST_VAR(n)        COMBINE_CLASSNAME(ARCHIVE_CLASS, n)
 #define TEST_NAME(n)       TEST_VAR(n)
-#define TEST_RESULT(n)     TEST_VAR(n ## _result)
+#define TEST_RESULT(n)     testdata_ ## n
 
 #define FIXTURE_NAME       TEST_VAR(sample)
 #define SUITE_NAME         TEST_VAR(suite)
-#define INITIALSTATE_NAME  TEST_VAR(initialstate)
+#define INITIALSTATE_NAME  TEST_RESULT(initialstate)
 
 // Allow a string constant to be passed around with embedded nulls
 #define makeString(x)  std::string((x), sizeof((x)) - 1)
@@ -67,7 +67,7 @@ struct FIXTURE_NAME: public default_sample {
 		{
 			boost::shared_ptr<std::stringstream> suppSS(new std::stringstream);
 			suppSS->exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
-			(*suppSS) << makeString(TEST_VAR(FAT_initialstate));
+			(*suppSS) << makeString(TEST_RESULT(FAT_initialstate));
 			camoto::iostream_sptr suppStream(suppSS);
 			this->suppData[ga::EST_FAT] = suppStream;
 			this->suppBase[ga::EST_FAT] = suppSS;
@@ -120,6 +120,7 @@ struct FIXTURE_NAME: public default_sample {
 };
 BOOST_FIXTURE_TEST_SUITE(SUITE_NAME, FIXTURE_NAME)
 
+#ifdef testdata_invalidcontent
 // Make sure a corrupted file doesn't segfault
 BOOST_AUTO_TEST_CASE(TEST_NAME(open_invalid))
 {
@@ -153,6 +154,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(open_invalid))
 		std::ios::failure
 	);
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(TEST_NAME(open))
 {

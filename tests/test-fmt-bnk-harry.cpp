@@ -22,61 +22,61 @@
 #define FILENAME3 "THREE.DAT"
 #define FILENAME4 "FOUR.DAT"
 
-#define fmt_bnk_harry_initialstate \
+#define testdata_initialstate \
 	"\x04-ID-" "\x07ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is one.dat" \
 	"\x04-ID-" "\x07TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is two.dat"
 
-#define fmt_bnk_harry_FAT_initialstate \
+#define testdata_FAT_initialstate \
 	"\x07ONE.DAT\0\0\0\0\0" "\x16\x00\x00\x00" "\x0f\x00\x00\x00" \
 	"\x07TWO.DAT\0\0\0\0\0" "\x3b\x00\x00\x00" "\x0f\x00\x00\x00"
 
 // This must be a valid file (correct signature) but with invalid content
 // Can't really do that here, because the loader will just ignore invalid files
-#define fmt_bnk_harry_invalidcontent_result \
+#define testdata_invalidcontent \
 	"\x04-ID-" "\x07ONE.DAT\0\0\0\0\0" "\xef\x00\x00\x00" \
 	"This is one.dat" \
 	"\x04-ID-" "\x07TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is two.dat"
-#define fmt_bnk_harry_FAT_invalidcontent_result \
+#define testdata_FAT_invalidcontent \
 	"\x07ONE.DAT\0\0\0\0\0" "\x16\x00\x00\x00" "\xef\x00\x00\x00" \
 	"\x07TWO.DAT\0\0\0\0\0" "\x3b\x00\x00\x00" "\x0f\x00\x00\x00"
 
-#define fmt_bnk_harry_rename_result \
+#define testdata_rename \
 	"\x04-ID-" "\x09THREE.DAT\0\0\0" "\x0f\x00\x00\x00" \
 	"This is one.dat" \
 	"\x04-ID-" "\x07TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is two.dat"
-#define fmt_bnk_harry_FAT_rename_result \
+#define testdata_FAT_rename \
 	"\x09THREE.DAT\0\0\0"   "\x16\x00\x00\x00" "\x0f\x00\x00\x00" \
 	"\x07TWO.DAT\0\0\0\0\0" "\x3b\x00\x00\x00" "\x0f\x00\x00\x00"
 
-#define fmt_bnk_harry_insert_end_result \
+#define testdata_insert_end \
 	"\x04-ID-" "\x07ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is one.dat" \
 	"\x04-ID-" "\x07TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is two.dat" \
 	"\x04-ID-" "\x09THREE.DAT\0\0\0"   "\x11\x00\x00\x00" \
 	"This is three.dat"
-#define fmt_bnk_harry_FAT_insert_end_result \
+#define testdata_FAT_insert_end \
 	"\x07ONE.DAT\0\0\0\0\0" "\x16\x00\x00\x00" "\x0f\x00\x00\x00" \
 	"\x07TWO.DAT\0\0\0\0\0" "\x3b\x00\x00\x00" "\x0f\x00\x00\x00" \
 	"\x09THREE.DAT\0\0\0"   "\x60\x00\x00\x00" "\x11\x00\x00\x00"
 
-#define fmt_bnk_harry_insert_mid_result \
+#define testdata_insert_mid \
 	"\x04-ID-" "\x07ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is one.dat" \
 	"\x04-ID-" "\x09THREE.DAT\0\0\0"   "\x11\x00\x00\x00" \
 	"This is three.dat" \
 	"\x04-ID-" "\x07TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is two.dat"
-#define fmt_bnk_harry_FAT_insert_mid_result \
+#define testdata_FAT_insert_mid \
 	"\x07ONE.DAT\0\0\0\0\0" "\x16\x00\x00\x00" "\x0f\x00\x00\x00" \
 	"\x09THREE.DAT\0\0\0"   "\x3b\x00\x00\x00" "\x11\x00\x00\x00" \
 	"\x07TWO.DAT\0\0\0\0\0" "\x62\x00\x00\x00" "\x0f\x00\x00\x00"
 
-#define fmt_bnk_harry_insert2_result \
+#define testdata_insert2 \
 	"\x04-ID-" "\x07ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is one.dat" \
 	"\x04-ID-" "\x09THREE.DAT\0\0\0"   "\x11\x00\x00\x00" \
@@ -85,74 +85,74 @@
 	"This is four.dat" \
 	"\x04-ID-" "\x07TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is two.dat"
-#define fmt_bnk_harry_FAT_insert2_result \
+#define testdata_FAT_insert2 \
 	"\x07ONE.DAT\0\0\0\0\0" "\x16\x00\x00\x00" "\x0f\x00\x00\x00" \
 	"\x09THREE.DAT\0\0\0"   "\x3b\x00\x00\x00" "\x11\x00\x00\x00" \
 	"\x08""FOUR.DAT\0\0\0\0"  "\x62\x00\x00\x00" "\x10\x00\x00\x00" \
 	"\x07TWO.DAT\0\0\0\0\0" "\x88\x00\x00\x00" "\x0f\x00\x00\x00"
 
-#define fmt_bnk_harry_remove_result \
+#define testdata_remove \
 	"\x04-ID-" "\x07TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is two.dat"
-#define fmt_bnk_harry_FAT_remove_result \
+#define testdata_FAT_remove \
 	"\x07TWO.DAT\0\0\0\0\0" "\x16\x00\x00\x00" "\x0f\x00\x00\x00"
 
-#define fmt_bnk_harry_remove2_result \
+#define testdata_remove2 \
 	""
-#define fmt_bnk_harry_FAT_remove2_result \
+#define testdata_FAT_remove2 \
 	""
 
-#define fmt_bnk_harry_insert_remove_result \
+#define testdata_insert_remove \
 	"\x04-ID-" "\x09THREE.DAT\0\0\0"   "\x11\x00\x00\x00" \
 	"This is three.dat" \
 	"\x04-ID-" "\x07TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is two.dat"
-#define fmt_bnk_harry_FAT_insert_remove_result \
+#define testdata_FAT_insert_remove \
 	"\x09THREE.DAT\0\0\0"   "\x16\x00\x00\x00" "\x11\x00\x00\x00" \
 	"\x07TWO.DAT\0\0\0\0\0" "\x3d\x00\x00\x00" "\x0f\x00\x00\x00"
 
-#define fmt_bnk_harry_remove_insert_result \
+#define testdata_remove_insert \
 	"\x04-ID-" "\x09THREE.DAT\0\0\0"   "\x11\x00\x00\x00" \
 	"This is three.dat" \
 	"\x04-ID-" "\x07TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is two.dat"
-#define fmt_bnk_harry_FAT_remove_insert_result \
+#define testdata_FAT_remove_insert \
 	"\x09THREE.DAT\0\0\0"   "\x16\x00\x00\x00" "\x11\x00\x00\x00" \
 	"\x07TWO.DAT\0\0\0\0\0" "\x3d\x00\x00\x00" "\x0f\x00\x00\x00"
 
-#define fmt_bnk_harry_move_result \
+#define testdata_move \
 	"\x04-ID-" "\x07TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is two.dat" \
 	"\x04-ID-" "\x07ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is one.dat"
-#define fmt_bnk_harry_FAT_move_result \
+#define testdata_FAT_move \
 	"\x07TWO.DAT\0\0\0\0\0" "\x16\x00\x00\x00" "\x0f\x00\x00\x00" \
 	"\x07ONE.DAT\0\0\0\0\0" "\x3b\x00\x00\x00" "\x0f\x00\x00\x00"
 
-#define fmt_bnk_harry_resize_larger_result \
+#define testdata_resize_larger \
 	"\x04-ID-" "\x07ONE.DAT\0\0\0\0\0" "\x14\x00\x00\x00" \
 	"This is one.dat\0\0\0\0\0" \
 	"\x04-ID-" "\x07TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is two.dat"
-#define fmt_bnk_harry_FAT_resize_larger_result \
+#define testdata_FAT_resize_larger \
 	"\x07ONE.DAT\0\0\0\0\0" "\x16\x00\x00\x00" "\x14\x00\x00\x00" \
 	"\x07TWO.DAT\0\0\0\0\0" "\x40\x00\x00\x00" "\x0f\x00\x00\x00"
 
-#define fmt_bnk_harry_resize_smaller_result \
+#define testdata_resize_smaller \
 	"\x04-ID-" "\x07ONE.DAT\0\0\0\0\0" "\x0a\x00\x00\x00" \
 	"This is on" \
 	"\x04-ID-" "\x07TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is two.dat"
-#define fmt_bnk_harry_FAT_resize_smaller_result \
+#define testdata_FAT_resize_smaller \
 	"\x07ONE.DAT\0\0\0\0\0" "\x16\x00\x00\x00" "\x0a\x00\x00\x00" \
 	"\x07TWO.DAT\0\0\0\0\0" "\x36\x00\x00\x00" "\x0f\x00\x00\x00"
 
-#define fmt_bnk_harry_resize_write_result \
+#define testdata_resize_write \
 	"\x04-ID-" "\x07ONE.DAT\0\0\0\0\0" "\x17\x00\x00\x00" \
 	"Now resized to 23 chars" \
 	"\x04-ID-" "\x07TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is two.dat"
-#define fmt_bnk_harry_FAT_resize_write_result \
+#define testdata_FAT_resize_write \
 	"\x07ONE.DAT\0\0\0\0\0" "\x16\x00\x00\x00" "\x17\x00\x00\x00" \
 	"\x07TWO.DAT\0\0\0\0\0" "\x43\x00\x00\x00" "\x0f\x00\x00\x00"
 

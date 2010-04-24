@@ -22,7 +22,7 @@
 #define FILENAME3 "THREE.DAT"
 #define FILENAME4 "FOUR.DAT"
 
-#define fmt_grp_duke3d_initialstate \
+#define testdata_initialstate \
 	"KenSilverman"      "\x02\x00\x00\x00" \
 	"ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
@@ -30,19 +30,19 @@
 	"This is two.dat"
 
 // This must be a valid file (correct signature) but with invalid content
-#define fmt_grp_duke3d_invalidcontent_result \
+#define testdata_invalidcontent \
 	"KenSilverman"      "\xff\xff\xff\xf0" \
 	"ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is one.dat"
 
-#define fmt_grp_duke3d_rename_result \
+#define testdata_rename \
 	"KenSilverman"      "\x02\x00\x00\x00" \
 	"THREE.DAT\0\0\0"   "\x0f\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is one.dat" \
 	"This is two.dat" \
 
-#define fmt_grp_duke3d_insert_end_result \
+#define testdata_insert_end \
 	"KenSilverman"      "\x03\x00\x00\x00" \
 	"ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
@@ -51,7 +51,7 @@
 	"This is two.dat" \
 	"This is three.dat"
 
-#define fmt_grp_duke3d_insert_mid_result \
+#define testdata_insert_mid \
 	"KenSilverman"      "\x03\x00\x00\x00" \
 	"ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"THREE.DAT\0\0\0"   "\x11\x00\x00\x00" \
@@ -60,7 +60,7 @@
 	"This is three.dat" \
 	"This is two.dat"
 
-#define fmt_grp_duke3d_insert2_result \
+#define testdata_insert2 \
 	"KenSilverman"      "\x04\x00\x00\x00" \
 	"ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"THREE.DAT\0\0\0"   "\x11\x00\x00\x00" \
@@ -71,50 +71,50 @@
 	"This is four.dat" \
 	"This is two.dat"
 
-#define fmt_grp_duke3d_remove_result \
+#define testdata_remove \
 	"KenSilverman"      "\x01\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is two.dat"
 
-#define fmt_grp_duke3d_remove2_result \
+#define testdata_remove2 \
 	"KenSilverman"      "\x00\x00\x00\x00"
 
-#define fmt_grp_duke3d_insert_remove_result \
+#define testdata_insert_remove \
 	"KenSilverman"      "\x02\x00\x00\x00" \
 	"THREE.DAT\0\0\0"   "\x11\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is three.dat" \
 	"This is two.dat" \
 
-#define fmt_grp_duke3d_remove_insert_result \
+#define testdata_remove_insert \
 	"KenSilverman"      "\x02\x00\x00\x00" \
 	"THREE.DAT\0\0\0"   "\x11\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is three.dat" \
 	"This is two.dat"
 
-#define fmt_grp_duke3d_move_result \
+#define testdata_move \
 	"KenSilverman"      "\x02\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is two.dat" \
 	"This is one.dat"
 
-#define fmt_grp_duke3d_resize_larger_result \
+#define testdata_resize_larger \
 	"KenSilverman"      "\x02\x00\x00\x00" \
 	"ONE.DAT\0\0\0\0\0" "\x14\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is one.dat\0\0\0\0\0" \
 	"This is two.dat"
 
-#define fmt_grp_duke3d_resize_smaller_result \
+#define testdata_resize_smaller \
 	"KenSilverman"      "\x02\x00\x00\x00" \
 	"ONE.DAT\0\0\0\0\0" "\x0a\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is on" \
 	"This is two.dat"
 
-#define fmt_grp_duke3d_resize_write_result \
+#define testdata_resize_write \
 	"KenSilverman"      "\x02\x00\x00\x00" \
 	"ONE.DAT\0\0\0\0\0" "\x17\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \

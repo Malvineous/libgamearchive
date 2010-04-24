@@ -29,7 +29,7 @@
 	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
 
-#define fmt_pod_tv_initialstate \
+#define testdata_initialstate \
 	"\x02\x00\x00\x00" POD_DESC \
 	"ONE.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xa4\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xb3\x00\x00\x00" \
@@ -37,21 +37,21 @@
 	"This is two.dat"
 
 // This must be a valid file (correct signature) but with invalid content.
-#define fmt_pod_tv_invalidcontent_result \
+#define testdata_invalidcontent \
 	"\x00\x00\x00\xf0" POD_DESC \
 	"ONE.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xa4\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xb3\x00\x00\x00" \
 	"This is one.dat" \
 	"This is two.dat"
 
-#define fmt_pod_tv_rename_result \
+#define testdata_rename \
 	"\x02\x00\x00\x00" POD_DESC \
 	"THREE.DAT\0\0\0\0\0\0\0"   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xa4\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xb3\x00\x00\x00" \
 	"This is one.dat" \
 	"This is two.dat"
 
-#define fmt_pod_tv_insert_end_result \
+#define testdata_insert_end \
 	"\x03\x00\x00\x00" POD_DESC \
 	"ONE.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xcc\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xdb\x00\x00\x00" \
@@ -60,7 +60,7 @@
 	"This is two.dat" \
 	"This is three.dat"
 
-#define fmt_pod_tv_insert_mid_result \
+#define testdata_insert_mid \
 	"\x03\x00\x00\x00" POD_DESC \
 	"ONE.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xcc\x00\x00\x00" \
 	"THREE.DAT\0\0\0\0\0\0\0"   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x11\x00\x00\x00" "\xdb\x00\x00\x00" \
@@ -69,7 +69,7 @@
 	"This is three.dat" \
 	"This is two.dat"
 
-#define fmt_pod_tv_insert2_result \
+#define testdata_insert2 \
 	"\x04\x00\x00\x00" POD_DESC \
 	"ONE.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xf4\x00\x00\x00" \
 	"THREE.DAT\0\0\0\0\0\0\0"   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x11\x00\x00\x00" "\x03\x01\x00\x00" \
@@ -80,50 +80,50 @@
 	"This is four.dat" \
 	"This is two.dat"
 
-#define fmt_pod_tv_remove_result \
+#define testdata_remove \
 	"\x01\x00\x00\x00" POD_DESC \
 	"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\x7c\x00\x00\x00" \
 	"This is two.dat"
 
-#define fmt_pod_tv_remove2_result \
+#define testdata_remove2 \
 	"\x00\x00\x00\x00" POD_DESC
 
-#define fmt_pod_tv_insert_remove_result \
+#define testdata_insert_remove \
 	"\x02\x00\x00\x00" POD_DESC \
 	"THREE.DAT\0\0\0\0\0\0\0"   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x11\x00\x00\x00" "\xa4\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xb5\x00\x00\x00" \
 	"This is three.dat" \
 	"This is two.dat"
 
-#define fmt_pod_tv_remove_insert_result \
+#define testdata_remove_insert \
 	"\x02\x00\x00\x00" POD_DESC \
 	"THREE.DAT\0\0\0\0\0\0\0"   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x11\x00\x00\x00" "\xa4\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xb5\x00\x00\x00" \
 	"This is three.dat" \
 	"This is two.dat"
 
-#define fmt_pod_tv_move_result \
+#define testdata_move \
 	"\x02\x00\x00\x00" POD_DESC \
 	"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xa4\x00\x00\x00" \
 	"ONE.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xb3\x00\x00\x00" \
 	"This is two.dat" \
 	"This is one.dat"
 
-#define fmt_pod_tv_resize_larger_result \
+#define testdata_resize_larger \
 	"\x02\x00\x00\x00" POD_DESC \
 	"ONE.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x14\x00\x00\x00" "\xa4\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xb8\x00\x00\x00" \
 	"This is one.dat\0\0\0\0\0" \
 	"This is two.dat"
 
-#define fmt_pod_tv_resize_smaller_result \
+#define testdata_resize_smaller \
 	"\x02\x00\x00\x00" POD_DESC \
 	"ONE.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0a\x00\x00\x00" "\xa4\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xae\x00\x00\x00" \
 	"This is on" \
 	"This is two.dat"
 
-#define fmt_pod_tv_resize_write_result \
+#define testdata_resize_write \
 	"\x02\x00\x00\x00" POD_DESC \
 	"ONE.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x17\x00\x00\x00" "\xa4\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xbb\x00\x00\x00" \

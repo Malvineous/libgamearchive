@@ -241,7 +241,7 @@
 	"\0\0\0\0\0\0\0\0\0\0\0\0" "\x00\x00\x00\x00" "\x00\x00\x00\x00" \
 	/* ^^ 196 ^^ */
 
-#define fmt_vol_cosmo_initialstate \
+#define testdata_initialstate \
 	"ONE.DAT\0\0\0\0\0"        "\xa0\x0f\x00\x00" "\x0f\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0"        "\xaf\x0f\x00\x00" "\x0f\x00\x00\x00" \
 	"\0\0\0\0\0\0\0\0\0\0\0\0" "\x00\x00\x00\x00" "\x00\x00\x00\x00" \
@@ -251,11 +251,11 @@
 	"This is two.dat"
 
 // This must be a valid file (correct signature) but with invalid content.
-#define fmt_vol_cosmo_invalidcontent_result \
+#define testdata_invalidcontent \
 	"ONE.DAT\0\0\0\0\0"        "\xf0\x00\x00\x00" "\x0f\x00\x00\x00" \
 	"This is one.dat"
 
-#define fmt_vol_cosmo_rename_result \
+#define testdata_rename \
 	"THREE.DAT\0\0\0"          "\xa0\x0f\x00\x00" "\x0f\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0"        "\xaf\x0f\x00\x00" "\x0f\x00\x00\x00" \
 	"\0\0\0\0\0\0\0\0\0\0\0\0" "\x00\x00\x00\x00" "\x00\x00\x00\x00" \
@@ -264,7 +264,7 @@
 	"This is one.dat" \
 	"This is two.dat"
 
-#define fmt_vol_cosmo_insert_end_result \
+#define testdata_insert_end \
 	"ONE.DAT\0\0\0\0\0"        "\xa0\x0f\x00\x00" "\x0f\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0"        "\xaf\x0f\x00\x00" "\x0f\x00\x00\x00" \
 	"THREE.DAT\0\0\0"          "\xbe\x0f\x00\x00" "\x11\x00\x00\x00" \
@@ -274,7 +274,7 @@
 	"This is two.dat" \
 	"This is three.dat"
 
-#define fmt_vol_cosmo_insert_mid_result \
+#define testdata_insert_mid \
 	"ONE.DAT\0\0\0\0\0"        "\xa0\x0f\x00\x00" "\x0f\x00\x00\x00" \
 	"THREE.DAT\0\0\0"          "\xaf\x0f\x00\x00" "\x11\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0"        "\xc0\x0f\x00\x00" "\x0f\x00\x00\x00" \
@@ -284,7 +284,7 @@
 	"This is three.dat" \
 	"This is two.dat"
 
-#define fmt_vol_cosmo_insert2_result \
+#define testdata_insert2 \
 	"ONE.DAT\0\0\0\0\0"        "\xa0\x0f\x00\x00" "\x0f\x00\x00\x00" \
 	"THREE.DAT\0\0\0"          "\xaf\x0f\x00\x00" "\x11\x00\x00\x00" \
 	"FOUR.DAT\0\0\0\0"         "\xc0\x0f\x00\x00" "\x10\x00\x00\x00" \
@@ -295,7 +295,7 @@
 	"This is four.dat" \
 	"This is two.dat"
 
-#define fmt_vol_cosmo_remove_result \
+#define testdata_remove \
 	"TWO.DAT\0\0\0\0\0"        "\xa0\x0f\x00\x00" "\x0f\x00\x00\x00" \
 	"\0\0\0\0\0\0\0\0\0\0\0\0" "\x00\x00\x00\x00" "\x00\x00\x00\x00" \
 	"\0\0\0\0\0\0\0\0\0\0\0\0" "\x00\x00\x00\x00" "\x00\x00\x00\x00" \
@@ -303,14 +303,14 @@
 	LOTS_OF_NULLS \
 	"This is two.dat"
 
-#define fmt_vol_cosmo_remove2_result \
+#define testdata_remove2 \
 	"\0\0\0\0\0\0\0\0\0\0\0\0" "\x00\x00\x00\x00" "\x00\x00\x00\x00" \
 	"\0\0\0\0\0\0\0\0\0\0\0\0" "\x00\x00\x00\x00" "\x00\x00\x00\x00" \
 	"\0\0\0\0\0\0\0\0\0\0\0\0" "\x00\x00\x00\x00" "\x00\x00\x00\x00" \
 	"\0\0\0\0\0\0\0\0\0\0\0\0" "\x00\x00\x00\x00" "\x00\x00\x00\x00" \
 	LOTS_OF_NULLS \
 
-#define fmt_vol_cosmo_insert_remove_result \
+#define testdata_insert_remove \
 	"THREE.DAT\0\0\0"          "\xa0\x0f\x00\x00" "\x11\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0"        "\xb1\x0f\x00\x00" "\x0f\x00\x00\x00" \
 	"\0\0\0\0\0\0\0\0\0\0\0\0" "\x00\x00\x00\x00" "\x00\x00\x00\x00" \
@@ -319,7 +319,7 @@
 	"This is three.dat" \
 	"This is two.dat"
 
-#define fmt_vol_cosmo_remove_insert_result \
+#define testdata_remove_insert \
 	"THREE.DAT\0\0\0"          "\xa0\x0f\x00\x00" "\x11\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0"        "\xb1\x0f\x00\x00" "\x0f\x00\x00\x00" \
 	"\0\0\0\0\0\0\0\0\0\0\0\0" "\x00\x00\x00\x00" "\x00\x00\x00\x00" \
@@ -328,7 +328,7 @@
 	"This is three.dat" \
 	"This is two.dat"
 
-#define fmt_vol_cosmo_move_result \
+#define testdata_move \
 	"TWO.DAT\0\0\0\0\0"        "\xa0\x0f\x00\x00" "\x0f\x00\x00\x00" \
 	"ONE.DAT\0\0\0\0\0"        "\xaf\x0f\x00\x00" "\x0f\x00\x00\x00" \
 	"\0\0\0\0\0\0\0\0\0\0\0\0" "\x00\x00\x00\x00" "\x00\x00\x00\x00" \
@@ -337,7 +337,7 @@
 	"This is two.dat" \
 	"This is one.dat"
 
-#define fmt_vol_cosmo_resize_larger_result \
+#define testdata_resize_larger \
 	"ONE.DAT\0\0\0\0\0"        "\xa0\x0f\x00\x00" "\x14\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0"        "\xb4\x0f\x00\x00" "\x0f\x00\x00\x00" \
 	"\0\0\0\0\0\0\0\0\0\0\0\0" "\x00\x00\x00\x00" "\x00\x00\x00\x00" \
@@ -346,7 +346,7 @@
 	"This is one.dat\0\0\0\0\0" \
 	"This is two.dat"
 
-#define fmt_vol_cosmo_resize_smaller_result \
+#define testdata_resize_smaller \
 	"ONE.DAT\0\0\0\0\0"        "\xa0\x0f\x00\x00" "\x0a\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0"        "\xaa\x0f\x00\x00" "\x0f\x00\x00\x00" \
 	"\0\0\0\0\0\0\0\0\0\0\0\0" "\x00\x00\x00\x00" "\x00\x00\x00\x00" \
@@ -355,7 +355,7 @@
 	"This is on" \
 	"This is two.dat"
 
-#define fmt_vol_cosmo_resize_write_result \
+#define testdata_resize_write \
 	"ONE.DAT\0\0\0\0\0"        "\xa0\x0f\x00\x00" "\x17\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0"        "\xb7\x0f\x00\x00" "\x0f\x00\x00\x00" \
 	"\0\0\0\0\0\0\0\0\0\0\0\0" "\x00\x00\x00\x00" "\x00\x00\x00\x00" \
