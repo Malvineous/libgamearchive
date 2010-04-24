@@ -41,7 +41,9 @@ namespace ga = camoto::gamearchive;
 #define TEST_RESULT(n)     testdata_ ## n
 
 #define FIXTURE_NAME       TEST_VAR(sample)
+#define EMPTY_FIXTURE_NAME TEST_VAR(sample_empty)
 #define SUITE_NAME         TEST_VAR(suite)
+#define EMPTY_SUITE_NAME   TEST_VAR(suite_empty)
 #define INITIALSTATE_NAME  TEST_RESULT(initialstate)
 
 // Allow a string constant to be passed around with embedded nulls
@@ -51,17 +53,17 @@ struct FIXTURE_NAME: public default_sample {
 
 	typedef boost::shared_ptr<std::stringstream> sstr_ptr;
 
-	sstr_ptr psstrBase;
+	sstr_ptr baseData;
 	void *_do; // unused var, but allows a statement to run in constructor init
-	camoto::iostream_sptr psBase;
+	camoto::iostream_sptr baseStream;
 	boost::shared_ptr<ga::Archive> pArchive;
 	ga::MP_SUPPDATA suppData;
 	std::map<ga::E_SUPPTYPE, sstr_ptr> suppBase;
 
 	FIXTURE_NAME() :
-		psstrBase(new std::stringstream),
-		_do((*this->psstrBase) << makeString(INITIALSTATE_NAME)),
-		psBase(this->psstrBase)
+		baseData(new std::stringstream),
+		_do((*this->baseData) << makeString(INITIALSTATE_NAME)),
+		baseStream(this->baseData)
 	{
 		#ifdef HAS_FAT
 		{
@@ -75,29 +77,20 @@ struct FIXTURE_NAME: public default_sample {
 		#endif
 
 		BOOST_REQUIRE_NO_THROW(
-			this->psstrBase->exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
+			this->baseData->exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
 
 			boost::shared_ptr<ga::Manager> pManager(ga::getManager());
 			ga::Manager::arch_sptr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE));
-			this->pArchive = boost::shared_ptr<ga::Archive>(pTestType->open(psBase, this->suppData));
+			this->pArchive = pTestType->open(this->baseStream, this->suppData);
 			BOOST_REQUIRE_MESSAGE(this->pArchive, "Could not create archive class");
 		);
 	}
 
-	FIXTURE_NAME(const char *data, ga::MP_SUPPDATA& suppData) :
-		psstrBase(new std::stringstream),
-		_do((*this->psstrBase) << data),
-		psBase(this->psstrBase),
-		suppData(suppData)
+	FIXTURE_NAME(int i) :
+		baseData(new std::stringstream),
+		baseStream(this->baseData)
 	{
-		BOOST_REQUIRE_NO_THROW(
-			this->psstrBase->exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
-
-			boost::shared_ptr<ga::Manager> pManager(ga::getManager());
-			ga::Manager::arch_sptr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE));
-			this->pArchive = boost::shared_ptr<ga::Archive>(pTestType->open(psBase, this->suppData));
-			BOOST_REQUIRE_MESSAGE(this->pArchive, "Could not create archive class");
-		);
+		this->baseData->exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
 	}
 
 	boost::test_tools::predicate_result is_equal(const std::string& strExpected)
@@ -107,7 +100,7 @@ struct FIXTURE_NAME: public default_sample {
 			this->pArchive->flush()
 		);
 
-		return this->default_sample::is_equal(strExpected, psstrBase->str());
+		return this->default_sample::is_equal(strExpected, this->baseData->str());
 	}
 
 	boost::test_tools::predicate_result is_supp_equal(ga::E_SUPPTYPE type, const std::string& strExpected)
@@ -122,6 +115,7 @@ struct FIXTURE_NAME: public default_sample {
 	}
 
 };
+
 BOOST_FIXTURE_TEST_SUITE(SUITE_NAME, FIXTURE_NAME)
 
 // Define an ISINSTANCE_TEST macro which we use to confirm the initial state
@@ -737,93 +731,6 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_all_re_add))
 #endif
 }
 
-// Make sure a newly created archive is confirmed as a valid instance of that
-// archive format.
-BOOST_AUTO_TEST_CASE(TEST_NAME(new_isinstance))
-{
-	BOOST_TEST_MESSAGE("Creating new archive");
-
-	// Find the archive handler
-	boost::shared_ptr<ga::Manager> pManager(ga::getManager());
-	ga::Manager::arch_sptr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE));
-
-	// Prepare an empty stream
-	boost::shared_ptr<std::stringstream> psstrBase(new std::stringstream);
-	camoto::iostream_sptr psBase(psstrBase);
-
-	BOOST_REQUIRE_MESSAGE(pTestType->isInstance(psBase),
-		"Newly created archive was not recognised as a valid instance");
-
-	BOOST_TEST_CHECKPOINT("New archive reported valid, trying to open");
-
-	// This should really use BOOST_REQUIRE_NO_THROW but the message is more
-	// informative without it.
-	//BOOST_REQUIRE_NO_THROW(
-		boost::shared_ptr<ga::Archive> pArchive(pTestType->open(psBase, suppData));
-	//);
-
-	// Make sure there are now no files in the archive
-	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
-	BOOST_REQUIRE_EQUAL(files.size(), 0);
-}
-
-BOOST_AUTO_TEST_CASE(TEST_NAME(new_to_initialstate))
-{
-	BOOST_TEST_MESSAGE("Creating new archive");
-
-	// Find the archive handler
-	boost::shared_ptr<ga::Manager> pManager(ga::getManager());
-	ga::Manager::arch_sptr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE));
-
-	// Prepare an empty stream
-	boost::shared_ptr<std::stringstream> psstrBase(new std::stringstream);
-	camoto::iostream_sptr psBase(psstrBase);
-
-	ga::MP_SUPPDATA suppData;
-#ifdef HAS_FAT
-	{
-		// Prepare an empty FAT
-		boost::shared_ptr<std::stringstream> suppSS(new std::stringstream);
-		suppSS->exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
-		camoto::iostream_sptr suppStream(suppSS);
-		suppData[ga::EST_FAT] = suppStream;
-	}
-#endif
-
-	BOOST_REQUIRE_NO_THROW(
-		boost::shared_ptr<ga::Archive> pArchive(pTestType->open(psBase, suppData))
-	);
-
-	// Add the files to the new archive
-	ga::Archive::EntryPtr idOne = pArchive->insert(ga::Archive::EntryPtr(), FILENAME1, 15);
-	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idOne),
-		"Couldn't insert new file in empty archive");
-	boost::shared_ptr<std::iostream> pfsNew(pArchive->open(idOne));
-	pfsNew->write("This is one.dat", 15);
-	pfsNew->flush();
-
-	ga::Archive::EntryPtr idTwo = pArchive->insert(ga::Archive::EntryPtr(), FILENAME2, 15);
-	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idTwo),
-		"Couldn't insert second new file in empty archive");
-	pfsNew = pArchive->open(idTwo);
-	pfsNew->write("This is two.dat", 15);
-	pfsNew->flush();
-
-	// Make sure there are now the correct number of files in the archive
-	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
-	BOOST_REQUIRE_EQUAL(files.size(), 2);
-
-	BOOST_CHECK_MESSAGE(
-		is_equal(makeString(TEST_RESULT(initialstate))),
-		"Error inserting files in new/empty archive"
-	);
-
-#ifdef HAS_FAT
-	BOOST_CHECK_MESSAGE(
-		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_initialstate))),
-		"Error inserting files in new/empty archive"
-	);
-#endif
-}
-
 BOOST_AUTO_TEST_SUITE_END()
+
+#include "test-archive_new.hpp"
