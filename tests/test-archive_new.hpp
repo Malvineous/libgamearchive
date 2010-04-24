@@ -55,19 +55,6 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(new_isinstance))
 {
 	BOOST_TEST_MESSAGE("Checking new archive is valid instance of itself");
 
-	// Find the archive handler
-	/*boost::shared_ptr<ga::Manager> pManager(ga::getManager());
-	ga::Manager::arch_sptr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE));
-
-	// Prepare an empty stream
-	boost::shared_ptr<std::stringstream> psstrBase(new std::stringstream);
-	camoto::iostream_sptr psBase(psstrBase);*/
-
-	// Create the new archive in the empty stream (writing out any headers)
-/*	{
-		ga::ArchivePtr archiveNew = pTestType->newArchive(psBase, mpSuppData);
-		archiveNew->flush();
-	} // close archive*/
 	pArchive->flush();
 
 	boost::shared_ptr<ga::Manager> pManager(ga::getManager());
@@ -92,29 +79,6 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(new_isinstance))
 BOOST_AUTO_TEST_CASE(TEST_NAME(new_to_initialstate))
 {
 	BOOST_TEST_MESSAGE("Creating archive from scratch");
-
-	// Find the archive handler
-	/*boost::shared_ptr<ga::Manager> pManager(ga::getManager());
-	ga::Manager::arch_sptr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE));
-
-	// Prepare an empty stream
-	boost::shared_ptr<std::stringstream> psstrBase(new std::stringstream);
-	camoto::iostream_sptr psBase(psstrBase);
-
-	ga::MP_SUPPDATA suppData;
-#ifdef HAS_FAT
-	{
-		// Prepare an empty FAT
-		boost::shared_ptr<std::stringstream> suppSS(new std::stringstream);
-		suppSS->exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
-		camoto::iostream_sptr suppStream(suppSS);
-		suppData[ga::EST_FAT] = suppStream;
-	}
-#endif
-
-	BOOST_REQUIRE_NO_THROW(
-		boost::shared_ptr<ga::Archive> pArchive(pTestType->open(psBase, suppData))
-	);*/
 
 	const ga::Archive::VC_ENTRYPTR& files2 = pArchive->getFileList();
 	BOOST_REQUIRE_EQUAL(files2.size(), 0);

@@ -1,5 +1,5 @@
 /*
- * substream_device.cpp - Class declaration for a C++ iostream exposing a limited
+ * substream.cpp - Class declaration for a C++ iostream exposing a limited
  *                 section of another C++ iostream.
  *
  * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
