@@ -151,8 +151,8 @@ ArchivePtr PODType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) c
 	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
-	psArchive->seekg(0, std::ios::beg);
-	psArchive->write(fmt_pod_empty, strlen(fmt_pod_empty));
+	psArchive->seekp(0, std::ios::beg);
+	psArchive->write(fmt_pod_empty, sizeof(fmt_pod_empty));
 	return ArchivePtr(new PODArchive(psArchive));
 }
 
