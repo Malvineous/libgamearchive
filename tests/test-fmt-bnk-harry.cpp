@@ -17,6 +17,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define FILENAME1 "ONE.DAT"
+#define FILENAME2 "TWO.DAT"
+#define FILENAME3 "THREE.DAT"
+#define FILENAME4 "FOUR.DAT"
+
 #define fmt_bnk_harry_initialstate \
 	"\x04-ID-" "\x07ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is one.dat" \
@@ -39,12 +44,12 @@
 	"\x07TWO.DAT\0\0\0\0\0" "\x3b\x00\x00\x00" "\x0f\x00\x00\x00"
 
 #define fmt_bnk_harry_rename_result \
-	"\x04-ID-" "\x09HELLO.BIN\0\0\0" "\x0f\x00\x00\x00" \
+	"\x04-ID-" "\x09THREE.DAT\0\0\0" "\x0f\x00\x00\x00" \
 	"This is one.dat" \
 	"\x04-ID-" "\x07TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is two.dat"
 #define fmt_bnk_harry_FAT_rename_result \
-	"\x09HELLO.BIN\0\0\0"   "\x16\x00\x00\x00" "\x0f\x00\x00\x00" \
+	"\x09THREE.DAT\0\0\0"   "\x16\x00\x00\x00" "\x0f\x00\x00\x00" \
 	"\x07TWO.DAT\0\0\0\0\0" "\x3b\x00\x00\x00" "\x0f\x00\x00\x00"
 
 #define fmt_bnk_harry_insert_end_result \

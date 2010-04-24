@@ -159,11 +159,11 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(open))
 	BOOST_TEST_MESSAGE("Opening file in archive");
 
 	// Find the file we're going to open
-	ga::Archive::EntryPtr ep = pArchive->find("ONE.DAT");
+	ga::Archive::EntryPtr ep = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
-		"Couldn't find ONE.DAT in sample archive");
+		"Couldn't find " FILENAME1 " in sample archive");
 
 	// Open it
 	camoto::iostream_sptr pfsIn(pArchive->open(ep));
@@ -189,14 +189,14 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(rename))
 	BOOST_TEST_MESSAGE("Renaming file inside archive");
 
 	// Find the file we're going to rename
-	ga::Archive::EntryPtr ep = pArchive->find("ONE.DAT");
+	ga::Archive::EntryPtr ep = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
-		"Couldn't find ONE.DAT in sample archive");
+		"Couldn't find " FILENAME1 " in sample archive");
 
 	// Swap the file positions
-	pArchive->rename(ep, "HELLO.BIN");
+	pArchive->rename(ep, FILENAME3);
 
 	BOOST_CHECK_MESSAGE(
 		is_equal(makeString(TEST_RESULT(rename))),
@@ -216,11 +216,11 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long))
 	BOOST_TEST_MESSAGE("Inserting file with name too long");
 
 	// Find the file we're going to insert before
-	ga::Archive::EntryPtr epb = pArchive->find("ONE.DAT");
+	ga::Archive::EntryPtr epb = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(epb),
-		"Couldn't find ONE.DAT in sample archive");
+		"Couldn't find " FILENAME1 " in sample archive");
 
 	char name[MAX_FILENAME_LEN + 2];
 	memset(name, 65, MAX_FILENAME_LEN + 1);
@@ -250,7 +250,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_end))
 	BOOST_TEST_MESSAGE("Inserting file into archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), "THREE.DAT", 17);
+	ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), FILENAME3, 17);
 
 	// Make sure it went in ok
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
@@ -272,14 +272,14 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_mid))
 	BOOST_TEST_MESSAGE("Inserting file into middle of archive");
 
 	// Find the file we're going to insert before
-	ga::Archive::EntryPtr idBefore = pArchive->find("TWO.DAT");
+	ga::Archive::EntryPtr idBefore = pArchive->find(FILENAME2);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idBefore),
-		"Couldn't find TWO.DAT in sample archive");
+		"Couldn't find " FILENAME2 " in sample archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, "THREE.DAT", 17);
+	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, 17);
 
 	// Make sure it went in ok
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
@@ -301,14 +301,14 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 	BOOST_TEST_MESSAGE("Inserting multiple files");
 
 	// Find the file we're going to insert before
-	ga::Archive::EntryPtr idBefore = pArchive->find("TWO.DAT");
+	ga::Archive::EntryPtr idBefore = pArchive->find(FILENAME2);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idBefore),
-		"Couldn't find TWO.DAT in sample archive");
+		"Couldn't find " FILENAME2 " in sample archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep1 = pArchive->insert(idBefore, "THREE.DAT", 17);
+	ga::Archive::EntryPtr ep1 = pArchive->insert(idBefore, FILENAME3, 17);
 
 	// Make sure it went in ok
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep1),
@@ -321,14 +321,14 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 
 	// Find the file we're going to insert before (since the previous insert
 	// invalidated all EntryPtrs.)
-	idBefore = pArchive->find("TWO.DAT");
+	idBefore = pArchive->find(FILENAME2);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idBefore),
-		"Couldn't find TWO.DAT in sample archive after first insert");
+		"Couldn't find " FILENAME2 " in sample archive after first insert");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep2 = pArchive->insert(idBefore, "FOUR.DAT", 16);
+	ga::Archive::EntryPtr ep2 = pArchive->insert(idBefore, FILENAME4, 16);
 
 	// Make sure it went in ok
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep2),
@@ -349,11 +349,11 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove))
 	BOOST_TEST_MESSAGE("Removing file from archive");
 
 	// Find the file we're going to remove
-	ga::Archive::EntryPtr ep = pArchive->find("ONE.DAT");
+	ga::Archive::EntryPtr ep = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
-		"Couldn't find ONE.DAT in sample archive");
+		"Couldn't find " FILENAME1 " in sample archive");
 
 	// Remove it
 	pArchive->remove(ep);
@@ -369,14 +369,14 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove2))
 	BOOST_TEST_MESSAGE("Removing multiple files from archive");
 
 	// Find the files we're going to remove
-	ga::Archive::EntryPtr ep1 = pArchive->find("ONE.DAT");
-	ga::Archive::EntryPtr ep2 = pArchive->find("TWO.DAT");
+	ga::Archive::EntryPtr ep1 = pArchive->find(FILENAME1);
+	ga::Archive::EntryPtr ep2 = pArchive->find(FILENAME2);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep1),
-		"Couldn't find ONE.DAT in sample archive");
+		"Couldn't find " FILENAME1 " in sample archive");
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep2),
-		"Couldn't find TWO.DAT in sample archive");
+		"Couldn't find " FILENAME2 " in sample archive");
 
 	// Remove it
 	pArchive->remove(ep1);
@@ -393,14 +393,14 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_remove))
 	BOOST_TEST_MESSAGE("Insert then remove file from archive");
 
 	// Find the file we're going to insert before
-	ga::Archive::EntryPtr idBefore = pArchive->find("TWO.DAT");
+	ga::Archive::EntryPtr idBefore = pArchive->find(FILENAME2);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idBefore),
-		"Couldn't find TWO.DAT in sample archive");
+		"Couldn't find " FILENAME2 " in sample archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, "THREE.DAT", 17);
+	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, 17);
 
 	// Make sure it went in ok
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
@@ -412,11 +412,11 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_remove))
 	pfsNew->flush();
 
 	// Find the file we're going to remove
-	ga::Archive::EntryPtr ep2 = pArchive->find("ONE.DAT");
+	ga::Archive::EntryPtr ep2 = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep2),
-		"Couldn't find ONE.DAT in sample archive");
+		"Couldn't find " FILENAME1 " in sample archive");
 
 	// Remove it
 	pArchive->remove(ep2);
@@ -432,24 +432,24 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_insert))
 	BOOST_TEST_MESSAGE("Remove then insert file from archive");
 
 	// Find the file we're going to remove
-	ga::Archive::EntryPtr ep2 = pArchive->find("ONE.DAT");
+	ga::Archive::EntryPtr ep2 = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep2),
-		"Couldn't find ONE.DAT in sample archive");
+		"Couldn't find " FILENAME1 " in sample archive");
 
 	// Remove it
 	pArchive->remove(ep2);
 
 	// Find the file we're going to insert before
-	ga::Archive::EntryPtr idBefore = pArchive->find("TWO.DAT");
+	ga::Archive::EntryPtr idBefore = pArchive->find(FILENAME2);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idBefore),
-		"Couldn't find TWO.DAT in sample archive");
+		"Couldn't find " FILENAME2 " in sample archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, "THREE.DAT", 17);
+	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, 17);
 
 	// Make sure it went in ok
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
@@ -471,14 +471,14 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(move))
 	BOOST_TEST_MESSAGE("Moving file inside archive");
 
 	// Find the file we're going to move
-	ga::Archive::EntryPtr ep1 = pArchive->find("ONE.DAT");
-	ga::Archive::EntryPtr ep2 = pArchive->find("TWO.DAT");
+	ga::Archive::EntryPtr ep1 = pArchive->find(FILENAME1);
+	ga::Archive::EntryPtr ep2 = pArchive->find(FILENAME2);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep1),
-		"Couldn't find ONE.DAT in sample archive");
+		"Couldn't find " FILENAME1 " in sample archive");
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep2),
-		"Couldn't find TWO.DAT in sample archive");
+		"Couldn't find " FILENAME2 " in sample archive");
 
 	// Swap the file positions
 	pArchive->move(ep1, ep2);
@@ -494,11 +494,11 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_larger))
 	BOOST_TEST_MESSAGE("Enlarging a file inside the archive");
 
 	// Find the file we're going to resize
-	ga::Archive::EntryPtr ep = pArchive->find("ONE.DAT");
+	ga::Archive::EntryPtr ep = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
-		"Couldn't find ONE.DAT in sample archive");
+		"Couldn't find " FILENAME1 " in sample archive");
 
 	// Swap the file positions
 	pArchive->resize(ep, 20);
@@ -514,11 +514,11 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_smaller))
 	BOOST_TEST_MESSAGE("Shrink a file inside the archive");
 
 	// Find the file we're going to resize
-	ga::Archive::EntryPtr ep = pArchive->find("ONE.DAT");
+	ga::Archive::EntryPtr ep = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
-		"Couldn't find ONE.DAT in sample archive");
+		"Couldn't find " FILENAME1 " in sample archive");
 
 	// Swap the file positions
 	pArchive->resize(ep, 10);
@@ -534,11 +534,11 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_write))
 	BOOST_TEST_MESSAGE("Enlarging a file inside the archive");
 
 	// Find the file we're going to resize
-	ga::Archive::EntryPtr ep = pArchive->find("ONE.DAT");
+	ga::Archive::EntryPtr ep = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
-		"Couldn't find ONE.DAT in sample archive");
+		"Couldn't find " FILENAME1 " in sample archive");
 
 	// Swap the file positions
 	pArchive->resize(ep, 23);
@@ -555,11 +555,11 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_write))
 	// Open the file following it to make sure it was moved out of the way
 
 	// Find the file we're going to open
-	ga::Archive::EntryPtr ep2 = pArchive->find("TWO.DAT");
+	ga::Archive::EntryPtr ep2 = pArchive->find(FILENAME2);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep2),
-		"Couldn't find TWO.DAT in sample archive");
+		"Couldn't find " FILENAME2 " in sample archive");
 
 	// Open it
 	camoto::iostream_sptr pfsIn(pArchive->open(ep2));

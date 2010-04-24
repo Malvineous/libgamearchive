@@ -17,6 +17,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define FILENAME1 "ONE.DAT"
+#define FILENAME2 "TWO.DAT"
+#define FILENAME3 "THREE.DAT"
+#define FILENAME4 "FOUR.DAT"
+
 #define fmt_grp_duke3d_initialstate \
 	"KenSilverman"      "\x02\x00\x00\x00" \
 	"ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
@@ -32,7 +37,7 @@
 
 #define fmt_grp_duke3d_rename_result \
 	"KenSilverman"      "\x02\x00\x00\x00" \
-	"HELLO.BIN\0\0\0"   "\x0f\x00\x00\x00" \
+	"THREE.DAT\0\0\0"   "\x0f\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is one.dat" \
 	"This is two.dat" \

@@ -17,6 +17,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define FILENAME1 "ONE.DAT"
+#define FILENAME2 "TWO.DAT"
+#define FILENAME3 "THREE.DAT"
+#define FILENAME4 "FOUR.DAT"
+
 #define POD_DESC \
 	"Startup 1.1 Gold" \
 	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
@@ -41,7 +46,7 @@
 
 #define fmt_pod_tv_rename_result \
 	"\x02\x00\x00\x00" POD_DESC \
-	"HELLO.BIN\0\0\0\0\0\0\0"   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xa4\x00\x00\x00" \
+	"THREE.DAT\0\0\0\0\0\0\0"   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xa4\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xb3\x00\x00\x00" \
 	"This is one.dat" \
 	"This is two.dat"
