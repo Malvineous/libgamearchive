@@ -688,4 +688,142 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_write))
 
 }
 
+// Remove all the files from the archive, then add them back in again.  This
+// differs from the insert/remove tests above as it takes the archive to the
+// point where it has no files at all.
+BOOST_AUTO_TEST_CASE(TEST_NAME(remove_all_re_add))
+{
+	BOOST_TEST_MESSAGE("Remove all files then add them again");
+
+	ga::Archive::EntryPtr idOne = pArchive->find(FILENAME1);
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idOne),
+		"Couldn't find " FILENAME1 " in sample archive");
+	pArchive->remove(idOne);
+
+	ga::Archive::EntryPtr idTwo = pArchive->find(FILENAME2);
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idTwo),
+		"Couldn't find " FILENAME2 " in sample archive");
+	pArchive->remove(idTwo);
+
+	// Make sure there are now no files in the archive
+	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	BOOST_REQUIRE_EQUAL(files.size(), 0);
+
+	// Add the files back again
+	idOne = pArchive->insert(ga::Archive::EntryPtr(), FILENAME1, 15);
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idOne),
+		"Couldn't insert new file after removing all files");
+	boost::shared_ptr<std::iostream> pfsNew(pArchive->open(idOne));
+	pfsNew->write("This is one.dat", 15);
+	pfsNew->flush();
+
+	idTwo = pArchive->insert(ga::Archive::EntryPtr(), FILENAME2, 15);
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idTwo),
+		"Couldn't insert second new file after removing all files");
+	pfsNew = pArchive->open(idTwo);
+	pfsNew->write("This is two.dat", 15);
+	pfsNew->flush();
+
+	BOOST_CHECK_MESSAGE(
+		is_equal(makeString(TEST_RESULT(initialstate))),
+		"Error removing all files then reinserting them again"
+	);
+
+#ifdef HAS_FAT
+	BOOST_CHECK_MESSAGE(
+		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_initialstate))),
+		"Error removing all files then reinserting them again"
+	);
+#endif
+}
+
+// Make sure a newly created archive is confirmed as a valid instance of that
+// archive format.
+BOOST_AUTO_TEST_CASE(TEST_NAME(new_isinstance))
+{
+	BOOST_TEST_MESSAGE("Creating new archive");
+
+	// Find the archive handler
+	boost::shared_ptr<ga::Manager> pManager(ga::getManager());
+	ga::Manager::arch_sptr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE));
+
+	// Prepare an empty stream
+	boost::shared_ptr<std::stringstream> psstrBase(new std::stringstream);
+	camoto::iostream_sptr psBase(psstrBase);
+
+	BOOST_REQUIRE_MESSAGE(pTestType->isInstance(psBase),
+		"Newly created archive was not recognised as a valid instance");
+
+	BOOST_TEST_CHECKPOINT("New archive reported valid, trying to open");
+
+	// This should really use BOOST_REQUIRE_NO_THROW but the message is more
+	// informative without it.
+	//BOOST_REQUIRE_NO_THROW(
+		boost::shared_ptr<ga::Archive> pArchive(pTestType->open(psBase, suppData));
+	//);
+
+	// Make sure there are now no files in the archive
+	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	BOOST_REQUIRE_EQUAL(files.size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(TEST_NAME(new_to_initialstate))
+{
+	BOOST_TEST_MESSAGE("Creating new archive");
+
+	// Find the archive handler
+	boost::shared_ptr<ga::Manager> pManager(ga::getManager());
+	ga::Manager::arch_sptr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE));
+
+	// Prepare an empty stream
+	boost::shared_ptr<std::stringstream> psstrBase(new std::stringstream);
+	camoto::iostream_sptr psBase(psstrBase);
+
+	ga::MP_SUPPDATA suppData;
+#ifdef HAS_FAT
+	{
+		// Prepare an empty FAT
+		boost::shared_ptr<std::stringstream> suppSS(new std::stringstream);
+		suppSS->exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
+		camoto::iostream_sptr suppStream(suppSS);
+		suppData[ga::EST_FAT] = suppStream;
+	}
+#endif
+
+	BOOST_REQUIRE_NO_THROW(
+		boost::shared_ptr<ga::Archive> pArchive(pTestType->open(psBase, suppData))
+	);
+
+	// Add the files to the new archive
+	ga::Archive::EntryPtr idOne = pArchive->insert(ga::Archive::EntryPtr(), FILENAME1, 15);
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idOne),
+		"Couldn't insert new file in empty archive");
+	boost::shared_ptr<std::iostream> pfsNew(pArchive->open(idOne));
+	pfsNew->write("This is one.dat", 15);
+	pfsNew->flush();
+
+	ga::Archive::EntryPtr idTwo = pArchive->insert(ga::Archive::EntryPtr(), FILENAME2, 15);
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idTwo),
+		"Couldn't insert second new file in empty archive");
+	pfsNew = pArchive->open(idTwo);
+	pfsNew->write("This is two.dat", 15);
+	pfsNew->flush();
+
+	// Make sure there are now the correct number of files in the archive
+	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	BOOST_REQUIRE_EQUAL(files.size(), 2);
+
+	BOOST_CHECK_MESSAGE(
+		is_equal(makeString(TEST_RESULT(initialstate))),
+		"Error inserting files in new/empty archive"
+	);
+
+#ifdef HAS_FAT
+	BOOST_CHECK_MESSAGE(
+		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_initialstate))),
+		"Error inserting files in new/empty archive"
+	);
+#endif
+}
+
 BOOST_AUTO_TEST_SUITE_END()
