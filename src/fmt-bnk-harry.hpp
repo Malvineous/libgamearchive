@@ -52,9 +52,6 @@ class BNKType: virtual public ArchiveType {
 		virtual E_CERTAINTY isInstance(iostream_sptr fsArchive) const
 			throw (std::ios::failure);
 
-		virtual ArchivePtr newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
-			throw (std::ios::failure);
-
 		virtual ArchivePtr open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
 			throw (std::ios::failure);
 

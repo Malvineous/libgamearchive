@@ -110,6 +110,11 @@ std::vector<std::string> BNKType::getGameList() const
 E_CERTAINTY BNKType::isInstance(iostream_sptr psArchive) const
 	throw (std::ios::failure)
 {
+	psArchive->seekg(0, std::ios::end);
+	io::stream_offset lenArchive = psArchive->tellg();
+	if (lenArchive == 0) return EC_DEFINITELY_YES; // empty archive
+	if (lenArchive < BNK_HH_EFAT_ENTRY_LEN) return EC_DEFINITELY_NO; // too short
+
 	char sig[5];
 	psArchive->seekg(0, std::ios::beg);
 	psArchive->read(sig, 5);
@@ -120,28 +125,6 @@ E_CERTAINTY BNKType::isInstance(iostream_sptr psArchive) const
 	// If we've made it this far, this is almost certainly a BNK file.
 	// TESTED BY: fmt_bnk_harry_isinstance_c00
 	return EC_DEFINITELY_YES;
-}
-
-ArchivePtr BNKType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
-	throw (std::ios::failure)
-{
-	assert(suppData.find(EST_FAT) != suppData.end());
-	// TODO: This is sort of a single file entry when there should be none,
-	// the rest of the code will have to be aware of this.
-#define fmt_bnk_empty \
-	"\x04-ID-"
-	psArchive->seekg(0, std::ios::beg);
-	psArchive->write(fmt_bnk_empty, strlen(fmt_bnk_empty));
-	iostream_sptr psFAT = suppData.find(EST_FAT)->second;
-
-	// Make the first entry in the FAT blank, just in case there's already
-	// data there.  We use the Alien Carnage length because it's bigger so
-	// we'll always overwrite the first entry regardless.
-	psFAT->seekg(0, std::ios::beg);
-	char blank[BNK_AC_FAT_ENTRY_LEN];
-	psFAT->write(blank, BNK_AC_FAT_ENTRY_LEN);
-
-	return ArchivePtr(new BNKArchive(psArchive, psFAT));
 }
 
 ArchivePtr BNKType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
@@ -171,10 +154,10 @@ BNKArchive::BNKArchive(iostream_sptr psArchive, iostream_sptr psFAT)
 		isAC(false) // TODO: detect and set this
 {
 	psArchive->seekg(0, std::ios::end);
-	unsigned long lenArchive = psArchive->tellg();
+	io::stream_offset lenArchive = psArchive->tellg();
 
 	psFAT->seekg(0, std::ios::end);
-	unsigned long lenFAT = psFAT->tellg();
+	io::stream_offset lenFAT = psFAT->tellg();
 	unsigned long numFiles = lenFAT / BNK_FAT_ENTRY_LEN;
 
 	boost::shared_array<uint8_t> pFATBuf;
@@ -206,6 +189,11 @@ BNKArchive::BNKArchive(iostream_sptr psArchive, iostream_sptr psFAT)
 		pEntry->eType = EFT_USEFILENAME;
 		pEntry->fAttr = 0;
 		pEntry->bValid = true;
+		if (pEntry->strName[0] == '\0') {
+			// Invalid entry, or empty archive
+			delete pEntry;
+			break;
+		}
 		this->vcFAT.push_back(EntryPtr(pEntry));
 
 		if (pEntry->iOffset + pEntry->iSize > lenArchive) {
