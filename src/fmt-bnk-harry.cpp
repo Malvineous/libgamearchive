@@ -33,6 +33,7 @@
 #include "iostream_helpers.hpp"
 #include "debug.hpp"
 
+#define BNK_FIRST_FILE_OFFSET     0
 #define BNK_MAX_FILENAME_LEN      12
 
 // Embedded FAT (no offset, has sig)
@@ -165,7 +166,7 @@ refcount_declclass(BNKArchive);
 
 BNKArchive::BNKArchive(iostream_sptr psArchive, iostream_sptr psFAT)
 	throw (std::ios::failure) :
-		FATArchive(psArchive),
+		FATArchive(psArchive, BNK_FIRST_FILE_OFFSET),
 		psFAT(new segmented_stream(psFAT)),
 		isAC(false) // TODO: detect and set this
 {

@@ -45,9 +45,10 @@ std::string FATArchive::FATEntry::getContent() const
 
 refcount_declclass(FATArchive);
 
-FATArchive::FATArchive(iostream_sptr psArchive)
+FATArchive::FATArchive(iostream_sptr psArchive, io::stream_offset offFirstFile)
 	throw (std::ios::failure) :
-		psArchive(new segmented_stream(psArchive))
+		psArchive(new segmented_stream(psArchive)),
+		offFirstFile(offFirstFile)
 {
 	refcount_enterclass(FATArchive);
 }
@@ -122,7 +123,7 @@ FATArchive::EntryPtr FATArchive::insert(const EntryPtr& idBeforeThis, const std:
 	// Figure out where the new file is going to go
 	const FATEntry *pFATBeforeThis = NULL;
 	if (this->isValid(idBeforeThis)) {
-		// Insert just after idBefore
+		// Insert at idBeforeThis
 		// TESTED BY: fmt_grp_duke3d_insert_mid
 		pFATBeforeThis = dynamic_cast<const FATEntry *>(idBeforeThis.get());
 		assert(pFATBeforeThis);
@@ -131,11 +132,17 @@ FATArchive::EntryPtr FATArchive::insert(const EntryPtr& idBeforeThis, const std:
 	} else {
 		// Append to end of archive
 		// TESTED BY: fmt_grp_duke3d_insert_end
-		const FATEntry *pFATAfterThis = dynamic_cast<const FATEntry *>(this->vcFAT.back().get());
-		assert(pFATAfterThis);
-		pNewFile->iOffset = pFATAfterThis->iOffset
-			+ pFATAfterThis->lenHeader + pFATAfterThis->iSize;
-		pNewFile->iIndex = pFATAfterThis->iIndex + 1;
+		if (this->vcFAT.size()) {
+			const FATEntry *pFATAfterThis = dynamic_cast<const FATEntry *>(this->vcFAT.back().get());
+			assert(pFATAfterThis);
+			pNewFile->iOffset = pFATAfterThis->iOffset
+				+ pFATAfterThis->lenHeader + pFATAfterThis->iSize;
+			pNewFile->iIndex = pFATAfterThis->iIndex + 1;
+		} else {
+			// There are no files in the archive
+			pNewFile->iOffset = this->offFirstFile;
+			pNewFile->iIndex = 0;
+		}
 	}
 
 	// Add the file's entry from the FAT.  May throw (e.g. filename too long),

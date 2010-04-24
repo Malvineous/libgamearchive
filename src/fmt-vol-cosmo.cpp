@@ -36,6 +36,7 @@
 #define VOL_FAT_LENGTH        4000
 #define VOL_MAX_FILENAME_LEN  12
 #define VOL_FAT_ENTRY_LEN     20  // filename + u32le offset + u32le size
+#define VOL_FIRST_FILE_OFFSET VOL_FAT_LENGTH
 
 namespace camoto {
 namespace gamearchive {

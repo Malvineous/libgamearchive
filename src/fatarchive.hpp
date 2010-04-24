@@ -38,6 +38,7 @@ class FATArchive: virtual public Archive {
 
 	protected:
 		segstream_sptr psArchive;
+		io::stream_offset offFirstFile; // offset of first file in empty archive
 
 		struct FATEntry: virtual public FileEntry {
 			int iIndex; // can't use vector order as entries are passed around outside the vector
@@ -66,7 +67,7 @@ class FATArchive: virtual public Archive {
 
 		// We can't throw an 'invalid format' error here, because we wouldn't be
 		// in this function if the format's isValid() function returned true!
-		FATArchive(iostream_sptr psArchive)
+		FATArchive(iostream_sptr psArchive, io::stream_offset offFirstFile)
 			throw (std::ios::failure);
 
 		virtual ~FATArchive()

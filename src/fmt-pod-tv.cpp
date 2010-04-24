@@ -39,6 +39,7 @@
 #define POD_MAX_FILENAME_LEN      32
 #define POD_FAT_ENTRY_SIZE_POS    (POD_MAX_FILENAME_LEN)
 #define POD_FAT_ENTRY_OFFSET_POS  (POD_MAX_FILENAME_LEN + 4)
+#define POD_FIRST_FILE_OFFSET     POD_FAT_OFFSET
 
 namespace camoto {
 namespace gamearchive {
@@ -173,7 +174,7 @@ refcount_declclass(PODArchive);
 
 PODArchive::PODArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
-		FATArchive(psArchive)
+		FATArchive(psArchive, POD_FIRST_FILE_OFFSET)
 {
 	psArchive->seekg(0, std::ios::beg);
 

@@ -36,6 +36,7 @@
 #define GRP_FAT_OFFSET        16  // "KenSilverman" header + u32le file count
 #define GRP_MAX_FILENAME_LEN  12
 #define GRP_FAT_ENTRY_LEN     16  // filename + u32le size
+#define GRP_FIRST_FILE_OFFSET GRP_FAT_OFFSET
 
 namespace camoto {
 namespace gamearchive {
@@ -129,7 +130,7 @@ refcount_declclass(GRPArchive);
 
 GRPArchive::GRPArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
-		FATArchive(psArchive)
+		FATArchive(psArchive, GRP_FIRST_FILE_OFFSET)
 {
 	psArchive->seekg(12, std::ios::beg); // skip "KenSilverman" sig
 
