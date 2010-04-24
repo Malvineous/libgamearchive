@@ -112,8 +112,12 @@ struct FIXTURE_NAME: public default_sample {
 
 	boost::test_tools::predicate_result is_supp_equal(ga::E_SUPPTYPE type, const std::string& strExpected)
 	{
-		// Do we need to flush any changes here?  Hopefully not if the
-		// main archive was flushed first.
+		// Flush out any changes to the main archive before we perform the check,
+		// in case this function was called first.
+		BOOST_CHECK_NO_THROW(
+			this->pArchive->flush()
+		);
+
 		return this->default_sample::is_equal(strExpected, this->suppBase[type]->str());
 	}
 
@@ -255,8 +259,15 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long))
 
 	BOOST_CHECK_MESSAGE(
 		is_equal(makeString(INITIALSTATE_NAME)),
-		"File corrupted after failed insert"
+		"Archive corrupted after failed insert"
 	);
+
+#ifdef HAS_FAT
+	BOOST_CHECK_MESSAGE(
+		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_initialstate))),
+		"Archive corrupted after failed insert"
+	);
+#endif
 
 	memset(name, 65, MAX_FILENAME_LEN);
 	name[MAX_FILENAME_LEN] = 0;
@@ -287,6 +298,13 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_end))
 		is_equal(makeString(TEST_RESULT(insert_end))),
 		"Error inserting file at end of archive"
 	);
+
+#ifdef HAS_FAT
+	BOOST_CHECK_MESSAGE(
+		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_insert_end))),
+		"Error inserting file at end of archive"
+	);
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(TEST_NAME(insert_mid))
@@ -316,6 +334,13 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_mid))
 		is_equal(makeString(TEST_RESULT(insert_mid))),
 		"Error inserting file in middle of archive"
 	);
+
+#ifdef HAS_FAT
+	BOOST_CHECK_MESSAGE(
+		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_insert_mid))),
+		"Error inserting file in middle of archive"
+	);
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
@@ -364,6 +389,13 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 		is_equal(makeString(TEST_RESULT(insert2))),
 		"Error inserting two files"
 	);
+
+#ifdef HAS_FAT
+	BOOST_CHECK_MESSAGE(
+		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_insert2))),
+		"Error inserting two files"
+	);
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(TEST_NAME(remove))
@@ -384,6 +416,13 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove))
 		is_equal(makeString(TEST_RESULT(remove))),
 		"Error removing file"
 	);
+
+#ifdef HAS_FAT
+	BOOST_CHECK_MESSAGE(
+		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_remove))),
+		"Error removing file"
+	);
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(TEST_NAME(remove2))
@@ -408,6 +447,13 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove2))
 		is_equal(makeString(TEST_RESULT(remove2))),
 		"Error removing multiple files"
 	);
+
+#ifdef HAS_FAT
+	BOOST_CHECK_MESSAGE(
+		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_remove2))),
+		"Error removing multiple files"
+	);
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(TEST_NAME(insert_remove))
@@ -447,6 +493,13 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_remove))
 		is_equal(makeString(TEST_RESULT(insert_remove))),
 		"Error inserting then removing file"
 	);
+
+#ifdef HAS_FAT
+	BOOST_CHECK_MESSAGE(
+		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_insert_remove))),
+		"Error inserting then removing file"
+	);
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(TEST_NAME(remove_insert))
@@ -486,6 +539,13 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_insert))
 		is_equal(makeString(TEST_RESULT(remove_insert))),
 		"Error removing then inserting file"
 	);
+
+#ifdef HAS_FAT
+	BOOST_CHECK_MESSAGE(
+		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_remove_insert))),
+		"Error removing then inserting file"
+	);
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(TEST_NAME(move))
@@ -509,6 +569,13 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(move))
 		is_equal(makeString(TEST_RESULT(move))),
 		"Error moving file"
 	);
+
+#ifdef HAS_FAT
+	BOOST_CHECK_MESSAGE(
+		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_move))),
+		"Error moving file"
+	);
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(TEST_NAME(resize_larger))
@@ -529,6 +596,13 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_larger))
 		is_equal(makeString(TEST_RESULT(resize_larger))),
 		"Error enlarging a file"
 	);
+
+#ifdef HAS_FAT
+	BOOST_CHECK_MESSAGE(
+		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_resize_larger))),
+		"Error enlarging a file"
+	);
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(TEST_NAME(resize_smaller))
@@ -549,6 +623,13 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_smaller))
 		is_equal(makeString(TEST_RESULT(resize_smaller))),
 		"Error shrinking a file"
 	);
+
+#ifdef HAS_FAT
+	BOOST_CHECK_MESSAGE(
+		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_resize_smaller))),
+		"Error shrinking a file"
+	);
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(TEST_NAME(resize_write))
@@ -571,8 +652,15 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_write))
 
 	BOOST_CHECK_MESSAGE(
 		is_equal(makeString(TEST_RESULT(resize_write))),
-		"Error enlarging a file"
+		"Error enlarging a file then writing into new space"
 	);
+
+#ifdef HAS_FAT
+	BOOST_CHECK_MESSAGE(
+		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_resize_write))),
+		"Error enlarging a file then writing into new space"
+	);
+#endif
 
 	// Open the file following it to make sure it was moved out of the way
 
