@@ -25,6 +25,7 @@
 #include "fmt-vol-cosmo.hpp"
 #include "fmt-pod-tv.hpp"
 #include "fmt-bnk-harry.hpp"
+#include "fmt-res-stellar7.hpp"
 #include "debug.hpp"
 
 namespace camoto {
@@ -39,6 +40,7 @@ void exitFunc()
 	refcount_dump(GRPArchive);
 	refcount_dump(FATArchive);
 	refcount_dump(FATEntry);
+	refcount_dump(SubdirArchive);
 	refcount_dump(substream_device);
 	refcount_dump(segmented_stream_device);
 }
@@ -63,6 +65,7 @@ Manager::Manager()
 	this->vcTypes.push_back(arch_sptr(new VOLType()));
 	this->vcTypes.push_back(arch_sptr(new PODType()));
 	this->vcTypes.push_back(arch_sptr(new BNKType()));
+	this->vcTypes.push_back(arch_sptr(new RESType()));
 }
 
 Manager::~Manager()
