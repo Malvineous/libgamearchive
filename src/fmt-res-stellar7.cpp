@@ -200,17 +200,13 @@ void RESArchiveFolder::rename(EntryPtr& id, const std::string& strNewName)
 	assert(this->isValid(id));
 	FATEntry *pEntry = dynamic_cast<FATEntry *>(id.get());
 
-	int iLen = strNewName.length();
-	if (iLen > RES_MAX_FILENAME_LEN) throw std::ios_base::failure("name too long");
-
-	// Pad out the filename with NULLs
-	char cBuffer[RES_MAX_FILENAME_LEN];
-	const char *p = strNewName.c_str();
-	for (int i = 0; i < iLen; i++) cBuffer[i] = p[i];
-	for (int i = iLen; i < RES_MAX_FILENAME_LEN; i++) cBuffer[i] = 0;
+	if (strNewName.length() > RES_MAX_FILENAME_LEN) {
+		throw std::ios_base::failure("new filename too long, max is "
+			TOSTRING(RES_MAX_FILENAME_LEN) " chars");
+	}
 
 	this->psArchive->seekp(pEntry->iOffset + RES_FAT_FILENAME_OFFSET);
-	this->psArchive->rdbuf()->sputn(cBuffer, RES_MAX_FILENAME_LEN);
+	writeZeroPaddedString(this->psArchive, strNewName, RES_MAX_FILENAME_LEN);
 	pEntry->strName = strNewName;
 
 	return;
@@ -263,14 +259,7 @@ void RESArchiveFolder::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pN
 	this->psArchive->seekp(pNewEntry->iOffset);
 	this->psArchive->insert(RES_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
-	this->psArchive->write(pNewEntry->strName.c_str(), pNewEntry->strName.length());
-
-	// Pad out to RES_MAX_FILENAME_LEN chars, the null string must be at least
-	// this long.
-	char blank[RES_MAX_FILENAME_LEN];
-	memset(blank, 0, RES_MAX_FILENAME_LEN);
-	this->psArchive->write(blank, RES_MAX_FILENAME_LEN - pNewEntry->strName.length());
-
+	writeZeroPaddedString(this->psArchive, pNewEntry->strName, RES_MAX_FILENAME_LEN);
 	write_u32le(this->psArchive, pNewEntry->iSize);
 
 	// Since we've inserted some data for the embedded header, we need to update

@@ -238,17 +238,13 @@ void PODArchive::rename(EntryPtr& id, const std::string& strNewName)
 	assert(this->isValid(id));
 	FATEntry *pEntry = dynamic_cast<FATEntry *>(id.get());
 
-	int iLen = strNewName.length();
-	if (iLen > POD_MAX_FILENAME_LEN) throw std::ios_base::failure("name too long");
-
-	// Pad out the filename with NULLs
-	char cBuffer[POD_MAX_FILENAME_LEN];
-	const char *p = strNewName.c_str();
-	for (int i = 0; i < iLen; i++) cBuffer[i] = p[i];
-	for (int i = iLen; i < POD_MAX_FILENAME_LEN; i++) cBuffer[i] = 0;
+	if (strNewName.length() > POD_MAX_FILENAME_LEN) {
+		throw std::ios_base::failure("new filename too long, max is "
+			TOSTRING(EPF_MAX_FILENAME_LEN) " chars");
+	}
 
 	this->psArchive->seekp(POD_FAT_OFFSET + pEntry->iIndex * POD_FAT_ENTRY_LEN);
-	this->psArchive->rdbuf()->sputn(cBuffer, POD_MAX_FILENAME_LEN);
+	writeZeroPaddedString(this->psArchive, strNewName, POD_MAX_FILENAME_LEN);
 	pEntry->strName = strNewName;
 
 	return;
@@ -331,7 +327,8 @@ void PODArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 {
 	// TESTED BY: fmt_pod_tv_insert*
 	if (pNewEntry->strName.length() > POD_MAX_FILENAME_LEN) {
-		throw std::ios::failure("maximum filename/path length is 32 chars");
+		throw std::ios::failure("maximum filename/path length is "
+			TOSTRING(POD_MAX_FILENAME_LEN) " chars");
 	}
 
 	// Set the format-specific variables
@@ -343,13 +340,7 @@ void PODArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 	this->psArchive->seekp(POD_FAT_OFFSET + pNewEntry->iIndex * POD_FAT_ENTRY_LEN);
 	this->psArchive->insert(POD_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
-	this->psArchive->write(pNewEntry->strName.c_str(), pNewEntry->strName.length());
-
-	// Pad out to POD_MAX_FILENAME_LEN chars, the null string must be at least
-	// this long.
-	char blank[POD_FAT_ENTRY_LEN];
-	memset(blank, 0, POD_FAT_ENTRY_LEN);
-	this->psArchive->write(blank, POD_MAX_FILENAME_LEN - pNewEntry->strName.length());
+	writeZeroPaddedString(this->psArchive, pNewEntry->strName, POD_MAX_FILENAME_LEN);
 
 	// Write out the offset and size
 	write_u32le(this->psArchive, pNewEntry->iSize);

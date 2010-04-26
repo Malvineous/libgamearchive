@@ -195,17 +195,14 @@ void GRPArchive::rename(EntryPtr& id, const std::string& strNewName)
 	assert(this->isValid(id));
 	FATEntry *pEntry = dynamic_cast<FATEntry *>(id.get());
 
-	int iLen = strNewName.length();
-	if (iLen > GRP_MAX_FILENAME_LEN) throw std::ios_base::failure("name too long");
-
-	// Pad out the filename with NULLs
-	char cBuffer[GRP_MAX_FILENAME_LEN];
-	const char *p = strNewName.c_str();
-	for (int i = 0; i < iLen; i++) cBuffer[i] = p[i];
-	for (int i = iLen; i < GRP_MAX_FILENAME_LEN; i++) cBuffer[i] = 0;
+	if (strNewName.length() > GRP_MAX_FILENAME_LEN) {
+		throw std::ios_base::failure("new filename too long, max is "
+			TOSTRING(GRP_MAX_FILENAME_LEN) " chars");
+	}
 
 	this->psArchive->seekp((pEntry->iIndex + 1) * GRP_FAT_ENTRY_LEN);
-	this->psArchive->rdbuf()->sputn(cBuffer, GRP_MAX_FILENAME_LEN);
+	writeZeroPaddedString(this->psArchive, strNewName, GRP_MAX_FILENAME_LEN);
+
 	pEntry->strName = strNewName;
 
 	return;
@@ -235,7 +232,8 @@ void GRPArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 {
 	// TESTED BY: fmt_grp_duke3d_insert*
 	if (pNewEntry->strName.length() > GRP_MAX_FILENAME_LEN) {
-		throw std::ios::failure("maximum filename length is 12 chars");
+		throw std::ios::failure("maximum filename length is "
+			TOSTRING(GRP_MAX_FILENAME_LEN) " chars");
 	}
 
 	// Set the format-specific variables
@@ -247,13 +245,7 @@ void GRPArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 	this->psArchive->seekp((pNewEntry->iIndex + 1) * GRP_FAT_ENTRY_LEN);
 	this->psArchive->insert(GRP_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
-	this->psArchive->write(pNewEntry->strName.c_str(), pNewEntry->strName.length());
-
-	// Pad out to GRP_MAX_FILENAME_LEN chars, the null string must be at least
-	// this long.
-	char blank[GRP_FAT_ENTRY_LEN];
-	memset(blank, 0, GRP_FAT_ENTRY_LEN);
-	this->psArchive->write(blank, GRP_MAX_FILENAME_LEN - pNewEntry->strName.length());
+	writeZeroPaddedString(this->psArchive, pNewEntry->strName, GRP_MAX_FILENAME_LEN);
 	write_u32le(this->psArchive, pNewEntry->iSize);
 
 	// Update the offsets now there's a new FAT entry taking up space.

@@ -243,17 +243,13 @@ void VOLArchive::rename(EntryPtr& id, const std::string& strNewName)
 	assert(this->isValid(id));
 	FATEntry *pEntry = dynamic_cast<FATEntry *>(id.get());
 
-	int iLen = strNewName.length();
-	if (iLen > VOL_MAX_FILENAME_LEN) throw std::ios_base::failure("name too long");
-
-	// Pad out the filename with NULLs
-	char cBuffer[VOL_MAX_FILENAME_LEN];
-	const char *p = strNewName.c_str();
-	for (int i = 0; i < iLen; i++) cBuffer[i] = p[i];
-	for (int i = iLen; i < VOL_MAX_FILENAME_LEN; i++) cBuffer[i] = 0;
+	if (strNewName.length() > VOL_MAX_FILENAME_LEN) {
+		throw std::ios_base::failure("new filename too long, max is "
+			TOSTRING(VOL_MAX_FILENAME_LEN) " chars");
+	}
 
 	this->psArchive->seekp(pEntry->iIndex * VOL_FAT_ENTRY_LEN);
-	this->psArchive->rdbuf()->sputn(cBuffer, VOL_MAX_FILENAME_LEN);
+	writeZeroPaddedString(this->psArchive, strNewName, VOL_MAX_FILENAME_LEN);
 	pEntry->strName = strNewName;
 
 	return;
@@ -284,7 +280,8 @@ void VOLArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 {
 	// TESTED BY: fmt_vol_cosmo_insert*
 	if (pNewEntry->strName.length() > VOL_MAX_FILENAME_LEN) {
-		throw std::ios::failure("maximum filename length is 12 chars");
+		throw std::ios::failure("maximum filename length is "
+			TOSTRING(VOL_MAX_FILENAME_LEN) " chars");
 	}
 
 	// Set the format-specific variables
@@ -297,13 +294,7 @@ void VOLArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 	this->psArchive->seekp(pNewEntry->iIndex * VOL_FAT_ENTRY_LEN);
 	this->psArchive->insert(VOL_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
-	this->psArchive->write(pNewEntry->strName.c_str(), pNewEntry->strName.length());
-
-	// Pad out to VOL_MAX_FILENAME_LEN chars, the null string must be at least
-	// this long.
-	char blank[VOL_FAT_ENTRY_LEN];
-	memset(blank, 0, VOL_FAT_ENTRY_LEN);
-	this->psArchive->write(blank, VOL_MAX_FILENAME_LEN - pNewEntry->strName.length());
+	writeZeroPaddedString(this->psArchive, pNewEntry->strName, VOL_MAX_FILENAME_LEN);
 
 	// Write out the offset and size
 	write_u32le(this->psArchive, pNewEntry->iOffset);

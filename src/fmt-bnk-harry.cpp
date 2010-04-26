@@ -55,11 +55,6 @@
 
 #define BNK_FAT_ENTRY_LEN         (this->isAC ? BNK_AC_FAT_ENTRY_LEN : BNK_HH_FAT_ENTRY_LEN)
 
-// Need to use this so that #defined constants can be converted into strings
-// (instead of getting the constant's name.)
-#define TOSTRING(x) #x
-//_STRING(x)
-
 namespace camoto {
 namespace gamearchive {
 
@@ -220,23 +215,20 @@ void BNKArchive::rename(EntryPtr& id, const std::string& strNewName)
 	assert(this->isValid(id));
 	FATEntry *pEntry = dynamic_cast<FATEntry *>(id.get());
 
-	int iLen = strNewName.length();
-	if (iLen > BNK_MAX_FILENAME_LEN) throw std::ios_base::failure("name too long");
+	int len = strNewName.length();
+	if (len > BNK_MAX_FILENAME_LEN) {
+		throw std::ios_base::failure("new filename too long, max is "
+			TOSTRING(BNK_MAX_FILENAME_LEN) " chars");
+	}
 
-	// Pad out the filename with NULLs
-	char cBuffer[BNK_MAX_FILENAME_LEN];
-	const char *p = strNewName.c_str();
-	for (int i = 0; i < iLen; i++) cBuffer[i] = p[i];
-	for (int i = iLen; i < BNK_MAX_FILENAME_LEN; i++) cBuffer[i] = 0;
-
-	uint8_t lenByte = iLen;
+	uint8_t lenByte = len;
 	this->psFAT->seekp(pEntry->iIndex * BNK_FAT_ENTRY_LEN + BNK_FAT_FILENAME_OFFSET);
 	this->psFAT->rdbuf()->sputn((char *)&lenByte, 1);
-	this->psFAT->rdbuf()->sputn(cBuffer, BNK_MAX_FILENAME_LEN);
+	writeZeroPaddedString(this->psFAT, strNewName, BNK_MAX_FILENAME_LEN);
 
 	this->psArchive->seekp(pEntry->iOffset + BNK_EFAT_FILENAME_OFFSET);
 	this->psArchive->rdbuf()->sputn((char *)&lenByte, 1);
-	this->psArchive->rdbuf()->sputn(cBuffer, BNK_MAX_FILENAME_LEN);
+	writeZeroPaddedString(this->psArchive, strNewName, BNK_MAX_FILENAME_LEN);
 
 	pEntry->strName = strNewName;
 
@@ -287,19 +279,17 @@ void BNKArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_bnk_harry_insert*
-	if (pNewEntry->strName.length() > BNK_MAX_FILENAME_LEN) {
-		throw std::ios::failure("maximum filename length is " TOSTRING(BNK_MAX_FILENAME_LEN) " chars");
+	int len = pNewEntry->strName.length();
+	if (len > BNK_MAX_FILENAME_LEN) {
+		throw std::ios::failure("maximum filename length is "
+			TOSTRING(BNK_MAX_FILENAME_LEN) " chars");
 	}
 
 	// Set the format-specific variables
 	pNewEntry->lenHeader = BNK_EFAT_ENTRY_LEN;
 
-	uint8_t lenByte = pNewEntry->strName.length();
+	uint8_t lenByte = len;
 	boost::to_upper(pNewEntry->strName);
-	// Pad out to BNK_MAX_FILENAME_LEN chars, the null string must be at least
-	// this long.
-	char blank[BNK_FAT_ENTRY_LEN];
-	memset(blank, 0, BNK_FAT_ENTRY_LEN);
 
 	// Write out the new embedded FAT entry
 	// Insert some space for the embedded header
@@ -315,8 +305,7 @@ void BNKArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 	// Write the header
 	this->psArchive->rdbuf()->sputn("\x04-ID-", 5);
 	this->psArchive->rdbuf()->sputn((char *)&lenByte, 1);
-	this->psArchive->write(pNewEntry->strName.c_str(), lenByte);
-	this->psArchive->write(blank, BNK_MAX_FILENAME_LEN - lenByte);
+	writeZeroPaddedString(this->psArchive, pNewEntry->strName, BNK_MAX_FILENAME_LEN);
 	write_u32le(this->psArchive, pNewEntry->iSize);
 
 	// Since we've inserted some data for the embedded header, we need to update
@@ -331,8 +320,7 @@ void BNKArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 	this->psFAT->seekp(pNewEntry->iIndex * BNK_FAT_ENTRY_LEN);
 	this->psFAT->insert(BNK_FAT_ENTRY_LEN);
 	this->psFAT->rdbuf()->sputn((char *)&lenByte, 1);
-	this->psFAT->write(pNewEntry->strName.c_str(), lenByte);
-	this->psFAT->write(blank, BNK_MAX_FILENAME_LEN - lenByte);
+	writeZeroPaddedString(this->psFAT, pNewEntry->strName, BNK_MAX_FILENAME_LEN);
 
 	// Write out the file size
 	write_u32le(this->psFAT, pNewEntry->iOffset + BNK_EFAT_ENTRY_LEN);

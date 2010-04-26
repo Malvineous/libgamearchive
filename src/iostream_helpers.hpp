@@ -35,6 +35,7 @@ namespace io = boost::iostreams;
 void streamMove(std::iostream& ps, io::stream_offset offFrom,
 	io::stream_offset offTo, io::stream_offset szLength);
 
+void writeZeroPaddedString(iostream_sptr out, const std::string& data, int len);
 inline uint32_t read_u16le(iostream_sptr ps) { uint16_t x = 0; ps->read((char *)&x, 2); return le16toh(x); }
 inline uint32_t read_u32le(iostream_sptr ps) { uint32_t x = 0; ps->read((char *)&x, 4); return le32toh(x); }
 inline uint32_t read_u64le(iostream_sptr ps) { uint64_t x = 0; ps->read((char *)&x, 8); return le64toh(x); }

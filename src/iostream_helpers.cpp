@@ -130,5 +130,27 @@ void streamMove(std::iostream& ps, io::stream_offset offFrom,
 	return;
 }
 
+#define ZEROPAD_BLOCK_SIZE  16
+void writeZeroPaddedString(iostream_sptr out, const std::string& data, int len)
+{
+	int lenData = data.length();
+	assert(lenData <= len);
+
+	// Write the content
+	out->rdbuf()->sputn(data.c_str(), lenData);
+
+	// Pad out to the full length with nulls
+	char blank[ZEROPAD_BLOCK_SIZE];
+	memset(blank, 0, ZEROPAD_BLOCK_SIZE);
+	len -= lenData;
+	int amt = ZEROPAD_BLOCK_SIZE;
+	while (len > 0) {
+		if (len < ZEROPAD_BLOCK_SIZE) amt = len;
+		out->write(blank, amt);
+		len -= amt;
+	}
+	return;
+}
+
 } // namespace gamearchive
 } // namespace camoto
