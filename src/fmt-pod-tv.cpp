@@ -98,7 +98,8 @@ E_CERTAINTY PODType::isInstance(iostream_sptr psArchive) const
 	if (lenArchive < 84) return EC_DEFINITELY_NO;
 
 	psArchive->seekg(0, std::ios::beg);
-	uint32_t numFiles = read_u32le(psArchive);
+	uint32_t numFiles;
+	psArchive >> u32le(numFiles);
 
 	char description[POD_DESCRIPTION_LEN + 1];
 	psArchive->read(description, POD_DESCRIPTION_LEN);
@@ -129,8 +130,9 @@ E_CERTAINTY PODType::isInstance(iostream_sptr psArchive) const
 			if (fn[j] < 32) return EC_DEFINITELY_NO; // TESTED BY: fmt_pod_tv_isinstance_c01
 		}
 
-		uint32_t offEntry = read_u32le(psArchive);
-		uint32_t lenEntry = read_u32le(psArchive);
+		uint32_t offEntry, lenEntry;
+		psArchive >> u32le(offEntry) >> u32le(lenEntry);
+
 		// If a file entry points past the end of the archive then it's an invalid
 		// format.
 		// TESTED BY: fmt_pod_tv_isinstance_c0[23]
@@ -179,7 +181,8 @@ PODArchive::PODArchive(iostream_sptr psArchive)
 {
 	psArchive->seekg(0, std::ios::beg);
 
-	uint32_t numFiles = read_u32le(psArchive);
+	uint32_t numFiles;
+	psArchive >> u32le(numFiles);
 	unsigned long lenFAT = numFiles * POD_FAT_ENTRY_LEN;
 
 	char description[POD_DESCRIPTION_LEN + 1];
@@ -244,7 +247,7 @@ void PODArchive::rename(EntryPtr& id, const std::string& strNewName)
 	}
 
 	this->psArchive->seekp(POD_FAT_OFFSET + pEntry->iIndex * POD_FAT_ENTRY_LEN);
-	writeZeroPaddedString(this->psArchive, strNewName, POD_MAX_FILENAME_LEN);
+	this->psArchive << zeroPad(strNewName, POD_MAX_FILENAME_LEN);
 	pEntry->strName = strNewName;
 
 	return;
@@ -308,7 +311,7 @@ void PODArchive::updateFileOffset(const FATEntry *pid)
 	// TESTED BY: fmt_pod_tv_insert*
 	// TESTED BY: fmt_pod_tv_resize*
 	this->psArchive->seekp(POD_FAT_OFFSET + pid->iIndex * POD_FAT_ENTRY_LEN + POD_FAT_ENTRY_OFFSET_POS);
-	write_u32le(this->psArchive, pid->iOffset);
+	this->psArchive << u32le(pid->iOffset);
 	return;
 }
 
@@ -318,7 +321,7 @@ void PODArchive::updateFileSize(const FATEntry *pid)
 	// TESTED BY: fmt_pod_tv_insert*
 	// TESTED BY: fmt_pod_tv_resize*
 	this->psArchive->seekp(POD_FAT_OFFSET + pid->iIndex * POD_FAT_ENTRY_LEN + POD_FAT_ENTRY_SIZE_POS);
-	write_u32le(this->psArchive, pid->iSize);
+	this->psArchive << u32le(pid->iSize);
 	return;
 }
 
@@ -340,14 +343,14 @@ void PODArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 	this->psArchive->seekp(POD_FAT_OFFSET + pNewEntry->iIndex * POD_FAT_ENTRY_LEN);
 	this->psArchive->insert(POD_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
-	writeZeroPaddedString(this->psArchive, pNewEntry->strName, POD_MAX_FILENAME_LEN);
 
-	// Write out the offset and size
-	write_u32le(this->psArchive, pNewEntry->iSize);
-	write_u32le(this->psArchive, pNewEntry->iOffset);
+	// Write out the entry
+	this->psArchive
+		<< zeroPad(pNewEntry->strName, POD_MAX_FILENAME_LEN)
+		<< u32le(pNewEntry->iSize)
+		<< u32le(pNewEntry->iOffset);
 
-	// Update the offsets now there's a new FAT entry taking up space.  We need
-	// to +1 to the vector size to take into account the KenSilverman header.
+	// Update the offsets now there's a new FAT entry taking up space.
 	this->shiftFiles(POD_FAT_OFFSET + this->vcFAT.size() * POD_FAT_ENTRY_LEN, POD_FAT_ENTRY_LEN, 0);
 
 	this->updateFileCount(this->vcFAT.size() + 1);
@@ -381,7 +384,7 @@ void PODArchive::updateFileCount(uint32_t iNewCount)
 	// TESTED BY: fmt_pod_tv_insert*
 	// TESTED BY: fmt_pod_tv_remove*
 	this->psArchive->seekp(0);
-	write_u32le(this->psArchive, iNewCount);
+	this->psArchive << u32le(iNewCount);
 	return;
 }
 

@@ -99,7 +99,8 @@ E_CERTAINTY VOLType::isInstance(iostream_sptr psArchive) const
 	if (lenArchive < VOL_FAT_ENTRY_LEN) return EC_DEFINITELY_NO; // too short
 
 	psArchive->seekg(12, std::ios::beg);
-	uint32_t lenFAT = read_u32le(psArchive);
+	uint32_t lenFAT;
+	psArchive >> u32le(lenFAT);
 
 	// If the FAT is larger than the entire archive then it's not a VOL file
 	if (lenFAT > lenArchive) return EC_DEFINITELY_NO;
@@ -122,8 +123,9 @@ E_CERTAINTY VOLType::isInstance(iostream_sptr psArchive) const
 			if (fn[j] < 32) return EC_DEFINITELY_NO; // TESTED BY: fmt_vol_cosmo_isinstance_c01
 		}
 
-		uint32_t offEntry = read_u32le(psArchive);
-		uint32_t lenEntry = read_u32le(psArchive);
+		uint32_t offEntry, lenEntry;
+		psArchive >> u32le(offEntry) >> u32le(lenEntry);
+
 		// If a file entry points past the end of the archive then it's an invalid
 		// format.
 		// TESTED BY: fmt_vol_cosmo_isinstance_c03
@@ -186,7 +188,9 @@ VOLArchive::VOLArchive(iostream_sptr psArchive)
 		// or do we read 4000 chars, or do we somehow scan the probable files and
 		// read up until the first one in case they're out of order...?
 		// I guess it depends on what works with the games.
-		uint32_t lenFAT = read_u32le(psArchive);
+		uint32_t lenFAT;
+		psArchive >> u32le(lenFAT);
+
 		uint32_t numFiles = lenFAT / VOL_FAT_ENTRY_LEN;
 		boost::shared_array<uint8_t> pFATBuf;
 		try {
@@ -249,7 +253,7 @@ void VOLArchive::rename(EntryPtr& id, const std::string& strNewName)
 	}
 
 	this->psArchive->seekp(pEntry->iIndex * VOL_FAT_ENTRY_LEN);
-	writeZeroPaddedString(this->psArchive, strNewName, VOL_MAX_FILENAME_LEN);
+	this->psArchive << zeroPad(strNewName, VOL_MAX_FILENAME_LEN);
 	pEntry->strName = strNewName;
 
 	return;
@@ -261,7 +265,7 @@ void VOLArchive::updateFileOffset(const FATEntry *pid)
 	// TESTED BY: fmt_vol_cosmo_insert*
 	// TESTED BY: fmt_vol_cosmo_resize*
 	this->psArchive->seekp(pid->iIndex * VOL_FAT_ENTRY_LEN + 12);
-	write_u32le(this->psArchive, pid->iOffset);
+	this->psArchive << u32le(pid->iOffset);
 	return;
 }
 
@@ -271,7 +275,7 @@ void VOLArchive::updateFileSize(const FATEntry *pid)
 	// TESTED BY: fmt_vol_cosmo_insert*
 	// TESTED BY: fmt_vol_cosmo_resize*
 	this->psArchive->seekp(pid->iIndex * VOL_FAT_ENTRY_LEN + 16);
-	write_u32le(this->psArchive, pid->iSize);
+	this->psArchive << u32le(pid->iSize);
 	return;
 }
 
@@ -294,11 +298,12 @@ void VOLArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 	this->psArchive->seekp(pNewEntry->iIndex * VOL_FAT_ENTRY_LEN);
 	this->psArchive->insert(VOL_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
-	writeZeroPaddedString(this->psArchive, pNewEntry->strName, VOL_MAX_FILENAME_LEN);
 
-	// Write out the offset and size
-	write_u32le(this->psArchive, pNewEntry->iOffset);
-	write_u32le(this->psArchive, pNewEntry->iSize);
+	// Write out the entry
+	this->psArchive
+		<< zeroPad(pNewEntry->strName, VOL_MAX_FILENAME_LEN)
+		<< u32le(pNewEntry->iOffset)
+		<< u32le(pNewEntry->iSize);
 
 	// Because the FAT is a fixed size we have to remove a blank entry to
 	// compensate for the entry we just added.

@@ -25,6 +25,8 @@
 #include <string.h>
 
 #include <camoto/types.hpp>
+
+#define BYTEORDER_USE_IOSTREAMS
 #include "byteorder.h"
 
 namespace camoto {
@@ -34,21 +36,6 @@ namespace io = boost::iostreams;
 
 void streamMove(std::iostream& ps, io::stream_offset offFrom,
 	io::stream_offset offTo, io::stream_offset szLength);
-
-void writeZeroPaddedString(iostream_sptr out, const std::string& data, int len);
-inline uint32_t read_u16le(iostream_sptr ps) { uint16_t x = 0; ps->read((char *)&x, 2); return le16toh(x); }
-inline uint32_t read_u32le(iostream_sptr ps) { uint32_t x = 0; ps->read((char *)&x, 4); return le32toh(x); }
-inline uint32_t read_u64le(iostream_sptr ps) { uint64_t x = 0; ps->read((char *)&x, 8); return le64toh(x); }
-inline void write_u16le(iostream_sptr ps, uint16_t x) { x = htole16(x); ps->write((char *)&x, 2); return; }
-inline void write_u32le(iostream_sptr ps, uint32_t x) { x = htole32(x); ps->write((char *)&x, 4); return; }
-inline void write_u64le(iostream_sptr ps, uint64_t x) { x = htole64(x); ps->write((char *)&x, 8); return; }
-
-inline uint32_t read_u16be(iostream_sptr ps) { uint16_t x = 0; ps->read((char *)&x, 2); return be16toh(x); }
-inline uint32_t read_u32be(iostream_sptr ps) { uint32_t x = 0; ps->read((char *)&x, 4); return be32toh(x); }
-inline uint32_t read_u64be(iostream_sptr ps) { uint64_t x = 0; ps->read((char *)&x, 8); return be64toh(x); }
-inline void write_u16be(iostream_sptr ps, uint16_t x) { x = htobe16(x); ps->write((char *)&x, 2); return; }
-inline void write_u32be(iostream_sptr ps, uint32_t x) { x = htobe32(x); ps->write((char *)&x, 4); return; }
-inline void write_u64be(iostream_sptr ps, uint64_t x) { x = htobe64(x); ps->write((char *)&x, 8); return; }
 
 inline uint32_t u32le_from_buf(const uint8_t *pbuf)
 {
@@ -66,6 +53,42 @@ inline std::string string_from_buf(const uint8_t *pbuf, int maxlen)
 	}
 	// Create and return the string
 	return std::string((char *)pbuf, maxlen);
+}
+
+// zeroPad will pad a string with nulls when writing it to a stream, e.g.
+//   file << zeroPad("hello", 10);  // write 10 bytes, "hello" and five nulls
+// It is an error for the string ("hello") to be longer than the pad (10),
+// this will cause an assertion failure at runtime.
+struct zeroPad {
+	const std::string& data;
+	int len;
+	zeroPad(const std::string& data, int len) :
+		data(data),
+		len(len)
+	{
+	}
+};
+
+std::ostream& operator << (std::ostream& s, const zeroPad& n);
+
+template <class T>
+inline boost::shared_ptr<T>& operator << (boost::shared_ptr<T>& s, const zeroPad& n) {
+	(*(s.get())) << n;
+	return s;
+}
+
+// Helper functions to allow operations on iostream_sptr and segstream_sptr
+// to be performed on their underlying streams.
+template <class T>
+inline boost::shared_ptr<T>& operator >> (boost::shared_ptr<T>& s, const number_format_read& n) {
+	(*(s.get())) >> n;
+	return s;
+}
+
+template <class T>
+inline boost::shared_ptr<T>& operator << (boost::shared_ptr<T>& s, const number_format_write& n) {
+	(*(s.get())) << n;
+	return s;
 }
 
 } // namespace gamearchive

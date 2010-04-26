@@ -131,25 +131,25 @@ void streamMove(std::iostream& ps, io::stream_offset offFrom,
 }
 
 #define ZEROPAD_BLOCK_SIZE  16
-void writeZeroPaddedString(iostream_sptr out, const std::string& data, int len)
+std::ostream& operator << (std::ostream& s, const zeroPad& n)
 {
-	int lenData = data.length();
-	assert(lenData <= len);
+	int lenData = n.data.length();
+	assert(lenData <= n.len);
 
 	// Write the content
-	out->rdbuf()->sputn(data.c_str(), lenData);
+	s.write(n.data.c_str(), lenData);
 
 	// Pad out to the full length with nulls
 	char blank[ZEROPAD_BLOCK_SIZE];
 	memset(blank, 0, ZEROPAD_BLOCK_SIZE);
-	len -= lenData;
+	int lenRemaining = n.len - lenData;
 	int amt = ZEROPAD_BLOCK_SIZE;
-	while (len > 0) {
-		if (len < ZEROPAD_BLOCK_SIZE) amt = len;
-		out->write(blank, amt);
-		len -= amt;
+	while (lenRemaining > 0) {
+		if (lenRemaining < ZEROPAD_BLOCK_SIZE) amt = lenRemaining;
+		s.write(blank, amt);
+		lenRemaining -= amt;
 	}
-	return;
+	return s;
 }
 
 } // namespace gamearchive

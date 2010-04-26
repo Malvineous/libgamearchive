@@ -224,11 +224,11 @@ void BNKArchive::rename(EntryPtr& id, const std::string& strNewName)
 	uint8_t lenByte = len;
 	this->psFAT->seekp(pEntry->iIndex * BNK_FAT_ENTRY_LEN + BNK_FAT_FILENAME_OFFSET);
 	this->psFAT->rdbuf()->sputn((char *)&lenByte, 1);
-	writeZeroPaddedString(this->psFAT, strNewName, BNK_MAX_FILENAME_LEN);
+	this->psFAT << zeroPad(strNewName, BNK_MAX_FILENAME_LEN);
 
 	this->psArchive->seekp(pEntry->iOffset + BNK_EFAT_FILENAME_OFFSET);
 	this->psArchive->rdbuf()->sputn((char *)&lenByte, 1);
-	writeZeroPaddedString(this->psArchive, strNewName, BNK_MAX_FILENAME_LEN);
+	this->psArchive << zeroPad(strNewName, BNK_MAX_FILENAME_LEN);
 
 	pEntry->strName = strNewName;
 
@@ -254,7 +254,7 @@ void BNKArchive::updateFileOffset(const FATEntry *pid)
 
 	// Only the external FAT file has offsets, not the embedded FAT
 	this->psFAT->seekp(pid->iIndex * BNK_FAT_ENTRY_LEN + BNK_FAT_FILEOFFSET_OFFSET);
-	write_u32le(this->psFAT, pid->iOffset + BNK_EFAT_ENTRY_LEN);
+	this->psFAT << u32le(pid->iOffset + BNK_EFAT_ENTRY_LEN);
 	return;
 }
 
@@ -266,11 +266,11 @@ void BNKArchive::updateFileSize(const FATEntry *pid)
 
 	// Update external FAT
 	this->psFAT->seekp(pid->iIndex * BNK_FAT_ENTRY_LEN + BNK_FAT_FILESIZE_OFFSET);
-	write_u32le(this->psFAT, pid->iSize);
+	this->psFAT << u32le(pid->iSize);
 
 	// Update embedded FAT
 	this->psArchive->seekp(pid->iOffset + BNK_EFAT_FILESIZE_OFFSET);
-	write_u32le(this->psArchive, pid->iSize);
+	this->psArchive << u32le(pid->iSize);
 
 	return;
 }
@@ -305,8 +305,8 @@ void BNKArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 	// Write the header
 	this->psArchive->rdbuf()->sputn("\x04-ID-", 5);
 	this->psArchive->rdbuf()->sputn((char *)&lenByte, 1);
-	writeZeroPaddedString(this->psArchive, pNewEntry->strName, BNK_MAX_FILENAME_LEN);
-	write_u32le(this->psArchive, pNewEntry->iSize);
+	this->psArchive << zeroPad(pNewEntry->strName, BNK_MAX_FILENAME_LEN);
+	this->psArchive << u32le(pNewEntry->iSize);
 
 	// Since we've inserted some data for the embedded header, we need to update
 	// the other file offsets accordingly.  This call updates the offset of the
@@ -320,11 +320,11 @@ void BNKArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 	this->psFAT->seekp(pNewEntry->iIndex * BNK_FAT_ENTRY_LEN);
 	this->psFAT->insert(BNK_FAT_ENTRY_LEN);
 	this->psFAT->rdbuf()->sputn((char *)&lenByte, 1);
-	writeZeroPaddedString(this->psFAT, pNewEntry->strName, BNK_MAX_FILENAME_LEN);
+	this->psFAT << zeroPad(pNewEntry->strName, BNK_MAX_FILENAME_LEN);
 
 	// Write out the file size
-	write_u32le(this->psFAT, pNewEntry->iOffset + BNK_EFAT_ENTRY_LEN);
-	write_u32le(this->psFAT, pNewEntry->iSize);
+	this->psFAT << u32le(pNewEntry->iOffset + BNK_EFAT_ENTRY_LEN);
+	this->psFAT << u32le(pNewEntry->iSize);
 
 	return;
 }

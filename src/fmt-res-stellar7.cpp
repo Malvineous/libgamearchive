@@ -206,7 +206,7 @@ void RESArchiveFolder::rename(EntryPtr& id, const std::string& strNewName)
 	}
 
 	this->psArchive->seekp(pEntry->iOffset + RES_FAT_FILENAME_OFFSET);
-	writeZeroPaddedString(this->psArchive, strNewName, RES_MAX_FILENAME_LEN);
+	this->psArchive << zeroPad(strNewName, RES_MAX_FILENAME_LEN);
 	pEntry->strName = strNewName;
 
 	return;
@@ -239,7 +239,7 @@ void RESArchiveFolder::updateFileSize(const FATEntry *pid)
 	// TESTED BY: fmt_res_stellar7_insert*
 	// TESTED BY: fmt_res_stellar7_resize*
 	this->psArchive->seekp(pid->iOffset + RES_FAT_FILESIZE_OFFSET);
-	write_u32le(this->psArchive, pid->iSize);
+	this->psArchive << u32le(pid->iSize);
 	return;
 }
 
@@ -259,8 +259,8 @@ void RESArchiveFolder::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pN
 	this->psArchive->seekp(pNewEntry->iOffset);
 	this->psArchive->insert(RES_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
-	writeZeroPaddedString(this->psArchive, pNewEntry->strName, RES_MAX_FILENAME_LEN);
-	write_u32le(this->psArchive, pNewEntry->iSize);
+	this->psArchive << zeroPad(pNewEntry->strName, RES_MAX_FILENAME_LEN);
+	this->psArchive << u32le(pNewEntry->iSize);
 
 	// Since we've inserted some data for the embedded header, we need to update
 	// the other file offsets accordingly.

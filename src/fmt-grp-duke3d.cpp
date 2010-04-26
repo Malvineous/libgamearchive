@@ -30,6 +30,7 @@
 #include <string.h>
 
 #include "fmt-grp-duke3d.hpp"
+#define D // TEMP!!!
 #include "iostream_helpers.hpp"
 #include "debug.hpp"
 
@@ -141,7 +142,9 @@ GRPArchive::GRPArchive(iostream_sptr psArchive)
 	// to open even though it failed the signature check.
 	if (psArchive->tellg() != 12) throw std::ios::failure("File too short");
 
-	uint32_t iFileCount = read_u32le(psArchive);
+	uint32_t iFileCount;
+	psArchive >> u32le(iFileCount);
+
 	boost::shared_array<uint8_t> pFATBuf;
 	try {
 		pFATBuf.reset(new uint8_t[iFileCount * GRP_FAT_ENTRY_LEN]);
@@ -201,7 +204,7 @@ void GRPArchive::rename(EntryPtr& id, const std::string& strNewName)
 	}
 
 	this->psArchive->seekp((pEntry->iIndex + 1) * GRP_FAT_ENTRY_LEN);
-	writeZeroPaddedString(this->psArchive, strNewName, GRP_MAX_FILENAME_LEN);
+	this->psArchive << zeroPad(strNewName, GRP_MAX_FILENAME_LEN);
 
 	pEntry->strName = strNewName;
 
@@ -223,7 +226,7 @@ void GRPArchive::updateFileSize(const FATEntry *pid)
 	// TESTED BY: fmt_grp_duke3d_insert*
 	// TESTED BY: fmt_grp_duke3d_resize*
 	this->psArchive->seekp((pid->iIndex + 1) * GRP_FAT_ENTRY_LEN + GRP_MAX_FILENAME_LEN);
-	write_u32le(this->psArchive, pid->iSize);
+	this->psArchive << u32le(pid->iSize);
 	return;
 }
 
@@ -245,8 +248,10 @@ void GRPArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 	this->psArchive->seekp((pNewEntry->iIndex + 1) * GRP_FAT_ENTRY_LEN);
 	this->psArchive->insert(GRP_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
-	writeZeroPaddedString(this->psArchive, pNewEntry->strName, GRP_MAX_FILENAME_LEN);
-	write_u32le(this->psArchive, pNewEntry->iSize);
+
+	this->psArchive
+		<< zeroPad(pNewEntry->strName, GRP_MAX_FILENAME_LEN)
+		<< u32le(pNewEntry->iSize);
 
 	// Update the offsets now there's a new FAT entry taking up space.
 	this->shiftFiles(GRP_FAT_OFFSET + this->vcFAT.size() * GRP_FAT_ENTRY_LEN, GRP_FAT_ENTRY_LEN, 0);
@@ -279,7 +284,7 @@ void GRPArchive::updateFileCount(uint32_t iNewCount)
 	// TESTED BY: fmt_grp_duke3d_insert*
 	// TESTED BY: fmt_grp_duke3d_remove*
 	this->psArchive->seekp(12);
-	write_u32le(this->psArchive, iNewCount);
+	this->psArchive << u32le(iNewCount);
 	return;
 }
 
