@@ -3,7 +3,8 @@ check_PROGRAMS = tests
 tests_SOURCES = tests.cpp test-byteorder.cpp test-streamMove.cpp \
 	test-substream.cpp test-segmented_stream.cpp \
 	test-fmt-grp-duke3d.cpp test-fmt-vol-cosmo.cpp test-fmt-pod-tv.cpp \
-	test-fmt-bnk-harry.cpp test-fmt-res-stellar7.cpp
+	test-fmt-bnk-harry.cpp test-fmt-res-stellar7.cpp \
+	test-fmt-hog-descent.cpp
 
 EXTRA_tests_SOURCES = tests.hpp test-archive.hpp
 

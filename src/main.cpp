@@ -26,6 +26,7 @@
 #include "fmt-pod-tv.hpp"
 #include "fmt-bnk-harry.hpp"
 #include "fmt-res-stellar7.hpp"
+#include "fmt-hog-descent.hpp"
 #include "debug.hpp"
 
 namespace camoto {
@@ -66,6 +67,7 @@ Manager::Manager()
 	this->vcTypes.push_back(arch_sptr(new PODType()));
 	this->vcTypes.push_back(arch_sptr(new BNKType()));
 	this->vcTypes.push_back(arch_sptr(new RESType()));
+	this->vcTypes.push_back(arch_sptr(new HOGType()));
 }
 
 Manager::~Manager()
