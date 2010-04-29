@@ -176,7 +176,7 @@ class Archive {
 		virtual std::string getMetadata(E_METADATA item) const
 			throw (std::ios::failure);
 		// Change the value of a metadata element.
-		virtual void setMetadata(E_METADATA item, const std::string& value) const
+		virtual void setMetadata(E_METADATA item, const std::string& value)
 			throw (std::ios::failure);
 
 };

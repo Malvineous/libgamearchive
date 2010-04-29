@@ -82,7 +82,7 @@ class PODArchive: virtual public FATArchive {
 		virtual std::string getMetadata(E_METADATA item) const
 			throw (std::ios::failure);
 
-		virtual void setMetadata(E_METADATA item, const std::string& value) const
+		virtual void setMetadata(E_METADATA item, const std::string& value)
 			throw (std::ios::failure);
 
 		// As per FATArchive (see there for docs)

@@ -84,7 +84,7 @@ std::string Archive::getMetadata(E_METADATA item) const
 }
 
 // Change the value of a metadata element.
-void Archive::setMetadata(E_METADATA item, const std::string& value) const
+void Archive::setMetadata(E_METADATA item, const std::string& value)
 	throw (std::ios::failure)
 {
 	// This should never be called because getMetadataList() returned an empty

@@ -280,7 +280,7 @@ std::string PODArchive::getMetadata(E_METADATA item) const
 	}
 }
 
-void PODArchive::setMetadata(E_METADATA item, const std::string& value) const
+void PODArchive::setMetadata(E_METADATA item, const std::string& value)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_pod_tv_set_metadata_description
