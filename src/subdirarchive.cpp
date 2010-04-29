@@ -21,6 +21,7 @@
  */
 
 #include <boost/algorithm/string.hpp>
+#include <boost/bind.hpp>
 
 #include "subdirarchive.hpp"
 #include "debug.hpp"
@@ -204,10 +205,18 @@ void SubdirArchive::resize(EntryPtr& id, size_t iNewSize)
 void SubdirArchive::flush()
 	throw (std::ios::failure)
 {
+	// The truncate function was given to us, but because we're only posing as
+	// the archive we need to pass this function along too.  We couldn't do it
+	// earlier (e.g. in the constructor) because the caller/user doesn't set
+	// the truncate function until the constructor returns.
+	this->rootFolder->fnTruncate = this->fnTruncate;
+
 	// Write out to the underlying stream
 	for (VC_ARCHIVE::iterator i = this->openFolders.begin(); i != this->openFolders.end(); i++) {
+		assert((*i)->fnTruncate); // checked anyway, but just to be sure at this point
 		(*i)->flush();
 	}
+
 	this->rootFolder->flush();
 	// TODO: Figure out if these are no longer being used (access count == 1)
 	// and if so free them
@@ -256,13 +265,20 @@ SubdirArchive::VC_ENTRYPTR SubdirArchive::listFiles(ArchivePtr& parent, const st
 			ArchiveWithFolders *parentFolder = dynamic_cast<ArchiveWithFolders *>(parent.get());
 			if (parentFolder) {
 				ArchivePtr folder = parentFolder->openFolder(*i);
+				assert(folder);
+
+				// Set the truncate function to call Archive::resize() on the parent
+				// folder.
+				folder->fnTruncate = boost::bind<void>(&Archive::resize, parent.get(), *i, _1);
+				assert(folder->fnTruncate);
+
 				std::string thisPrefix = prefix + (*i)->strName + "/";
 				std::cerr << "Look up folder " << (*i)->strName << std::endl;
 				VC_ENTRYPTR sub = this->listFiles(folder, thisPrefix);
 				// For each of the returned files, wrap them up so we can alter the
 				// name (by prepending the path.)
 				for (VC_ENTRYPTR::iterator j = sub.begin(); j != sub.end(); j++) {
-					WrapperEntry *wrapper = this->wrapFileEntry(*j, parent, thisPrefix);
+					WrapperEntry *wrapper = this->wrapFileEntry(*j, folder, thisPrefix);
 					newfiles.push_back(EntryPtr(wrapper));
 				}
 			} // else not an archive with subfolders

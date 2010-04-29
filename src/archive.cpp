@@ -30,6 +30,12 @@ ArchivePtr ArchiveType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppDat
 	return this->open(psArchive, suppData);
 }
 
+Archive::Archive()
+	throw () :
+		fnTruncate(NULL)
+{
+}
+
 Archive::~Archive()
 	throw ()
 {

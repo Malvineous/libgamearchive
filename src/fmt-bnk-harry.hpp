@@ -63,10 +63,11 @@ class BNKType: virtual public ArchiveType {
 class BNKArchive: virtual public FATArchive {
 	protected:
 		segstream_sptr psFAT;
+		FN_TRUNCATE fnTruncFAT;
 		bool isAC;  // true == Alien Carnage, false == Halloween Harry
 
 	public:
-		BNKArchive(iostream_sptr psArchive, iostream_sptr psFAT)
+		BNKArchive(iostream_sptr psArchive, iostream_sptr psFAT, FN_TRUNCATE fnTruncFAT)
 			throw (std::ios::failure);
 
 		virtual ~BNKArchive()

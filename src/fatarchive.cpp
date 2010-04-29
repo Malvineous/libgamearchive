@@ -255,7 +255,8 @@ void FATArchive::flush()
 	throw (std::ios::failure)
 {
 	// Write out to the underlying stream
-	this->psArchive->commit();
+	assert(this->fnTruncate);
+	this->psArchive->commit(this->fnTruncate);
 
 	return;
 }

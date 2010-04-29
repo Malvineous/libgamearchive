@@ -26,7 +26,10 @@ struct EMPTY_FIXTURE_NAME: public FIXTURE_NAME {
 			boost::shared_ptr<std::stringstream> suppSS(new std::stringstream);
 			suppSS->exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
 			camoto::iostream_sptr suppStream(suppSS);
-			this->suppData[ga::EST_FAT] = suppStream;
+			ga::SuppItem si;
+			si.stream = suppStream;
+			si.fnTruncate = boost::bind<void>(stringStreamTruncate, suppSS.get(), _1);
+			this->suppData[ga::EST_FAT] = si;
 			this->suppBase[ga::EST_FAT] = suppSS;
 		}
 		#endif
@@ -42,6 +45,9 @@ struct EMPTY_FIXTURE_NAME: public FIXTURE_NAME {
 			this->pArchive = pTestType->newArchive(this->baseStream, this->suppData);
 		//);
 		BOOST_REQUIRE_MESSAGE(this->pArchive, "Could not create new archive");
+
+		this->pArchive->fnTruncate = boost::bind<void>(
+			stringStreamTruncate, this->baseData.get(), _1);
 
 		BOOST_TEST_CHECKPOINT("New archive created successfully");
 	}
@@ -70,6 +76,9 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(new_isinstance))
 	//BOOST_REQUIRE_NO_THROW(
 		boost::shared_ptr<ga::Archive> pArchive(pTestType->open(baseStream, suppData));
 	//);
+
+	pArchive->fnTruncate = boost::bind<void>(
+		stringStreamTruncate, this->baseData.get(), _1);
 
 	// Make sure there are now no files in the archive
 	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();

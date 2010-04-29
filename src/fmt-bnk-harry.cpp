@@ -126,7 +126,8 @@ ArchivePtr BNKType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
 	throw (std::ios::failure)
 {
 	assert(suppData.find(EST_FAT) != suppData.end());
-	return ArchivePtr(new BNKArchive(psArchive, suppData.find(EST_FAT)->second));
+	SuppItem si = suppData[EST_FAT];
+	return ArchivePtr(new BNKArchive(psArchive, si.stream, si.fnTruncate));
 }
 
 MP_SUPPLIST BNKType::getRequiredSupps(const std::string& filenameArchive) const
@@ -142,10 +143,11 @@ MP_SUPPLIST BNKType::getRequiredSupps(const std::string& filenameArchive) const
 
 refcount_declclass(BNKArchive);
 
-BNKArchive::BNKArchive(iostream_sptr psArchive, iostream_sptr psFAT)
+BNKArchive::BNKArchive(iostream_sptr psArchive, iostream_sptr psFAT, FN_TRUNCATE fnTruncFAT)
 	throw (std::ios::failure) :
 		FATArchive(psArchive, BNK_FIRST_FILE_OFFSET),
 		psFAT(new segmented_stream(psFAT)),
+		fnTruncFAT(fnTruncFAT),
 		isAC(false) // TODO: detect and set this
 {
 	psArchive->seekg(0, std::ios::end);
@@ -241,7 +243,7 @@ void BNKArchive::flush()
 	this->FATArchive::flush();
 
 	// Write out to the underlying stream for the supplemental files
-	this->psFAT->commit();
+	this->psFAT->commit(this->fnTruncFAT);
 
 	return;
 }

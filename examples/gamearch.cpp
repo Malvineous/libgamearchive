@@ -20,6 +20,7 @@
 #include <boost/algorithm/string.hpp> // for case-insensitive string compare
 #include <boost/program_options.hpp>
 #include <boost/iostreams/copy.hpp>
+#include <boost/bind.hpp>
 #include <camoto/gamearchive.hpp>
 #include <iostream>
 #include <fstream>
@@ -339,7 +340,10 @@ finishTesting:
 					suppStream->exceptions(std::ios::badbit | std::ios::failbit);
 					std::cout << "Opening supplemental file " << i->second << std::endl;
 					suppStream->open(i->second.c_str(), std::ios::in | std::ios::out | std::ios::binary);
-					suppData[i->first] = suppStream;
+					ga::SuppItem si;
+					si.stream = suppStream;
+					si.fnTruncate = boost::bind<void>(truncate, i->second.c_str(), _1);
+					suppData[i->first] = si;
 				} catch (std::ios::failure e) {
 					std::cerr << "Error opening supplemental file " << i->second.c_str() << std::endl;
 					#ifdef DEBUG
@@ -353,6 +357,7 @@ finishTesting:
 		// Open the archive file
 		boost::shared_ptr<ga::Archive> pArchive(pArchType->open(psArchive, suppData));
 		assert(pArchive);
+		pArchive->fnTruncate = boost::bind<void>(truncate, strFilename.c_str(), _1);
 
 		int iRet = RET_OK;
 

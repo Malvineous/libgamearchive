@@ -56,14 +56,22 @@ void default_sample::print_wrong(boost::test_tools::predicate_result& res,
 boost::test_tools::predicate_result default_sample::is_equal(
 	const std::string& strExpected, const std::string& strCheck)
 {
-	std::string strResult = strCheck.substr(0, strCheck.find_last_not_of('\0') + 1); /* TEMP: trim off trailing nulls */
-	if (strResult.length() < strExpected.length()) strResult = strCheck.substr(0, strExpected.length()); // don't trim off too much in the case of trailing nulls
+	//std::string strResult = strCheck.substr(0, strCheck.find_last_not_of('\0') + 1); /* TEMP: trim off trailing nulls */
+	//if (strResult.length() < strExpected.length()) strResult = strCheck.substr(0, strExpected.length()); // don't trim off too much in the case of trailing nulls
 
-	if (strExpected.compare(strResult)) {
+	if (strExpected.compare(strCheck)) {
 		boost::test_tools::predicate_result res(false);
-		this->print_wrong(res, strExpected, strResult);
+		this->print_wrong(res, strExpected, strCheck);
 		return res;
 	}
 
 	return true;
+}
+
+void stringStreamTruncate(std::stringstream *ss, int len)
+{
+	std::string orig = ss->str();
+	ss->clear(); // reset state, leave string alone
+	ss->str(orig.substr(0, len)); // set new string
+	return;
 }

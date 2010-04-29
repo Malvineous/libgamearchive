@@ -42,8 +42,12 @@ enum E_SUPPTYPE {
 	EST_DICT  // Compression dictionary is external
 };
 
+struct SuppItem {
+	iostream_sptr stream;
+	FN_TRUNCATE fnTruncate;
+};
 typedef std::map<E_SUPPTYPE, std::string> MP_SUPPLIST;
-typedef std::map<E_SUPPTYPE, iostream_sptr> MP_SUPPDATA;
+typedef std::map<E_SUPPTYPE, SuppItem> MP_SUPPDATA;
 
 class ArchiveType {
 

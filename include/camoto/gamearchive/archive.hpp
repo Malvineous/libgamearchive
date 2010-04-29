@@ -80,6 +80,13 @@ class Archive {
 		typedef boost::shared_ptr<FileEntry> EntryPtr;
 		typedef std::vector<EntryPtr> VC_ENTRYPTR;
 
+		// This function is called with a single io::stream_offset parameter when
+		// the underlying archive file needs to be shrunk to the given size.
+		FN_TRUNCATE fnTruncate;
+
+		Archive()
+			throw ();
+
 		virtual ~Archive()
 			throw ();
 

@@ -105,7 +105,7 @@ class segmented_stream_device
 
 		// Write out all the changes to the underlying stream.  On completion
 		// vcSecond and psegThird will be empty.
-		void commit();
+		void commit(FN_TRUNCATE fnTruncate);
 
 	private:
 		// Actual commit function where the destination offset can be specified.
@@ -142,7 +142,7 @@ class segmented_stream: public io::stream<segmented_stream_device>
 
 		void insert(std::streamsize lenInsert);
 		void remove(std::streamsize lenRemove);
-		void commit();
+		void commit(FN_TRUNCATE fnTruncate);
 };
 
 typedef boost::shared_ptr<segmented_stream> segstream_sptr;

@@ -451,7 +451,7 @@ void segmented_stream_device::remove(std::streamsize lenRemove)
 // it may move data around while writes are pending, causing those writes to
 // end up in the wrong place.  The segmented_stream wrapper class takes care
 // of this.
-void segmented_stream_device::commit()
+void segmented_stream_device::commit(FN_TRUNCATE fnTruncate)
 {
 	this->psFirst->seekp(0, std::ios::end);
 	io::stream_offset plenStream = this->psFirst->tellp();
@@ -482,6 +482,7 @@ void segmented_stream_device::commit()
 
 	// If the stream is larger than it should be, zero out the excess.  This will
 	// be removed once a cross-platform way of truncating a stream comes about.
+#ifdef DEBUG
 	if (plenStream > this->poffFirstEnd) {
 		this->psFirst->seekp(this->poffFirstEnd, std::ios::beg);
 		plenStream -= this->poffFirstEnd;
@@ -489,6 +490,12 @@ void segmented_stream_device::commit()
 			this->psFirst->rdbuf()->sputn("\0", 1);
 		}
 	}
+	this->psFirst->seekp(this->poffFirstEnd, std::ios::beg);
+#endif
+
+	// Cut any excess off the end
+	fnTruncate(this->poffFirstEnd);
+
 	return;
 }
 
@@ -627,10 +634,10 @@ void segmented_stream::remove(std::streamsize lenRemove)
 	this->io::stream<segmented_stream_device>::operator *().remove(lenRemove);
 }
 
-void segmented_stream::commit()
+void segmented_stream::commit(FN_TRUNCATE fnTruncate)
 {
 	this->flush();
-	this->io::stream<segmented_stream_device>::operator *().commit();
+	this->io::stream<segmented_stream_device>::operator *().commit(fnTruncate);
 }
 
 } // namespace gamearchive

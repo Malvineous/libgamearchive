@@ -21,6 +21,7 @@
 
 #include <boost/algorithm/string.hpp> // for case-insensitive string compare
 #include <boost/iostreams/copy.hpp>
+#include <boost/bind.hpp>
 #include <camoto/gamearchive.hpp>
 #include <iostream>
 #include <iomanip>
@@ -71,7 +72,10 @@ struct FIXTURE_NAME: public default_sample {
 			suppSS->exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
 			(*suppSS) << makeString(TEST_RESULT(FAT_initialstate));
 			camoto::iostream_sptr suppStream(suppSS);
-			this->suppData[ga::EST_FAT] = suppStream;
+			ga::SuppItem si;
+			si.stream = suppStream;
+			si.fnTruncate = boost::bind<void>(stringStreamTruncate, suppSS.get(), _1);
+			this->suppData[ga::EST_FAT] = si;
 			this->suppBase[ga::EST_FAT] = suppSS;
 		}
 		#endif
@@ -83,6 +87,8 @@ struct FIXTURE_NAME: public default_sample {
 			ga::Manager::arch_sptr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE));
 			this->pArchive = pTestType->open(this->baseStream, this->suppData);
 			BOOST_REQUIRE_MESSAGE(this->pArchive, "Could not create archive class");
+			this->pArchive->fnTruncate = boost::bind<void>(
+				stringStreamTruncate, this->baseData.get(), _1);
 		);
 	}
 
@@ -160,7 +166,10 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(open_invalid))
 		suppSS->exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
 		(*suppSS) << makeString(TEST_RESULT(FAT_invalidcontent));
 		camoto::iostream_sptr suppStream(suppSS);
-		suppData[ga::EST_FAT] = suppStream;
+		ga::SuppItem si;
+		si.stream = suppStream;
+		si.fnTruncate = boost::bind<void>(stringStreamTruncate, suppSS.get(), _1);
+		suppData[ga::EST_FAT] = si;
 	}
 	#endif
 
@@ -168,7 +177,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(open_invalid))
 	// ~16GB of memory.  This is an error condition (the file is corrupt/invalid)
 	// but it may succeed on a system with a lot of RAM!
 	BOOST_CHECK_THROW(
-		boost::shared_ptr<ga::Archive> pArchive(pTestType->open(psBase, suppData)),
+		ga::ArchivePtr pArchive(pTestType->open(psBase, suppData)),
 		std::ios::failure
 	);
 }

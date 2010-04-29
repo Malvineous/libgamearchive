@@ -21,11 +21,15 @@
 #define _CAMOTO_TYPES_HPP_
 
 #include <boost/shared_ptr.hpp>
+#include <boost/function.hpp>
 #include <iostream>
 
 namespace camoto {
 
 typedef boost::shared_ptr<std::iostream> iostream_sptr;
+
+// Truncate function callback (to truncate an iostream)
+typedef boost::function<void(unsigned long)> FN_TRUNCATE;
 
 } // namespace camoto
 
