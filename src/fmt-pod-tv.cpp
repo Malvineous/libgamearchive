@@ -147,15 +147,10 @@ E_CERTAINTY PODType::isInstance(iostream_sptr psArchive) const
 ArchivePtr PODType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
 	throw (std::ios::failure)
 {
-#define fmt_pod_empty \
-	"\x00\x00\x00\x00" \
-	"Empty POD file\0\0" \
-	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
 	psArchive->seekp(0, std::ios::beg);
-	psArchive->write(fmt_pod_empty, sizeof(fmt_pod_empty));
+	psArchive
+		<< u32le(0) // File count
+		<< zeroPad("Empty POD file", POD_DESCRIPTION_LEN);
 	return ArchivePtr(new PODArchive(psArchive));
 }
 
@@ -286,18 +281,13 @@ void PODArchive::setMetadata(E_METADATA item, const std::string& value)
 	// TESTED BY: fmt_pod_tv_set_metadata_description
 	// TESTED BY: fmt_pod_tv_new_to_initialstate
 	switch (item) {
-		case EM_DESCRIPTION: {
+		case EM_DESCRIPTION:
 			if (value.length() > POD_DESCRIPTION_LEN) {
 				throw std::ios::failure("description too long");
 			}
-			psArchive->seekp(POD_DESCRIPTION_OFFSET, std::ios::beg);
-			psArchive->write(value.c_str(), value.length());
-			// Pad out to POD_DESCRIPTION_LEN chars
-			char blank[POD_DESCRIPTION_LEN];
-			memset(blank, 0, POD_DESCRIPTION_LEN);
-			this->psArchive->write(blank, POD_DESCRIPTION_LEN - value.length());
+			this->psArchive->seekp(POD_DESCRIPTION_OFFSET, std::ios::beg);
+			this->psArchive << zeroPad(value, POD_DESCRIPTION_LEN);
 			break;
-		}
 		default:
 			assert(false);
 			throw std::ios::failure("unsupported metadata item");
