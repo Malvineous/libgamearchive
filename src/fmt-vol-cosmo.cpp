@@ -307,23 +307,29 @@ void VOLArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 
 	// Because the FAT is a fixed size we have to remove a blank entry to
 	// compensate for the entry we just added.
-	int indexLast = 200;
-	for (VC_ENTRYPTR::reverse_iterator i = this->vcFAT.rbegin(); i != this->vcFAT.rend(); i++) {
-		FATEntry *pFAT = dynamic_cast<FATEntry *>(i->get());
-		if (pFAT->iIndex != indexLast) {
-			// The previous slot is free, so delete it
-			this->psArchive->seekp(indexLast * VOL_FAT_ENTRY_LEN);
-			this->psArchive->remove(VOL_FAT_ENTRY_LEN);
-			break;
-		} else {
-			indexLast = pFAT->iIndex - 1;
+	if (this->vcFAT.size() > 0) {
+		int indexLast = 199;
+		for (VC_ENTRYPTR::reverse_iterator i = this->vcFAT.rbegin(); i != this->vcFAT.rend(); i++) {
+			FATEntry *pFAT = dynamic_cast<FATEntry *>(i->get());
+			if (pFAT->iIndex != indexLast) {
+				// The previous slot is free, so delete it
+				this->psArchive->seekp(indexLast * VOL_FAT_ENTRY_LEN);
+				this->psArchive->remove(VOL_FAT_ENTRY_LEN);
+				break;
+			} else {
+				indexLast = pFAT->iIndex - 1;
+			}
 		}
-	}
 
-	// Make sure an entry was removed.  This should never fail as failure would
-	// indicate there were 200+ files, which means an exception should've been
-	// thrown at the start of this function.
-	assert(indexLast >= 0);
+		// Make sure an entry was removed.  This should never fail as failure would
+		// indicate there were 200+ files, which means an exception should've been
+		// thrown at the start of this function.
+		assert(indexLast >= 0);
+	} else {
+		// No files so just remove the following entry
+		this->psArchive->seekp(1 * VOL_FAT_ENTRY_LEN);
+		this->psArchive->remove(VOL_FAT_ENTRY_LEN);
+	}
 
 	return;
 }
