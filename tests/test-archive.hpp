@@ -775,32 +775,53 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(get_metadata_description))
 	);
 
 }
-#endif
 
-#ifdef testdata_set_metadata_description
-BOOST_AUTO_TEST_CASE(TEST_NAME(set_metadata_description))
+BOOST_AUTO_TEST_CASE(TEST_NAME(set_metadata_description_larger))
 {
-	BOOST_TEST_MESSAGE("Set 'description' metadata field");
+	BOOST_TEST_MESSAGE("Set 'description' metadata field to larger value");
 
 	// We assume the format supports this metadata type, as this is checked in
 	// get_metadata_description above.
 
 	// Change the field's value
-	pArchive->setMetadata(ga::EM_DESCRIPTION, TEST_RESULT(set_metadata_description_target));
+	pArchive->setMetadata(ga::EM_DESCRIPTION, TEST_RESULT(set_metadata_description_target_larger));
 
 	BOOST_CHECK_MESSAGE(
-		is_equal(makeString(TEST_RESULT(set_metadata_description))),
+		is_equal(makeString(TEST_RESULT(set_metadata_description_larger))),
 		"Error setting 'description' metadata field"
 	);
 
 #ifdef HAS_FAT
 	BOOST_CHECK_MESSAGE(
-		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_set_metadata_description))),
+		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_set_metadata_description_larger))),
 		"Error setting 'description' metadata field"
 	);
 #endif
 }
+
+BOOST_AUTO_TEST_CASE(TEST_NAME(set_metadata_description_smaller))
+{
+	BOOST_TEST_MESSAGE("Set 'description' metadata field to smaller value");
+
+	// We assume the format supports this metadata type, as this is checked in
+	// get_metadata_description above.
+
+	// Change the field's value
+	pArchive->setMetadata(ga::EM_DESCRIPTION, TEST_RESULT(set_metadata_description_target_smaller));
+
+	BOOST_CHECK_MESSAGE(
+		is_equal(makeString(TEST_RESULT(set_metadata_description_smaller))),
+		"Error setting 'description' metadata field"
+	);
+
+#ifdef HAS_FAT
+	BOOST_CHECK_MESSAGE(
+		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_set_metadata_description_smaller))),
+		"Error setting 'description' metadata field"
+	);
 #endif
+}
+#endif // testdata_get_metadata_description
 
 BOOST_AUTO_TEST_SUITE_END()
 

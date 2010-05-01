@@ -29,8 +29,15 @@
 	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
 
-#define POD_DESC2 \
+#define POD_DESC2_larger \
 	"This is a test\0\0" \
+	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
+	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
+	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
+	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+
+#define POD_DESC2_smaller \
+	"Hello\0\0\0\0\0\0\0\0\0\0\0" \
 	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
@@ -140,11 +147,21 @@
 #define testdata_get_metadata_description \
 	"Startup 1.1 Gold"
 
-#define testdata_set_metadata_description_target \
+#define testdata_set_metadata_description_target_larger \
 	"This is a test"
 
-#define testdata_set_metadata_description \
-	"\x02\x00\x00\x00" POD_DESC2 \
+#define testdata_set_metadata_description_larger \
+	"\x02\x00\x00\x00" POD_DESC2_larger \
+	"ONE.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xa4\x00\x00\x00" \
+	"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xb3\x00\x00\x00" \
+	"This is one.dat" \
+	"This is two.dat"
+
+#define testdata_set_metadata_description_target_smaller \
+	"Hello"
+
+#define testdata_set_metadata_description_smaller \
+	"\x02\x00\x00\x00" POD_DESC2_smaller \
 	"ONE.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xa4\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xb3\x00\x00\x00" \
 	"This is one.dat" \
