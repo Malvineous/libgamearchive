@@ -152,5 +152,12 @@ std::ostream& operator << (std::ostream& s, const zeroPad& n)
 	return s;
 }
 
+std::istream& operator >> (std::istream& s, const fixedLength& n)
+{
+	n.data.resize(n.len);
+	s.read(const_cast<char *>(n.data.c_str()), n.len);
+	return s;
+}
+
 } // namespace gamearchive
 } // namespace camoto

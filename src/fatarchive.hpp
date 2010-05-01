@@ -37,7 +37,11 @@ namespace io = boost::iostreams;
 class FATArchive: virtual public Archive {
 
 	protected:
-		segstream_sptr psArchive;
+		// The archive stream must be mutable, because we need to change it by
+		// seeking and reading data in our get() functions, which don't logically
+		// change the archive's state.
+		mutable segstream_sptr psArchive;
+
 		io::stream_offset offFirstFile; // offset of first file in empty archive
 
 		struct FATEntry: virtual public FileEntry {

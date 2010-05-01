@@ -71,23 +71,27 @@ struct zeroPad {
 
 std::ostream& operator << (std::ostream& s, const zeroPad& n);
 
-template <class T>
-inline boost::shared_ptr<T>& operator << (boost::shared_ptr<T>& s, const zeroPad& n) {
+struct fixedLength {
+	std::string& data;
+	int len;
+	fixedLength(std::string& data, int len) :
+		data(data),
+		len(len)
+	{
+	}
+};
+
+std::istream& operator >> (std::istream& s, const fixedLength& n);
+
+template <class T, typename I>
+inline boost::shared_ptr<T>& operator << (boost::shared_ptr<T>& s, const I& n) {
 	(*(s.get())) << n;
 	return s;
 }
 
-// Helper functions to allow operations on iostream_sptr and segstream_sptr
-// to be performed on their underlying streams.
-template <class T>
-inline boost::shared_ptr<T>& operator >> (boost::shared_ptr<T>& s, const number_format_read& n) {
+template <class T, typename I>
+inline boost::shared_ptr<T>& operator >> (boost::shared_ptr<T>& s, const I& n) {
 	(*(s.get())) >> n;
-	return s;
-}
-
-template <class T>
-inline boost::shared_ptr<T>& operator << (boost::shared_ptr<T>& s, const number_format_write& n) {
-	(*(s.get())) << n;
 	return s;
 }
 
