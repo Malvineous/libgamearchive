@@ -11,6 +11,7 @@ tests_SOURCES += test-fmt-pod-tv.cpp
 tests_SOURCES += test-fmt-bnk-harry.cpp
 tests_SOURCES += test-fmt-res-stellar7.cpp
 tests_SOURCES += test-fmt-hog-descent.cpp
+tests_SOURCES += test-fmt-epf-lionking.cpp
 
 EXTRA_tests_SOURCES = tests.hpp test-archive.hpp
 

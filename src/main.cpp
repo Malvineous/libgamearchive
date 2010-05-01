@@ -27,6 +27,7 @@
 #include "fmt-bnk-harry.hpp"
 #include "fmt-res-stellar7.hpp"
 #include "fmt-hog-descent.hpp"
+#include "fmt-epf-lionking.hpp"
 #include "debug.hpp"
 
 namespace camoto {
@@ -68,6 +69,7 @@ Manager::Manager()
 	this->vcTypes.push_back(arch_sptr(new BNKType()));
 	this->vcTypes.push_back(arch_sptr(new RESType()));
 	this->vcTypes.push_back(arch_sptr(new HOGType()));
+	this->vcTypes.push_back(arch_sptr(new EPFType()));
 }
 
 Manager::~Manager()
