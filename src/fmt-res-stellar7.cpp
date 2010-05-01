@@ -224,7 +224,7 @@ ArchivePtr RESArchiveFolder::openFolder(const EntryPtr& id)
 }
 
 
-void RESArchiveFolder::updateFileOffset(const FATEntry *pid)
+void RESArchiveFolder::updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
 	throw (std::ios::failure)
 {
 	// This format doesn't have any offsets that need updating.  As this function
@@ -233,7 +233,7 @@ void RESArchiveFolder::updateFileOffset(const FATEntry *pid)
 	return;
 }
 
-void RESArchiveFolder::updateFileSize(const FATEntry *pid)
+void RESArchiveFolder::updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_res_stellar7_insert*
@@ -243,7 +243,7 @@ void RESArchiveFolder::updateFileSize(const FATEntry *pid)
 	return;
 }
 
-void RESArchiveFolder::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+void RESArchiveFolder::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_res_stellar7_insert*
@@ -269,7 +269,7 @@ void RESArchiveFolder::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pN
 	return;
 }
 
-void RESArchiveFolder::removeFATEntry(const FATEntry *pid)
+void RESArchiveFolder::preRemoveFile(const FATEntry *pid)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_res_stellar7_remove*

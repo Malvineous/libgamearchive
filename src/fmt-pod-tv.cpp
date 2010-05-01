@@ -295,7 +295,7 @@ void PODArchive::setMetadata(E_METADATA item, const std::string& value)
 	return;
 }
 
-void PODArchive::updateFileOffset(const FATEntry *pid)
+void PODArchive::updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_pod_tv_insert*
@@ -305,7 +305,7 @@ void PODArchive::updateFileOffset(const FATEntry *pid)
 	return;
 }
 
-void PODArchive::updateFileSize(const FATEntry *pid)
+void PODArchive::updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_pod_tv_insert*
@@ -315,7 +315,7 @@ void PODArchive::updateFileSize(const FATEntry *pid)
 	return;
 }
 
-void PODArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+void PODArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_pod_tv_insert*
@@ -348,7 +348,7 @@ void PODArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 	return;
 }
 
-void PODArchive::removeFATEntry(const FATEntry *pid)
+void PODArchive::preRemoveFile(const FATEntry *pid)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_pod_tv_remove*

@@ -211,7 +211,7 @@ void GRPArchive::rename(EntryPtr& id, const std::string& strNewName)
 	return;
 }
 
-void GRPArchive::updateFileOffset(const FATEntry *pid)
+void GRPArchive::updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
 	throw (std::ios::failure)
 {
 	// This format doesn't have any offsets that need updating.  As this function
@@ -220,7 +220,7 @@ void GRPArchive::updateFileOffset(const FATEntry *pid)
 	return;
 }
 
-void GRPArchive::updateFileSize(const FATEntry *pid)
+void GRPArchive::updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_grp_duke3d_insert*
@@ -230,7 +230,7 @@ void GRPArchive::updateFileSize(const FATEntry *pid)
 	return;
 }
 
-void GRPArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+void GRPArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_grp_duke3d_insert*
@@ -260,7 +260,7 @@ void GRPArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 	return;
 }
 
-void GRPArchive::removeFATEntry(const FATEntry *pid)
+void GRPArchive::preRemoveFile(const FATEntry *pid)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_grp_duke3d_remove*

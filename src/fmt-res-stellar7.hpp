@@ -89,16 +89,16 @@ class RESArchiveFolder: virtual public FATArchive, virtual public ArchiveWithFol
 
 		// As per FATArchive (see there for docs)
 
-		virtual void updateFileOffset(const FATEntry *pid)
+		virtual void updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
 			throw (std::ios::failure);
 
-		virtual void updateFileSize(const FATEntry *pid)
+		virtual void updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
 			throw (std::ios_base::failure);
 
-		void insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+		virtual void preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 			throw (std::ios_base::failure);
 
-		void removeFATEntry(const FATEntry *pid)
+		virtual void preRemoveFile(const FATEntry *pid)
 			throw (std::ios_base::failure);
 
 };

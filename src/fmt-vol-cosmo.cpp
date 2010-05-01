@@ -259,7 +259,7 @@ void VOLArchive::rename(EntryPtr& id, const std::string& strNewName)
 	return;
 }
 
-void VOLArchive::updateFileOffset(const FATEntry *pid)
+void VOLArchive::updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_vol_cosmo_insert*
@@ -269,7 +269,7 @@ void VOLArchive::updateFileOffset(const FATEntry *pid)
 	return;
 }
 
-void VOLArchive::updateFileSize(const FATEntry *pid)
+void VOLArchive::updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_vol_cosmo_insert*
@@ -279,7 +279,7 @@ void VOLArchive::updateFileSize(const FATEntry *pid)
 	return;
 }
 
-void VOLArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+void VOLArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_vol_cosmo_insert*
@@ -334,7 +334,7 @@ void VOLArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 	return;
 }
 
-void VOLArchive::removeFATEntry(const FATEntry *pid)
+void VOLArchive::preRemoveFile(const FATEntry *pid)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_vol_cosmo_remove*

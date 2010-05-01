@@ -205,7 +205,7 @@ void HOGArchive::rename(EntryPtr& id, const std::string& strNewName)
 	return;
 }
 
-void HOGArchive::updateFileOffset(const FATEntry *pid)
+void HOGArchive::updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
 	throw (std::ios::failure)
 {
 	// This format doesn't have any offsets that need updating.  As this function
@@ -214,7 +214,7 @@ void HOGArchive::updateFileOffset(const FATEntry *pid)
 	return;
 }
 
-void HOGArchive::updateFileSize(const FATEntry *pid)
+void HOGArchive::updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_hog_descent_insert*
@@ -224,7 +224,7 @@ void HOGArchive::updateFileSize(const FATEntry *pid)
 	return;
 }
 
-void HOGArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+void HOGArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_hog_descent_insert*
@@ -247,7 +247,7 @@ void HOGArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 	return;
 }
 
-void HOGArchive::removeFATEntry(const FATEntry *pid)
+void HOGArchive::preRemoveFile(const FATEntry *pid)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_hog_descent_remove*

@@ -147,7 +147,7 @@ FATArchive::EntryPtr FATArchive::insert(const EntryPtr& idBeforeThis, const std:
 
 	// Add the file's entry from the FAT.  May throw (e.g. filename too long),
 	// archive should be left untouched in this case.
-	this->insertFATEntry(pFATBeforeThis, pNewFile);
+	this->preInsertFile(pFATBeforeThis, pNewFile);
 
 	if (this->isValid(idBeforeThis)) {
 		// Update the offsets of any files located after this one (since they will
@@ -168,11 +168,13 @@ FATArchive::EntryPtr FATArchive::insert(const EntryPtr& idBeforeThis, const std:
 	}
 
 	// Insert space for the file's data into the archive.  If there is a header
-	// (e.g. embedded FAT) then insertFATEntry() will have inserted space for
+	// (e.g. embedded FAT) then preInsertFile() will have inserted space for
 	// this and written the data, so our insert should start just after the
 	// header.
 	this->psArchive->seekp(pNewFile->iOffset + pNewFile->lenHeader);
 	this->psArchive->insert(pNewFile->iSize);
+
+	this->postInsertFile(pNewFile);
 
 	return ep;
 }
@@ -192,7 +194,7 @@ void FATArchive::remove(EntryPtr& id)
 	assert(pFATDel);
 
 	// Remove the file's entry from the FAT
-	this->removeFATEntry(pFATDel);
+	this->preRemoveFile(pFATDel);
 
 	// Remove the file's data from the archive
 	this->psArchive->seekp(pFATDel->iOffset);
@@ -209,6 +211,8 @@ void FATArchive::remove(EntryPtr& id)
 
 	// Mark it as invalid in case some other code is still holding on to it.
 	pFATDel->bValid = false;
+
+	this->postRemoveFile(pFATDel);
 
 	return;
 }
@@ -241,7 +245,7 @@ void FATArchive::resize(EntryPtr& id, size_t iNewSize)
 	pFAT->iSize += iDelta;
 
 	// Update the FAT with the file's new size
-	this->updateFileSize(pFAT);
+	this->updateFileSize(pFAT, iDelta);
 
 	// Adjust the in-memory offsets etc. of the rest of the files in the archive,
 	// including any open streams.
@@ -293,7 +297,7 @@ void FATArchive::shiftFiles(io::stream_offset offStart, std::streamsize deltaOff
 			// ensure the right place in the file gets changed.
 			pFAT->iIndex += deltaIndex;
 
-			this->updateFileOffset(pFAT);
+			this->updateFileOffset(pFAT, deltaOffset);
 		}
 	}
 
@@ -304,6 +308,18 @@ void FATArchive::shiftFiles(io::stream_offset offStart, std::streamsize deltaOff
 		}
 	}
 	return;
+}
+
+void FATArchive::postInsertFile(FATEntry *pNewEntry)
+	throw (std::ios_base::failure)
+{
+	// No-op default
+}
+
+void FATArchive::postRemoveFile(const FATEntry *pid)
+	throw (std::ios_base::failure)
+{
+	// No-op default
 }
 
 } // namespace gamearchive

@@ -120,11 +120,11 @@ class FATArchive: virtual public Archive {
 		// Methods to be filled out by descendent classes
 
 		// Adjust the offset of the given file in the on-disk FAT.
-		virtual void updateFileOffset(const FATEntry *pid)
+		virtual void updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
 			throw (std::ios::failure) = 0;
 
 		// Adjust the size of the given file in the on-disk FAT.
-		virtual void updateFileSize(const FATEntry *pid)
+		virtual void updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
 			throw (std::ios::failure) = 0;
 
 		// Insert a new entry in the on-disk FAT.  It should be inserted before
@@ -136,10 +136,16 @@ class FATArchive: virtual public Archive {
 		// pNewEntry->iIndex may be the same as an existing file (but the existing
 		// file will have its index moved after this function returns.)
 		// All this function has to do is make room in the FAT and write out the
-		// new entry.
-		// Invalidates existing EntryPtrs.
-		virtual void insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+		// new entry.  It also needs to set the lenHeader field in pNewEntry.
+		// Invalidates existing EntryPtrs. TODO - does it?
+		virtual void preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 			throw (std::ios::failure) = 0;
+
+		// Called after the file data has been inserted.  Only needs to be
+		// overridden if there are tasks to perform after the file has been set.
+		// pNewEntry can be changed if need be, but this is not required.
+		virtual void postInsertFile(FATEntry *pNewEntry)
+			throw (std::ios::failure);
 
 		// Remove the entry from the FAT.  The file data has already been removed
 		// from the archive, but the offsets have not yet been updated.
@@ -149,8 +155,12 @@ class FATArchive: virtual public Archive {
 		// offsets will not take into account any changes resulting from the FAT
 		// changing size, which must be handled by this function.
 		// Invalidates existing EntryPtrs.
-		virtual void removeFATEntry(const FATEntry *pid)
+		virtual void preRemoveFile(const FATEntry *pid)
 			throw (std::ios::failure) = 0;
+
+		// Called after the file data has been removed.  Only override if needed.
+		virtual void postRemoveFile(const FATEntry *pid)
+			throw (std::ios::failure);
 
 };
 

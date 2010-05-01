@@ -248,7 +248,7 @@ void BNKArchive::flush()
 	return;
 }
 
-void BNKArchive::updateFileOffset(const FATEntry *pid)
+void BNKArchive::updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_bnk_harry_insert*
@@ -260,7 +260,7 @@ void BNKArchive::updateFileOffset(const FATEntry *pid)
 	return;
 }
 
-void BNKArchive::updateFileSize(const FATEntry *pid)
+void BNKArchive::updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_bnk_harry_insert*
@@ -277,7 +277,7 @@ void BNKArchive::updateFileSize(const FATEntry *pid)
 	return;
 }
 
-void BNKArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+void BNKArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_bnk_harry_insert*
@@ -331,7 +331,7 @@ void BNKArchive::insertFATEntry(const FATEntry *idBeforeThis, FATEntry *pNewEntr
 	return;
 }
 
-void BNKArchive::removeFATEntry(const FATEntry *pid)
+void BNKArchive::preRemoveFile(const FATEntry *pid)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_bnk_harry_remove*
