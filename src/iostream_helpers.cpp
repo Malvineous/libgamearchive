@@ -32,6 +32,8 @@
 #define BUFFER_SIZE 4096
 #endif
 
+#define ZEROPAD_BLOCK_SIZE  16
+
 namespace camoto {
 namespace gamearchive {
 
@@ -130,33 +132,93 @@ void streamMove(std::iostream& ps, io::stream_offset offFrom,
 	return;
 }
 
-#define ZEROPAD_BLOCK_SIZE  16
-std::ostream& operator << (std::ostream& s, const zeroPad& n)
+null_padded_read::null_padded_read(std::string& r, std::streamsize len, bool chop) :
+	r(r),
+	len(len),
+	chop(chop)
 {
-	int lenData = n.data.length();
-	assert(lenData <= n.len);
+}
+
+void null_padded_read::read(std::istream& s) const
+{
+	// Make the buffer the length of the whole operation
+	this->r.resize(this->len);
+
+	// Read in the whole data
+	s.read(const_cast<char *>(this->r.c_str()), this->len);
+
+	if (this->chop) {
+		// Shrink the string back to the first null
+		this->r.resize(strlen(this->r.c_str()));
+	}
+	return;
+}
+
+null_padded_write::null_padded_write(const std::string& r, std::streamsize len) :
+	r(r),
+	len(len)
+{
+}
+
+void null_padded_write::write(std::ostream& s) const
+{
+	int lenData = this->r.length();
+	assert(lenData <= this->len);
 
 	// Write the content
-	s.write(n.data.c_str(), lenData);
+	s.write(this->r.c_str(), lenData);
 
 	// Pad out to the full length with nulls
 	char blank[ZEROPAD_BLOCK_SIZE];
 	memset(blank, 0, ZEROPAD_BLOCK_SIZE);
-	int lenRemaining = n.len - lenData;
+	int lenRemaining = this->len - lenData;
 	int amt = ZEROPAD_BLOCK_SIZE;
 	while (lenRemaining > 0) {
 		if (lenRemaining < ZEROPAD_BLOCK_SIZE) amt = lenRemaining;
 		s.write(blank, amt);
 		lenRemaining -= amt;
 	}
-	return s;
+	return;
 }
 
-std::istream& operator >> (std::istream& s, const fixedLength& n)
+null_padded_const::null_padded_const(const std::string& r, std::streamsize len) :
+	null_padded_write(r, len)
 {
-	n.data.resize(n.len);
-	s.read(const_cast<char *>(n.data.c_str()), n.len);
-	return s;
+}
+
+null_padded::null_padded(std::string& r, std::streamsize len, bool chop) :
+	null_padded_read(r, len, chop),
+	null_padded_write(r, len)
+{
+}
+
+
+number_format_u8::number_format_u8(uint8_t& r) :
+	r(r)
+{
+}
+
+void number_format_u8::read(std::istream& s) const
+{
+	s.read((char *)&this->r, 1);
+	return;
+}
+
+void number_format_u8::write(std::ostream& s) const
+{
+	s.write((char *)&this->r, 1);
+	return;
+}
+
+number_format_const_u8::number_format_const_u8(const uint8_t& r) :
+	r(r)
+{
+}
+
+void number_format_const_u8::write(std::ostream& s) const
+{
+	s.write((char *)&this->r, 1);
+	return;
 }
 
 } // namespace gamearchive

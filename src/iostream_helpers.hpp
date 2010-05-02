@@ -23,7 +23,7 @@
 #include <iostream>
 #include <exception>
 #include <string.h>
-
+#include <boost/iostreams/stream.hpp>
 #include <camoto/types.hpp>
 
 #define BYTEORDER_USE_IOSTREAMS
@@ -55,34 +55,72 @@ inline std::string string_from_buf(const uint8_t *pbuf, int maxlen)
 	return std::string((char *)pbuf, maxlen);
 }
 
-// zeroPad will pad a string with nulls when writing it to a stream, e.g.
-//   file << zeroPad("hello", 10);  // write 10 bytes, "hello" and five nulls
+// nullPadded will pad a string with nulls when writing it to a stream, e.g.
+//   file << nullPadded("hello", 10);  // write 10 bytes, "hello" and five nulls
 // It is an error for the string ("hello") to be longer than the pad (10),
 // this will cause an assertion failure at runtime.
-struct zeroPad {
-	const std::string& data;
-	int len;
-	zeroPad(const std::string& data, int len) :
-		data(data),
-		len(len)
-	{
-	}
+// It can also be used when reading from a stream, e.g.
+//   file >> nullPadded(str, 10);  // read 10 bytes, store until first null
+// In this case 10 bytes will always be read, but they will only be stored in
+// str until the first null is encountered.  If there are no null bytes then
+// the final string will be the full 10 chars (std::string will provide the
+// null termination in this case.)
+
+
+struct null_padded_read {
+	null_padded_read(std::string& r, std::streamsize len, bool chop);
+	void read(std::istream& s) const;
+
+	private:
+		std::string& r;
+		std::streamsize len;
+		bool chop;
 };
 
-std::ostream& operator << (std::ostream& s, const zeroPad& n);
+struct null_padded_write {
+	null_padded_write(const std::string& r, std::streamsize len);
+	void write(std::ostream& s) const;
 
-struct fixedLength {
-	std::string& data;
-	int len;
-	fixedLength(std::string& data, int len) :
-		data(data),
-		len(len)
-	{
-	}
+	private:
+		const std::string& r;
+		std::streamsize len;
 };
 
-std::istream& operator >> (std::istream& s, const fixedLength& n);
+struct null_padded_const: public null_padded_write {
+	null_padded_const(const std::string& r, std::streamsize len);
+};
 
+struct null_padded: public null_padded_read, public null_padded_write {
+	null_padded(std::string& r, std::streamsize len, bool chop);
+};
+
+// If you get an error related to the next line (e.g. no match for operator >>)
+// it's because you're trying to read a value into a const variable.
+inline std::istream& operator >> (std::istream& s, const null_padded_read& n) {
+	n.read(s);
+	return s;
+}
+
+inline std::ostream& operator << (std::ostream& s, const null_padded_write& n) {
+	n.write(s);
+	return s;
+}
+
+inline null_padded nullPadded(std::string& r, int len)
+{
+	return null_padded(r, len, true);
+}
+inline null_padded_const nullPadded(const std::string& r, int len)
+{
+	return null_padded_const(r, len);
+}
+inline null_padded fixedLength(std::string& r, int len)
+{
+	return null_padded(r, len, false);
+}
+
+// Convenience operators to allow iostream_sptr variables to be used with
+// stream operators the same way normal std::iostream variables are.
 template <class T, typename I>
 inline boost::shared_ptr<T>& operator << (boost::shared_ptr<T>& s, const I& n) {
 	(*(s.get())) << n;
@@ -93,6 +131,34 @@ template <class T, typename I>
 inline boost::shared_ptr<T>& operator >> (boost::shared_ptr<T>& s, const I& n) {
 	(*(s.get())) >> n;
 	return s;
+}
+
+// uint8_t / byte iostream operators
+
+struct number_format_u8: public number_format_read, public number_format_write {
+	number_format_u8(uint8_t& r);
+	void read(std::istream& s) const;
+	void write(std::ostream& s) const;
+
+	private:
+		uint8_t& r;
+};
+
+struct number_format_const_u8: public number_format_write {
+	number_format_const_u8(const uint8_t& r);
+	void write(std::ostream& s) const;
+
+	private:
+		const uint8_t& r;
+};
+
+inline number_format_u8 u8(uint8_t& r)
+{
+	return number_format_u8(r);
+}
+inline number_format_const_u8 u8(const uint8_t& r)
+{
+	return number_format_const_u8(r);
 }
 
 } // namespace gamearchive
