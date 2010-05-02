@@ -30,14 +30,23 @@
 #include <string.h>
 
 #include "fmt-grp-duke3d.hpp"
-#define D // TEMP!!!
 #include "iostream_helpers.hpp"
 #include "debug.hpp"
 
-#define GRP_FAT_OFFSET        16  // "KenSilverman" header + u32le file count
-#define GRP_MAX_FILENAME_LEN  12
-#define GRP_FAT_ENTRY_LEN     16  // filename + u32le size
-#define GRP_FIRST_FILE_OFFSET GRP_FAT_OFFSET
+#define GRP_FILECOUNT_OFFSET    12
+#define GRP_HEADER_LEN          16  // "KenSilverman" header + u32le file count
+#define GRP_FAT_OFFSET          GRP_HEADER_LEN
+#define GRP_FILENAME_FIELD_LEN  12
+#define GRP_MAX_FILENAME_LEN    GRP_FILENAME_FIELD_LEN
+#define GRP_FAT_ENTRY_LEN       16  // filename + u32le size
+#define GRP_FIRST_FILE_OFFSET   GRP_FAT_OFFSET  // empty archive only
+
+#define GRP_SAFETY_MAX_FILECOUNT  8192 // Maximum value we will load
+
+#define GRP_FATENTRY_OFFSET(e) (GRP_HEADER_LEN + e->iIndex * GRP_FAT_ENTRY_LEN)
+
+#define GRP_FILENAME_OFFSET(e) GRP_FATENTRY_OFFSET(e)
+#define GRP_FILESIZE_OFFSET(e) (GRP_FATENTRY_OFFSET(e) + GRP_FILENAME_FIELD_LEN)
 
 namespace camoto {
 namespace gamearchive {
@@ -136,51 +145,40 @@ GRPArchive::GRPArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
 		FATArchive(psArchive, GRP_FIRST_FILE_OFFSET)
 {
-	psArchive->seekg(12, std::ios::beg); // skip "KenSilverman" sig
+	this->psArchive->seekg(12, std::ios::beg); // skip "KenSilverman" sig
 
 	// We still have to perform sanity checks in case the user forced an archive
 	// to open even though it failed the signature check.
-	if (psArchive->tellg() != 12) throw std::ios::failure("File too short");
+	if (this->psArchive->tellg() != 12) throw std::ios::failure("file too short");
 
-	uint32_t iFileCount;
-	psArchive >> u32le(iFileCount);
+	uint32_t numFiles;
+	this->psArchive >> u32le(numFiles);
 
-	boost::shared_array<uint8_t> pFATBuf;
-	try {
-		pFATBuf.reset(new uint8_t[iFileCount * GRP_FAT_ENTRY_LEN]);
-		this->vcFAT.reserve(iFileCount);
-	} catch (std::bad_alloc) {
-		std::cerr << "Unable to allocate enough memory for " << iFileCount
-			<< " files." << std::endl;
-		throw std::ios::failure("Memory allocation failure (archive corrupted?)");
+	if (numFiles >= GRP_SAFETY_MAX_FILECOUNT) {
+		throw std::ios::failure("too many files or corrupted archive");
 	}
 
-	// Read in all the FAT in one operation
-	psArchive->read((char *)pFATBuf.get(), iFileCount * GRP_FAT_ENTRY_LEN);
-	if (psArchive->gcount() != iFileCount * GRP_FAT_ENTRY_LEN) {
-		std::cerr << "GRP file only " << psArchive->tellg()
-			<< " bytes long (FAT is meant to be first " << (iFileCount + 1) * GRP_FAT_ENTRY_LEN
-			<< " bytes.)" << std::endl;
-		throw std::ios::failure("File has been truncated, it stops in the middle "
-			"of the FAT!");
+	io::stream_offset offNext = GRP_HEADER_LEN + (numFiles * GRP_FAT_ENTRY_LEN);
+	for (int i = 0; i < numFiles; i++) {
+		FATEntry *fatEntry = new FATEntry();
+		EntryPtr ep(fatEntry);
+
+		fatEntry->iIndex = i;
+		fatEntry->iOffset = offNext;
+		fatEntry->lenHeader = 0;
+		fatEntry->eType = EFT_USEFILENAME;
+		fatEntry->fAttr = 0;
+		fatEntry->bValid = true;
+
+		// Read the data in from the FAT entry in the file
+		this->psArchive
+			>> nullPadded(fatEntry->strName, GRP_FILENAME_FIELD_LEN)
+			>> u32le(fatEntry->iSize);
+
+		this->vcFAT.push_back(ep);
+		offNext += fatEntry->iSize;
 	}
 
-	int iNextOffset = (iFileCount+1) * GRP_FAT_ENTRY_LEN; // offset of first file (+1 for KenSilverman sig)
-	for (int i = 0; i < iFileCount; i++) {
-		FATEntry *pEntry = new FATEntry();
-		pEntry->iIndex = i;
-		pEntry->strName = string_from_buf(&pFATBuf[i*GRP_FAT_ENTRY_LEN], GRP_MAX_FILENAME_LEN);
-		pEntry->iOffset = iNextOffset;
-		pEntry->iSize = u32le_from_buf(&pFATBuf[i*GRP_FAT_ENTRY_LEN + GRP_MAX_FILENAME_LEN]);
-		pEntry->lenHeader = 0;
-		pEntry->eType = EFT_USEFILENAME;
-		pEntry->fAttr = 0;
-		pEntry->bValid = true;
-		this->vcFAT.push_back(EntryPtr(pEntry));
-
-		// Update the offset for the next file
-		iNextOffset += pEntry->iSize;
-	}
 	refcount_qenterclass(GRPArchive);
 }
 
@@ -203,8 +201,8 @@ void GRPArchive::rename(EntryPtr& id, const std::string& strNewName)
 			TOSTRING(GRP_MAX_FILENAME_LEN) " chars");
 	}
 
-	this->psArchive->seekp((pEntry->iIndex + 1) * GRP_FAT_ENTRY_LEN);
-	this->psArchive << nullPadded(strNewName, GRP_MAX_FILENAME_LEN);
+	this->psArchive->seekp(GRP_FILENAME_OFFSET(pEntry));
+	this->psArchive << nullPadded(strNewName, GRP_FILENAME_FIELD_LEN);
 
 	pEntry->strName = strNewName;
 
@@ -225,7 +223,7 @@ void GRPArchive::updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
 {
 	// TESTED BY: fmt_grp_duke3d_insert*
 	// TESTED BY: fmt_grp_duke3d_resize*
-	this->psArchive->seekp((pid->iIndex + 1) * GRP_FAT_ENTRY_LEN + GRP_MAX_FILENAME_LEN);
+	this->psArchive->seekp(GRP_FILESIZE_OFFSET(pid));
 	this->psArchive << u32le(pid->iSize);
 	return;
 }
@@ -245,12 +243,12 @@ void GRPArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry
 	// Because the new entry isn't in the vector yet we need to shift it manually
 	pNewEntry->iOffset += GRP_FAT_ENTRY_LEN;
 
-	this->psArchive->seekp((pNewEntry->iIndex + 1) * GRP_FAT_ENTRY_LEN);
+	this->psArchive->seekp(GRP_FATENTRY_OFFSET(pNewEntry));
 	this->psArchive->insert(GRP_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
 
 	this->psArchive
-		<< nullPadded(pNewEntry->strName, GRP_MAX_FILENAME_LEN)
+		<< nullPadded(pNewEntry->strName, GRP_FILENAME_FIELD_LEN)
 		<< u32le(pNewEntry->iSize);
 
 	// Update the offsets now there's a new FAT entry taking up space.
@@ -271,7 +269,7 @@ void GRPArchive::preRemoveFile(const FATEntry *pid)
 	// it'll overwrite something else.)
 	this->shiftFiles(GRP_FAT_OFFSET + this->vcFAT.size() * GRP_FAT_ENTRY_LEN, -GRP_FAT_ENTRY_LEN, 0);
 
-	this->psArchive->seekp((pid->iIndex + 1) * GRP_FAT_ENTRY_LEN);
+	this->psArchive->seekp(GRP_FATENTRY_OFFSET(pid));
 	this->psArchive->remove(GRP_FAT_ENTRY_LEN);
 
 	this->updateFileCount(this->vcFAT.size() - 1);
@@ -283,7 +281,7 @@ void GRPArchive::updateFileCount(uint32_t iNewCount)
 {
 	// TESTED BY: fmt_grp_duke3d_insert*
 	// TESTED BY: fmt_grp_duke3d_remove*
-	this->psArchive->seekp(12);
+	this->psArchive->seekp(GRP_FILECOUNT_OFFSET);
 	this->psArchive << u32le(iNewCount);
 	return;
 }
