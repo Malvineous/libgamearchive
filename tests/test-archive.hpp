@@ -144,44 +144,56 @@ BOOST_FIXTURE_TEST_SUITE(SUITE_NAME, FIXTURE_NAME)
 
 ISINSTANCE_TEST(c00, INITIALSTATE_NAME, ga::EC_DEFINITELY_YES);
 
-#ifdef testdata_invalidcontent
-// Make sure a corrupted file doesn't segfault
-BOOST_AUTO_TEST_CASE(TEST_NAME(open_invalid))
-{
-	BOOST_TEST_MESSAGE("Opening invalid archive");
 
-	// Find the archive handler
-	boost::shared_ptr<ga::Manager> pManager(ga::getManager());
-	ga::Manager::arch_sptr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE));
-
-	// Prepare an invalid archive
-	boost::shared_ptr<std::stringstream> psstrBase(new std::stringstream);
-	(*psstrBase) << makeString(TEST_RESULT(invalidcontent));
-	camoto::iostream_sptr psBase(psstrBase);
-
-	ga::MP_SUPPDATA suppData;
-	#ifdef HAS_FAT
-	{
-		boost::shared_ptr<std::stringstream> suppSS(new std::stringstream);
-		suppSS->exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
-		(*suppSS) << makeString(TEST_RESULT(FAT_invalidcontent));
-		camoto::iostream_sptr suppStream(suppSS);
-		ga::SuppItem si;
-		si.stream = suppStream;
-		si.fnTruncate = boost::bind<void>(stringStreamTruncate, suppSS.get(), _1);
-		suppData[ga::EST_FAT] = si;
+// Define an INVALIDDATA_TEST macro which we use to confirm the reader correctly
+// rejects a file with invalid data.  This is defined as a macro so the
+// format-specific code can reuse it later to test various invalid formats.
+#ifdef HAS_FAT
+#	define INVALIDDATA_FATCODE(d) \
+	{ \
+		boost::shared_ptr<std::stringstream> suppSS(new std::stringstream); \
+		suppSS->exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit); \
+		(*suppSS) << makeString(d); \
+		camoto::iostream_sptr suppStream(suppSS); \
+		ga::SuppItem si; \
+		si.stream = suppStream; \
+		si.fnTruncate = boost::bind<void>(stringStreamTruncate, suppSS.get(), _1); \
+		suppData[ga::EST_FAT] = si; \
 	}
-	#endif
-
-	// Try to open the invalid file.  This will result in an attempt to allocate
-	// ~16GB of memory.  This is an error condition (the file is corrupt/invalid)
-	// but it may succeed on a system with a lot of RAM!
-	BOOST_CHECK_THROW(
-		ga::ArchivePtr pArchive(pTestType->open(psBase, suppData)),
-		std::ios::failure
-	);
-}
+#else
+#	define INVALIDDATA_FATCODE(d)
 #endif
+
+#define INVALIDDATA_TEST(c, d) \
+	INVALIDDATA_TEST_FULL(c, d, 0)
+
+#define INVALIDDATA_TEST_FAT(c, d, f) \
+	INVALIDDATA_TEST_FULL(c, d, f)
+
+#define INVALIDDATA_TEST_FULL(c, d, f) \
+	/* Run an isInstance test first to make sure the data is accepted */ \
+	ISINSTANCE_TEST(invaliddata_ ## c, d, ga::EC_DEFINITELY_YES); \
+	\
+	BOOST_AUTO_TEST_CASE(TEST_NAME(invaliddata_ ## c)) \
+	{ \
+		BOOST_TEST_MESSAGE("invalidData check (" ARCHIVE_TYPE "; " #c ")"); \
+		\
+		boost::shared_ptr<ga::Manager> pManager(ga::getManager()); \
+		ga::Manager::arch_sptr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE)); \
+		\
+		/* Prepare an invalid archive */ \
+		boost::shared_ptr<std::stringstream> psstrBase(new std::stringstream); \
+		(*psstrBase) << makeString(d); \
+		camoto::iostream_sptr psBase(psstrBase); \
+		\
+		ga::MP_SUPPDATA suppData; \
+		INVALIDDATA_FATCODE(f) \
+		\
+		BOOST_CHECK_THROW( \
+			ga::ArchivePtr pArchive(pTestType->open(psBase, suppData)), \
+			std::ios::failure \
+		); \
+	}
 
 BOOST_AUTO_TEST_CASE(TEST_NAME(open))
 {
@@ -762,6 +774,9 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(get_metadata_description))
 
 	// Change the field's value
 	std::string value = pArchive->getMetadata(ga::EM_DESCRIPTION);
+
+	// Make sure we didn't read in extra data (e.g. 400MB with a broken length)
+	BOOST_REQUIRE_EQUAL(value.length(), sizeof(TEST_RESULT(get_metadata_description)) - 1);
 
 	// Put it in a stringstream to allow use of the standard checking mechanism
 	std::ostringstream out;

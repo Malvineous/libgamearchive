@@ -50,14 +50,6 @@
 	"This is one.dat" \
 	"This is two.dat"
 
-// This must be a valid file (correct signature) but with invalid content.
-#define testdata_invalidcontent \
-	"\x00\x00\x00\xf0" POD_DESC \
-	"ONE.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xa4\x00\x00\x00" \
-	"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xb3\x00\x00\x00" \
-	"This is one.dat" \
-	"This is two.dat"
-
 #define testdata_rename \
 	"\x02\x00\x00\x00" POD_DESC \
 	"THREE.DAT\0\0\0\0\0\0\0"   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xa4\x00\x00\x00" \
@@ -207,6 +199,7 @@ ISINSTANCE_TEST(c03,
 	ga::EC_DEFINITELY_NO
 );
 
+// Control characters in the description field
 ISINSTANCE_TEST(c04,
 	"\x02\x00\x00\x00"
 	"Startup 1.1 Gold"
@@ -220,3 +213,9 @@ ISINSTANCE_TEST(c04,
 	"This is two.dat",
 	ga::EC_DEFINITELY_NO
 );
+
+// Not really possible to do any INVALIDDATA_TEST() tests here, because the only
+// value that could cause problems (number of files) is used to check the file
+// for validity on account of the format having no signature.  So an invalid
+// value will cause the ISINSTANCE_TEST to fail before we even get to the
+// INVALIDDATA_TEST.

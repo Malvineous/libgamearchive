@@ -32,17 +32,6 @@
 	"\x07ONE.DAT\0\0\0\0\0" "\x16\x00\x00\x00" "\x0f\x00\x00\x00" \
 	"\x07TWO.DAT\0\0\0\0\0" "\x3b\x00\x00\x00" "\x0f\x00\x00\x00"
 
-// This must be a valid file (correct signature) but with invalid content
-// Can't really do that here, because the loader will just ignore invalid files
-#define testdata_invalidcontent \
-	"\x04-ID-" "\x07ONE.DAT\0\0\0\0\0" "\xef\x00\x00\x00" \
-	"This is one.dat" \
-	"\x04-ID-" "\x07TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is two.dat"
-#define testdata_FAT_invalidcontent \
-	"\x07ONE.DAT\0\0\0\0\0" "\x16\x00\x00\x00" "\xef\x00\x00\x00" \
-	"\x07TWO.DAT\0\0\0\0\0" "\x3b\x00\x00\x00" "\x0f\x00\x00\x00"
-
 #define testdata_rename \
 	"\x04-ID-" "\x09THREE.DAT\0\0\0" "\x0f\x00\x00\x00" \
 	"This is one.dat" \
@@ -179,3 +168,6 @@ ISINSTANCE_TEST(c01,
 	"This is two.dat",
 	ga::EC_DEFINITELY_NO
 );
+
+// Not really possible to do any INVALIDDATA_TEST() tests here, because the
+// worst that can happen is it looks like the archive has been truncated.

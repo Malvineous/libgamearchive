@@ -30,15 +30,6 @@
 	"ONE.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00"
 
-// This must be a valid file (correct signature) but with invalid content
-#define testdata_invalidcontent \
-	"EPFS"      "\x30\x00\x00\xf0" \
-	"This is one.dat" \
-	"This is two.dat" \
-	"Extra data" \
-	"ONE.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00" \
-	"TWO.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00"
-
 #define testdata_rename \
 	"EPFS"      "\x30\x00\x00\x00" \
 	"This is one.dat" \
@@ -187,4 +178,26 @@ ISINSTANCE_TEST(c01,
 ISINSTANCE_TEST(c02,
 	"EPF",
 	ga::EC_DEFINITELY_NO
+);
+
+// Test some valid formats but with corrupted data, to make sure nothing
+// strange happens.  These must be valid files (correct signature, so
+// isInstance passes them) but with invalid content.
+INVALIDDATA_TEST(c01,
+	"EPFS"      "\x33\x00\x00\xf0" "\x00" "\x02\x00"
+	"This is one.dat"
+	"This is two.dat"
+	"Extra data"
+	"ONE.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00"
+	"TWO.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00"
+);
+
+// Large enough to cause the uint32_t value to wrap
+INVALIDDATA_TEST(c02,
+	"EPFS"      "\xf0\xff\xff\xff" "\x00" "\x02\x00"
+	"This is one.dat"
+	"This is two.dat"
+	"Extra data"
+	"ONE.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00"
+	"TWO.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00"
 );

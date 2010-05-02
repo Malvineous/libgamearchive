@@ -28,12 +28,6 @@
 	"TWO:" "\x0f\x00\x00\x00" \
 	"This is two.dat"
 
-// This must be a valid file (correct signature) but with invalid content
-/*#define testdata_invalidcontent \
-	"ONE:" "\x0f\x00\x00\xf0" \
-	"This is one.dat"
-*/
-
 #define testdata_rename \
 	"THR:" "\x0f\x00\x00\x00" \
 	"This is one.dat" \
@@ -115,6 +109,13 @@
 #define ARCHIVE_TYPE  "res-stellar7"
 #include "test-archive.hpp"
 
+// Test some invalid formats to make sure they're not identified as valid
+// archives.  Note that they can still be opened though (by 'force'), this
+// only checks whether they look like valid files or not.
+
+// The "c00" test has already been performed in test-archive.hpp to ensure the
+// initial state is correctly identified as a valid archive.
+
 ISINSTANCE_TEST(c01,
 	"\x5NE:" "\x0f\x00\x00\x00"
 	"This is one.dat"
@@ -130,3 +131,6 @@ ISINSTANCE_TEST(c02,
 	"This is two.dat",
 	ga::EC_DEFINITELY_NO
 );
+
+// Not really possible to do any INVALIDDATA_TEST() tests here, because the
+// worst that can happen is it looks like the archive has been truncated.

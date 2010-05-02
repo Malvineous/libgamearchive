@@ -29,14 +29,6 @@
 	"TWO.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is two.dat"
 
-// This must be a valid file (correct signature) but with invalid content
-/*#define testdata_invalidcontent \
-	"DHF" \
-	"ONE.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is one.dat" \
-	"TWO.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is two.dat"*/
-
 #define testdata_rename \
 	"DHF" \
 	"THREE.DAT\0\0\0\0"   "\x0f\x00\x00\x00" \
@@ -149,3 +141,6 @@ ISINSTANCE_TEST(c02,
 	"DH",
 	ga::EC_DEFINITELY_NO
 );
+
+// Not really possible to do any INVALIDDATA_TEST() tests here, because the
+// worst that can happen is it looks like the archive has been truncated.
