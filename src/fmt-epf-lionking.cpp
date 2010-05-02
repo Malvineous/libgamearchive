@@ -224,7 +224,7 @@ void EPFArchive::rename(EntryPtr& id, const std::string& strNewName)
 	}
 
 	this->psArchive->seekp(this->offFAT + pEntry->iIndex * EPF_FAT_ENTRY_LEN);
-	this->psArchive << zeroPad(strNewName, EPF_FILENAME_FIELD_LEN);
+	this->psArchive << nullPadded(strNewName, EPF_FILENAME_FIELD_LEN);
 	pEntry->strName = strNewName;
 
 	return;
@@ -339,7 +339,7 @@ void EPFArchive::postInsertFile(FATEntry *pNewEntry)
 	this->psArchive->insert(EPF_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
 	this->psArchive
-		<< zeroPad(pNewEntry->strName, EPF_FILENAME_FIELD_LEN)
+		<< nullPadded(pNewEntry->strName, EPF_FILENAME_FIELD_LEN)
 		<< (uint8_t)0  // 0 == uncompressed, 1 == compressed
 		<< u32le(pNewEntry->iSize)  // compressed
 		<< u32le(pNewEntry->iSize); // decompressed

@@ -206,7 +206,7 @@ void RESArchiveFolder::rename(EntryPtr& id, const std::string& strNewName)
 	}
 
 	this->psArchive->seekp(pEntry->iOffset + RES_FAT_FILENAME_OFFSET);
-	this->psArchive << zeroPad(strNewName, RES_MAX_FILENAME_LEN);
+	this->psArchive << nullPadded(strNewName, RES_MAX_FILENAME_LEN);
 	pEntry->strName = strNewName;
 
 	return;
@@ -259,7 +259,7 @@ void RESArchiveFolder::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNe
 	this->psArchive->seekp(pNewEntry->iOffset);
 	this->psArchive->insert(RES_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
-	this->psArchive << zeroPad(pNewEntry->strName, RES_MAX_FILENAME_LEN);
+	this->psArchive << nullPadded(pNewEntry->strName, RES_MAX_FILENAME_LEN);
 	this->psArchive << u32le(pNewEntry->iSize);
 
 	// Since we've inserted some data for the embedded header, we need to update

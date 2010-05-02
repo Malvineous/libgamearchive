@@ -198,7 +198,7 @@ void HOGArchive::rename(EntryPtr& id, const std::string& strNewName)
 	}
 
 	this->psArchive->seekp(pEntry->iOffset);
-	this->psArchive << zeroPad(strNewName, HOG_FILENAME_FIELD_LEN);
+	this->psArchive << nullPadded(strNewName, HOG_FILENAME_FIELD_LEN);
 
 	pEntry->strName = strNewName;
 
@@ -238,7 +238,7 @@ void HOGArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry
 
 	this->psArchive->seekp(pNewEntry->iOffset);
 	this->psArchive->insert(HOG_FAT_ENTRY_LEN);
-	this->psArchive << zeroPad(pNewEntry->strName, HOG_FILENAME_FIELD_LEN);
+	this->psArchive << nullPadded(pNewEntry->strName, HOG_FILENAME_FIELD_LEN);
 	this->psArchive << u32le(pNewEntry->iSize);
 
 	// Update the offsets now the embedded FAT entry has been inserted

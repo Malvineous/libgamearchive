@@ -226,11 +226,11 @@ void BNKArchive::rename(EntryPtr& id, const std::string& strNewName)
 	uint8_t lenByte = len;
 	this->psFAT->seekp(pEntry->iIndex * BNK_FAT_ENTRY_LEN + BNK_FAT_FILENAME_OFFSET);
 	this->psFAT->rdbuf()->sputn((char *)&lenByte, 1);
-	this->psFAT << zeroPad(strNewName, BNK_MAX_FILENAME_LEN);
+	this->psFAT << nullPadded(strNewName, BNK_MAX_FILENAME_LEN);
 
 	this->psArchive->seekp(pEntry->iOffset + BNK_EFAT_FILENAME_OFFSET);
 	this->psArchive->rdbuf()->sputn((char *)&lenByte, 1);
-	this->psArchive << zeroPad(strNewName, BNK_MAX_FILENAME_LEN);
+	this->psArchive << nullPadded(strNewName, BNK_MAX_FILENAME_LEN);
 
 	pEntry->strName = strNewName;
 
@@ -307,7 +307,7 @@ void BNKArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry
 	// Write the header
 	this->psArchive->rdbuf()->sputn("\x04-ID-", 5);
 	this->psArchive->rdbuf()->sputn((char *)&lenByte, 1);
-	this->psArchive << zeroPad(pNewEntry->strName, BNK_MAX_FILENAME_LEN);
+	this->psArchive << nullPadded(pNewEntry->strName, BNK_MAX_FILENAME_LEN);
 	this->psArchive << u32le(pNewEntry->iSize);
 
 	// Since we've inserted some data for the embedded header, we need to update
@@ -322,7 +322,7 @@ void BNKArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry
 	this->psFAT->seekp(pNewEntry->iIndex * BNK_FAT_ENTRY_LEN);
 	this->psFAT->insert(BNK_FAT_ENTRY_LEN);
 	this->psFAT->rdbuf()->sputn((char *)&lenByte, 1);
-	this->psFAT << zeroPad(pNewEntry->strName, BNK_MAX_FILENAME_LEN);
+	this->psFAT << nullPadded(pNewEntry->strName, BNK_MAX_FILENAME_LEN);
 
 	// Write out the file size
 	this->psFAT << u32le(pNewEntry->iOffset + BNK_EFAT_ENTRY_LEN);

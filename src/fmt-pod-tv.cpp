@@ -150,7 +150,7 @@ ArchivePtr PODType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) c
 	psArchive->seekp(0, std::ios::beg);
 	psArchive
 		<< u32le(0) // File count
-		<< zeroPad("Empty POD file", POD_DESCRIPTION_LEN);
+		<< nullPadded("Empty POD file", POD_DESCRIPTION_LEN);
 	return ArchivePtr(new PODArchive(psArchive));
 }
 
@@ -242,7 +242,7 @@ void PODArchive::rename(EntryPtr& id, const std::string& strNewName)
 	}
 
 	this->psArchive->seekp(POD_FAT_OFFSET + pEntry->iIndex * POD_FAT_ENTRY_LEN);
-	this->psArchive << zeroPad(strNewName, POD_MAX_FILENAME_LEN);
+	this->psArchive << nullPadded(strNewName, POD_MAX_FILENAME_LEN);
 	pEntry->strName = strNewName;
 
 	return;
@@ -286,7 +286,7 @@ void PODArchive::setMetadata(E_METADATA item, const std::string& value)
 				throw std::ios::failure("description too long");
 			}
 			this->psArchive->seekp(POD_DESCRIPTION_OFFSET, std::ios::beg);
-			this->psArchive << zeroPad(value, POD_DESCRIPTION_LEN);
+			this->psArchive << nullPadded(value, POD_DESCRIPTION_LEN);
 			break;
 		default:
 			assert(false);
@@ -336,7 +336,7 @@ void PODArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry
 
 	// Write out the entry
 	this->psArchive
-		<< zeroPad(pNewEntry->strName, POD_MAX_FILENAME_LEN)
+		<< nullPadded(pNewEntry->strName, POD_MAX_FILENAME_LEN)
 		<< u32le(pNewEntry->iSize)
 		<< u32le(pNewEntry->iOffset);
 

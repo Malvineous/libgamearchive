@@ -204,7 +204,7 @@ void GRPArchive::rename(EntryPtr& id, const std::string& strNewName)
 	}
 
 	this->psArchive->seekp((pEntry->iIndex + 1) * GRP_FAT_ENTRY_LEN);
-	this->psArchive << zeroPad(strNewName, GRP_MAX_FILENAME_LEN);
+	this->psArchive << nullPadded(strNewName, GRP_MAX_FILENAME_LEN);
 
 	pEntry->strName = strNewName;
 
@@ -250,7 +250,7 @@ void GRPArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry
 	boost::to_upper(pNewEntry->strName);
 
 	this->psArchive
-		<< zeroPad(pNewEntry->strName, GRP_MAX_FILENAME_LEN)
+		<< nullPadded(pNewEntry->strName, GRP_MAX_FILENAME_LEN)
 		<< u32le(pNewEntry->iSize);
 
 	// Update the offsets now there's a new FAT entry taking up space.

@@ -253,7 +253,7 @@ void VOLArchive::rename(EntryPtr& id, const std::string& strNewName)
 	}
 
 	this->psArchive->seekp(pEntry->iIndex * VOL_FAT_ENTRY_LEN);
-	this->psArchive << zeroPad(strNewName, VOL_MAX_FILENAME_LEN);
+	this->psArchive << nullPadded(strNewName, VOL_MAX_FILENAME_LEN);
 	pEntry->strName = strNewName;
 
 	return;
@@ -301,7 +301,7 @@ void VOLArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry
 
 	// Write out the entry
 	this->psArchive
-		<< zeroPad(pNewEntry->strName, VOL_MAX_FILENAME_LEN)
+		<< nullPadded(pNewEntry->strName, VOL_MAX_FILENAME_LEN)
 		<< u32le(pNewEntry->iOffset)
 		<< u32le(pNewEntry->iSize);
 
