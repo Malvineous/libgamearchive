@@ -114,6 +114,9 @@ class EPFArchive: virtual public FATArchive {
 			throw (std::ios_base::failure);
 
 	protected:
+		void updateFileCount(uint16_t iNewCount)
+			throw (std::ios::failure);
+
 		// Update the header with the offset of the FAT (which sits at the end of
 		// the archive, after the file data.)
 		void updateFATOffset()

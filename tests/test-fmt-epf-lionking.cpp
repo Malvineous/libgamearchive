@@ -23,7 +23,7 @@
 #define FILENAME4 "FOUR.DAT"
 
 #define testdata_initialstate \
-	"EPFS"      "\x30\x00\x00\x00" \
+	"EPFS"      "\x33\x00\x00\x00" "\x00" "\x02\x00" \
 	"This is one.dat" \
 	"This is two.dat" \
 	"Extra data" \
@@ -31,7 +31,7 @@
 	"TWO.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00"
 
 #define testdata_rename \
-	"EPFS"      "\x30\x00\x00\x00" \
+	"EPFS"      "\x33\x00\x00\x00" "\x00" "\x02\x00" \
 	"This is one.dat" \
 	"This is two.dat" \
 	"Extra data" \
@@ -39,7 +39,7 @@
 	"TWO.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00"
 
 #define testdata_insert_end \
-	"EPFS"      "\x41\x00\x00\x00" \
+	"EPFS"      "\x44\x00\x00\x00" "\x00" "\x03\x00" \
 	"This is one.dat" \
 	"This is two.dat" \
 	"This is three.dat" \
@@ -49,7 +49,7 @@
 	"THREE.DAT\0\0\0\0"   "\x00" "\x11\x00\x00\x00" "\x11\x00\x00\x00"
 
 #define testdata_insert_mid \
-	"EPFS"      "\x41\x00\x00\x00" \
+	"EPFS"      "\x44\x00\x00\x00" "\x00" "\x03\x00" \
 	"This is one.dat" \
 	"This is three.dat" \
 	"This is two.dat" \
@@ -59,7 +59,7 @@
 	"TWO.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00"
 
 #define testdata_insert2 \
-	"EPFS"      "\x51\x00\x00\x00" \
+	"EPFS"      "\x54\x00\x00\x00" "\x00" "\x04\x00" \
 	"This is one.dat" \
 	"This is three.dat" \
 	"This is four.dat" \
@@ -71,17 +71,17 @@
 	"TWO.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00"
 
 #define testdata_remove \
-	"EPFS"      "\x21\x00\x00\x00" \
+	"EPFS"      "\x24\x00\x00\x00" "\x00" "\x01\x00" \
 	"This is two.dat" \
 	"Extra data" \
 	"TWO.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00"
 
 #define testdata_remove2 \
-	"EPFS"      "\x12\x00\x00\x00" \
+	"EPFS"      "\x15\x00\x00\x00" "\x00" "\x00\x00" \
 	"Extra data"
 
 #define testdata_insert_remove \
-	"EPFS"      "\x32\x00\x00\x00" \
+	"EPFS"      "\x35\x00\x00\x00" "\x00" "\x02\x00" \
 	"This is three.dat" \
 	"This is two.dat" \
 	"Extra data" \
@@ -89,7 +89,7 @@
 	"TWO.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00"
 
 #define testdata_remove_insert \
-	"EPFS"      "\x32\x00\x00\x00" \
+	"EPFS"      "\x35\x00\x00\x00" "\x00" "\x02\x00" \
 	"This is three.dat" \
 	"This is two.dat" \
 	"Extra data" \
@@ -97,7 +97,7 @@
 	"TWO.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00"
 
 #define testdata_move \
-	"EPFS"      "\x30\x00\x00\x00" \
+	"EPFS"      "\x33\x00\x00\x00" "\x00" "\x02\x00" \
 	"This is two.dat" \
 	"This is one.dat" \
 	"Extra data" \
@@ -105,7 +105,7 @@
 	"ONE.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00"
 
 #define testdata_resize_larger \
-	"EPFS"      "\x35\x00\x00\x00" \
+	"EPFS"      "\x38\x00\x00\x00" "\x00" "\x02\x00" \
 	"This is one.dat\0\0\0\0\0" \
 	"This is two.dat" \
 	"Extra data" \
@@ -113,7 +113,7 @@
 	"TWO.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00"
 
 #define testdata_resize_smaller \
-	"EPFS"      "\x2b\x00\x00\x00" \
+	"EPFS"      "\x2e\x00\x00\x00" "\x00" "\x02\x00" \
 	"This is on" \
 	"This is two.dat" \
 	"Extra data" \
@@ -121,7 +121,7 @@
 	"TWO.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00"
 
 #define testdata_resize_write \
-	"EPFS"      "\x38\x00\x00\x00" \
+	"EPFS"      "\x3b\x00\x00\x00" "\x00" "\x02\x00" \
 	"Now resized to 23 chars" \
 	"This is two.dat" \
 	"Extra data" \
@@ -135,7 +135,7 @@
 	"This is a test"
 
 #define testdata_set_metadata_description_larger \
-	"EPFS"      "\x34\x00\x00\x00" \
+	"EPFS"      "\x37\x00\x00\x00" "\x00" "\x02\x00" \
 	"This is one.dat" \
 	"This is two.dat" \
 	"This is a test" \
@@ -146,7 +146,7 @@
 	"Hello"
 
 #define testdata_set_metadata_description_smaller \
-	"EPFS"      "\x2b\x00\x00\x00" \
+	"EPFS"      "\x2e\x00\x00\x00" "\x00" "\x02\x00" \
 	"This is one.dat" \
 	"This is two.dat" \
 	"Hello" \
@@ -167,9 +167,10 @@
 // initial state is correctly identified as a valid archive.
 
 ISINSTANCE_TEST(c01,
-	"EPSF"      "\x26\x00\x00\x00"
+	"EPSF"      "\x33\x00\x00\x00" "\x00" "\x02\x00"
 	"This is one.dat"
 	"This is two.dat"
+	"Extra data"
 	"ONE.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00"
 	"TWO.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00",
 	ga::EC_DEFINITELY_NO

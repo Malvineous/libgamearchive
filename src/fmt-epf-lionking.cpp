@@ -34,16 +34,20 @@
 #include "iostream_helpers.hpp"
 #include "debug.hpp"
 
-#define EPF_HEADER_LEN               8   // "EPFS" header + u32le FAT offset
-#define EPF_MAX_FILENAME_LEN         12
-#define EPF_FILENAME_FIELD_LEN       13
+#define EPF_HEADER_LEN               11
+#define EPF_FAT_OFFSET_POS           4
+#define EPF_FILECOUNT_POS            9
 #define EPF_FIRST_FILE_OFFSET        EPF_HEADER_LEN
 
 #define EPF_FAT_FILENAME_OFFSET      0
+#define EPF_MAX_FILENAME_LEN         12
+#define EPF_FILENAME_FIELD_LEN       13
 #define EPF_FAT_ISCOMPRESSED_OFFSET  13
 #define EPF_FAT_FILESIZE_OFFSET      14
 #define EPF_FAT_DECOMP_SIZE_OFFSET   18
 #define EPF_FAT_ENTRY_LEN            22
+
+#define EPF_FAT_FLAG_COMPRESSED      1
 
 namespace camoto {
 namespace gamearchive {
@@ -126,8 +130,10 @@ ArchivePtr EPFType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) c
 {
 	psArchive->seekp(0, std::ios::beg);
 	psArchive
-		<< zeroPad("EPFS", 4)
-		<< u32le(8); // FAT offset
+		<< nullPadded("EPFS", 4)
+		<< u32le(11) // FAT offset
+		<< u8(0)     // Unknown/flags?
+		<< u16le(0); // File count
 	return ArchivePtr(new EPFArchive(psArchive));
 }
 
@@ -152,55 +158,66 @@ EPFArchive::EPFArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
 		FATArchive(psArchive, EPF_FIRST_FILE_OFFSET)
 {
-	psArchive->seekg(0, std::ios::end);
-	io::stream_offset lenArchive = psArchive->tellg();
-
-	psArchive->seekg(4, std::ios::beg); // skip "EPFS" sig
+	this->psArchive->seekg(0, std::ios::end);
+	io::stream_offset lenArchive = this->psArchive->tellg();
 
 	// We still have to perform sanity checks in case the user forced an archive
 	// to open even though it failed the signature check.
-	if (psArchive->tellg() != 4) throw std::ios::failure("File too short");
+	if (lenArchive < EPF_HEADER_LEN) throw std::ios::failure("file too short");
 
-	psArchive >> u32le(this->offFAT);
-	psArchive->seekg(this->offFAT, std::ios::beg);
+	this->psArchive->seekg(4, std::ios::beg); // skip "EPFS" sig
 
-	io::stream_offset lenFAT = lenArchive - offFAT;
-	unsigned long numFiles = lenFAT / EPF_FAT_ENTRY_LEN;
+	uint8_t unknown;
+	uint16_t numFiles;
+	this->psArchive
+		>> u32le(this->offFAT)
+		>> u8(unknown)
+		>> u16le(numFiles);
 
-	boost::shared_array<uint8_t> pFATBuf;
-	try {
-		pFATBuf.reset(new uint8_t[lenFAT]);
-		this->vcFAT.reserve(numFiles);
-	} catch (std::bad_alloc) {
-		std::cerr << "Unable to allocate enough memory for " << numFiles
-			<< " files." << std::endl;
-		throw std::ios::failure("Memory allocation failure (archive corrupted?)");
+	if (
+		// These two comparisons are sort of redundant, but we need the first
+		// one in case the values are so large they wrap and the second one
+		// returns an incorrect result.
+
+		// TESTED BY: fmt_epf_lionking_invaliddata_c01
+		(this->offFAT > lenArchive) ||
+
+		// TESTED BY: fmt_epf_lionking_invaliddata_c02, when io::stream_offset <= 32bit
+		((this->offFAT + numFiles * EPF_FAT_ENTRY_LEN) > lenArchive)
+	) {
+		throw std::ios::failure("header corrupted or file truncated");
 	}
-
-	// Read in all the FAT in one operation
-	psArchive->read((char *)pFATBuf.get(), lenFAT);
-	if (psArchive->gcount() != lenFAT) {
-		throw std::ios::failure("short read loading FAT");
-	}
+	this->psArchive->seekg(this->offFAT, std::ios::beg);
 
 	io::stream_offset offNext = EPF_FIRST_FILE_OFFSET;
 	for (int i = 0; i < numFiles; i++) {
-		EPFEntry *pEntry = new EPFEntry();
-		pEntry->iIndex = i;
-		pEntry->strName = string_from_buf(&pFATBuf[i*EPF_FAT_ENTRY_LEN + EPF_FAT_FILENAME_OFFSET], EPF_MAX_FILENAME_LEN);
-		pEntry->iOffset = offNext;
-		pEntry->iSize = u32le_from_buf(&pFATBuf[i*EPF_FAT_ENTRY_LEN + EPF_FAT_FILESIZE_OFFSET]);
-		pEntry->lenHeader = 0;
-		pEntry->eType = EFT_USEFILENAME;
-		pEntry->fAttr = 0;
-		pEntry->bValid = true;
+		EPFEntry *fatEntry = new EPFEntry();
+		EntryPtr ep(fatEntry);
 
-		pEntry->decompressedSize = u32le_from_buf(&pFATBuf[i*EPF_FAT_ENTRY_LEN + EPF_FAT_DECOMP_SIZE_OFFSET]);
-		pEntry->isCompressed = u32le_from_buf(&pFATBuf[i*EPF_FAT_ENTRY_LEN + EPF_FAT_ISCOMPRESSED_OFFSET]);
+		fatEntry->iIndex = i;
+		fatEntry->iOffset = offNext;
+		fatEntry->lenHeader = 0;
+		fatEntry->eType = EFT_USEFILENAME;
+		fatEntry->fAttr = 0;
+		fatEntry->bValid = true;
 
-		this->vcFAT.push_back(EntryPtr(pEntry));
-		offNext += pEntry->iSize;
+		uint8_t flags;
+
+		// Read the data in from the FAT entry in the file
+		this->psArchive
+			>> nullPadded(fatEntry->strName, EPF_FILENAME_FIELD_LEN)
+			>> u8(flags)
+			>> u32le(fatEntry->iSize)
+			>> u32le(fatEntry->decompressedSize);
+
+		if (flags & EPF_FAT_FLAG_COMPRESSED) {
+			fatEntry->fAttr |= EA_COMPRESSED;
+		}
+
+		this->vcFAT.push_back(ep);
+		offNext += fatEntry->iSize;
 	}
+	// TODO: hidden data after FAT until EOF?
 	refcount_qenterclass(EPFArchive);
 }
 
@@ -345,6 +362,7 @@ void EPFArchive::postInsertFile(FATEntry *pNewEntry)
 		<< u32le(pNewEntry->iSize); // decompressed
 
 	this->updateFATOffset();
+	this->updateFileCount(this->vcFAT.size());
 
 	return;
 }
@@ -359,7 +377,18 @@ void EPFArchive::preRemoveFile(const FATEntry *pid)
 
 	this->offFAT -= pid->iSize;
 	this->updateFATOffset();
+	this->updateFileCount(this->vcFAT.size() - 1);
 
+	return;
+}
+
+void EPFArchive::updateFileCount(uint16_t iNewCount)
+	throw (std::ios::failure)
+{
+	// TESTED BY: fmt_epf_lionking_insert*
+	// TESTED BY: fmt_epf_lionking_remove*
+	this->psArchive->seekp(EPF_FILECOUNT_POS);
+	this->psArchive << u16le(iNewCount);
 	return;
 }
 
@@ -369,7 +398,7 @@ void EPFArchive::updateFATOffset()
 	// TESTED BY: fmt_epf_lionking_insert*
 	// TESTED BY: fmt_epf_lionking_remove*
 
-	this->psArchive->seekp(4);
+	this->psArchive->seekp(EPF_FAT_OFFSET_POS);
 	this->psArchive << u32le(this->offFAT);
 
 	return;
