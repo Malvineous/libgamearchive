@@ -37,9 +37,11 @@
 #define HOG_MAX_FILENAME_LEN      12
 #define HOG_FILENAME_FIELD_LEN    13 // one more as it must always have a null
 #define HOG_FAT_FILESIZE_OFFSET   13
-#define HOG_FAT_ENTRY_LEN         17  // filename + null + u32le size
+#define HOG_FAT_ENTRY_LEN         17
 #define HOG_FIRST_FILE_OFFSET     HOG_HEADER_LEN
-#define HOG_SAFETY_MAX_FILECOUNT  250 // Maximum value supported by Descent
+
+#define HOG_MAX_FILECOUNT         250  // Maximum value supported by Descent
+#define HOG_SAFETY_MAX_FILECOUNT  1024 // Maximum value we will load
 
 namespace camoto {
 namespace gamearchive {
@@ -148,10 +150,7 @@ HOGArchive::HOGArchive(iostream_sptr psArchive)
 	}
 
 	io::stream_offset offNext = HOG_FIRST_FILE_OFFSET;
-	for (int i = 0; (
-		(i < HOG_SAFETY_MAX_FILECOUNT) &&
-		(offNext + HOG_FAT_ENTRY_LEN <= lenArchive)
-	); i++) {
+	for (int i = 0; (offNext + HOG_FAT_ENTRY_LEN <= lenArchive); i++) {
 		uint8_t buf[HOG_FAT_ENTRY_LEN];
 		psArchive->read((char *)buf, HOG_FAT_ENTRY_LEN);
 		FATEntry *pEntry = new FATEntry();
@@ -173,6 +172,9 @@ HOGArchive::HOGArchive(iostream_sptr psArchive)
 			break;
 		}
 		psArchive->seekg(pEntry->iSize, std::ios::cur);
+		if (i >= HOG_SAFETY_MAX_FILECOUNT) {
+			throw std::ios::failure("too many files or corrupted archive");
+		}
 	}
 
 	refcount_qenterclass(HOGArchive);
@@ -231,6 +233,10 @@ void HOGArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry
 	if (pNewEntry->strName.length() > HOG_MAX_FILENAME_LEN) {
 		throw std::ios::failure("maximum filename length is "
 			TOSTRING(HOG_MAX_FILENAME_LEN) " chars");
+	}
+	if (this->vcFAT.size() + 1 > HOG_MAX_FILECOUNT) {
+		throw std::ios::failure("too many files, maximum is "
+			TOSTRING(HOG_MAX_FILECOUNT) " files");
 	}
 
 	// Set the format-specific variables
