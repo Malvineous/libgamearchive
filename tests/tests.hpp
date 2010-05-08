@@ -27,7 +27,8 @@
 
 struct default_sample {
 
-	void printNice(boost::test_tools::predicate_result& res, const std::string& s);
+	void printNice(boost::test_tools::predicate_result& res, const std::string& s,
+		const std::string& diff);
 
 	void print_wrong(boost::test_tools::predicate_result& res,
 		const std::string& strExpected, const std::string& strResult);

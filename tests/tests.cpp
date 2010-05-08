@@ -28,9 +28,23 @@
 #include "../src/debug.hpp"
 #include "tests.hpp"
 
-void default_sample::printNice(boost::test_tools::predicate_result& res, const std::string& s)
+void default_sample::printNice(boost::test_tools::predicate_result& res,
+	const std::string& s, const std::string& diff)
 {
+	const char *c = CLR_YELLOW;
+	res.message() << c;
 	for (int i = 0; i < s.length(); i++) {
+		if ((i >= diff.length()) || (s[i] != diff[i])) {
+			if (c != CLR_MAG) {
+				c = CLR_MAG;
+				res.message() << CLR_MAG;
+			}
+		} else {
+			if (c != CLR_YELLOW) {
+				c = CLR_YELLOW;
+				res.message() << CLR_YELLOW;
+			}
+		}
 		if (s[i] < 32) {
 			res.message() << "\\x" << std::setfill('0') << std::setw(2)
 				<< std::hex << (int)((uint8_t)s[i]);
@@ -44,10 +58,10 @@ void default_sample::printNice(boost::test_tools::predicate_result& res, const s
 void default_sample::print_wrong(boost::test_tools::predicate_result& res,
 	const std::string& strExpected, const std::string& strResult)
 {
-	res.message() << "\nExp: " CLR_YELLOW;
-	this->printNice(res, strExpected);
-	res.message() << CLR_NORM "\n" << "Got: " CLR_YELLOW;
-	this->printNice(res, strResult);
+	res.message() << "\nExp: ";
+	this->printNice(res, strExpected, strResult);
+	res.message() << CLR_NORM "\n" << "Got: ";
+	this->printNice(res, strResult, strExpected);
 	res.message() << CLR_NORM;
 
 	return;
