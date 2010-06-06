@@ -279,7 +279,6 @@ int main(int iArgC, char *cArgV[])
 			ga::Manager::arch_sptr pTestType;
 			int i = 0;
 			while ((pTestType = pManager->getArchiveType(i++))) {
-				//boost::shared_ptr<const ga::ArchiveType> pTestType(pManager->getArchiveType(archType));
 				ga::E_CERTAINTY cert = pTestType->isInstance(psArchive);
 				switch (cert) {
 					case ga::EC_DEFINITELY_NO:
@@ -395,15 +394,11 @@ finishTesting:
 
 					// Open on disk
 					try {
-						/*boost::shared_ptr<std::iostream> pfsIn(pArchive->open(id));
-						std::ofstream fsOut(strLocalFile.c_str(), std::ios::binary);
-						char buffer[BUFFER_SIZE];
-						int len;
-						do {
-							pfsIn->read(buffer, BUFFER_SIZE);
-							len = pfsIn->gcount();
-							fsOut.write(buffer, len);
-						} while (len);*/
+						boost::shared_ptr<std::iostream> pfsIn(pArchive->open(*i));
+						std::ofstream fsOut;
+						fsOut.exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
+						fsOut.open(strArchFile.c_str(), std::ios::trunc | std::ios::binary);
+						boost::iostreams::copy(*pfsIn, fsOut);
 						if (bScript) {
 							std::cout << "ok";
 						}
