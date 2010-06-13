@@ -314,15 +314,6 @@
 	"This is three.dat" \
 	"This is two.dat"
 
-#define testdata_remove_insert \
-	"THREE.DAT\0\0\0"          "\xa0\x0f\x00\x00" "\x11\x00\x00\x00" \
-	"TWO.DAT\0\0\0\0\0"        "\xb1\x0f\x00\x00" "\x0f\x00\x00\x00" \
-	"\0\0\0\0\0\0\0\0\0\0\0\0" "\x00\x00\x00\x00" "\x00\x00\x00\x00" \
-	"\0\0\0\0\0\0\0\0\0\0\0\0" "\x00\x00\x00\x00" "\x00\x00\x00\x00" \
-	LOTS_OF_NULLS \
-	"This is three.dat" \
-	"This is two.dat"
-
 #define testdata_move \
 	"TWO.DAT\0\0\0\0\0"        "\xa0\x0f\x00\x00" "\x0f\x00\x00\x00" \
 	"ONE.DAT\0\0\0\0\0"        "\xaf\x0f\x00\x00" "\x0f\x00\x00\x00" \

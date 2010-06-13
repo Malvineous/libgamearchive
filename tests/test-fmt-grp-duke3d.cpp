@@ -80,13 +80,6 @@
 	"This is three.dat" \
 	"This is two.dat" \
 
-#define testdata_remove_insert \
-	"KenSilverman"      "\x02\x00\x00\x00" \
-	"THREE.DAT\0\0\0"   "\x11\x00\x00\x00" \
-	"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is three.dat" \
-	"This is two.dat"
-
 #define testdata_move \
 	"KenSilverman"      "\x02\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \

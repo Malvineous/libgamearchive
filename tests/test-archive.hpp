@@ -595,13 +595,16 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_insert))
 	pfsNew->flush();
 
 	BOOST_CHECK_MESSAGE(
-		is_equal(makeString(TEST_RESULT(remove_insert))),
+		// This test checks against the insert_remove result instead, as the end
+		// result should be the same as that test.
+		is_equal(makeString(TEST_RESULT(insert_remove))),
 		"Error removing then inserting file"
 	);
 
 #ifdef HAS_FAT
 	BOOST_CHECK_MESSAGE(
-		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_remove_insert))),
+		// Again, use insert_remove result instead
+		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_insert_remove))),
 		"Error removing then inserting file"
 	);
 #endif

@@ -88,14 +88,6 @@
 	"THREE.DAT\0\0\0\0"   "\x00" "\x11\x00\x00\x00" "\x11\x00\x00\x00" \
 	"TWO.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00"
 
-#define testdata_remove_insert \
-	"EPFS"      "\x35\x00\x00\x00" "\x00" "\x02\x00" \
-	"This is three.dat" \
-	"This is two.dat" \
-	"Extra data" \
-	"THREE.DAT\0\0\0\0"   "\x00" "\x11\x00\x00\x00" "\x11\x00\x00\x00" \
-	"TWO.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00"
-
 #define testdata_move \
 	"EPFS"      "\x33\x00\x00\x00" "\x00" "\x02\x00" \
 	"This is two.dat" \

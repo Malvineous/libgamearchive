@@ -101,13 +101,6 @@
 	"This is three.dat" \
 	"This is two.dat"
 
-#define testdata_remove_insert \
-	"\x02\x00\x00\x00" POD_DESC \
-	"THREE.DAT\0\0\0\0\0\0\0"   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x11\x00\x00\x00" "\xa4\x00\x00\x00" \
-	"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xb5\x00\x00\x00" \
-	"This is three.dat" \
-	"This is two.dat"
-
 #define testdata_move \
 	"\x02\x00\x00\x00" POD_DESC \
 	"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xa4\x00\x00\x00" \

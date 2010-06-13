@@ -73,12 +73,6 @@
 	"TWO:" "\x0f\x00\x00\x00" \
 	"This is two.dat"
 
-#define testdata_remove_insert \
-	"THR:" "\x11\x00\x00\x00" \
-	"This is three.dat" \
-	"TWO:" "\x0f\x00\x00\x00" \
-	"This is two.dat"
-
 #define testdata_move \
 	"TWO:" "\x0f\x00\x00\x00" \
 	"This is two.dat" \

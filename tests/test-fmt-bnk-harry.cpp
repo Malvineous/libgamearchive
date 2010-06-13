@@ -100,15 +100,6 @@
 	"\x09THREE.DAT\0\0\0"   "\x16\x00\x00\x00" "\x11\x00\x00\x00" \
 	"\x07TWO.DAT\0\0\0\0\0" "\x3d\x00\x00\x00" "\x0f\x00\x00\x00"
 
-#define testdata_remove_insert \
-	"\x04-ID-" "\x09THREE.DAT\0\0\0"   "\x11\x00\x00\x00" \
-	"This is three.dat" \
-	"\x04-ID-" "\x07TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is two.dat"
-#define testdata_FAT_remove_insert \
-	"\x09THREE.DAT\0\0\0"   "\x16\x00\x00\x00" "\x11\x00\x00\x00" \
-	"\x07TWO.DAT\0\0\0\0\0" "\x3d\x00\x00\x00" "\x0f\x00\x00\x00"
-
 #define testdata_move \
 	"\x04-ID-" "\x07TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
 	"This is two.dat" \
