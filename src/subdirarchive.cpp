@@ -35,13 +35,13 @@ SubdirArchive::SubdirArchive(ArchivePtr& rootFolder)
 	throw () :
 		rootFolder(rootFolder)
 {
-	refcount_enterclass(SubdirArchive);
+	refcount_qenterclass(SubdirArchive);
 }
 
 SubdirArchive::~SubdirArchive()
 	throw ()
 {
-	refcount_exitclass(SubdirArchive);
+	refcount_qexitclass(SubdirArchive);
 }
 
 const SubdirArchive::VC_ENTRYPTR& SubdirArchive::getFileList()

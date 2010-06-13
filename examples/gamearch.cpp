@@ -222,7 +222,7 @@ int main(int iArgC, char *cArgV[])
 				strFilename = i->value[0];
 			} else if (i->string_key.compare("help") == 0) {
 				std::cout <<
-					"Copyright (C) 2009 Adam Nielsen <malvineous@shikadi.net>\n"
+					"Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>\n"
 					"This program comes with ABSOLUTELY NO WARRANTY.  This is free software,\n"
 					"and you are welcome to change and redistribute it under certain conditions;\n"
 					"see <http://www.gnu.org/licenses/> for details.\n"

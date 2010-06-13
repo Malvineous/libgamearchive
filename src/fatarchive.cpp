@@ -50,7 +50,7 @@ FATArchive::FATArchive(iostream_sptr psArchive, io::stream_offset offFirstFile)
 		psArchive(new segmented_stream(psArchive)),
 		offFirstFile(offFirstFile)
 {
-	refcount_enterclass(FATArchive);
+	refcount_qenterclass(FATArchive);
 }
 
 FATArchive::~FATArchive()
@@ -59,7 +59,7 @@ FATArchive::~FATArchive()
 	// Can't flush here as it could throw std::ios::failure and we have no way
 	// of handling it.
 	//this->flush(); // make sure it saves on close just in case
-	refcount_exitclass(FATArchive);
+	refcount_qexitclass(FATArchive);
 }
 
 const FATArchive::VC_ENTRYPTR& FATArchive::getFileList()
