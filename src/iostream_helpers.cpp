@@ -49,14 +49,12 @@ void streamMove(std::iostream& ps, io::stream_offset offFrom,
 	io::stream_offset offFromEnd = offFrom + lenAmount;
 	io::stream_offset offToEnd = offTo + lenAmount;
 
-#ifdef DEBUG
-	// While we can write past the end of the stream, make sure the caller isn't
-	// trying to *start* the write after the EOF.
+	// Make sure the caller isn't trying to read or write past the end of the
+	// stream (as it needs to be resized first if this is to happen.)
 	ps.seekp(0, std::ios::end);
 	io::stream_offset size = ps.tellp();
-	assert(offFrom < size);
-	assert(offTo <= size);
-#endif
+	assert(offFromEnd <= size);
+	assert(offToEnd <= size);
 
 	if (
 		(offFrom > offTo) || // The destination starts before the source

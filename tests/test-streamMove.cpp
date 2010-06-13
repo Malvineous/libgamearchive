@@ -134,6 +134,8 @@ BOOST_AUTO_TEST_CASE(streamMove_extend)
 {
 	BOOST_TEST_MESSAGE("Stream move past EOF");
 
+	stringStreamTruncate(&data, 30); // extend stringstream to make room
+
 	ga::streamMove(data, 5, 20, 10);
 
 	BOOST_CHECK_MESSAGE(is_equal("ABCDEFGHIJKLMNOPQRSTFGHIJKLMNO"),
@@ -143,6 +145,8 @@ BOOST_AUTO_TEST_CASE(streamMove_extend)
 BOOST_AUTO_TEST_CASE(streamMove_extend_overlap)
 {
 	BOOST_TEST_MESSAGE("Overlapping stream move past EOF");
+
+	stringStreamTruncate(&data, 35); // extend stringstream to make room
 
 	ga::streamMove(data, 5, 15, 20);
 
