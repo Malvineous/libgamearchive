@@ -29,6 +29,7 @@
 #include "fmt-res-stellar7.hpp"
 #include "fmt-hog-descent.hpp"
 #include "fmt-epf-lionking.hpp"
+#include "fmt-rff-blood.hpp"
 #include "fmt-dat-wacky.hpp"
 #include "fmt-dat-hugo.hpp"
 #include "fmt-exe-ccaves.hpp"
@@ -61,6 +62,7 @@ Manager::Manager()
 	this->vcTypes.push_back(ArchiveTypePtr(new RESType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new HOGType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new EPFType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new RFFType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_WackyType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new EXE_CCavesType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_BashType()));

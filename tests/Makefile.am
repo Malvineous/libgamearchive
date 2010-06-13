@@ -8,6 +8,7 @@ tests_SOURCES += test-fmt-bnk-harry.cpp
 tests_SOURCES += test-fmt-res-stellar7.cpp
 tests_SOURCES += test-fmt-hog-descent.cpp
 tests_SOURCES += test-fmt-epf-lionking.cpp
+tests_SOURCES += test-fmt-rff-blood.cpp test-fmt-rff-blood_encrypted.cpp
 tests_SOURCES += test-fmt-dat-wacky.cpp
 tests_SOURCES += test-fmt-dat-hugo.cpp
 tests_SOURCES += test-fmt-dat-bash.cpp

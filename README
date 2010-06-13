@@ -15,6 +15,7 @@ be extracted, added, removed and replaced from supported archive formats.
 This library is still in the preliminary stages, so only the following formats
 have been implemented:
 
+  * Blood (.rff)
   * Cosmo's Cosmic Adventures (.vol, .stn)
   * Crystal Caves (.exe)
   * Descent (.hog)
