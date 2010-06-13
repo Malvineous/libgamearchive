@@ -83,13 +83,13 @@ std::streamsize segmented_stream_device::read(char_type *s, std::streamsize n)
 
 	// This is the "reported" end of the stream (what we tell anyone using this
 	// class.)
-	io::stream_offset offFirstReportedEnd = this->poffFirstEnd - this->poffFirstStart;
+	io::stream_offset lenEntireFirst = this->poffFirstEnd - this->poffFirstStart;
 
-	if (this->offPos < offFirstReportedEnd) {
+	if (this->offPos < lenEntireFirst) {
 		// Some of the read will happen in the first stream
 		io::stream_offset lenFirst;
-		if (this->offPos + n > offFirstReportedEnd) {
-			lenFirst = offFirstReportedEnd - this->offPos;
+		if (this->offPos + n > lenEntireFirst) {
+			lenFirst = lenEntireFirst - this->offPos;
 			lenRemaining -= lenFirst;
 		} else {
 			lenFirst = lenRemaining;
@@ -111,7 +111,7 @@ std::streamsize segmented_stream_device::read(char_type *s, std::streamsize n)
 
 	// Read the second stream (the vector)
 	io::stream_offset lenReadSecond;
-	io::stream_offset offSecondEnd = offFirstReportedEnd + this->vcSecond.size();
+	io::stream_offset offSecondEnd = lenEntireFirst + this->vcSecond.size();
 	if ((lenRemaining > 0) && (this->offPos < offSecondEnd)) {
 		// Some of the read will happen in the second stream
 		io::stream_offset lenSecond;
@@ -121,7 +121,7 @@ std::streamsize segmented_stream_device::read(char_type *s, std::streamsize n)
 		} else {
 			lenSecond = lenRemaining;
 		}
-		io::stream_offset offSecond = this->offPos - offFirstReportedEnd;
+		io::stream_offset offSecond = this->offPos - lenEntireFirst;
 		assert(offSecond < this->vcSecond.size());
 		memcpy(s, &this->vcSecond[offSecond], lenSecond);
 		this->offPos += lenSecond;
@@ -154,13 +154,13 @@ std::streamsize segmented_stream_device::write(const char_type *s, std::streamsi
 	// Write to the first stream
 	io::stream_offset lenWroteFirst; // How much we wrote to the first source
 	io::stream_offset lenRemaining = n; // How much left to write to the second/third sources
-	io::stream_offset offFirstReportedEnd = this->poffFirstEnd - this->poffFirstStart;
+	io::stream_offset lenEntireFirst = this->poffFirstEnd - this->poffFirstStart;
 
-	if (this->offPos < offFirstReportedEnd) {
+	if (this->offPos < lenEntireFirst) {
 		// Some of the write will happen in the first source
 		io::stream_offset lenFirst;
-		if (this->offPos + n > offFirstReportedEnd) {
-			lenFirst = offFirstReportedEnd - this->offPos;
+		if (this->offPos + n > lenEntireFirst) {
+			lenFirst = lenEntireFirst - this->offPos;
 			lenRemaining -= lenFirst;
 		} else {
 			lenFirst = lenRemaining;
@@ -180,7 +180,7 @@ std::streamsize segmented_stream_device::write(const char_type *s, std::streamsi
 
 	// Write to the second stream (the vector)
 	io::stream_offset lenWroteSecond;
-	io::stream_offset offSecondEnd = offFirstReportedEnd + this->vcSecond.size();
+	io::stream_offset offSecondEnd = lenEntireFirst + this->vcSecond.size();
 	if ((lenRemaining > 0) && (this->offPos < offSecondEnd)) {
 		// Some of the write will happen in the second source
 		io::stream_offset lenSecond;
@@ -192,7 +192,7 @@ std::streamsize segmented_stream_device::write(const char_type *s, std::streamsi
 			lenSecond = lenRemaining;
 			lenRemaining = 0;
 		}
-		io::stream_offset offSecond = this->offPos - offFirstReportedEnd;
+		io::stream_offset offSecond = this->offPos - lenEntireFirst;
 		assert(offSecond + lenSecond <= this->vcSecond.size());
 		memcpy(&this->vcSecond[offSecond], s, lenSecond);
 		this->offPos += lenSecond;
@@ -264,35 +264,16 @@ io::stream_offset segmented_stream_device::seek(io::stream_offset off, std::ios_
 
 	// The seek pointer can't be updated here, because it's shared by all the
 	// descendent psegThird elements.
-	/*
-	if (this->offPos < lenFirst) {
-		// Within first stream
-		this->psFirst->seekg(this->offPos + this->poffFirstStart);
-		this->psFirst->seekp(this->offPos + this->poffFirstStart);
-		if (this->psegThird) {
-			// Prepare the third stream for when the write overflows into it
-			this->psegThird->seek(0, std::ios_base::beg);
-		}
-	} else if (this->offPos < offSecondEnd) {
-		// Within second stream (vector)
-		if (this->psegThird) {
-			// Prepare the third stream for when the write overflows into it
-			this->psegThird->seek(0, std::ios_base::beg);
-		}
-	} else {
-		// Within third stream (segstream)
-		assert(this->psegThird);
-
-		// Prepare the third stream for when the write overflows into it
-		this->psegThird->seek(this->offPos - offSecondEnd, std::ios_base::beg);
-	}*/
 
 	// But we can let the third source know where we'll come in when we read
 	// straight through later.
-	if ((this->offPos >= offSecondEnd) && (this->psegThird)) {
-		this->psegThird->seek(this->offPos - offSecondEnd, std::ios::beg);
+	if (this->psegThird) {
+		if (this->offPos >= offSecondEnd) {
+			this->psegThird->seek(this->offPos - offSecondEnd, std::ios::beg);
+		} else {
+			this->psegThird->seek(0, std::ios::beg);
+		}
 	}
-
 	return this->offPos;
 }
 
@@ -453,18 +434,41 @@ void segmented_stream_device::remove(std::streamsize lenRemove)
 // of this.
 void segmented_stream_device::commit(FN_TRUNCATE fnTruncate)
 {
+	assert(fnTruncate);
+
 	this->psFirst->seekp(0, std::ios::end);
 	io::stream_offset plenStream = this->psFirst->tellp();
 
-	// Call private commit()
-	this->commit(0, plenStream);
+	// This could fail if we're committing to an empty stringstream, in that
+	// case write a byte to the stringstream first (C++ bug.)
+	assert(this->psFirst->good());
 
+	io::stream_offset lenTotal = this->getLength();
+	if (plenStream < lenTotal) {
+		// When we're finished the underlying stream will be larger, so make sure
+		// it's big enough to hold the extra data.
+		fnTruncate(lenTotal);
+
+		// Make sure the stream expanded
+		// TODO: Should this be replaced by an exception?  Running out of disk
+		// space could trigger it.
+		this->psFirst->seekp(0, std::ios::end);
+		io::stream_offset plenStream = this->psFirst->tellp();
+		assert(plenStream == lenTotal);
+	}
+
+	// Call private commit()
+	this->commit(0);
+
+	// Safety checks
 	assert(this->poffFirstStart == 0);
 	assert(this->vcSecond.empty());
 	assert(this->psegThird == NULL);
 
-	// Until I can find a cross-platform way of truncating a file, this just
-	// write out zeroes in the extra space.
+	// Make sure the original calculation of the final size matches what we've
+	// ended up with after the 'flattening' operation.
+	assert(this->poffFirstEnd == lenTotal);
+
 	this->psFirst->seekp(0, std::ios::end);
 	plenStream = this->psFirst->tellp();
 
@@ -480,21 +484,15 @@ void segmented_stream_device::commit(FN_TRUNCATE fnTruncate)
 	// past the end of a stringstream and then perform a write.
 	assert(plenStream >= this->poffFirstEnd);
 
-	// If the stream is larger than it should be, zero out the excess.  This will
-	// be removed once a cross-platform way of truncating a stream comes about.
-#ifdef DEBUG
 	if (plenStream > this->poffFirstEnd) {
-		this->psFirst->seekp(this->poffFirstEnd, std::ios::beg);
-		plenStream -= this->poffFirstEnd;
-		while (plenStream--) {
-			this->psFirst->rdbuf()->sputn("\0", 1);
-		}
+		// Cut any excess off the end
+		fnTruncate(this->poffFirstEnd);
 	}
-	this->psFirst->seekp(this->poffFirstEnd, std::ios::beg);
-#endif
 
-	// Cut any excess off the end
-	fnTruncate(this->poffFirstEnd);
+	// Sanity check to make sure the truncate worked
+	this->psFirst->seekp(0, std::ios::end);
+	plenStream = this->psFirst->tellp();
+	assert(plenStream == this->poffFirstEnd);
 
 	return;
 }
@@ -504,25 +502,14 @@ void segmented_stream_device::commit(FN_TRUNCATE fnTruncate)
 // same underlying stream as the first segment) and lastly writes out the
 // second segment in the middle.  It has to be done in this order so that no
 // data we need gets overwritten before it has been moved out of the way.
-void segmented_stream_device::commit(io::stream_offset poffWriteFirst,
-	io::stream_offset plenStream)
+void segmented_stream_device::commit(io::stream_offset poffWriteFirst)
 {
 	assert(this->poffFirstStart <= this->poffFirstEnd);
 
 	io::stream_offset lenFirst = this->poffFirstEnd - this->poffFirstStart;
 	io::stream_offset lenSecond = this->vcSecond.size();
-	io::stream_offset offWriteSecond = poffWriteFirst + lenFirst;
-	io::stream_offset offWriteThird = offWriteSecond + lenSecond;
-
-	if (poffWriteFirst > plenStream) {
-		// We're going to start writing data past the end of the stream, so we
-		// need to enlarge the stream by writing out some dummy data.
-		this->psFirst->seekp(plenStream, std::ios::beg);
-		for (int i = plenStream; i < poffWriteFirst; i++) {
-			this->psFirst->write("\0", 1);
-		}
-		plenStream = poffWriteFirst;
-	}
+	io::stream_offset poffWriteSecond = poffWriteFirst + lenFirst;
+	io::stream_offset poffWriteThird = poffWriteSecond + lenSecond;
 
 	if (this->poffFirstStart > poffWriteFirst) {
 		// There's data off the front that needs to be trimmed, so move the
@@ -532,7 +519,7 @@ void segmented_stream_device::commit(io::stream_offset poffWriteFirst,
 		this->poffFirstStart = poffWriteFirst;
 		this->poffFirstEnd = poffWriteFirst + lenFirst;
 
-		if (this->psegThird) this->psegThird->commit(offWriteThird, plenStream);
+		if (this->psegThird) this->psegThird->commit(poffWriteThird);
 
 	} else if (this->poffFirstStart < poffWriteFirst) {
 		// Data has been inserted before us, so we need to push the first source
@@ -540,7 +527,7 @@ void segmented_stream_device::commit(io::stream_offset poffWriteFirst,
 
 		// Before we do that, we need to make sure the third source has been
 		// moved out of the way or we'll overwrite it!
-		if (this->psegThird) this->psegThird->commit(offWriteThird, plenStream);
+		if (this->psegThird) this->psegThird->commit(poffWriteThird);
 
 		// Then move the first source forward a bit
 		streamMove(*this->psFirst, this->poffFirstStart, poffWriteFirst, lenFirst);
@@ -552,16 +539,16 @@ void segmented_stream_device::commit(io::stream_offset poffWriteFirst,
 		// First source isn't moving, so (possibly) make room for the second
 		// source and commit the third source.
 
-		// offWriteSecond doesn't need to change
+		// poffWriteSecond doesn't need to change
 
 		// Write out the third source straight after where the second one will end.
-		if (this->psegThird) this->psegThird->commit(offWriteThird, plenStream);
+		if (this->psegThird) this->psegThird->commit(poffWriteThird);
 
 	}
 
 	// Write out the second source to the underlying stream
 	if (lenSecond) {
-		this->psFirst->seekp(offWriteSecond, std::ios::beg);
+		this->psFirst->seekp(poffWriteSecond, std::ios::beg);
 		this->psFirst->write((const char *)&this->vcSecond[0], lenSecond);
 		this->vcSecond.clear();
 		this->poffFirstEnd += lenSecond;
@@ -608,7 +595,6 @@ void segmented_stream_device::split()
 	this->psegThird = psegNew;
 	return;
 }
-
 
 segmented_stream::segmented_stream(iostream_sptr psBase)
 	throw () :

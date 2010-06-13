@@ -109,7 +109,7 @@ class segmented_stream_device
 
 	private:
 		// Actual commit function where the destination offset can be specified.
-		void commit(io::stream_offset poffWriteFirst, io::stream_offset plenStream);
+		void commit(io::stream_offset poffWriteFirst);
 
 		// Split the segstream at the current seek position.  Upon return the first
 		// data source will only last until the current seek position, the second data
