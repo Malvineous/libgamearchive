@@ -236,7 +236,6 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(rename))
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
 		"Couldn't find " FILENAME1 " in sample archive");
 
-	// Swap the file positions
 	pArchive->rename(ep, FILENAME3);
 
 	BOOST_CHECK_MESSAGE(
@@ -308,7 +307,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long))
 		"Couldn't find " FILENAME1 " in sample archive");
 
 	char name[MAX_FILENAME_LEN + 2];
-	memset(name, 65, MAX_FILENAME_LEN + 1);
+	memset(name, 'A', MAX_FILENAME_LEN + 1);
 	name[MAX_FILENAME_LEN + 1] = 0;
 
 	BOOST_CHECK_THROW(
@@ -328,7 +327,8 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long))
 	);
 #endif
 
-	memset(name, 65, MAX_FILENAME_LEN);
+	memset(name, 'A', MAX_FILENAME_LEN);
+	name[MAX_FILENAME_LEN - 4] = '.';
 	name[MAX_FILENAME_LEN] = 0;
 
 	BOOST_CHECK_NO_THROW(

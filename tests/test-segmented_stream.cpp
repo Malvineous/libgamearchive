@@ -27,6 +27,7 @@
 #include "tests.hpp"
 
 // Local headers that will not be installed
+#include "../src/substream.hpp"
 #include "../src/segmented_stream.hpp"
 #include "../src/iostream_helpers.hpp"
 

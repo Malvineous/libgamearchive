@@ -53,6 +53,7 @@ struct substream_sample: public default_sample {
 		// See if the stringstream now matches what we expected
 		std::string strExpected = cExpected;
 		std::stringstream buf;
+		sub->seekg(0);
 		boost::iostreams::copy(*sub.get(), buf);
 		return this->default_sample::is_equal(strExpected, buf.str());
 	}
