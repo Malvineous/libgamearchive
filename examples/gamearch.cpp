@@ -387,7 +387,9 @@ finishTesting:
 					if (bScript) {
 						std::cout << "index=" << j << ';' << (*i)->getContent() << std::endl;
 					} else {
-						std::cout << j << ": " << (*i)->strName << "\t[" << (*i)->iSize << " bytes]\n";
+						std::cout << j << ": " << (*i)->strName
+							<< std::string(14 - (*i)->strName.length(), ' ') // pad/align
+							<< "\t[" << (*i)->iSize << " bytes]\n";
 					}
 				}
 
@@ -518,7 +520,7 @@ finishTesting:
 			} else if (i->string_key.compare("force") == 0) {
 			} else if (i->string_key.compare("f") == 0) {
 
-			} else if (!i->string_key.empty()) {
+			} else if ((!i->string_key.empty()) && (i->value.size() > 0)) {
 				// None of the above (single param) options matched, so it's probably
 				// an option with up to two filenames (with an equal-sign as a
 				// separator.)  It could also be the --type option, which we'll ignore.
