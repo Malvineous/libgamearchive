@@ -279,7 +279,7 @@ void VOLArchive::updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
 	return;
 }
 
-void VOLArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+FATArchive::FATEntry *VOLArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_vol_cosmo_insert*
@@ -331,7 +331,7 @@ void VOLArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry
 		this->psArchive->remove(VOL_FAT_ENTRY_LEN);
 	}
 
-	return;
+	return pNewEntry;
 }
 
 void VOLArchive::preRemoveFile(const FATEntry *pid)

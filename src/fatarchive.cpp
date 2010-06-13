@@ -147,7 +147,11 @@ FATArchive::EntryPtr FATArchive::insert(const EntryPtr& idBeforeThis, const std:
 
 	// Add the file's entry from the FAT.  May throw (e.g. filename too long),
 	// archive should be left untouched in this case.
-	this->preInsertFile(pFATBeforeThis, pNewFile);
+	FATEntry *returned = this->preInsertFile(pFATBeforeThis, pNewFile);
+	if (returned != pNewFile) {
+		ep.reset(returned);
+		pNewFile = returned;
+	}
 
 	if (this->isValid(idBeforeThis)) {
 		// Update the offsets of any files located after this one (since they will
@@ -196,10 +200,6 @@ void FATArchive::remove(EntryPtr& id)
 	// Remove the file's entry from the FAT
 	this->preRemoveFile(pFATDel);
 
-	// Remove the file's data from the archive
-	this->psArchive->seekp(pFATDel->iOffset);
-	this->psArchive->remove(pFATDel->iSize + pFATDel->lenHeader);
-
 	// Remove the entry from the vector
 	VC_ENTRYPTR::iterator itErase = std::find(this->vcFAT.begin(), this->vcFAT.end(), id);
 	assert(itErase != this->vcFAT.end());
@@ -208,6 +208,10 @@ void FATArchive::remove(EntryPtr& id)
 	// Update the offsets of any files located after this one (since they will
 	// all have been shifted back to fill the gap made by the removal.)
 	this->shiftFiles(pFATDel->iOffset, -(pFATDel->iSize + pFATDel->lenHeader), -1);
+
+	// Remove the file's data from the archive
+	this->psArchive->seekp(pFATDel->iOffset);
+	this->psArchive->remove(pFATDel->iSize + pFATDel->lenHeader);
 
 	// Mark it as invalid in case some other code is still holding on to it.
 	pFATDel->bValid = false;

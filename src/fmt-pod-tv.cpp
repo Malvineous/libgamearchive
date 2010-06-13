@@ -315,7 +315,7 @@ void PODArchive::updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
 	return;
 }
 
-void PODArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+FATArchive::FATEntry *PODArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_pod_tv_insert*
@@ -345,7 +345,7 @@ void PODArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry
 
 	this->updateFileCount(this->vcFAT.size() + 1);
 
-	return;
+	return pNewEntry;
 }
 
 void PODArchive::preRemoveFile(const FATEntry *pid)

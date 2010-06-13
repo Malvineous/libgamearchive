@@ -277,7 +277,7 @@ void BNKArchive::updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
 	return;
 }
 
-void BNKArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+FATArchive::FATEntry *BNKArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_bnk_harry_insert*
@@ -328,7 +328,7 @@ void BNKArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry
 	this->psFAT << u32le(pNewEntry->iOffset + BNK_EFAT_ENTRY_LEN);
 	this->psFAT << u32le(pNewEntry->iSize);
 
-	return;
+	return pNewEntry;
 }
 
 void BNKArchive::preRemoveFile(const FATEntry *pid)

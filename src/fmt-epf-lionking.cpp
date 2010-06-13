@@ -332,7 +332,7 @@ void EPFArchive::updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
 	return;
 }
 
-void EPFArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+FATArchive::FATEntry *EPFArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_epf_lionking_insert*
@@ -344,7 +344,7 @@ void EPFArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry
 	// Set the format-specific variables
 	pNewEntry->lenHeader = 0;
 
-	return;
+	return pNewEntry;
 }
 
 void EPFArchive::postInsertFile(FATEntry *pNewEntry)

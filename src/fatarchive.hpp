@@ -134,20 +134,28 @@ class FATArchive: virtual public Archive {
 		// Insert a new entry in the on-disk FAT.  It should be inserted before
 		// idBeforeThis, or at the end of the archive if idBeforeThis is not valid.
 		// All the FAT entries will be updated with new offsets after this function
-		// returns, however the offsets will not take into account any changes
+		// returns (so this function *must* add a new entry into the on-disk FAT
+		// for this file) however the offsets will not take into account any changes
 		// resulting from the FAT changing size, which must be handled by this
 		// function.  The FAT vector does not contain the new entry, so
 		// pNewEntry->iIndex may be the same as an existing file (but the existing
 		// file will have its index moved after this function returns.)
 		// All this function has to do is make room in the FAT and write out the
 		// new entry.  It also needs to set the lenHeader field in pNewEntry.
+		// The returned pointer is the one that is used.  Normally pNewEntry will
+		// be returned, but if a FATEntry has been extended for a particular format,
+		// this is where the custom class should be created, have pNewEntry copied
+		// into it, then be returned.
 		// Invalidates existing EntryPtrs. TODO - does it?
-		virtual void preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 			throw (std::ios::failure) = 0;
 
 		// Called after the file data has been inserted.  Only needs to be
 		// overridden if there are tasks to perform after the file has been set.
-		// pNewEntry can be changed if need be, but this is not required.
+		// pNewEntry can be changed if need be, but this is not required.  Note
+		// that preInsertFile() and all subsequent FAT updates and file shifting
+		// is done without the new file, then the new file data is insert last, and
+		// postInsertFile() immediately called.
 		virtual void postInsertFile(FATEntry *pNewEntry)
 			throw (std::ios::failure);
 
@@ -162,7 +170,11 @@ class FATArchive: virtual public Archive {
 		virtual void preRemoveFile(const FATEntry *pid)
 			throw (std::ios::failure) = 0;
 
-		// Called after the file data has been removed.  Only override if needed.
+		// Called after the file data has been removed and the FAT has been
+		// updated.  Only override if needed.  Note that pid->bValid will be
+		// false (because the file has been removed) but for this function only,
+		// the other parameters are still correct, although no longer used (e.g.
+		// the offset it was at, its size, etc.)
 		virtual void postRemoveFile(const FATEntry *pid)
 			throw (std::ios::failure);
 

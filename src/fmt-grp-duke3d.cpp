@@ -228,7 +228,7 @@ void GRPArchive::updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
 	return;
 }
 
-void GRPArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+FATArchive::FATEntry *GRPArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_grp_duke3d_insert*
@@ -255,7 +255,7 @@ void GRPArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry
 	this->shiftFiles(GRP_FAT_OFFSET + this->vcFAT.size() * GRP_FAT_ENTRY_LEN, GRP_FAT_ENTRY_LEN, 0);
 
 	this->updateFileCount(this->vcFAT.size() + 1);
-	return;
+	return pNewEntry;
 }
 
 void GRPArchive::preRemoveFile(const FATEntry *pid)

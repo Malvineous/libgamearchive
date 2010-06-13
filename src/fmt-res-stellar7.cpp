@@ -243,7 +243,7 @@ void RESArchiveFolder::updateFileSize(const FATEntry *pid, std::streamsize sizeD
 	return;
 }
 
-void RESArchiveFolder::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+FATArchive::FATEntry *RESArchiveFolder::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_res_stellar7_insert*
@@ -266,7 +266,7 @@ void RESArchiveFolder::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNe
 	// the other file offsets accordingly.
 	this->shiftFiles(pNewEntry->iOffset, pNewEntry->lenHeader, 0);
 
-	return;
+	return pNewEntry;
 }
 
 void RESArchiveFolder::preRemoveFile(const FATEntry *pid)

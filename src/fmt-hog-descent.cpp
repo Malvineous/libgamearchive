@@ -226,7 +226,7 @@ void HOGArchive::updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
 	return;
 }
 
-void HOGArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+FATArchive::FATEntry *HOGArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_hog_descent_insert*
@@ -250,7 +250,7 @@ void HOGArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry
 	// Update the offsets now the embedded FAT entry has been inserted
 	this->shiftFiles(pNewEntry->iOffset, pNewEntry->lenHeader, 0);
 
-	return;
+	return pNewEntry;
 }
 
 void HOGArchive::preRemoveFile(const FATEntry *pid)

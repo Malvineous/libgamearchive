@@ -95,7 +95,7 @@ class RESArchiveFolder: virtual public FATArchive, virtual public ArchiveWithFol
 		virtual void updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
 			throw (std::ios_base::failure);
 
-		virtual void preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 			throw (std::ios_base::failure);
 
 		virtual void preRemoveFile(const FATEntry *pid)
