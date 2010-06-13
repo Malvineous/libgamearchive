@@ -60,10 +60,14 @@ void Archive::move(const EntryPtr& idBeforeThis, EntryPtr& id)
 	dst->flush();
 
 	// Remove the original file
+	// TODO: Figure out which is best and whether entryPtrFromStream should be removed
+	/*
 	EntryPtr orig = this->entryPtrFromStream(src);
 	assert(orig);
 	assert(orig->bValid);
 	this->remove(orig);
+	*/
+	this->remove(id);
 
 	return;
 }

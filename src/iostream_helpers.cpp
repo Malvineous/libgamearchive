@@ -143,7 +143,7 @@ void null_padded_read::read(std::istream& s) const
 	this->r.resize(this->len);
 
 	// Read in the whole data
-	s.read(const_cast<char *>(this->r.c_str()), this->len);
+	s.read(&this->r[0], this->len);
 
 	if (this->chop) {
 		// Shrink the string back to the first null
