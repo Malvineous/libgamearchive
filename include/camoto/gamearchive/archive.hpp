@@ -39,7 +39,8 @@ enum E_FILETYPE {
 enum E_ATTRIBUTE {
 	EA_EMPTY      = 0x01,  // There's currently no file at this location
 	EA_HIDDEN     = 0x02,  // File is hidden between two FAT entries
-	EA_COMPRESSED = 0x04
+	EA_COMPRESSED = 0x04,
+	EA_ENCRYPTED  = 0x08
 };
 
 enum E_METADATA {
