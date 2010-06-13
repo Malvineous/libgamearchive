@@ -14,6 +14,7 @@ libgamearchive_la_SOURCES += fmt-bnk-harry.cpp
 libgamearchive_la_SOURCES += fmt-res-stellar7.cpp
 libgamearchive_la_SOURCES += fmt-hog-descent.cpp
 libgamearchive_la_SOURCES += fmt-epf-lionking.cpp
+libgamearchive_la_SOURCES += fmt-dat-wacky.cpp
 
 EXTRA_libgamearchive_la_SOURCES = debug.hpp
 EXTRA_libgamearchive_la_SOURCES += byteorder.h
@@ -29,6 +30,7 @@ EXTRA_libgamearchive_la_SOURCES += fmt-bnk-harry.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-res-stellar7.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-hog-descent.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-epf-lionking.hpp
+EXTRA_libgamearchive_la_SOURCES += fmt-dat-wacky.hpp
 
 AM_CPPFLAGS = $(DEBUG_CPPFLAGS) $(BOOST_CPPFLAGS) -I $(top_srcdir)/include
 AM_CXXFLAGS = $(DEBUG_CXXFLAGS)
