@@ -63,7 +63,17 @@ std::streamsize substream_device::read(char_type *s, std::streamsize n)
 		n = this->iLength - this->iCurPos;
 	}
 
-	psParent->seekg(this->iOffset + this->iCurPos);
+	assert(this->psParent->good());
+
+#ifdef DEBUG
+	// Make sure we don't read past the end of the parent stream
+	this->psParent->seekg(0, std::ios::end);
+	io::stream_offset lenParent = this->psParent->tellg();
+	assert(lenParent >= this->iOffset + this->iCurPos + n);
+#endif
+
+	this->psParent->seekg(this->iOffset + this->iCurPos);
+
 	this->psParent->read(s, n);
 	std::streamsize iLen = this->psParent->gcount();
 	this->iCurPos += iLen;
@@ -78,9 +88,14 @@ std::streamsize substream_device::write(const char_type *s, std::streamsize n)
 	if ((this->iCurPos + n) > this->iLength) {
 		n = this->iLength - this->iCurPos;
 	}
-	psParent->seekp(this->iOffset + this->iCurPos);
+
+	assert(this->psParent->good());
+	this->psParent->seekp(this->iOffset + this->iCurPos);
 	std::streamsize iLen = this->psParent->rdbuf()->sputn(s, n);
 	this->iCurPos += iLen;
+
+	// Make sure these bytes actually were written to the stream
+	assert(this->psParent->tellp() == this->iOffset + this->iCurPos);
 	return iLen;
 }
 
@@ -118,9 +133,30 @@ void substream_device::relocate(io::stream_offset delta)
 	return;
 }
 
+void substream_device::setSize(io::stream_offset len)
+{
+	this->iLength = len;
+
+	if (this->iCurPos > this->iLength) {
+		// Can't seek past EOF
+		this->iCurPos = this->iLength;
+	}
+
+	// Sanity check: Make sure the size doesn't go past the parent's EOF
+	this->psParent->seekp(0, std::ios::end);
+	assert(this->psParent->tellp() >= this->iOffset + this->iLength);
+
+	return;
+}
+
 io::stream_offset substream_device::getOffset() const
 {
 	return this->iOffset;
+}
+
+io::stream_offset substream_device::getSize() const
+{
+	return this->iLength;
 }
 
 
@@ -138,13 +174,27 @@ substream::substream(const substream_device& orig)
 
 void substream::relocate(io::stream_offset delta)
 {
-	this->flush();
+	// We can't flush before the relocate() because if data has been cached,
+	// the underlying stream may have since been modified.  Calling flush() now
+	// would cause the data to be written to the wrong spot in the underlying
+	// stream.  If this is important, the caller must call flush() themselves.
+	//this->flush();
 	this->io::stream<substream_device>::operator *().relocate(delta);
+}
+
+void substream::setSize(io::stream_offset len)
+{
+	this->io::stream<substream_device>::operator *().setSize(len);
 }
 
 io::stream_offset substream::getOffset() const
 {
 	return const_cast<substream *>(this)->io::stream<substream_device>::operator *().getOffset();
+}
+
+io::stream_offset substream::getSize() const
+{
+	return const_cast<substream *>(this)->io::stream<substream_device>::operator *().getSize();
 }
 
 } // namespace gamearchive

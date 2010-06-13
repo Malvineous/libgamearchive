@@ -77,9 +77,31 @@ BOOST_AUTO_TEST_CASE(substream_change_offset)
 	BOOST_TEST_MESSAGE("Move substream's offset");
 
 	sub->relocate(10);
+	sub->setSize(16); // can't read past end of stream!
 
 	BOOST_CHECK_MESSAGE(is_equal("KLMNOPQRSTUVWXYZ"),
 		"Move substream's offset failed");
+}
+
+BOOST_AUTO_TEST_CASE(substream_write_then_move)
+{
+	BOOST_TEST_MESSAGE("Move substream's offset after writing");
+
+	sub->seekp(10);
+	sub->write("12345", 5);
+
+	// Flush the changes to the underlying stream
+	sub->flush();
+	// It would be nice to have another test without the flush, but we can't
+	// guarantee the previous write statement will be cached (and that test
+	// would fail if it wasn't cached.)  The behaviour is correct either way, we
+	// just can't guarantee which behaviour we'll get during the test.
+
+	sub->relocate(8);
+	sub->setSize(10);
+
+	BOOST_CHECK_MESSAGE(is_equal("IJ12345PQR"),
+		"Move substream's offset after write failed");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

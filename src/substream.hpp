@@ -62,10 +62,46 @@ class substream_device {
 
 	protected:
 		// Move the "window" of data (looking into the parent stream) forward or
-		// back by the given number of bytes.
+		// back by the given number of bytes.  This does not flush any write cache,
+		// so if you don't call flush() first, data you wrote previously may end up
+		// in the new place in the parent stream (but it will still be at the
+		// same offset within this substream.)  For example:
+		//
+		//   new substream(50)   # create new substream at offset 50 in parent
+		//   substream->seek(4)
+		//   substream->write("hello")  # may write at offset 54, or may cache
+		//   #substream->flush()  # would guarantee "hello" at offset 54 in parent
+		//
+		//   substream->relocate(10)  # substream is now at offset 60 in parent
+		//   substream->flush()       # may cause "hello" at offset 64 in parent
+		//
+		// Generally this is only important when the underlying stream needs to be
+		// modified outside of the substream, such as when it is a
+		// segmented_stream.  If you insert a block of data in the segstream, then
+		// relocate the substream by the same amount, any cached writes will end
+		// up where they should go, taking into account the new block of data
+		// inserted into the segstream.  This avoids the need to flush the
+		// substream before inserting data into the segstream.  Another example:
+		//
+		//   parent stream: AAAABBBBCCCCDDDD
+		//   substream(4,8) ==> BBBBCCCC
+		//   substream->write("hello")
+		//     cached     ==> parent AAAABBBBCCCCDDDD (i.e. unchanged)
+		//     not cached ==> parent AAAAhelloCCCDDDD (immediate writethrough)
+		//   parent->insert: AAAA____BBBBCCCCDDDD
+		//   substream->relocate(4)
+		//   substream->flush() ==> parent AAAA____helloCCCDDDD
+		//
+		// Here the result at the final flush is the same whether the data
+		// was flushed first, then the "_" bytes inserted, or if the data was
+		// cached, then flushed at the new offset *after* the "_" bytes were
+		// inserted.
 		void relocate(io::stream_offset delta);
 
+		void setSize(io::stream_offset len);
+
 		io::stream_offset getOffset() const;
+		io::stream_offset getSize() const;
 
 	friend class substream;
 
@@ -86,7 +122,9 @@ class substream: public io::stream<substream_device>
 			throw ();
 
 		void relocate(io::stream_offset delta);
+		void setSize(io::stream_offset len);
 		io::stream_offset getOffset() const;
+		io::stream_offset getSize() const;
 };
 
 typedef boost::shared_ptr<substream> substream_sptr;
