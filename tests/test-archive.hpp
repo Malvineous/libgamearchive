@@ -252,6 +252,50 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(rename))
 #endif
 }
 
+BOOST_AUTO_TEST_CASE(TEST_NAME(rename_long))
+{
+	BOOST_TEST_MESSAGE("Rename file with name too long");
+
+	// Find the file we're going to insert before
+	ga::Archive::EntryPtr ep = pArchive->find(FILENAME1);
+
+	// Make sure we found it
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
+		"Couldn't find " FILENAME1 " in sample archive");
+
+	char name[MAX_FILENAME_LEN + 2];
+	memset(name, 'A', MAX_FILENAME_LEN + 1);
+	name[MAX_FILENAME_LEN + 1] = 0;
+
+	// Make sure renaming fails when the filename is too long
+	BOOST_CHECK_THROW(
+		pArchive->rename(ep, name),
+		std::ios::failure
+	);
+
+	BOOST_CHECK_MESSAGE(
+		is_equal(makeString(INITIALSTATE_NAME)),
+		"Archive corrupted after failed insert"
+	);
+
+#ifdef HAS_FAT
+	BOOST_CHECK_MESSAGE(
+		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_initialstate))),
+		"Archive corrupted after failed insert"
+	);
+#endif
+
+	memset(name, 'A', MAX_FILENAME_LEN);
+	name[MAX_FILENAME_LEN - 4] = '.';
+	name[MAX_FILENAME_LEN] = 0;
+
+	// Make sure the rename succeeds when the filename is exactly the max length
+	BOOST_CHECK_NO_THROW(
+		pArchive->rename(ep, name)
+	);
+
+}
+
 BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long))
 {
 	BOOST_TEST_MESSAGE("Inserting file with name too long");
