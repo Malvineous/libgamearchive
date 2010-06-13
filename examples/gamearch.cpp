@@ -178,6 +178,8 @@ int main(int iArgC, char *cArgV[])
 			"specify the archive type (default is autodetect)")
 		("script,s",
 			"format output suitable for script parsing")
+		("force,f",
+			"force open even if the archive is not in the given format")
 		//("verbose", "display more detail")
 	;
 
@@ -202,6 +204,7 @@ int main(int iArgC, char *cArgV[])
 	std::string strType;
 
 	bool bScript = false; // show output suitable for script parsing?
+	bool bForceOpen = false; // open anyway even if archive not in given format?
 	try {
 		//po::store(po::parse_command_line(iArgC, cArgV, poComplete), mpArgs);
 		po::parsed_options pa = po::parse_command_line(iArgC, cArgV, poComplete);
@@ -248,6 +251,11 @@ int main(int iArgC, char *cArgV[])
 				(i->string_key.compare("script") == 0)
 			) {
 				bScript = true;
+			} else if (
+				(i->string_key.compare("f") == 0) ||
+				(i->string_key.compare("force") == 0)
+			) {
+				bForceOpen = true;
 			}
 		}
 
@@ -324,9 +332,15 @@ finishTesting:
 
 		// Check to see if the file is actually in this format
 		if (!pArchType->isInstance(psArchive)) {
-			std::cerr << "Invalid format: " << strFilename << " is not a "
-				<< pArchType->getFriendlyName() << std::endl;
-			return 3;
+			if (bForceOpen) {
+				std::cerr << "Warning: " << strFilename << " is not a "
+					<< pArchType->getFriendlyName() << ", open forced." << std::endl;
+			} else {
+				std::cerr << "Invalid format: " << strFilename << " is not a "
+					<< pArchType->getFriendlyName() << "\n"
+					<< "Use the -f option to try anyway." << std::endl;
+				return 3;
+			}
 		}
 
 		// See if the format requires any supplemental files
@@ -500,6 +514,9 @@ finishTesting:
 			// Ignore --script/-s
 			} else if (i->string_key.compare("script") == 0) {
 			} else if (i->string_key.compare("s") == 0) {
+			// Ignore --force/-f
+			} else if (i->string_key.compare("force") == 0) {
+			} else if (i->string_key.compare("f") == 0) {
 
 			} else if (!i->string_key.empty()) {
 				// None of the above (single param) options matched, so it's probably
