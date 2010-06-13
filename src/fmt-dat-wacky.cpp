@@ -103,6 +103,10 @@ E_CERTAINTY DAT_WackyType::isInstance(iostream_sptr psArchive) const
 	uint16_t numFiles;
 	psArchive >> u16le(numFiles);
 
+	// If the archive has no files, it'd better be tiny
+	// TESTED BY: fmt_dat_wacky_isinstance_c04
+	if ((numFiles == 0) && (lenArchive > DAT_FAT_OFFSET)) return EC_DEFINITELY_NO;
+
 	uint32_t lenFAT = numFiles * DAT_FAT_ENTRY_LEN;
 
 	// If the FAT is larger than the entire archive then it's not a DAT file

@@ -144,5 +144,14 @@ ISINSTANCE_TEST(c03,
 	ga::EC_DEFINITELY_NO
 );
 
+ISINSTANCE_TEST(c04,
+	"\x00\x00" \
+	"ONE.DAT\0\0\0\0\0\0\0"        "\x0f\x01\x00\x00" "\x2c\x00\x00\x00" \
+	"TWO.DAT\0\0\0\0\0\0\0"        "\x0f\x00\x00\x00" "\x3b\x00\x00\x00" \
+	"This is one.dat" \
+	"This is two.dat",
+	ga::EC_DEFINITELY_NO
+);
+
 // Not really possible to do any INVALIDDATA_TEST() tests here, because the
 // worst that can happen is it looks like the archive has been truncated.
