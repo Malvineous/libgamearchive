@@ -98,6 +98,12 @@ class ArchiveType {
 
 };
 
+/// Shared pointer to an ArchiveType.
+typedef boost::shared_ptr<ArchiveType> ArchiveTypePtr;
+
+/// Vector of ArchiveType shared pointers.
+typedef std::vector<ArchiveTypePtr> VC_ARCHIVETYPE;
+
 } // namespace gamearchive
 } // namespace camoto
 

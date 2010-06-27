@@ -49,10 +49,10 @@ void exitFunc()
 }
 #endif
 
-Manager *getManager()
+ManagerPtr getManager()
 	throw ()
 {
-	return new Manager();
+	return ManagerPtr(new Manager());
 }
 
 Manager::Manager()
@@ -64,14 +64,14 @@ Manager::Manager()
 		registered_exit_func = true;
 	}
 #endif
-	this->vcTypes.push_back(arch_sptr(new GRPType()));
-	this->vcTypes.push_back(arch_sptr(new VOLType()));
-	this->vcTypes.push_back(arch_sptr(new PODType()));
-	this->vcTypes.push_back(arch_sptr(new BNKType()));
-	this->vcTypes.push_back(arch_sptr(new RESType()));
-	this->vcTypes.push_back(arch_sptr(new HOGType()));
-	this->vcTypes.push_back(arch_sptr(new EPFType()));
-	this->vcTypes.push_back(arch_sptr(new DAT_WackyType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new GRPType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new VOLType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new PODType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new BNKType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new RESType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new HOGType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new EPFType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new DAT_WackyType()));
 }
 
 Manager::~Manager()
@@ -79,20 +79,20 @@ Manager::~Manager()
 {
 }
 
-Manager::arch_sptr Manager::getArchiveType(int iIndex)
+ArchiveTypePtr Manager::getArchiveType(int iIndex)
 	throw ()
 {
-	if (iIndex >= this->vcTypes.size()) return arch_sptr();
+	if (iIndex >= this->vcTypes.size()) return ArchiveTypePtr();
 	return this->vcTypes[iIndex];
 }
 
-Manager::arch_sptr Manager::getArchiveTypeByCode(const std::string& strCode)
+ArchiveTypePtr Manager::getArchiveTypeByCode(const std::string& strCode)
 	throw ()
 {
-	for (VC_TYPES::const_iterator i = this->vcTypes.begin(); i != this->vcTypes.end(); i++) {
+	for (VC_ARCHIVETYPE::const_iterator i = this->vcTypes.begin(); i != this->vcTypes.end(); i++) {
 		if ((*i)->getArchiveCode().compare(strCode) == 0) return *i;
 	}
-	return arch_sptr();
+	return ArchiveTypePtr();
 }
 
 } // namespace gamearchive

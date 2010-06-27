@@ -30,38 +30,71 @@
 namespace camoto {
 namespace gamearchive {
 
+class Manager;
+
+/// Shared pointer to a Manager.
+typedef boost::shared_ptr<Manager> ManagerPtr;
+
+/// Library entry point.
+/**
+ * All further functionality is provided by calling functions in the Manager
+ * class.
+ *
+ * @return A shared pointer to a Manager instance.
+ */
+ManagerPtr getManager(void)
+	throw ();
+
+/// Top-level class to manage archive types.
+/**
+ * This class provides access to the different archive file formats supported
+ * by the library.
+ *
+ * In order to open an archive, this class must be used to access an instance
+ * of the archive type.  This ArchiveType instance is then used to create an
+ * Archive instance around a particular file.  It is this Archive instance that
+ * is then used to manipulate the archive file itself.
+ *
+ * @note This class shouldn't be created manually, use the global function
+ *       getManager() to obtain a pointer to it.
+ */
 class Manager {
-	public:
-		typedef boost::shared_ptr<const ArchiveType> arch_sptr;
-		typedef std::vector<arch_sptr> VC_TYPES;
-
 	private:
-		VC_TYPES vcTypes;
+		/// List of available archive types.
+		VC_ARCHIVETYPE vcTypes;
 
-	public:
 		Manager()
 			throw ();
+
+		friend ManagerPtr getManager(void)
+			throw ();
+
+	public:
 
 		~Manager()
 			throw ();
 
-		// Get an ArchiveType instance for a supported file format.  Returns NULL
-		// once iIndex goes out of range.  First format is at iIndex == 0.
-		arch_sptr getArchiveType(int iIndex)
+		/// Get an ArchiveType instance for a supported file format.
+		/**
+		 * This can be used to enumerate all available file formats.
+		 *
+		 * @param  iIndex Index of the format, starting from 0.
+		 * @return A shared pointer to an ArchiveType for the given index, or
+		 *         an empty pointer once iIndex goes out of range.
+		 * @todo Remove this and replace it with a function that just returns the vector.
+		 */
+		ArchiveTypePtr getArchiveType(int iIndex)
 			throw ();
 
-		// Save as above but uses codes like "grp-duke3d" for the lookup (useful
-		// for passing in from the command line.)  Returns NULL on an invalid code.
-		arch_sptr getArchiveTypeByCode(const std::string& strCode)
+		/// Get an ArchiveType instance by its code.
+		/**
+		 * @param  strCode %Archive code (e.g. "grp-duke3d")
+		 * @return A shared pointer to an ArchiveType for the given code, or
+		 *         an empty pointer on an invalid code.
+		 */
+		ArchiveTypePtr getArchiveTypeByCode(const std::string& strCode)
 			throw ();
 };
-
-// Library entry point.  All further functionality is provided by calling
-// functions in the Manager class.  Remember to delete the returned pointer
-// when you have finished using it.  Stick it in a boost::shared_ptr if you
-// don't want to worry about that.
-Manager *getManager(void)
-	throw ();
 
 } // namespace gamearchive
 } // namespace camoto

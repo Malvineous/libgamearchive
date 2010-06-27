@@ -35,7 +35,7 @@ struct EMPTY_FIXTURE_NAME: public FIXTURE_NAME {
 		#endif
 
 		boost::shared_ptr<ga::Manager> pManager(ga::getManager());
-		ga::Manager::arch_sptr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE));
+		ga::ArchiveTypePtr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE));
 
 		BOOST_TEST_CHECKPOINT("About to call newArchive()");
 
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(new_isinstance))
 	pArchive->flush();
 
 	boost::shared_ptr<ga::Manager> pManager(ga::getManager());
-	ga::Manager::arch_sptr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE));
+	ga::ArchiveTypePtr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE));
 
 	BOOST_REQUIRE_MESSAGE(pTestType->isInstance(baseStream),
 		"Newly created archive was not recognised as a valid instance");

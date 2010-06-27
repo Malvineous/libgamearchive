@@ -281,10 +281,10 @@ int main(int iArgC, char *cArgV[])
 		// Get the format handler for this file format
 		boost::shared_ptr<ga::Manager> pManager(ga::getManager());
 
-		ga::Manager::arch_sptr pArchType;
+		ga::ArchiveTypePtr pArchType;
 		if (strType.empty()) {
 			// Need to autodetect the file format.
-			ga::Manager::arch_sptr pTestType;
+			ga::ArchiveTypePtr pTestType;
 			int i = 0;
 			while ((pTestType = pManager->getArchiveType(i++))) {
 				ga::E_CERTAINTY cert = pTestType->isInstance(psArchive);
@@ -319,7 +319,7 @@ finishTesting:
 				return RET_BE_MORE_SPECIFIC;
 			}
 		} else {
-			ga::Manager::arch_sptr pTestType(pManager->getArchiveTypeByCode(strType));
+			ga::ArchiveTypePtr pTestType(pManager->getArchiveTypeByCode(strType));
 			if (!pTestType) {
 				std::cerr << "Unknown file type given to -t/--type: " << strType
 					<< std::endl;

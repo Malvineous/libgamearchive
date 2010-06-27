@@ -84,7 +84,7 @@ struct FIXTURE_NAME: public default_sample {
 			this->baseData->exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
 
 			boost::shared_ptr<ga::Manager> pManager(ga::getManager());
-			ga::Manager::arch_sptr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE));
+			ga::ArchiveTypePtr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE));
 			this->pArchive = pTestType->open(this->baseStream, this->suppData);
 			BOOST_REQUIRE_MESSAGE(this->pArchive, "Could not create archive class");
 			this->pArchive->fnTruncate = boost::bind<void>(
@@ -133,7 +133,7 @@ BOOST_FIXTURE_TEST_SUITE(SUITE_NAME, FIXTURE_NAME)
 		BOOST_TEST_MESSAGE("isInstance check (" ARCHIVE_TYPE "; " #c ")"); \
 		\
 		boost::shared_ptr<ga::Manager> pManager(ga::getManager()); \
-		ga::Manager::arch_sptr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE)); \
+		ga::ArchiveTypePtr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE)); \
 		\
 		boost::shared_ptr<std::stringstream> psstrBase(new std::stringstream); \
 		(*psstrBase) << makeString(d); \
@@ -179,7 +179,7 @@ ISINSTANCE_TEST(c00, INITIALSTATE_NAME, ga::EC_DEFINITELY_YES);
 		BOOST_TEST_MESSAGE("invalidData check (" ARCHIVE_TYPE "; " #c ")"); \
 		\
 		boost::shared_ptr<ga::Manager> pManager(ga::getManager()); \
-		ga::Manager::arch_sptr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE)); \
+		ga::ArchiveTypePtr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE)); \
 		\
 		/* Prepare an invalid archive */ \
 		boost::shared_ptr<std::stringstream> psstrBase(new std::stringstream); \
