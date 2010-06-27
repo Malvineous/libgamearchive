@@ -104,4 +104,22 @@ BOOST_AUTO_TEST_CASE(substream_write_then_move)
 		"Move substream's offset after write failed");
 }
 
+BOOST_AUTO_TEST_CASE(substream_write_past_eof)
+{
+	BOOST_TEST_MESSAGE("Write past substream's EOF");
+
+	sub->seekp(20);
+	std::streamsize len = sub->rdbuf()->sputn("1234567890", 10);
+
+	std::cout << len << std::endl;
+	BOOST_CHECK_MESSAGE(len == 6,
+		"Write past substream's EOF failed (too many/few bytes written)");
+
+	// Flush the changes to the underlying stream
+	sub->flush();
+
+	BOOST_CHECK_MESSAGE(is_equal("ABCDEFGHIJKLMNOPQRST123456"),
+		"Write past substream's EOF");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
