@@ -59,6 +59,27 @@ The libgamearchive distribution comes with example code in the form of the
 utility</a>, which provides a simple command-line interface to the
 full functionality of the library.
 
+For a small "hello world" example, try this:
+
+@include hello.cpp
+
+When run, this program produces output similar to the following:
+
+@verbatim
+Found 456 files.
+LOGO.ANM
+CINEOV2.ANM
+CINEOV3.ANM
+RADLOGO.ANM
+DUKETEAM.ANM
+VOL41A.ANM
+VOL42A.ANM
+VOL43A.ANM
+VOL4E1.ANM
+...
+Done.
+@endverbatim
+
 \section info More information
 
 Additional information including a mailing list is available from the Camoto
