@@ -27,6 +27,10 @@ libtool
 *.lo
 *.la
 
+# doxygen output
+doxygen/api/
+doxygen/full/
+
 # Compiled binaries
 examples/gamearch
 tests/tests

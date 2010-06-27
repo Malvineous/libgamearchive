@@ -1,5 +1,6 @@
-/*
- * types.hpp - Various types used across the libraries.
+/**
+ * @file   types.hpp
+ * @brief  Various types used across the libraries.
  *
  * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -26,9 +27,13 @@
 
 namespace camoto {
 
+/// Shared pointer to an iostream
 typedef boost::shared_ptr<std::iostream> iostream_sptr;
 
-// Truncate function callback (to truncate an iostream)
+/// Truncate function callback (to truncate an iostream)
+/**
+ * @see gamearchive::Archive::fnTruncate
+ */
 typedef boost::function<void(unsigned long)> FN_TRUNCATE;
 
 } // namespace camoto

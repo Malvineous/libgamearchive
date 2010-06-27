@@ -1,6 +1,7 @@
-/*
- * archive.hpp - Declaration of top-level Archive class, for accessing file
- *               archives storing game data.
+/**
+ * @file   archive.hpp
+ * @brief  Declaration of top-level Archive class, for accessing file
+ *         archives storing game data.
  *
  * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -32,44 +33,86 @@
 namespace camoto {
 namespace gamearchive {
 
+/// File types.
 enum E_FILETYPE {
-	EFT_USEFILENAME, EFT_RAWEGA_PLANAR
+	/// Use the filename extension to decide what format it is in
+	EFT_USEFILENAME,
+	/// The file is a raw EGA planar image
+	EFT_RAWEGA_PLANAR,
+	/// @todo Replace these with MIME-style content types?
 };
 
+/// File attribute flags.  Can be OR'd together.
 enum E_ATTRIBUTE {
-	EA_EMPTY      = 0x01,  // There's currently no file at this location
-	EA_HIDDEN     = 0x02,  // File is hidden between two FAT entries
+	/// There's currently no file at this location
+	EA_EMPTY      = 0x01,
+	/// File is hidden between two FAT entries
+	EA_HIDDEN     = 0x02,
+	/// File is compressed
 	EA_COMPRESSED = 0x04,
-	EA_ENCRYPTED  = 0x08
+	/// File is encrypted
+	EA_ENCRYPTED  = 0x08,
 };
 
+/// Metadata item types.
 enum E_METADATA {
-	EM_DESCRIPTION  // Archive description
+	/// %Archive description
+	EM_DESCRIPTION,
 };
 
+/// Vector of metadata item types.
 typedef std::vector<E_METADATA> VC_METADATA_ITEMS;
 
+/// Generic "file not found" exception.
 class ENotFound: public std::exception {
 };
+
+/// Generic "invalid archive format" exception.
 class EInvalidFormat: public std::exception {
 };
 
-// Multithreading: Only call one function in this class at a time.  Many of the
-// functions seek around the underlying stream and thus will break if two or
-// more functions are executing at the same time.
+/// Primary interface to an archive file.
+/**
+ * This class represents an archive file.  Its functions are used to manipulate
+ * the contents of the archive.
+ *
+ * @note Multithreading: Only call one function in this class at a time.  Many
+ *       of the functions seek around the underlying stream and thus will break
+ *       if two or more functions are executing at the same time.
+ */
 class Archive {
 
 	public:
-		// Base class to represent entries in the file.  Will be extended by
-		// descendent classes to hold format-specific data.  The entries here will
-		// be valid for all archive types.
+		/// Offset type used by FileEntry
 		typedef unsigned long offset_t;
+
+		/// Base class to represent entries in the file.
+		/**
+		 * Will be extended by descendent classes to hold format-specific data.
+		 * The entries here will be valid for all archive types.
+		 */
 		struct FileEntry {
-			bool bValid;          // Are the other fields valid?
-			offset_t iSize;       // Size of the file
-			std::string strName;  // Filename (may be empty for some archives)
-			E_FILETYPE eType;     // A single E_FILETYPE value
-			int fAttr;            // One or more E_ATTRIBUTE flags
+			/// Are the other fields valid?
+			/**
+			 * This only confirms whether the rest of the values are valid, as
+			 * opposed to Archive::isValid() which checks that the file still exists
+			 * in the archive.
+			 */
+			bool bValid;
+
+			/// Size of the file
+			offset_t iSize;
+
+			/// Filename (may be empty for some archives)
+			std::string strName;
+
+			/// A single E_FILETYPE value
+			E_FILETYPE eType;
+
+			/// One or more E_ATTRIBUTE flags
+			int fAttr;
+
+			/// Helper function (for debugging) to return all the data as a string
 			inline virtual std::string getContent() const {
 				std::ostringstream ss;
 				ss << "name=" << this->strName << ";size=" << this->iSize << ";type="
@@ -78,11 +121,38 @@ class Archive {
 			}
 		};
 
+		/// Shared pointer to a FileEntry
 		typedef boost::shared_ptr<FileEntry> EntryPtr;
+
+		/// Vector of shared FileEntry pointers
 		typedef std::vector<EntryPtr> VC_ENTRYPTR;
 
-		// This function is called with a single io::stream_offset parameter when
-		// the underlying archive file needs to be shrunk to the given size.
+		/// Truncate callback
+		/**
+		 * This function is called with a single unsigned long parameter when
+		 * the underlying archive file needs to be shrunk or enlarged to the given
+		 * size.  It must be set to a valid function before flush() is called.
+		 *
+		 * The function signature is:
+		 * @code
+		 * void fnTruncate(unsigned long newLength);
+		 * @endcode
+		 *
+		 * This example uses boost::bind to package up a call to the Linux
+		 * truncate() function (which requires both a filename and size) such that
+		 * the filename is supplied in advance and not required when flush() makes
+		 * the call.
+		 *
+		 * @code
+		 * Archive *pArchive = ...
+		 * pArchive->fnTruncate = boost::bind<void>(truncate, "archive.dat", _1);
+		 * pArchive->flush();  // calls truncate("archive.dat", 123)
+		 * @endcode
+		 *
+		 * Unfortunately since there is no cross-platform method for changing a
+		 * file's size from an open file handle, this is a necessary evil to avoid
+		 * passing the archive filename around all over the place.
+		 */
 		FN_TRUNCATE fnTruncate;
 
 		Archive()
@@ -91,98 +161,225 @@ class Archive {
 		virtual ~Archive()
 			throw ();
 
-		// Find the given file.  Returns empty EntryPtr() if the file can't be
-		// found (EntryPtr::bValid will be false.)
+		/// Find the given file.
+		/**
+		 * In the unlikely event that the filename exists multiple times in the
+		 * archive, any one of them could be returned (though it will usually be
+		 * the first.)  This is not unheard of, the registered version of Halloween
+		 * Harry (Alien Carnage) contains two different music tracks, both called
+		 * seb3.mod.
+		 *
+		 * This could cause problems in a GUI environment when a file is dragged
+		 * but its duplicate is affected instead.  For this reason it is best to
+		 * use this function only with user input, and to otherwise use
+		 * EntryPtrs only, as returned by getFileList().
+		 *
+		 * @param  strFilename Name of the file to search for.
+		 * @return EntryPtr to the requested file, or an empty EntryPtr() if the
+		 * file can't be found (EntryPtr::bValid will be false.)
+		 */
 		virtual EntryPtr find(const std::string& strFilename)
 			throw () = 0;
 
+		/// Get a list of all files in the archive.
+		/**
+		 * @return A vector of FileEntry with one element for each file in the
+		 *         archive.
+		 */
 		virtual const VC_ENTRYPTR& getFileList(void)
 			throw () = 0;
 
-		// Checks the EntryPtr is not NULL (as it would be at the end of the file
-		// list) and also that it still references a file (as it would no longer do
-		// if that file has been deleted.)
+		/// Checks that the EntryPtr points to a file that still exists.
+		/**
+		 * This is different to the bValid member in FileEntry as it confirms
+		 * that the EntryPtr is still valid for this particular archive file.
+		 *
+		 * @param  id Entry to check
+		 * @return true if the EntryPtr is valid.
+		 */
 		virtual bool isValid(const EntryPtr& id)
 			throw () = 0;
 
+		/// Open a file in the archive.
+		/**
+		 * @param  id A valid file entry, obtained from find(), getFileList(), etc.
+		 * @return A C++ iostream containing the file data.  Writes to this stream
+		 *         will immediately update the data in the archive.  Writing beyond
+		 *         EOF is not permitted - use resize() if the file needs to change
+		 *         size (grow or shrink.)
+		 */
 		virtual iostream_sptr open(const EntryPtr& id)
 			throw () = 0;
 
-		// Insert a new file into the archive.  It will be inserted before
-		// idBeforeThis, or at the end of the archive if idBeforeThis is not valid.
-		// Does not check if this filename already exists - check first yourself
-		// and don't add duplicates!
-		//
-		// Returns an EntryPtr to the newly added file, which can be immediately
-		//   passed to open() if needed.
-		//
-		// Preconditions: strFilename is not used by a file already in the archive.
-		// Postconditions: Existing EntryPtrs become invalid.  Any open files
-		//   remain valid.
+		/// Insert a new file into the archive.
+		/**
+		 * It will be inserted before idBeforeThis, or at the end of the archive if
+		 * idBeforeThis is not valid.  Does not check if this filename already
+		 * exists - check first yourself or you will add duplicates!
+		 *
+		 * @note   For performance reasons, this operation is cached so it does not
+		 *         immediately affect the archive file.  When the time comes to
+		 *         flush() the changes, all the insert/delete/resize operations are
+		 *         done in a single pass.  However providing this class is the sole
+		 *         method of accessing the archive file, this is of no concern.
+		 * @post   Existing EntryPtrs become invalid.  Any open files remain valid.
+		 * @param  idBeforeThis The new file will be inserted before this one.  If
+		 *         it is not valid, the new file will be last in the archive.
+		 * @param  strFilename Filename of the new file.
+		 * @param  iSize Initial size of the new file.
+		 * @return An EntryPtr to the newly added file, which can be immediately
+		 *         passed to open() if needed.
+		 */
 		virtual EntryPtr insert(const EntryPtr& idBeforeThis,
 			const std::string& strFilename, offset_t iSize
 		)
 			throw (std::ios::failure) = 0;
 
-		// Delete the given entry from the archive.
-		//
-		// Postconditions: Existing EntryPtrs become invalid.  Any open files
-		//   remain valid.
+		/// Delete the given entry from the archive.
+		/**
+		 * @note   For performance reasons, this operation is cached so it does not
+		 *         immediately affect the archive file.  When the time comes to
+		 *         flush() the changes, all the insert/delete/resize operations are
+		 *         done in a single pass.  However providing this class is the sole
+		 *         method of accessing the archive file, this is of no concern.
+		 * @param  id The file to delete.
+		 * @post   Existing EntryPtrs become invalid.  Any open files remain valid.
+		 */
 		virtual void remove(EntryPtr& id)
 			throw (std::ios::failure) = 0;
 
-		// Does not invalidate existing EntryPtrs.  Will throw exceptions on
-		// invalid names (e.g. name too long)
+		/// Rename a file.
+		/**
+		 * @note   Will throw exceptions on invalid names (e.g. name too long)
+		 * @param  id The file to rename.
+		 * @param  strNewName The new filename.
+		 * @post   Existing EntryPtrs remain valid.
+		 */
 		virtual void rename(EntryPtr& id, const std::string& strNewName)
 			throw (std::ios::failure) = 0;
 
-		// Move an entry to a different position within the archive.  Take id and
-		// place it after idBefore.  If idBefore is not valid, id will be moved to
-		// become the first file in the archive.
-		//
-		// Postconditions: Existing EntryPtrs become invalid.  Any open files
-		//   remain valid.
+		/// Move an entry to a different position within the archive.
+		/**
+		 * Take id and place it before idBeforeThis, or last if idBeforeThis is not
+		 * valid.
+		 *
+		 * @param  id File to move
+		 * @param  idBeforeThis File will be inserted before this one.  If it is
+		 *         not valid, the file will become last in the archive.
+		 * @post   Existing EntryPtrs become invalid.  Any open files remain valid.
+		 */
 		virtual void move(const EntryPtr& idBeforeThis, EntryPtr& id)
 			throw (std::ios::failure);
 
-		// Enlarge or shrink an existing file entry.
-		// Postconditions: Existing EntryPtrs and open files remain valid.
+		/// Enlarge or shrink an existing file.
+		/**
+		 * @note   For performance reasons, this operation is cached so it does not
+		 *         immediately affect the archive file.  When the time comes to
+		 *         flush() the changes, all the insert/delete/resize operations are
+		 *         done in a single pass.  However providing this class is the sole
+		 *         method of accessing the archive file, this is of no concern.
+		 * @param  id File to resize.
+		 * @param  iNewSize File's new size.  If this is smaller than the current
+		 *         size the excess data is lost, if it is larger than the current
+		 *         size the new data is random (whatever was there from before.)
+		 * @post   Existing EntryPtrs remain valid.
+		 */
 		virtual void resize(EntryPtr& id, size_t iNewSize)
 			throw (std::ios::failure) = 0;
 
-		// Write out any changes to the underlying stream.  Some functions write
-		// immediately, others cache their changes.  All changes are written out
-		// when the class is destroyed by an implicit call to this function,
-		// however this function can be called at any time to write all pending
-		// changes without destroying the class.  Note that some changes can
-		// involve shuffling around many hundreds of megabytes of data, so don't
-		// call this function unless you have good reason to!
+		/// Write out any cached changes to the underlying stream.
+		/**
+		 * Some functions write their changes to the archive file immediately,
+		 * while others cache their changes for performance reasons.  Any cached
+		 * changes are NOT automatically written out when the class is destroyed
+		 * (as there would be no way to handle any write failures), so this
+		 * function must be called before the class is destroyed or the archive
+		 * file will become corrupted.
+		 *
+		 * This function can also be called at any time to write all pending
+		 * changes without destroying the class.  However some changes can involve
+		 * shuffling around many hundreds of megabytes of data, so don't call this
+		 * function unless you have good reason to!
+		 *
+		 * @pre    The \ref fnTruncate member must be valid before this call.
+		 */
 		virtual void flush()
 			throw (std::ios::failure) = 0;
 
-		// Convert an iostream pointer of an already-open file back into an
-		// EntryPtr.  This is useful after a call to insert/remove, as these
-		// functions invalidate any existing EntryPtrs but the EntryPtr can be
-		// recovered from the open stream with this function.
+		/// Convert an iostream pointer of an already-open file back into an
+		/// EntryPtr.
+		/**
+		 * This is useful after a call to insert/remove, as these functions
+		 * invalidate any existing EntryPtrs but the EntryPtr can be recovered from
+		 * the open stream with this function.
+		 *
+		 * @param  openFile A stream pointer returned previously by open().
+		 * @return An valid EntryPtr for the open file, or an invalid EntryPtr if
+		 *         the file no longer exists.
+		 */
 		virtual EntryPtr entryPtrFromStream(const iostream_sptr openFile)
 			throw () = 0;
 
 		// The metadata functions all have no-op defaults, they only need to be
 		// overridden for archive formats that have metadata.
 
-		// Get a list of supported metadata elements that can be set.
+		/// Get a list of supported metadata elements that can be set.
+		/**
+		 * Some archive formats have room for additional data, such as a comment
+		 * or copyright notice.  This function is used to obtain a list of the
+		 * metadata elements supported by the current archive.  Not every archive
+		 * supports all the metadata types, and any optional elements will be
+		 * included in this list (but getMetadata() may return an empty string for
+		 * those.)
+		 *
+		 * Note to archive format implementors: There is a default implementation
+		 * of this function which returns an empty vector.  Thus this only needs
+		 * to be overridden if the archive format does actually support metadata.
+		 *
+		 * @return std::vector of \ref E_METADATA items.
+		 */
 		virtual VC_METADATA_ITEMS getMetadataList() const
 			throw ();
-		// Get the value of a metadata element.
+
+		/// Get the value of a metadata element.
+		/**
+		 * Returns the value of a metadata item reported to exist by
+		 * getMetadataList().
+		 *
+		 * Note to archive format implementors: There is a default implementation
+		 * of this function which always throws an exception.  Thus this only needs
+		 * to be overridden if the archive format does actually support metadata.
+		 *
+		 * @param  item Item to retrieve.  Must have been included in the list
+		 *         returned by getMetadataList().
+		 * @return A string containing the metadata (may be empty.)
+		 */
 		virtual std::string getMetadata(E_METADATA item) const
 			throw (std::ios::failure);
-		// Change the value of a metadata element.
+
+		/// Change the value of a metadata element.
+		/**
+		 * Only elements returned by getMetadataList() can be changed.
+		 *
+		 * Note to archive format implementors: There is a default implementation
+		 * of this function which always throws an exception.  Thus this only needs
+		 * to be overridden if the archive format does actually support metadata.
+		 *
+		 * @param  item Item to set.  Must have been included in the list returned
+		 *         by getMetadataList().
+		 * @param  value The value to set.  Passing an empty string will remove
+		 *         the metadata element if possible, otherwise it will be set to
+		 *         a blank.
+		 */
 		virtual void setMetadata(E_METADATA item, const std::string& value)
 			throw (std::ios::failure);
 
 };
 
+/// Shared pointer to an Archive.
 typedef boost::shared_ptr<Archive> ArchivePtr;
+
+/// Vector of Archive shared pointers.
 typedef std::vector<ArchivePtr> VC_ARCHIVE;
 
 } // namespace gamearchive

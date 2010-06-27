@@ -1,6 +1,6 @@
-/*
- * manager.hpp - Manager class, used for accessing the various archive format
- *               readers.
+/**
+ * @file   manager.hpp
+ * @brief  Manager class, used for accessing the various archive format readers.
  *
  * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
  *

@@ -1,5 +1,6 @@
-/*
- * gamearchive.hpp - Main header for libgamearchive (includes everything.)
+/**
+ * @file   gamearchive.hpp
+ * @brief  Main header for libgamearchive (includes everything.)
  *
  * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -19,6 +20,53 @@
 
 #ifndef _CAMOTO_GAMEARCHIVE_HPP_
 #define _CAMOTO_GAMEARCHIVE_HPP_
+
+/// Main namespace
+namespace camoto {
+/// Namespace for this library
+namespace gamearchive {
+
+/**
+
+\mainpage libgamearchive
+
+libgamearchive provides a standard interface to access different game data
+"archives" regardless of their file format.  Just like a .zip file, many games
+squash all their data files together into one big file, and this library
+provides access to those single big files.  Files can be listed and extracted,
+as well as added, removed, renamed and rearranged.
+
+\section structure Structure
+
+The main interface to the library is the getManager() function, which returns
+an instance of the Manager class.  The Manager is used to query supported
+archive formats, and for each supported file format it returns an instance of
+the ArchiveType class.
+
+The ArchiveType class can be used to examine files and check what file format
+they are in, and if they are in the correct format, to open them.  Successfully
+opening an archive file produces an instance of the Archive class.  The
+ArchiveType class can also be used to create new archives from scratch, which
+will again return an Archive instance.
+
+The Archive class is used to directly manipulate the archive file, such as by
+adding and removing files.
+
+\section example Examples
+
+The libgamearchive distribution comes with example code in the form of the
+<a href="http://github.com/Malvineous/libgamearchive/blob/master/examples/gamearch.cpp">gamearch
+utility</a>, which provides a simple command-line interface to the
+full functionality of the library.
+
+\section info More information
+
+Additional information including a mailing list is available from the Camoto
+homepage <http://www.shikadi.net/camoto>.
+
+**/
+}
+}
 
 // These are all in the camoto::gamearchive namespace
 #include <camoto/gamearchive/archive.hpp>

@@ -1,5 +1,6 @@
-/*
- * fatarchive.cpp - Implementation of a FAT-style archive format.
+/**
+ * @file   fatarchive.cpp
+ * @brief  Implementation of a FAT-style archive format.
  *
  * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
  *
