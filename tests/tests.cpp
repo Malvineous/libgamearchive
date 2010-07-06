@@ -25,7 +25,7 @@
 #include <iostream>
 #include <iomanip>
 
-#include "../src/debug.hpp"
+#include <camoto/debug.hpp>
 #include "tests.hpp"
 
 void default_sample::printNice(boost::test_tools::predicate_result& res,

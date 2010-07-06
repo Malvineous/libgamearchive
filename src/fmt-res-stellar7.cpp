@@ -30,8 +30,8 @@
 #include <string.h>
 
 #include "fmt-res-stellar7.hpp"
-#include "iostream_helpers.hpp"
-#include "debug.hpp"
+#include <camoto/iostream_helpers.hpp>
+#include <camoto/debug.hpp>
 
 #define RES_FAT_OFFSET            0
 #define RES_FIRST_FILE_OFFSET     RES_FAT_OFFSET

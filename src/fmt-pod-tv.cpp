@@ -30,8 +30,8 @@
 #include <string.h>
 
 #include "fmt-pod-tv.hpp"
-#include "iostream_helpers.hpp"
-#include "debug.hpp"
+#include <camoto/iostream_helpers.hpp>
+#include <camoto/debug.hpp>
 
 #define POD_DESCRIPTION_OFFSET    4
 #define POD_DESCRIPTION_LEN       80

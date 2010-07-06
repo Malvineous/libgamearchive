@@ -21,7 +21,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include "fatarchive.hpp"
-#include "debug.hpp"
+#include <camoto/debug.hpp>
 
 namespace camoto {
 namespace gamearchive {

@@ -26,8 +26,8 @@
 #include <vector>
 #include <boost/iostreams/stream.hpp>
 
-#include "substream.hpp"
-#include "segmented_stream.hpp"
+#include <camoto/substream.hpp>
+#include <camoto/segmented_stream.hpp>
 
 namespace camoto {
 namespace gamearchive {

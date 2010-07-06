@@ -29,7 +29,7 @@
 #include "tests.hpp"
 
 // Local headers that will not be installed
-#include "../src/segmented_stream.hpp"
+#include <camoto/segmented_stream.hpp>
 
 namespace ga = camoto::gamearchive;
 

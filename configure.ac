@@ -23,6 +23,8 @@ BOOST_FILESYSTEM
 BOOST_PROGRAM_OPTIONS
 BOOST_TEST
 
+PKG_CHECK_MODULES([libgamecommon], [libgamecommon])
+
 # Checks for header files.
 
 # Checks for typedefs, structures, and compiler characteristics.

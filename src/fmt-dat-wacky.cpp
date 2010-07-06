@@ -29,8 +29,8 @@
 #include <string.h>
 
 #include "fmt-dat-wacky.hpp"
-#include "iostream_helpers.hpp"
-#include "debug.hpp"
+#include <camoto/iostream_helpers.hpp>
+#include <camoto/debug.hpp>
 
 #define DAT_FILECOUNT_OFFSET     0
 #define DAT_MAX_FILENAME_LEN     12

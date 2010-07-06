@@ -24,7 +24,7 @@
 #include <boost/bind.hpp>
 
 #include "subdirarchive.hpp"
-#include "debug.hpp"
+#include <camoto/debug.hpp>
 
 namespace camoto {
 namespace gamearchive {

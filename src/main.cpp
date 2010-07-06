@@ -29,7 +29,7 @@
 #include "fmt-hog-descent.hpp"
 #include "fmt-epf-lionking.hpp"
 #include "fmt-dat-wacky.hpp"
-#include "debug.hpp"
+#include <camoto/debug.hpp>
 
 namespace camoto {
 namespace gamearchive {

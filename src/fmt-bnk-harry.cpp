@@ -30,8 +30,8 @@
 #include <string.h>
 
 #include "fmt-bnk-harry.hpp"
-#include "iostream_helpers.hpp"
-#include "debug.hpp"
+#include <camoto/iostream_helpers.hpp>
+#include <camoto/debug.hpp>
 
 #define BNK_FIRST_FILE_OFFSET     0
 #define BNK_MAX_FILENAME_LEN      12

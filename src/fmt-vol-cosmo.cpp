@@ -30,8 +30,8 @@
 #include <string.h>
 
 #include "fmt-vol-cosmo.hpp"
-#include "iostream_helpers.hpp"
-#include "debug.hpp"
+#include <camoto/iostream_helpers.hpp>
+#include <camoto/debug.hpp>
 
 #define VOL_FAT_LENGTH        4000
 #define VOL_MAX_FILENAME_LEN  12

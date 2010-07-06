@@ -30,8 +30,8 @@
 #include <string.h>
 
 #include "fmt-hog-descent.hpp"
-#include "iostream_helpers.hpp"
-#include "debug.hpp"
+#include <camoto/iostream_helpers.hpp>
+#include <camoto/debug.hpp>
 
 #define HOG_HEADER_LEN            3
 #define HOG_MAX_FILENAME_LEN      12

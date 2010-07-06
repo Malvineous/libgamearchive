@@ -31,8 +31,8 @@
 #include <string.h>
 
 #include "fmt-epf-lionking.hpp"
-#include "iostream_helpers.hpp"
-#include "debug.hpp"
+#include <camoto/iostream_helpers.hpp>
+#include <camoto/debug.hpp>
 
 #define EPF_HEADER_LEN               11
 #define EPF_FAT_OFFSET_POS           4

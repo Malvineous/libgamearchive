@@ -30,8 +30,8 @@
 #include <string.h>
 
 #include "fmt-grp-duke3d.hpp"
-#include "iostream_helpers.hpp"
-#include "debug.hpp"
+#include <camoto/iostream_helpers.hpp>
+#include <camoto/debug.hpp>
 
 #define GRP_FILECOUNT_OFFSET    12
 #define GRP_HEADER_LEN          16  // "KenSilverman" header + u32le file count
