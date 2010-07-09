@@ -16,6 +16,7 @@ This library is still in the preliminary stages, so only the following formats
 have been implemented:
 
   * Cosmo's Cosmic Adventures (.vol, .stn)
+  * Crystal Caves (.exe)
   * Descent (.hog)
   * Duke Nukem II (.cmp)
   * Duke Nukem 3D (.grp)

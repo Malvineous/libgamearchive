@@ -19,6 +19,7 @@
 
 #include <string>
 #include <camoto/gamearchive.hpp>
+#include <camoto/debug.hpp>
 
 // Include all the file formats for the Manager to load
 #include "fmt-grp-duke3d.hpp"
@@ -30,7 +31,7 @@
 #include "fmt-epf-lionking.hpp"
 #include "fmt-dat-wacky.hpp"
 #include "fmt-dat-hugo.hpp"
-#include <camoto/debug.hpp>
+#include "fmt-exe-ccaves.hpp"
 
 namespace camoto {
 namespace gamearchive {
@@ -74,6 +75,7 @@ Manager::Manager()
 	this->vcTypes.push_back(ArchiveTypePtr(new EPFType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_WackyType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_HugoType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new EXE_CCavesType()));
 }
 
 Manager::~Manager()

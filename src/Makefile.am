@@ -4,6 +4,7 @@ libgamearchive_la_SOURCES = main.cpp
 libgamearchive_la_SOURCES += archive.cpp
 libgamearchive_la_SOURCES += subdirarchive.cpp
 libgamearchive_la_SOURCES += fatarchive.cpp
+libgamearchive_la_SOURCES += fixedarchive.cpp
 libgamearchive_la_SOURCES += fmt-grp-duke3d.cpp
 libgamearchive_la_SOURCES += fmt-vol-cosmo.cpp
 libgamearchive_la_SOURCES += fmt-pod-tv.cpp
@@ -13,8 +14,10 @@ libgamearchive_la_SOURCES += fmt-hog-descent.cpp
 libgamearchive_la_SOURCES += fmt-epf-lionking.cpp
 libgamearchive_la_SOURCES += fmt-dat-wacky.cpp
 libgamearchive_la_SOURCES += fmt-dat-hugo.cpp
+libgamearchive_la_SOURCES += fmt-exe-ccaves.cpp
 
 EXTRA_libgamearchive_la_SOURCES = fatarchive.hpp
+EXTRA_libgamearchive_la_SOURCES += fixedarchive.hpp
 EXTRA_libgamearchive_la_SOURCES += subdirarchive.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-grp-duke3d.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-vol-cosmo.hpp
@@ -25,6 +28,7 @@ EXTRA_libgamearchive_la_SOURCES += fmt-hog-descent.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-epf-lionking.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-dat-wacky.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-dat-hugo.hpp
+EXTRA_libgamearchive_la_SOURCES += fmt-exe-ccaves.hpp
 
 AM_CPPFLAGS = $(DEBUG_CPPFLAGS) $(BOOST_CPPFLAGS) -I $(top_srcdir)/include $(libgamecommon_CFLAGS)
 AM_CXXFLAGS = $(DEBUG_CXXFLAGS)
