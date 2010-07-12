@@ -24,7 +24,7 @@
 #include <camoto/gamearchive.hpp>
 #include <iostream>
 #include <fstream>
-#include "../src/fmt-grp-duke3d.hpp" ///// TEMP!!!!
+
 namespace po = boost::program_options;
 namespace ga = camoto::gamearchive;
 
