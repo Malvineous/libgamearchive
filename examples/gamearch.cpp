@@ -401,7 +401,17 @@ finishTesting:
 				for (camoto::gamearchive::Archive::VC_ENTRYPTR::const_iterator i =
 					vcEntries.begin(); i != vcEntries.end(); i++)
 				{
-					const std::string& strArchFile = (*i)->strName;
+					// Get the name of the file we're extracting from the archive.
+					std::string strArchFile = (*i)->strName;
+					if (strArchFile.empty()) {
+						// This file has no filename (probably the archive format doesn't
+						// support filenames) so we have to make one up.
+						std::ostringstream ss;
+						ss << "@" << (i - vcEntries.begin());
+						strArchFile = ss.str();
+					}
+
+					// Tell the user what's going on
 					if (bScript) {
 						std::cout << "extracted=" << strArchFile << ";status=";
 					} else {
@@ -414,10 +424,11 @@ finishTesting:
 						std::ofstream fsOut;
 						fsOut.exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
 						fsOut.open(strArchFile.c_str(), std::ios::trunc | std::ios::binary);
+
+						// Copy the data from the in-archive stream to the on-disk stream
 						boost::iostreams::copy(*pfsIn, fsOut);
-						if (bScript) {
-							std::cout << "ok";
-						}
+
+						if (bScript) std::cout << "ok";
 					} catch (...) {
 						if (bScript) {
 							std::cout << "fail";
