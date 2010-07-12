@@ -29,6 +29,7 @@
 #include "fmt-hog-descent.hpp"
 #include "fmt-epf-lionking.hpp"
 #include "fmt-dat-wacky.hpp"
+#include "fmt-dat-hugo.hpp"
 #include <camoto/debug.hpp>
 
 namespace camoto {
@@ -72,6 +73,7 @@ Manager::Manager()
 	this->vcTypes.push_back(ArchiveTypePtr(new HOGType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new EPFType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_WackyType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new DAT_HugoType()));
 }
 
 Manager::~Manager()
