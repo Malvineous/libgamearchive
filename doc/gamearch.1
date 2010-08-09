@@ -70,15 +70,14 @@ compress the files.  The default is to compress files if supported by the
 archive format.
 .TP
 \fB-f\fR, \fB--force\fR
-overwrite existing files (on disk or in the archive.)
-.TP
-\fB-i\fR, \fB--identify\fR
-when using \fB--list\fR, pipe data from each file to \fBfile\fR(1),
-to possibly identify what type each file is (most useful with archives that
-don't have filenames, or filenames that aren't very descriptive.)
+open the archive as the given --type, even if it doesn't look like it's in
+that format.
 .TP
 \fB-v\fR, \fB--verbose\fR
-print more detail when listing files with \fB--list\fR
+print more detail when listing files with \fB--list\fR.
+.TP
+\fB-s\fR, \fB--script\fR
+print output suitable for parsing by a script.
 .SH "SUPPORTED FORMATS"
 .TS
 tab(@), left, box;
@@ -211,10 +210,9 @@ License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
 .SH "SEE ALSO"
-\fBfile\fR(1)
+\fBfile\fR(1), <http://www.shikadi.net/camoto>
 .PP
 All the archive formats supported by this utility are fully documented on the Game Modding
-Wiki \fB<http://www.shikadi.net/moddingwiki>.
+Wiki \fB<http://www.shikadi.net/moddingwiki>\fR.
 .PP
-This utility is part of Camoto (\fIC\fRlassic-g\fIa\fRme \fIMo\fRdding
-\fITo\fRols.)
+This utility is part of the Camoto suite of tools.
