@@ -126,7 +126,7 @@ ArchivePtr BNKType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
 	throw (std::ios::failure)
 {
 	assert(suppData.find(EST_FAT) != suppData.end());
-	SuppItem si = suppData[EST_FAT];
+	SuppItem& si = suppData[EST_FAT];
 	return ArchivePtr(new BNKArchive(psArchive, si.stream, si.fnTruncate));
 }
 
