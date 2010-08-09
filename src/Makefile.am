@@ -26,7 +26,7 @@ EXTRA_libgamearchive_la_SOURCES += fmt-epf-lionking.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-dat-wacky.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-dat-hugo.hpp
 
-AM_CPPFLAGS = $(DEBUG_CPPFLAGS) $(BOOST_CPPFLAGS) $(libgamecommon_CFLAGS) -I $(top_srcdir)/include
+AM_CPPFLAGS = $(DEBUG_CPPFLAGS) $(BOOST_CPPFLAGS) -I $(top_srcdir)/include $(libgamecommon_CFLAGS)
 AM_CXXFLAGS = $(DEBUG_CXXFLAGS)
 
 libgamearchive_la_LDFLAGS = $(AM_LDFLAGS) -release @VERSION@ -version-info 0
