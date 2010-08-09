@@ -1,5 +1,6 @@
-/*
- * tests.hpp - generic test code for Archive descendent classes.
+/**
+ * @file   tests.hpp
+ * @brief  Test code core.
  *
  * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -17,12 +18,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _CAMOTO_TESTS_HPP_
-#define _CAMOTO_TESTS_HPP_
+#ifndef _CAMOTO_GAMEARCHIVE_TESTS_HPP_
+#define _CAMOTO_GAMEARCHIVE_TESTS_HPP_
 
 #include <boost/test/unit_test.hpp>
 
-// Allow a string constant to be passed around with embedded nulls
+/// Allow a string constant to be passed around with embedded nulls
 #define makeString(x)  std::string((x), sizeof((x)) - 1)
 
 struct default_sample {
@@ -40,4 +41,4 @@ struct default_sample {
 
 void stringStreamTruncate(std::stringstream *ss, int len);
 
-#endif // _CAMOTO_TESTS_HPP_
+#endif // _CAMOTO_GAMEARCHIVE_TESTS_HPP_

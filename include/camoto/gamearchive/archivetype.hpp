@@ -68,7 +68,9 @@ struct SuppItem {
 	FN_TRUNCATE fnTruncate;
 };
 
-/// A list of required supplemental files and their filenames.
+/// A list of required supplemental files and their filenames.  The filenames
+/// may contain a path (especially if the main archive file also contains a
+/// path.)
 typedef std::map<E_SUPPTYPE, std::string> MP_SUPPLIST;
 
 /// A list of the supplemental file types mapped to open file streams.
@@ -166,7 +168,9 @@ class ArchiveType {
 		 *         types with their filenames.  For each returned value the file
 		 *         should be opened and placed in a SuppItem instance.  The
 		 *         SuppItem is then added to an \ref MP_SUPPDATA map where it can
-		 *         be passed to newArchive() or open().
+		 *         be passed to newArchive() or open().  Note that the filenames
+		 *         returned can have relative paths, and may even have an absolute
+		 *         path, if one was passed in with filenameArchive.
 		 */
 		virtual MP_SUPPLIST getRequiredSupps(const std::string& filenameArchive) const
 			throw () = 0;
