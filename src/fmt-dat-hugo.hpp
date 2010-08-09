@@ -65,8 +65,16 @@ class DAT_HugoType: virtual public ArchiveType {
 };
 
 class DAT_HugoArchive: virtual public FATArchive {
+	protected:
+
+		segstream_sptr psFAT;
+		FN_TRUNCATE fnTruncFAT;
+		struct DAT_HugoEntry: virtual public FATEntry {
+			int file;
+		};
+
 	public:
-		DAT_HugoArchive(iostream_sptr psArchive)
+		DAT_HugoArchive(iostream_sptr psArchive, iostream_sptr psFAT, FN_TRUNCATE fnTruncFAT)
 			throw (std::ios::failure);
 
 		virtual ~DAT_HugoArchive()

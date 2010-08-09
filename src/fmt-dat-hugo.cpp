@@ -21,10 +21,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//#include <boost/filesystem/operations.hpp>
-//#include <boost/filesystem/path.hpp>
-//#include <boost/progress.hpp>
-//#include <boost/shared_array.hpp>
 #include <boost/algorithm/string.hpp>
 #include <iostream>
 #include <exception>
@@ -134,72 +130,118 @@ ArchivePtr DAT_HugoType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppDa
 {
 	psArchive->seekg(0, std::ios::beg);
 	psArchive << u32le(0) << u32le(0); // FAT terminator
-	return ArchivePtr(new DAT_HugoArchive(psArchive));
+	return ArchivePtr(new DAT_HugoArchive(psArchive, iostream_sptr(), NULL));
 }
 
 // Preconditions: isInstance() has returned > EC_DEFINITELY_NO
 ArchivePtr DAT_HugoType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
 	throw (std::ios::failure)
 {
-	return ArchivePtr(new DAT_HugoArchive(psArchive));
+	if (suppData.find(EST_FAT) != suppData.end()) {
+		return ArchivePtr(new DAT_HugoArchive(psArchive, suppData[EST_FAT].stream, suppData[EST_FAT].fnTruncate));
+	}
+	return ArchivePtr(new DAT_HugoArchive(psArchive, iostream_sptr(), NULL));
 }
 
 MP_SUPPLIST DAT_HugoType::getRequiredSupps(const std::string& filenameArchive) const
 	throw ()
 {
-	// No supplemental types/empty list
-	return MP_SUPPLIST();
+	// If this is 'scenery1.dat' then the rest of its data is in 'scenery2.dat'
+	// so we will include it as a supp.
+	MP_SUPPLIST supps;
+	std::string::size_type slash = filenameArchive.find_last_of('/');
+	std::string filenameBase;
+	if (slash != std::string::npos) {
+		filenameBase = filenameArchive.substr(slash+1);
+	} else {
+		filenameBase = filenameArchive;
+	}
+	if (boost::iequals(filenameBase, "scenery2.dat")) {
+		std::string firstFilename = filenameArchive;
+		firstFilename[firstFilename.length() - 5] = '1';
+		supps[EST_FAT] = firstFilename;
+	}
+	return supps;
 }
 
 
 refcount_declclass(DAT_HugoArchive);
 
-DAT_HugoArchive::DAT_HugoArchive(iostream_sptr psArchive)
+DAT_HugoArchive::DAT_HugoArchive(iostream_sptr psArchive, iostream_sptr psFAT, FN_TRUNCATE fnTruncFAT)
 	throw (std::ios::failure) :
-		FATArchive(psArchive, DAT_FIRST_FILE_OFFSET)
+		FATArchive(psArchive, DAT_FIRST_FILE_OFFSET),
+		fnTruncFAT(fnTruncFAT)
 {
-	this->psArchive->seekg(0, std::ios::end);
-	io::stream_offset lenArchive = this->psArchive->tellg();
-	if (lenArchive < DAT_FAT_ENTRY_LEN) {
+	iostream_sptr fatStream;
+	if (psFAT) {
+		this->psFAT.reset(new segmented_stream(psFAT));
+		fatStream = this->psFAT;
+	} else fatStream = this->psArchive;
+
+	fatStream->seekg(0, std::ios::end);
+	io::stream_offset lenFAT = fatStream->tellg();
+
+	if (lenFAT < DAT_FAT_ENTRY_LEN) {
 		throw std::ios::failure("Archive too short - no FAT terminator!");
 	}
 
-	this->psArchive->seekg(0, std::ios::beg);
+	this->psArchive->seekg(0, std::ios::end);
+	io::stream_offset lenArchive = this->psArchive->tellg();
 
 	uint32_t fatEnd;
-	this->psArchive >> u32le(fatEnd);
-	if (fatEnd >= lenArchive) {
-		throw std::ios::failure("Archive corrupt - first file starts after EOF!");
+	fatStream->seekg(0, std::ios::beg);
+	fatStream >> u32le(fatEnd);
+	if (fatEnd >= lenFAT) {
+		throw std::ios::failure("Archive corrupt - FAT truncated!");
 	}
 	uint32_t numFiles = fatEnd / DAT_FAT_ENTRY_LEN;
 	this->vcFAT.reserve(numFiles);
 
-	this->psArchive->seekg(0, std::ios::beg);
+	io::stream_offset lastOffset = 0;
+	int curFile = 1;
+	int firstIndexInSecondArch = 0;
+	fatStream->seekg(0, std::ios::beg);
 	for (int i = 0; i < numFiles; i++) {
-		FATEntry *fatEntry = new FATEntry();
+		DAT_HugoEntry *fatEntry = new DAT_HugoEntry();
 		EntryPtr ep(fatEntry);
 
-		fatEntry->iIndex = i;
+		// Read the data in from the FAT entry in the file
+		fatStream
+			>> u32le(fatEntry->iOffset)
+			>> u32le(fatEntry->iSize)
+		;
+
+		// If suddenly the offsets revert back to zero, it means we've reached
+		// the second file (scenery2.dat)
+		if ((fatEntry->iOffset != 0) || (fatEntry->iSize != 0)) {
+			if (fatEntry->iOffset < lastOffset) {
+				curFile++;
+				firstIndexInSecondArch = i;
+			}
+			lastOffset = fatEntry->iOffset;
+		}
+
+		fatEntry->iIndex = i - firstIndexInSecondArch;
 		fatEntry->lenHeader = 0;
 		fatEntry->eType = EFT_USEFILENAME;
 		fatEntry->fAttr = 0;
 		fatEntry->bValid = true;
 		fatEntry->strName = std::string();
 
-		// Read the data in from the FAT entry in the file
-		this->psArchive
-			>> u32le(fatEntry->iOffset)
-			>> u32le(fatEntry->iSize)
-		;
-
 		if ((fatEntry->iOffset == 0) || (fatEntry->iSize == 0)) {
 			// TODO: mark as spare/unused FAT entry
 		}
 
-		// Offset doesn't include the two byte file count
-		//fatEntry->iOffset += DAT_FAT_OFFSET;
+		fatEntry->file = curFile;
 
-		this->vcFAT.push_back(ep);
+		if (
+			(psFAT && (curFile == 2)) ||
+			(!psFAT && (curFile == 1))
+		) {
+			// If we have a FAT we're only interested in files in the second FAT,
+			// otherwise we want the first FAT.
+			this->vcFAT.push_back(ep);
+		}
 	}
 
 	refcount_qenterclass(DAT_HugoArchive);
