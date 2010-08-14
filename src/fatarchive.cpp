@@ -43,6 +43,14 @@ std::string FATArchive::FATEntry::getContent() const
 	return ss.str();
 }
 
+Archive::EntryPtr getFileAt(const Archive::VC_ENTRYPTR& files, int index)
+{
+	for (Archive::VC_ENTRYPTR::const_iterator i = files.begin(); i != files.end(); i++) {
+		FATArchive::FATEntry *pEntry = dynamic_cast<FATArchive::FATEntry *>(i->get());
+		if (pEntry->iIndex == index) return *i;
+	}
+	return Archive::EntryPtr();
+}
 
 refcount_declclass(FATArchive);
 

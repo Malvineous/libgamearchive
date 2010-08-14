@@ -50,6 +50,8 @@ namespace ga = camoto::gamearchive;
 // Allow a string constant to be passed around with embedded nulls
 #define makeString(x)  std::string((x), sizeof((x)) - 1)
 
+#include "../src/fatarchive.hpp"
+
 struct FIXTURE_NAME: public default_sample {
 
 	typedef boost::shared_ptr<std::stringstream> sstr_ptr;
@@ -199,12 +201,18 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(open))
 {
 	BOOST_TEST_MESSAGE("Opening file in archive");
 
+#if MAX_FILENAME_LEN > 0
 	// Find the file we're going to open
 	ga::Archive::EntryPtr ep = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
 		"Couldn't find " FILENAME1 " in sample archive");
+#else
+	// No filenames in this format, do it by order
+	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	ga::Archive::EntryPtr ep = ga::getFileAt(files, 0);
+#endif
 
 	// Open it
 	camoto::iostream_sptr pfsIn(pArchive->open(ep));
@@ -225,6 +233,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(open))
 	);
 }
 
+#if MAX_FILENAME_LEN > 0
 BOOST_AUTO_TEST_CASE(TEST_NAME(rename))
 {
 	BOOST_TEST_MESSAGE("Renaming file inside archive");
@@ -251,6 +260,9 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(rename))
 #endif
 }
 
+#endif
+
+#if MAX_FILENAME_LEN > 0
 BOOST_AUTO_TEST_CASE(TEST_NAME(rename_long))
 {
 	BOOST_TEST_MESSAGE("Rename file with name too long");
@@ -294,7 +306,9 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(rename_long))
 	);
 
 }
+#endif
 
+#if MAX_FILENAME_LEN > 0
 BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long))
 {
 	BOOST_TEST_MESSAGE("Inserting file with name too long");
@@ -336,13 +350,18 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long))
 	);
 
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(TEST_NAME(insert_end))
 {
 	BOOST_TEST_MESSAGE("Inserting file into archive");
 
 	// Insert the file
+#if MAX_FILENAME_LEN > 0
 	ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), FILENAME3, 17);
+#else
+	ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), "dummy", 17);
+#endif
 
 	// Make sure it went in ok
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
@@ -371,6 +390,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_mid))
 	BOOST_TEST_MESSAGE("Inserting file into middle of archive");
 
 	// Find the file we're going to insert before
+#if MAX_FILENAME_LEN > 0
 	ga::Archive::EntryPtr idBefore = pArchive->find(FILENAME2);
 
 	// Make sure we found it
@@ -379,6 +399,18 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_mid))
 
 	// Insert the file
 	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, 17);
+#else
+	// No filenames in this format, do it by order
+	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	ga::Archive::EntryPtr idBefore = ga::getFileAt(files, 1);
+
+	// Make sure we found it
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idBefore),
+		"Couldn't find second file in sample archive");
+
+	// Insert the file
+	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, "dummy", 17);
+#endif
 
 	// Make sure it went in ok
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
@@ -406,6 +438,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 {
 	BOOST_TEST_MESSAGE("Inserting multiple files");
 
+#if MAX_FILENAME_LEN > 0
 	// Find the file we're going to insert before
 	ga::Archive::EntryPtr idBefore = pArchive->find(FILENAME2);
 
@@ -415,6 +448,18 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 
 	// Insert the file
 	ga::Archive::EntryPtr ep1 = pArchive->insert(idBefore, FILENAME3, 17);
+#else
+	// No filenames in this format, do it by order
+	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	ga::Archive::EntryPtr idBefore = ga::getFileAt(files, 1); // FILENAME2 is the second file at this point
+
+	// Make sure we found it
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idBefore),
+		"Couldn't find second file in sample archive");
+
+	// Insert the file
+	ga::Archive::EntryPtr ep1 = pArchive->insert(idBefore, "dummy", 17);
+#endif
 
 	// Make sure it went in ok
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep1),
@@ -425,6 +470,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 	pfsNew1->write("This is three.dat", 17);
 	pfsNew1->flush();
 
+#if MAX_FILENAME_LEN > 0
 	// Find the file we're going to insert before (since the previous insert
 	// invalidated all EntryPtrs.)
 	idBefore = pArchive->find(FILENAME2);
@@ -435,6 +481,18 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 
 	// Insert the file
 	ga::Archive::EntryPtr ep2 = pArchive->insert(idBefore, FILENAME4, 16);
+#else
+	// No filenames in this format, do it by order
+
+	idBefore = ga::getFileAt(files, 2); // FILENAME2 is now the third file
+
+	// Make sure we found it
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idBefore),
+		"Couldn't find second file in sample archive after first insert");
+
+	// Insert the file
+	ga::Archive::EntryPtr ep2 = pArchive->insert(idBefore, "dummy", 16);
+#endif
 
 	// Make sure it went in ok
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep2),
@@ -461,12 +519,22 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove))
 {
 	BOOST_TEST_MESSAGE("Removing file from archive");
 
+#if MAX_FILENAME_LEN > 0
 	// Find the file we're going to remove
 	ga::Archive::EntryPtr ep = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
 		"Couldn't find " FILENAME1 " in sample archive");
+#else
+	// No filenames in this format, do it by order
+	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	ga::Archive::EntryPtr ep = ga::getFileAt(files, 0);
+
+	// Make sure we found it
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
+		"Couldn't find first file in sample archive");
+#endif
 
 	// Remove it
 	pArchive->remove(ep);
@@ -488,6 +556,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove2))
 {
 	BOOST_TEST_MESSAGE("Removing multiple files from archive");
 
+#if MAX_FILENAME_LEN > 0
 	// Find the files we're going to remove
 	ga::Archive::EntryPtr ep1 = pArchive->find(FILENAME1);
 	ga::Archive::EntryPtr ep2 = pArchive->find(FILENAME2);
@@ -497,6 +566,18 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove2))
 		"Couldn't find " FILENAME1 " in sample archive");
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep2),
 		"Couldn't find " FILENAME2 " in sample archive");
+#else
+	// No filenames in this format, do it by order
+	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	ga::Archive::EntryPtr ep1 = ga::getFileAt(files, 0);
+	ga::Archive::EntryPtr ep2 = ga::getFileAt(files, 1);
+
+	// Make sure we found it
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep1),
+		"Couldn't find first file in sample archive");
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep2),
+		"Couldn't find second file in sample archive");
+#endif
 
 	// Remove it
 	pArchive->remove(ep1);
@@ -519,6 +600,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_remove))
 {
 	BOOST_TEST_MESSAGE("Insert then remove file from archive");
 
+#if MAX_FILENAME_LEN > 0
 	// Find the file we're going to insert before
 	ga::Archive::EntryPtr idBefore = pArchive->find(FILENAME2);
 
@@ -528,6 +610,18 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_remove))
 
 	// Insert the file
 	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, 17);
+#else
+	// No filenames in this format, do it by order
+	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	ga::Archive::EntryPtr idBefore = ga::getFileAt(files, 1);
+
+	// Make sure we found it
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idBefore),
+		"Couldn't find second file in sample archive");
+
+	// Insert the file
+	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, "dummy", 17);
+#endif
 
 	// Make sure it went in ok
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
@@ -538,12 +632,21 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_remove))
 	pfsNew->write("This is three.dat", 17);
 	pfsNew->flush();
 
+#if MAX_FILENAME_LEN > 0
 	// Find the file we're going to remove
 	ga::Archive::EntryPtr ep2 = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep2),
 		"Couldn't find " FILENAME1 " in sample archive");
+#else
+	// No filenames in this format, do it by order
+	ga::Archive::EntryPtr ep2 = ga::getFileAt(files, 0);
+
+	// Make sure we found it
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep2),
+		"Couldn't find first file in sample archive");
+#endif
 
 	// Remove it
 	pArchive->remove(ep2);
@@ -565,16 +668,27 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_insert))
 {
 	BOOST_TEST_MESSAGE("Remove then insert file from archive");
 
+#if MAX_FILENAME_LEN > 0
 	// Find the file we're going to remove
 	ga::Archive::EntryPtr ep2 = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep2),
 		"Couldn't find " FILENAME1 " in sample archive");
+#else
+	// No filenames in this format, do it by order
+	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	ga::Archive::EntryPtr ep2 = ga::getFileAt(files, 0);
+
+	// Make sure we found it
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep2),
+		"Couldn't find first file in sample archive");
+#endif
 
 	// Remove it
 	pArchive->remove(ep2);
 
+#if MAX_FILENAME_LEN > 0
 	// Find the file we're going to insert before
 	ga::Archive::EntryPtr idBefore = pArchive->find(FILENAME2);
 
@@ -584,6 +698,17 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_insert))
 
 	// Insert the file
 	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, 17);
+#else
+	// No filenames in this format, do it by order
+	ga::Archive::EntryPtr idBefore = ga::getFileAt(files, 0); // FILENAME2 is the first (only) file in the archive at this point
+
+	// Make sure we found it
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idBefore),
+		"Couldn't find second file in sample archive");
+
+	// Insert the file
+	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, "dummy", 17);
+#endif
 
 	// Make sure it went in ok
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
@@ -614,6 +739,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(move))
 {
 	BOOST_TEST_MESSAGE("Moving file inside archive");
 
+#if MAX_FILENAME_LEN > 0
 	// Find the file we're going to move
 	ga::Archive::EntryPtr ep1 = pArchive->find(FILENAME1);
 	ga::Archive::EntryPtr ep2 = pArchive->find(FILENAME2);
@@ -623,6 +749,18 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(move))
 		"Couldn't find " FILENAME1 " in sample archive");
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep2),
 		"Couldn't find " FILENAME2 " in sample archive");
+#else
+	// No filenames in this format, do it by order
+	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	ga::Archive::EntryPtr ep1 = ga::getFileAt(files, 0);
+	ga::Archive::EntryPtr ep2 = ga::getFileAt(files, 1);
+
+	// Make sure we found it
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep1),
+		"Couldn't find first file in sample archive");
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep2),
+		"Couldn't find second file in sample archive");
+#endif
 
 	// Swap the file positions
 	pArchive->move(ep1, ep2);
@@ -644,12 +782,22 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_larger))
 {
 	BOOST_TEST_MESSAGE("Enlarging a file inside the archive");
 
+#if MAX_FILENAME_LEN > 0
 	// Find the file we're going to resize
 	ga::Archive::EntryPtr ep = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
 		"Couldn't find " FILENAME1 " in sample archive");
+#else
+	// No filenames in this format, do it by order
+	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	ga::Archive::EntryPtr ep = ga::getFileAt(files, 0);
+
+	// Make sure we found it
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
+		"Couldn't find first file in sample archive");
+#endif
 
 	// Swap the file positions
 	pArchive->resize(ep, 20);
@@ -671,12 +819,22 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_smaller))
 {
 	BOOST_TEST_MESSAGE("Shrink a file inside the archive");
 
+#if MAX_FILENAME_LEN > 0
 	// Find the file we're going to resize
 	ga::Archive::EntryPtr ep = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
 		"Couldn't find " FILENAME1 " in sample archive");
+#else
+	// No filenames in this format, do it by order
+	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	ga::Archive::EntryPtr ep = ga::getFileAt(files, 0);
+
+	// Make sure we found it
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
+		"Couldn't find first file in sample archive");
+#endif
 
 	// Swap the file positions
 	pArchive->resize(ep, 10);
@@ -698,12 +856,22 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_write))
 {
 	BOOST_TEST_MESSAGE("Enlarging a file inside the archive");
 
+#if MAX_FILENAME_LEN > 0
 	// Find the file we're going to resize
 	ga::Archive::EntryPtr ep = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
 		"Couldn't find " FILENAME1 " in sample archive");
+#else
+	// No filenames in this format, do it by order
+	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	ga::Archive::EntryPtr ep = ga::getFileAt(files, 0);
+
+	// Make sure we found it
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
+		"Couldn't find first file in sample archive");
+#endif
 
 	// Swap the file positions
 	pArchive->resize(ep, 23);
@@ -726,12 +894,21 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_write))
 
 	// Open the file following it to make sure it was moved out of the way
 
+#if MAX_FILENAME_LEN > 0
 	// Find the file we're going to open
 	ga::Archive::EntryPtr ep2 = pArchive->find(FILENAME2);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep2),
 		"Couldn't find " FILENAME2 " in sample archive");
+#else
+	// No filenames in this format, do it by order
+	ga::Archive::EntryPtr ep2 = ga::getFileAt(files, 1);
+
+	// Make sure we found it
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep2),
+		"Couldn't find second file in sample archive");
+#endif
 
 	// Open it
 	camoto::iostream_sptr pfsIn(pArchive->open(ep2));
@@ -757,29 +934,60 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_all_re_add))
 {
 	BOOST_TEST_MESSAGE("Remove all files then add them again");
 
+#if MAX_FILENAME_LEN > 0
 	ga::Archive::EntryPtr idOne = pArchive->find(FILENAME1);
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idOne),
 		"Couldn't find " FILENAME1 " in sample archive");
+#else
+	// No filenames in this format, do it by order
+	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	ga::Archive::EntryPtr idOne = ga::getFileAt(files, 0);
+
+	// Make sure we found it
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idOne),
+		"Couldn't find first file in sample archive");
+#endif
+
 	pArchive->remove(idOne);
 
+#if MAX_FILENAME_LEN > 0
 	ga::Archive::EntryPtr idTwo = pArchive->find(FILENAME2);
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idTwo),
 		"Couldn't find " FILENAME2 " in sample archive");
+#else
+	// No filenames in this format, do it by order
+	ga::Archive::EntryPtr idTwo = ga::getFileAt(files, 0); // FILENAME2 is the first (only) file in the archive at this point
+
+	// Make sure we found it
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idTwo),
+		"Couldn't find second file in sample archive");
+#endif
 	pArchive->remove(idTwo);
 
 	// Make sure there are now no files in the archive
-	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
-	BOOST_REQUIRE_EQUAL(files.size(), 0);
+	const ga::Archive::VC_ENTRYPTR& allfiles = pArchive->getFileList();
+	BOOST_REQUIRE_EQUAL(allfiles.size(), 0);
 
+#if MAX_FILENAME_LEN > 0
 	// Add the files back again
 	idOne = pArchive->insert(ga::Archive::EntryPtr(), FILENAME1, 15);
+#else
+	// No filenames in this format
+	idOne = pArchive->insert(ga::Archive::EntryPtr(), "dummy", 15);
+#endif
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idOne),
 		"Couldn't insert new file after removing all files");
+
 	boost::shared_ptr<std::iostream> pfsNew(pArchive->open(idOne));
 	pfsNew->write("This is one.dat", 15);
 	pfsNew->flush();
 
+#if MAX_FILENAME_LEN > 0
 	idTwo = pArchive->insert(ga::Archive::EntryPtr(), FILENAME2, 15);
+#else
+	// No filenames in this format
+	idTwo = pArchive->insert(ga::Archive::EntryPtr(), "dummy", 15);
+#endif
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idTwo),
 		"Couldn't insert second new file after removing all files");
 	pfsNew = pArchive->open(idTwo);

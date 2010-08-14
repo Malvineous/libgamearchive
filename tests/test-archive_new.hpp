@@ -93,14 +93,22 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(new_to_initialstate))
 	BOOST_REQUIRE_EQUAL(files2.size(), 0);
 
 	// Add the files to the new archive
+#if MAX_FILENAME_LEN > 0
 	ga::Archive::EntryPtr idOne = pArchive->insert(ga::Archive::EntryPtr(), FILENAME1, 15);
+#else
+	ga::Archive::EntryPtr idOne = pArchive->insert(ga::Archive::EntryPtr(), "dummy", 15);
+#endif
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idOne),
 		"Couldn't insert new file in empty archive");
 	boost::shared_ptr<std::iostream> pfsNew(pArchive->open(idOne));
 	pfsNew->write("This is one.dat", 15);
 	pfsNew->flush();
 
+#if MAX_FILENAME_LEN > 0
 	ga::Archive::EntryPtr idTwo = pArchive->insert(ga::Archive::EntryPtr(), FILENAME2, 15);
+#else
+	ga::Archive::EntryPtr idTwo = pArchive->insert(ga::Archive::EntryPtr(), "dummy", 15);
+#endif
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idTwo),
 		"Couldn't insert second new file in empty archive");
 	pfsNew = pArchive->open(idTwo);

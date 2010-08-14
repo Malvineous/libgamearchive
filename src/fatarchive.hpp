@@ -178,7 +178,15 @@ class FATArchive: virtual public Archive {
 		virtual void postRemoveFile(const FATEntry *pid)
 			throw (std::ios::failure);
 
+	/// Do not use, see below.
+	friend EntryPtr getFileAt(const VC_ENTRYPTR& files, int index);
+
 };
+
+/// Function for test code only, do not use.  Searches for files based on the
+/// order/index field as this the order in the archive, which is different to
+/// the order in the vector.
+Archive::EntryPtr getFileAt(const Archive::VC_ENTRYPTR& files, int index);
 
 } // namespace gamearchive
 } // namespace camoto
