@@ -22,27 +22,18 @@
  */
 
 #include <boost/algorithm/string.hpp>
-#include <iostream>
-#include <exception>
-#include <string.h>
 
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/debug.hpp>
 #include "fmt-dat-hugo.hpp"
 
-//#define DAT_FILECOUNT_OFFSET     0
-//#define DAT_MAX_FILENAME_LEN     12
-//#define DAT_FILENAME_FIELD_LEN   14
 #define DAT_FAT_ENTRY_LEN        8  // u32le offset + u32le size
-#define DAT_FAT_OFFSET           0
-//#define DAT_FIRST_FILE_OFFSET    8
 #define DAT_FIRST_FILE_OFFSET    0
 
-#define DAT_FATENTRY_OFFSET(e)   (DAT_FAT_OFFSET + e->iIndex * DAT_FAT_ENTRY_LEN)
+#define DAT_FATENTRY_OFFSET(e)   (e->iIndex * DAT_FAT_ENTRY_LEN)
 
-#define DAT_FILENAME_OFFSET(e)    DAT_FATENTRY_OFFSET(e)
 #define DAT_FILESIZE_OFFSET(e)   (DAT_FATENTRY_OFFSET(e) + 4)
-#define DAT_FILEOFFSET_OFFSET(e) DAT_FATENTRY_OFFSET(e)
+#define DAT_FILEOFFSET_OFFSET(e)  DAT_FATENTRY_OFFSET(e)
 
 namespace camoto {
 namespace gamearchive {
@@ -137,8 +128,7 @@ E_CERTAINTY DAT_HugoType::isInstance(iostream_sptr psArchive) const
 ArchivePtr DAT_HugoType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
 	throw (std::ios::failure)
 {
-	//psArchive->seekg(0, std::ios::beg);
-	//psArchive << u32le(0) << u32le(0); // FAT terminator
+	// Return an empty file
 	return ArchivePtr(new DAT_HugoArchive(psArchive, iostream_sptr(), NULL));
 }
 
@@ -279,11 +269,8 @@ void DAT_HugoArchive::updateFileOffset(const FATEntry *pid,
 	// TESTED BY: fmt_dat_hugo_insert*
 	// TESTED BY: fmt_dat_hugo_resize*
 
-	// Offsets don't start from the beginning of the archive
-	uint32_t deltaOffset = pid->iOffset - DAT_FAT_OFFSET;
-
 	this->psArchive->seekp(DAT_FILEOFFSET_OFFSET(pid));
-	this->psArchive << u32le(deltaOffset);
+	this->psArchive << u32le(pid->iOffset);
 	return;
 }
 
@@ -313,17 +300,14 @@ FATArchive::FATEntry *DAT_HugoArchive::preInsertFile(
 	this->psArchive->seekp(DAT_FATENTRY_OFFSET(pNewEntry));
 	this->psArchive->insert(DAT_FAT_ENTRY_LEN);
 
-	// Offsets don't start from the beginning of the archive
-	uint32_t deltaOffset = pNewEntry->iOffset - DAT_FAT_OFFSET;
-
 	// Write out the entry
 	this->psArchive
-		<< u32le(deltaOffset)
+		<< u32le(pNewEntry->iOffset)
 		<< u32le(pNewEntry->iSize)
 	;
 
 	// Update the offsets now there's a new FAT entry taking up space.
-	this->shiftFiles(DAT_FAT_OFFSET + this->vcFAT.size() * DAT_FAT_ENTRY_LEN,
+	this->shiftFiles(this->vcFAT.size() * DAT_FAT_ENTRY_LEN,
 		DAT_FAT_ENTRY_LEN, 0);
 
 	return pNewEntry;
@@ -338,7 +322,7 @@ void DAT_HugoArchive::preRemoveFile(const FATEntry *pid)
 	// must be called before the FAT is altered, because it will write a new
 	// offset into the FAT entry we're about to erase (and if we erase it first
 	// it'll overwrite something else.)
-	this->shiftFiles(DAT_FAT_OFFSET + this->vcFAT.size() * DAT_FAT_ENTRY_LEN,
+	this->shiftFiles(this->vcFAT.size() * DAT_FAT_ENTRY_LEN,
 		-DAT_FAT_ENTRY_LEN, 0);
 
 	this->psArchive->seekp(DAT_FATENTRY_OFFSET(pid));
