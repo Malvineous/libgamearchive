@@ -9,6 +9,7 @@ tests_SOURCES += test-fmt-res-stellar7.cpp
 tests_SOURCES += test-fmt-hog-descent.cpp
 tests_SOURCES += test-fmt-epf-lionking.cpp
 tests_SOURCES += test-fmt-dat-wacky.cpp
+tests_SOURCES += test-fmt-dat-hugo.cpp
 
 EXTRA_tests_SOURCES = tests.hpp test-archive.hpp
 

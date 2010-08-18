@@ -35,7 +35,8 @@
 //#define DAT_FILENAME_FIELD_LEN   14
 #define DAT_FAT_ENTRY_LEN        8  // u32le offset + u32le size
 #define DAT_FAT_OFFSET           0
-#define DAT_FIRST_FILE_OFFSET    8
+//#define DAT_FIRST_FILE_OFFSET    8
+#define DAT_FIRST_FILE_OFFSET    0
 
 #define DAT_FATENTRY_OFFSET(e)   (DAT_FAT_OFFSET + e->iIndex * DAT_FAT_ENTRY_LEN)
 
@@ -95,6 +96,11 @@ E_CERTAINTY DAT_HugoType::isInstance(iostream_sptr psArchive) const
 {
 	psArchive->seekg(0, std::ios::end);
 	io::stream_offset lenArchive = psArchive->tellg();
+
+	// Because there's no header, an empty file could be in this format.
+	// TESTED BY: fmt_dat_hugo_isinstance_c04
+	if (lenArchive == 0) return EC_POSSIBLY_YES;
+
 	// TESTED BY: fmt_dat_hugo_isinstance_c02
 	if (lenArchive < DAT_FAT_ENTRY_LEN) return EC_DEFINITELY_NO; // too short
 
@@ -102,8 +108,11 @@ E_CERTAINTY DAT_HugoType::isInstance(iostream_sptr psArchive) const
 
 	uint32_t fatEnd, firstLen;
 	psArchive >> u32le(fatEnd) >> u32le(firstLen);
+
+	// TESTED BY: fmt_dat_hugo_isinstance_c03
 	if (fatEnd + firstLen > lenArchive)
 		return EC_DEFINITELY_NO; // first file finishes after EOF
+
 	uint32_t numFiles = fatEnd / DAT_FAT_ENTRY_LEN;
 
 	uint32_t offEntry, lenEntry;
@@ -115,7 +124,7 @@ E_CERTAINTY DAT_HugoType::isInstance(iostream_sptr psArchive) const
 
 		// If a file entry points past the end of the archive then it's an invalid
 		// format.
-		// TESTED BY: fmt_dat_hugo_isinstance_c?? - TODO
+		// TESTED BY: fmt_dat_hugo_isinstance_c01
 		if (offEntry + lenEntry > lenArchive) return EC_DEFINITELY_NO;
 	}
 
@@ -128,12 +137,11 @@ E_CERTAINTY DAT_HugoType::isInstance(iostream_sptr psArchive) const
 ArchivePtr DAT_HugoType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
 	throw (std::ios::failure)
 {
-	psArchive->seekg(0, std::ios::beg);
-	psArchive << u32le(0) << u32le(0); // FAT terminator
+	//psArchive->seekg(0, std::ios::beg);
+	//psArchive << u32le(0) << u32le(0); // FAT terminator
 	return ArchivePtr(new DAT_HugoArchive(psArchive, iostream_sptr(), NULL));
 }
 
-// Preconditions: isInstance() has returned > EC_DEFINITELY_NO
 ArchivePtr DAT_HugoType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
 	throw (std::ios::failure)
 {
@@ -181,68 +189,71 @@ DAT_HugoArchive::DAT_HugoArchive(iostream_sptr psArchive, iostream_sptr psFAT, F
 	fatStream->seekg(0, std::ios::end);
 	io::stream_offset lenFAT = fatStream->tellg();
 
-	if (lenFAT < DAT_FAT_ENTRY_LEN) {
-		throw std::ios::failure("Archive too short - no FAT terminator!");
-	}
-
 	this->psArchive->seekg(0, std::ios::end);
 	io::stream_offset lenArchive = this->psArchive->tellg();
 
-	uint32_t fatEnd;
-	fatStream->seekg(0, std::ios::beg);
-	fatStream >> u32le(fatEnd);
-	if (fatEnd >= lenFAT) {
-		throw std::ios::failure("Archive corrupt - FAT truncated!");
-	}
-	uint32_t numFiles = fatEnd / DAT_FAT_ENTRY_LEN;
-	this->vcFAT.reserve(numFiles);
+	// Empty files could be empty archives, so only attempt to read if the file
+	// is non-empty.
+	if ((lenFAT != 0) || (lenArchive != 0)) {
 
-	io::stream_offset lastOffset = 0;
-	int curFile = 1;
-	int firstIndexInSecondArch = 0;
-	fatStream->seekg(0, std::ios::beg);
-	for (int i = 0; i < numFiles; i++) {
-		DAT_HugoEntry *fatEntry = new DAT_HugoEntry();
-		EntryPtr ep(fatEntry);
+		if (lenFAT < DAT_FAT_ENTRY_LEN) {
+			throw std::ios::failure("Archive too short - no FAT terminator!");
+		}
 
-		// Read the data in from the FAT entry in the file
-		fatStream
-			>> u32le(fatEntry->iOffset)
-			>> u32le(fatEntry->iSize)
-		;
+		uint32_t fatEnd;
+		fatStream->seekg(0, std::ios::beg);
+		fatStream >> u32le(fatEnd);
+		if (fatEnd >= lenFAT) {
+			throw std::ios::failure("Archive corrupt - FAT truncated!");
+		}
+		uint32_t numFiles = fatEnd / DAT_FAT_ENTRY_LEN;
+		this->vcFAT.reserve(numFiles);
 
-		// If suddenly the offsets revert back to zero, it means we've reached
-		// the second file (scenery2.dat)
-		if ((fatEntry->iOffset != 0) || (fatEntry->iSize != 0)) {
-			if (fatEntry->iOffset < lastOffset) {
-				curFile++;
-				firstIndexInSecondArch = i;
+		io::stream_offset lastOffset = 0;
+		int curFile = 1;
+		int firstIndexInSecondArch = 0;
+		fatStream->seekg(0, std::ios::beg);
+		for (int i = 0; i < numFiles; i++) {
+			DAT_HugoEntry *fatEntry = new DAT_HugoEntry();
+			EntryPtr ep(fatEntry);
+
+			// Read the data in from the FAT entry in the file
+			fatStream
+				>> u32le(fatEntry->iOffset)
+				>> u32le(fatEntry->iSize)
+			;
+
+			// If suddenly the offsets revert back to zero, it means we've reached
+			// the second file (scenery2.dat)
+			if ((fatEntry->iOffset != 0) || (fatEntry->iSize != 0)) {
+				if (fatEntry->iOffset < lastOffset) {
+					curFile++;
+					firstIndexInSecondArch = i;
+				}
+				lastOffset = fatEntry->iOffset;
+			} else {
+				// TODO: mark as spare/unused FAT entry
 			}
-			lastOffset = fatEntry->iOffset;
+
+			fatEntry->iIndex = i - firstIndexInSecondArch;
+			fatEntry->lenHeader = 0;
+			fatEntry->eType = EFT_USEFILENAME;
+			fatEntry->fAttr = 0;
+			fatEntry->bValid = true;
+			fatEntry->strName = std::string();
+
+			fatEntry->file = curFile;
+
+			if (
+				(psFAT && (curFile == 2)) ||
+				(!psFAT && (curFile == 1))
+			) {
+				// If we have a FAT we're only interested in files in the second FAT,
+				// otherwise we want the first FAT.
+				this->vcFAT.push_back(ep);
+			}
 		}
-
-		fatEntry->iIndex = i - firstIndexInSecondArch;
-		fatEntry->lenHeader = 0;
-		fatEntry->eType = EFT_USEFILENAME;
-		fatEntry->fAttr = 0;
-		fatEntry->bValid = true;
-		fatEntry->strName = std::string();
-
-		if ((fatEntry->iOffset == 0) || (fatEntry->iSize == 0)) {
-			// TODO: mark as spare/unused FAT entry
-		}
-
-		fatEntry->file = curFile;
-
-		if (
-			(psFAT && (curFile == 2)) ||
-			(!psFAT && (curFile == 1))
-		) {
-			// If we have a FAT we're only interested in files in the second FAT,
-			// otherwise we want the first FAT.
-			this->vcFAT.push_back(ep);
-		}
-	}
+	} // else file is blank, treat as empty archive
 
 	refcount_qenterclass(DAT_HugoArchive);
 }
@@ -301,7 +312,6 @@ FATArchive::FATEntry *DAT_HugoArchive::preInsertFile(
 
 	this->psArchive->seekp(DAT_FATENTRY_OFFSET(pNewEntry));
 	this->psArchive->insert(DAT_FAT_ENTRY_LEN);
-	boost::to_upper(pNewEntry->strName);
 
 	// Offsets don't start from the beginning of the archive
 	uint32_t deltaOffset = pNewEntry->iOffset - DAT_FAT_OFFSET;
