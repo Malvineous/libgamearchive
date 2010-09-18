@@ -197,7 +197,7 @@ EPFArchive::EPFArchive(iostream_sptr psArchive)
 		fatEntry->iIndex = i;
 		fatEntry->iOffset = offNext;
 		fatEntry->lenHeader = 0;
-		fatEntry->eType = EFT_USEFILENAME;
+		fatEntry->type = FILETYPE_GENERIC;
 		fatEntry->fAttr = 0;
 		fatEntry->bValid = true;
 

@@ -227,7 +227,7 @@ DAT_HugoArchive::DAT_HugoArchive(iostream_sptr psArchive, iostream_sptr psFAT, F
 
 			fatEntry->iIndex = i - firstIndexInSecondArch;
 			fatEntry->lenHeader = 0;
-			fatEntry->eType = EFT_USEFILENAME;
+			fatEntry->type = FILETYPE_GENERIC;
 			fatEntry->fAttr = 0;
 			fatEntry->bValid = true;
 			fatEntry->strName = std::string();

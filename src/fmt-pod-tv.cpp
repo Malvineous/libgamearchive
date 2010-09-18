@@ -215,7 +215,7 @@ PODArchive::PODArchive(iostream_sptr psArchive)
 		pEntry->iSize = u32le_from_buf(&pFATBuf[i*POD_FAT_ENTRY_LEN + POD_FAT_ENTRY_SIZE_POS]);
 		pEntry->iOffset = u32le_from_buf(&pFATBuf[i*POD_FAT_ENTRY_LEN + POD_FAT_ENTRY_OFFSET_POS]);
 		pEntry->lenHeader = 0;
-		pEntry->eType = EFT_USEFILENAME;
+		pEntry->type = FILETYPE_GENERIC;
 		pEntry->fAttr = 0;
 		pEntry->bValid = true;
 		this->vcFAT.push_back(EntryPtr(pEntry));

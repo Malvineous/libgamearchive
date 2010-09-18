@@ -33,14 +33,8 @@
 namespace camoto {
 namespace gamearchive {
 
-/// File types.
-enum E_FILETYPE {
-	/// Use the filename extension to decide what format it is in
-	EFT_USEFILENAME,
-	/// The file is a raw EGA planar image
-	EFT_RAWEGA_PLANAR,
-	/// @todo Replace these with MIME-style content types?
-};
+#define FILETYPE_GENERIC         std::string()
+#define FILETYPE_RAWEGA_PLANAR   "image/ega-planar"
 
 /// File attribute flags.  Can be OR'd together.
 enum E_ATTRIBUTE {
@@ -106,8 +100,19 @@ class Archive {
 			/// Filename (may be empty for some archives)
 			std::string strName;
 
-			/// A single E_FILETYPE value
-			E_FILETYPE eType;
+			/// File type (like MIME type) or empty for unknown/generic.
+			/**
+			 * This is used for archives which store file types independently of
+			 * filenames.  Leave this as an empty string when the archive does not
+			 * treat the data specially (e.g. the type can be determined by the
+			 * filename or file signature.)
+			 *
+			 * If however, the archive has a specific field for the file type
+			 * (separate from the filename), then that field should be made
+			 * accessible here, probably via mapping the archive codes/values to
+			 * MIME-style strings.
+			 */
+			std::string type;
 
 			/// One or more E_ATTRIBUTE flags
 			int fAttr;
@@ -116,7 +121,7 @@ class Archive {
 			inline virtual std::string getContent() const {
 				std::ostringstream ss;
 				ss << "name=" << this->strName << ";size=" << this->iSize << ";type="
-					<< this->eType << ";attr=" << fAttr;
+					<< this->type << ";attr=" << fAttr;
 				return ss.str();
 			}
 		};

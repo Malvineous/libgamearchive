@@ -61,7 +61,7 @@ FixedArchive::FixedArchive(iostream_sptr psArchive, FixedArchiveFile *files,
 		fe->bValid = true;
 		fe->iSize = files[i].size;
 		fe->strName = files[i].name;
-		fe->eType = EFT_USEFILENAME;
+		fe->type = FILETYPE_GENERIC;
 		fe->fAttr = 0;
 
 		fe->index = i;

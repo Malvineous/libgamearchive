@@ -169,7 +169,7 @@ RESArchiveFolder::RESArchiveFolder(iostream_sptr psArchive)
 		pEntry->isFolder = isfolder_length & 0x80000000;
 		pEntry->iSize = isfolder_length & 0x7FFFFFFF;
 		pEntry->lenHeader = RES_FAT_ENTRY_LEN;
-		pEntry->eType = EFT_USEFILENAME;
+		pEntry->type = FILETYPE_GENERIC;
 		pEntry->fAttr = 0;
 		pEntry->bValid = true;
 		this->vcFAT.push_back(EntryPtr(pEntry));

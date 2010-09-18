@@ -159,7 +159,7 @@ HOGArchive::HOGArchive(iostream_sptr psArchive)
 		pEntry->iOffset = offNext;
 		pEntry->iSize = u32le_from_buf(&buf[HOG_FAT_FILESIZE_OFFSET]);
 		pEntry->lenHeader = HOG_FAT_ENTRY_LEN;
-		pEntry->eType = EFT_USEFILENAME;
+		pEntry->type = FILETYPE_GENERIC;
 		pEntry->fAttr = 0;
 		pEntry->bValid = true;
 		this->vcFAT.push_back(EntryPtr(pEntry));

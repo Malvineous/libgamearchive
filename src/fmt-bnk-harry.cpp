@@ -183,7 +183,7 @@ BNKArchive::BNKArchive(iostream_sptr psArchive, iostream_sptr psFAT, FN_TRUNCATE
 			- BNK_EFAT_ENTRY_LEN;
 		pEntry->iSize = u32le_from_buf(&pFATBuf[i * BNK_FAT_ENTRY_LEN + BNK_FAT_FILESIZE_OFFSET]);
 		pEntry->lenHeader = BNK_EFAT_ENTRY_LEN;
-		pEntry->eType = EFT_USEFILENAME;
+		pEntry->type = FILETYPE_GENERIC;
 		pEntry->fAttr = 0;
 		pEntry->bValid = true;
 		if (pEntry->strName[0] == '\0') {

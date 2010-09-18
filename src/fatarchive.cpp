@@ -125,7 +125,7 @@ FATArchive::EntryPtr FATArchive::insert(const EntryPtr& idBeforeThis, const std:
 
 	pNewFile->strName = strFilename;
 	pNewFile->iSize = iSize;
-	pNewFile->eType = EFT_USEFILENAME;
+	pNewFile->type = FILETYPE_GENERIC;
 	pNewFile->fAttr = 0;
 	pNewFile->bValid = true;
 

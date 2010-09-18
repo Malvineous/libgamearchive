@@ -220,7 +220,7 @@ VOLArchive::VOLArchive(iostream_sptr psArchive)
 			pEntry->iOffset = u32le_from_buf(&pFATBuf[i*VOL_FAT_ENTRY_LEN + VOL_MAX_FILENAME_LEN]);
 			pEntry->iSize = u32le_from_buf(&pFATBuf[i*VOL_FAT_ENTRY_LEN + VOL_MAX_FILENAME_LEN + 4]);
 			pEntry->lenHeader = 0;
-			pEntry->eType = EFT_USEFILENAME;
+			pEntry->type = FILETYPE_GENERIC;
 			pEntry->fAttr = 0;
 			pEntry->bValid = true;
 			// Blank FAT entries have an offset of zero

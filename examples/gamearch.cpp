@@ -387,9 +387,18 @@ finishTesting:
 					if (bScript) {
 						std::cout << "index=" << j << ';' << (*i)->getContent() << std::endl;
 					} else {
-						std::cout << j << ": " << (*i)->strName
-							<< std::string(14 - (*i)->strName.length(), ' ') // pad/align
-							<< "\t[" << (*i)->iSize << " bytes]\n";
+						std::cout << j << ": " << (*i)->strName;
+						int len = (*i)->strName.length();
+						// Pad the filename out to 14 chars if it's short enough
+						if (len < 14) std::cout << std::string(14 - len, ' ');
+
+						std::cout << "\t[";
+
+						// Display the "MIME" type if there is one
+						if (!(*i)->type.empty()) std::cout << (*i)->type << "; ";
+
+						// Display file size
+						std::cout << (*i)->iSize << " bytes]\n";
 					}
 				}
 
