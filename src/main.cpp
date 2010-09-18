@@ -32,6 +32,7 @@
 #include "fmt-dat-wacky.hpp"
 #include "fmt-dat-hugo.hpp"
 #include "fmt-exe-ccaves.hpp"
+#include "fmt-dat-bash.hpp"
 #include "fmt-dat-hocus.hpp"
 
 namespace camoto {
@@ -77,6 +78,7 @@ Manager::Manager()
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_WackyType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_HugoType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new EXE_CCavesType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new DAT_BashType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_HocusType()));
 }
 
