@@ -49,7 +49,8 @@ void Archive::move(const EntryPtr& idBeforeThis, EntryPtr& id)
 	assert(src);
 
 	// Insert a new file at the destination index
-	EntryPtr n = this->insert(idBeforeThis, id->strName, id->iSize);
+	EntryPtr n = this->insert(idBeforeThis, id->strName, id->iSize,
+		id->type, id->fAttr);
 	assert(n->bValid);
 
 	iostream_sptr dst(this->open(n));
@@ -70,6 +71,12 @@ void Archive::move(const EntryPtr& idBeforeThis, EntryPtr& id)
 	this->remove(id);
 
 	return;
+}
+
+int Archive::getSupportedAttributes() const
+	throw ()
+{
+	return 0;
 }
 
 VC_METADATA_ITEMS Archive::getMetadataList() const

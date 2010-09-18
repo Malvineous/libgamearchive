@@ -113,7 +113,9 @@ boost::shared_ptr<std::iostream> FATArchive::open(const EntryPtr& id)
 	return psSub;
 }
 
-FATArchive::EntryPtr FATArchive::insert(const EntryPtr& idBeforeThis, const std::string& strFilename, offset_t iSize)
+FATArchive::EntryPtr FATArchive::insert(const EntryPtr& idBeforeThis,
+	const std::string& strFilename, offset_t iSize, std::string type, int attr
+)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_grp_duke3d_insert2
@@ -125,8 +127,8 @@ FATArchive::EntryPtr FATArchive::insert(const EntryPtr& idBeforeThis, const std:
 
 	pNewFile->strName = strFilename;
 	pNewFile->iSize = iSize;
-	pNewFile->type = FILETYPE_GENERIC;
-	pNewFile->fAttr = 0;
+	pNewFile->type = type;
+	pNewFile->fAttr = attr;
 	pNewFile->bValid = true;
 
 	// Figure out where the new file is going to go

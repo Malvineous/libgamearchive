@@ -232,11 +232,14 @@ class Archive {
 		 *         it is not valid, the new file will be last in the archive.
 		 * @param  strFilename Filename of the new file.
 		 * @param  iSize Initial size of the new file.
+		 * @param  type MIME-like file type, or empty string for generic file.  See
+		 *         FileEntry::type.
 		 * @return An EntryPtr to the newly added file, which can be immediately
 		 *         passed to open() if needed.
 		 */
 		virtual EntryPtr insert(const EntryPtr& idBeforeThis,
-			const std::string& strFilename, offset_t iSize
+			const std::string& strFilename, offset_t iSize, std::string type,
+			int attr
 		)
 			throw (std::ios::failure) = 0;
 
@@ -324,6 +327,20 @@ class Archive {
 		 */
 		virtual EntryPtr entryPtrFromStream(const iostream_sptr openFile)
 			throw () = 0;
+
+		/// Find out which attributes can be set on files in this archive.
+		/**
+		 * If an attribute is not returned by this function, that attribute must
+		 * not be supplied to insert().
+		 *
+		 * Note to archive format implementors: There is a default implementation
+		 * of this function which returns 0.  Thus this only needs to be overridden
+		 * if the archive format does actually support any of the attributes.
+		 *
+		 * @return Zero or more E_ATTRIBUTE values OR'd together.
+		 */
+		virtual int getSupportedAttributes() const
+			throw ();
 
 		// The metadata functions all have no-op defaults, they only need to be
 		// overridden for archive formats that have metadata.

@@ -92,7 +92,8 @@ boost::shared_ptr<std::iostream> SubdirArchive::open(const EntryPtr& id)
 }
 
 SubdirArchive::EntryPtr SubdirArchive::insert(const EntryPtr& idBeforeThis,
-	const std::string& strFilename, offset_t iSize)
+	const std::string& strFilename, offset_t iSize, std::string type, int attr
+)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_res_stellar7_insert2
@@ -108,7 +109,7 @@ SubdirArchive::EntryPtr SubdirArchive::insert(const EntryPtr& idBeforeThis,
 		WrapperEntry *wrapper = dynamic_cast<WrapperEntry *>(idBeforeThis.get());
 		assert(wrapper); // if false, caller passed us someone else's EntryPtr
 		EntryPtr newFile = wrapper->containingFolder->insert(
-			wrapper->original, strFilename, iSize
+			wrapper->original, strFilename, iSize, type, attr
 		);
 		WrapperEntry *newWrapper = this->wrapFileEntry(
 			newFile, wrapper->containingFolder, wrapper->prefix
@@ -116,7 +117,8 @@ SubdirArchive::EntryPtr SubdirArchive::insert(const EntryPtr& idBeforeThis,
 		return EntryPtr(newWrapper);
 	} else {
 		// Append, so use root folder
-		EntryPtr newFile = this->rootFolder->insert(EntryPtr(), strFilename, iSize);
+		EntryPtr newFile = this->rootFolder->insert(EntryPtr(), strFilename, iSize,
+			type, attr);
 		WrapperEntry *newWrapper = this->wrapFileEntry(newFile, this->rootFolder, "");
 		return EntryPtr(newWrapper);
 	}

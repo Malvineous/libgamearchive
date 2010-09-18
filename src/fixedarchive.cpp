@@ -120,7 +120,10 @@ boost::shared_ptr<std::iostream> FixedArchive::open(const EntryPtr& id)
 	return psSub;
 }
 
-FixedArchive::EntryPtr FixedArchive::insert(const EntryPtr& idBeforeThis, const std::string& strFilename, offset_t iSize)
+FixedArchive::EntryPtr FixedArchive::insert(const EntryPtr& idBeforeThis,
+	const std::string& strFilename, offset_t iSize, std::string type,
+	int attr
+)
 	throw (std::ios::failure)
 {
 	throw std::ios::failure("This is a fixed archive, files cannot be inserted.");

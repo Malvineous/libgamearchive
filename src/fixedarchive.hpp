@@ -103,7 +103,8 @@ class FixedArchive: virtual public Archive {
 		 *       thus can't be added to.
 		 */
 		virtual EntryPtr insert(const EntryPtr& idBeforeThis,
-			const std::string& strFilename, offset_t iSize
+			const std::string& strFilename, offset_t iSize, std::string type,
+			int attr
 		)
 			throw (std::ios::failure);
 

@@ -64,10 +64,23 @@ manually specify the archive type (see \fBSUPPORTED FORMATS\fR below for a list
 of valid values.)  The archive type is normally autodetected, but it needs to
 be specified for a few archives which lack signatures to identify them by.)
 .TP
-\fB-c\fR, \fB--no-compress\fR
-when using \fB--add\fR with an archive that supports compressed files, don't
-compress the files.  The default is to compress files if supported by the
-archive format.
+\fB-y\fR, \fB--filetype\fR
+when using \fB--add\fR or \fB--insert\fR the file being added can have a type
+set, for those archives that store this value separately (often when no or
+incomplete filenames are used.)  Valid values depend on the archive format,
+and viewing the archive with \fB-l\fR will show any existing file types.  A
+set file type will remain in effect until changed.  Set to a blank string ("")
+to return to the default file type.
+.TP
+\fB-b\fR, \fB--attribute\fR
+when using \fB--add\fR or \fB--insert\fR the file being added can have certain
+attributes set with this option.  This option affects only --add or --insert
+options following it.  Multiple attributes can be specified by using the
+option multiple times.  Prefix the attribute with a minus sign to unset it
+again.  Valid attributes are: empty (file slot is unused), hidden
+(file is hidden between two FAT entries), compressed and encrypted.  Not all
+values are supported by a given archive format, and a warning will be shown
+if an unsupported value is used.
 .TP
 \fB-f\fR, \fB--force\fR
 open the archive as the given --type, even if it doesn't look like it's in
@@ -185,6 +198,18 @@ out of the way (but not overwriting any of them!)
 \fBgamearch duke3d.grp -f -a @5=data.bin\fR
 overwrites the fifth file in the archive with \fBdata.bin\fR (renaming the
 fifth file to "data.bin" in the process, regardless of its previous name.)
+.TP
+\fBgamearch bash1.dat data1.bin --filetype image/bash-sprite -a data2.bin
+-a data3.bin\fR
+appends data1.bin leaving its file type as the default, then appends data2.bin
+followed by data3.bin, flagging them both as containing Monster Bash sprite
+data.
+.TP
+\fBgamearch bash1.dat data1.bin --attribute compressed -a data2.bin -a data3.bin
+--attribute hidden -a data4.bin --attribute -compressed -a data5.bin\fR
+appends data1.bin through data5.bin as follows: data1.bin is normal (no
+attributes), data2.bin and data3.bin are both compressed, data4.bin is both
+compressed and hidden, and data5.bin is just hidden.
 .SH NOTES
 .PP
 When a filename refers to an item inside an archive, it can be specified either

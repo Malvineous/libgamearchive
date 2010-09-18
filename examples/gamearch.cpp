@@ -109,7 +109,8 @@ ga::Archive::EntryPtr findFile(const ga::ArchivePtr& archive, const std::string&
 
 // Insert a file at the given location.  Shared by --insert and --add.
 bool insertFile(ga::Archive *pArchive, const std::string& strLocalFile,
-	const std::string& strArchFile, const camoto::gamearchive::Archive::EntryPtr& idBeforeThis)
+	const std::string& strArchFile, const camoto::gamearchive::Archive::EntryPtr& idBeforeThis,
+	const std::string& type, int attr)
 {
 	// Open the file
 	std::ifstream fsIn(strLocalFile.c_str(), std::ios::binary);
@@ -120,7 +121,7 @@ bool insertFile(ga::Archive *pArchive, const std::string& strLocalFile,
 
 	// Create a new entry in the archive large enough to hold the file
 	camoto::gamearchive::Archive::EntryPtr id =
-		pArchive->insert(idBeforeThis, strArchFile, iSize);
+		pArchive->insert(idBeforeThis, strArchFile, iSize, type, attr);
 
 	// Open the new (empty) file in the archive
 	boost::shared_ptr<std::iostream> psNew(pArchive->open(id));
@@ -176,6 +177,10 @@ int main(int iArgC, char *cArgV[])
 	poOptions.add_options()
 		("type,t", po::value<std::string>(),
 			"specify the archive type (default is autodetect)")
+		("filetype,y", po::value<std::string>(),
+			"specify the file type when inserting (default is generic file)")
+		("attribute,b", po::value<std::string>(),
+			"specify the file attributes when inserting (optional)")
 		("script,s",
 			"format output suitable for script parsing")
 		("force,f",
@@ -374,6 +379,12 @@ finishTesting:
 
 		int iRet = RET_OK;
 
+		// File type of inserted files defaults to empty, which means 'generic file'
+		std::string strLastFiletype;
+
+		// Last attribute value set with -b
+		int iLastAttr;
+
 		// Run through the actions on the command line
 		for (std::vector<po::option>::iterator i = pa.options.begin(); i != pa.options.end(); i++) {
 			if (i->string_key.compare("list") == 0) {
@@ -508,7 +519,9 @@ finishTesting:
 				std::string strArchFile, strLocalFile;
 				bool bAltDest = split(strSource, '=', &strArchFile, &strLocalFile);
 
-				std::cout << "  inserting: " << strArchFile << " (before "
+				std::cout << "  inserting: " << strArchFile;
+				if (!strLastFiletype.empty()) std::cout << " as type " << strLastFiletype;
+				std::cout << " (before "
 					<< strInsertBefore;
 				if (bAltDest) std::cout << ", from " << strLocalFile;
 				std::cout << ")" << std::flush;
@@ -522,7 +535,8 @@ finishTesting:
 				}
 
 				try {
-					insertFile(pArchive.get(), strLocalFile, strArchFile, idBeforeThis);
+					insertFile(pArchive.get(), strLocalFile, strArchFile, idBeforeThis,
+						strLastFiletype, iLastAttr);
 				} catch (std::ios_base::failure& e) {
 					std::cout << " [failed; " << e.what() << "]";
 					iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
@@ -530,6 +544,39 @@ finishTesting:
 
 				std::cout << std::endl;
 
+			// Remember --filetype/-y
+			} else if (i->string_key.compare("filetype") == 0) {
+			//} else if (i->string_key.compare("y") == 0) {
+				strLastFiletype = i->value[0];
+			// Remember --attributes/-b
+			} else if (i->string_key.compare("attribute") == 0) {
+			//} else if (i->string_key.compare("b") == 0) {
+				std::string nextAttr = i->value[0];
+				bool disable = (nextAttr[0] == '-');
+				if (disable) nextAttr = nextAttr.substr(1);
+
+				int next;
+				if      (nextAttr.compare("empty")      == 0) next = ga::EA_EMPTY;
+				else if (nextAttr.compare("hidden")     == 0) next = ga::EA_HIDDEN;
+				else if (nextAttr.compare("compressed") == 0) next = ga::EA_COMPRESSED;
+				else if (nextAttr.compare("encrypted")  == 0) next = ga::EA_ENCRYPTED;
+				else {
+					std::cerr << "Unknown attribute " << nextAttr
+						<< ", valid values are: empty hidden compressed encrypted"
+						<< std::endl;
+					iRet = RET_UNCOMMON_FAILURE;
+					next = 0;
+				}
+				if (next != 0) {
+					int allowed = pArchive->getSupportedAttributes();
+					if (allowed & next) {
+						if (disable) iLastAttr &= ~next;
+						else iLastAttr |= next;
+					} else {
+						std::cerr << "Warning: Attribute unsupported by archive format, "
+							"ignoring: " << nextAttr << std::endl;
+					}
+				}
 			// Ignore --type/-t
 			} else if (i->string_key.compare("type") == 0) {
 			} else if (i->string_key.compare("t") == 0) {
@@ -550,11 +597,13 @@ finishTesting:
 
 				if (i->string_key.compare("add") == 0) {
 					std::cout << "     adding: " << strArchFile;
+					if (!strLastFiletype.empty()) std::cout << " as type " << strLastFiletype;
 					if (bAltDest) std::cout << " (from " << strLocalFile << ")";
 					std::cout << std::endl;
 
 					try {
-						insertFile(pArchive.get(), strLocalFile, strArchFile, ga::Archive::EntryPtr());
+						insertFile(pArchive.get(), strLocalFile, strArchFile,
+							ga::Archive::EntryPtr(), strLastFiletype, iLastAttr);
 					} catch (std::ios_base::failure& e) {
 						std::cout << " [failed; " << e.what() << "]";
 						iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
