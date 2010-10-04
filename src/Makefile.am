@@ -15,6 +15,7 @@ libgamearchive_la_SOURCES += fmt-epf-lionking.cpp
 libgamearchive_la_SOURCES += fmt-dat-wacky.cpp
 libgamearchive_la_SOURCES += fmt-dat-hugo.cpp
 libgamearchive_la_SOURCES += fmt-exe-ccaves.cpp
+libgamearchive_la_SOURCES += fmt-dat-hocus.cpp
 
 EXTRA_libgamearchive_la_SOURCES = fatarchive.hpp
 EXTRA_libgamearchive_la_SOURCES += fixedarchive.hpp
@@ -29,6 +30,7 @@ EXTRA_libgamearchive_la_SOURCES += fmt-epf-lionking.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-dat-wacky.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-dat-hugo.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-exe-ccaves.hpp
+EXTRA_libgamearchive_la_SOURCES += fmt-dat-hocus.hpp
 
 AM_CPPFLAGS = $(DEBUG_CPPFLAGS) $(BOOST_CPPFLAGS) -I $(top_srcdir)/include $(libgamecommon_CFLAGS)
 AM_CXXFLAGS = $(DEBUG_CXXFLAGS)
