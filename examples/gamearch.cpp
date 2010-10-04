@@ -316,6 +316,35 @@ int main(int iArgC, char *cArgV[])
 						// Don't bother checking any other formats if we got a 100% match
 						goto finishTesting;
 				}
+				if (cert != ga::EC_DEFINITELY_NO) {
+					// We got a possible match, see if it requires any suppdata
+					ga::MP_SUPPLIST suppList = pTestType->getRequiredSupps(strFilename);
+					if (suppList.size() > 0) {
+						// It has suppdata, see if it's present
+						std::cout << "  * This format requires supplemental files..." << std::endl;
+						bool bSuppOK = true;
+						for (ga::MP_SUPPLIST::iterator i = suppList.begin(); i != suppList.end(); i++) {
+							try {
+								boost::shared_ptr<std::fstream> suppStream(new std::fstream());
+								suppStream->exceptions(std::ios::badbit | std::ios::failbit);
+								suppStream->open(i->second.c_str(), std::ios::in | std::ios::binary);
+							} catch (std::ios::failure e) {
+								bSuppOK = false;
+								std::cout << "  * Could not find/open " << i->second
+									<< ", archive is probably not "
+									<< pTestType->getArchiveCode() << std::endl;
+								break;
+							}
+						}
+						if (bSuppOK) {
+							// All supp files opened ok
+							std::cout << "  * All supp files present, archive is likely "
+								<< pTestType->getArchiveCode() << std::endl;
+							// Set this as the most likely format
+							pArchType = pTestType;
+						}
+					}
+				}
 			}
 finishTesting:
 			if (!pArchType) {
