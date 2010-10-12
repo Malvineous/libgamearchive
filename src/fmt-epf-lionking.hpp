@@ -84,6 +84,9 @@ class EPFArchive: virtual public FATArchive {
 
 		// As per Archive (see there for docs)
 
+		virtual boost::shared_ptr<std::iostream> open(const EntryPtr& id)
+			throw ();
+
 		virtual void rename(EntryPtr& id, const std::string& strNewName)
 			throw (std::ios_base::failure);
 

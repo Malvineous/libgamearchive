@@ -26,6 +26,7 @@
 #include <boost/progress.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
 #include <iostream>
 #include <exception>
 #include <string.h>
@@ -33,6 +34,8 @@
 #include "fmt-epf-lionking.hpp"
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/debug.hpp>
+#include <camoto/lzw.hpp>
+#include <camoto/filteredstream.hpp>
 
 #define EPF_HEADER_LEN               11
 #define EPF_FAT_OFFSET_POS           4
@@ -217,6 +220,46 @@ EPFArchive::EPFArchive(iostream_sptr psArchive)
 EPFArchive::~EPFArchive()
 	throw ()
 {
+}
+
+boost::shared_ptr<std::iostream> EPFArchive::open(const EntryPtr& id)
+	throw ()
+{
+	// TESTED BY: fmt_epf_lionking_open
+	assert(this->isValid(id));
+	EPFEntry *pEntry = dynamic_cast<EPFEntry *>(id.get());
+	assert(pEntry);
+
+	iostream_sptr sub = this->FATArchive::open(id);
+
+	if (pEntry->fAttr & EA_COMPRESSED) {
+		try {
+			// File needs to be decompressed
+			filtering_istream_sptr pinf(new io::filtering_istream());
+			pinf->push(lzw_decompress_filter(
+				9,   // initial codeword length (in bits)
+				14,  // maximum codeword length (in bits)
+				256, // first valid codeword
+				0,   // EOF codeword is max codeword
+				-1,  // reset codeword is max-1
+				LZW_BIG_ENDIAN        | // bits are split into bytes in big-endian order
+				LZW_NO_BITSIZE_RESET  | // bitsize doesn't go back to 9 after dict reset
+				LZW_EOF_PARAM_VALID   | // Has codeword reserved for EOF
+				LZW_RESET_PARAM_VALID   // Has codeword reserved for dict reset
+			));
+			filtering_ostream_sptr poutf(new io::filtering_ostream());
+			iostream_sptr dec(new filteredstream(sub, pinf, poutf));
+			return dec;
+		} catch (ECorruptedData& e) {
+			std::cerr << e.what() << "\nReturning file in compressed state."
+				<< std::endl;
+			sub->seekg(0);
+			// continue on to return sub below
+		}
+	}
+
+	// Else file is not compressed
+	return sub;
 }
 
 // Does not invalidate existing EntryPtrs
