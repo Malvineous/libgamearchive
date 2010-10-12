@@ -437,6 +437,12 @@ finishTesting:
 						// Display the "MIME" type if there is one
 						if (!(*i)->type.empty()) std::cout << (*i)->type << "; ";
 
+						/// Display any attributes
+						if ((*i)->fAttr & ga::EA_EMPTY) std::cout << "empty slot; ";
+						if ((*i)->fAttr & ga::EA_HIDDEN) std::cout << "hidden; ";
+						if ((*i)->fAttr & ga::EA_COMPRESSED) std::cout << "compressed; ";
+						if ((*i)->fAttr & ga::EA_ENCRYPTED) std::cout << "encrypted; ";
+
 						// Display file size
 						std::cout << (*i)->iSize << " bytes]\n";
 					}
