@@ -30,9 +30,6 @@ namespace ga = camoto::gamearchive;
 
 #define PROGNAME "gamearch"
 
-//#define BUFFER_SIZE  2048  // Buffer size when copying files in/out of arch
-//#define BUFFER_SIZE  4096  // Buffer size when copying files in/out of arch
-
 /*** Return values ***/
 // All is good
 #define RET_OK                 0
@@ -185,7 +182,6 @@ int main(int iArgC, char *cArgV[])
 			"format output suitable for script parsing")
 		("force,f",
 			"force open even if the archive is not in the given format")
-		//("verbose", "display more detail")
 	;
 
 	po::options_description poHidden("Hidden parameters");
@@ -194,11 +190,7 @@ int main(int iArgC, char *cArgV[])
 		("help", "produce help message")
 	;
 
-	//po::positional_options_description poPositional;
-	// The first argument without an option is the archive name
-	//poPositional.add("archive", 1);
-
-	po::options_description poVisible("");//po::options_description::m_default_line_length);
+	po::options_description poVisible("");
 	poVisible.add(poActions).add(poOptions);
 
 	po::options_description poComplete("Parameters");
@@ -211,10 +203,7 @@ int main(int iArgC, char *cArgV[])
 	bool bScript = false; // show output suitable for script parsing?
 	bool bForceOpen = false; // open anyway even if archive not in given format?
 	try {
-		//po::store(po::parse_command_line(iArgC, cArgV, poComplete), mpArgs);
 		po::parsed_options pa = po::parse_command_line(iArgC, cArgV, poComplete);
-		//po::store(pa, mpArgs);
-		//std::cout << "Malvineous' Game Editor." << std::endl;
 
 		// Parse the global command line options
 		for (std::vector<po::option>::iterator i = pa.options.begin(); i != pa.options.end(); i++) {
@@ -645,7 +634,7 @@ finishTesting:
 					}
 
 				} else if (i->string_key.compare("rename") == 0) {
-					if ((!bAltDest) || (boost::iequals(strArchFile, strLocalFile))) {
+					if ((!bAltDest) || (boost::equals(strArchFile, strLocalFile))) {
 						std::cout << "ignoring attempt to rename " << strArchFile
 							<< " into the same name" << std::endl;
 					} else {
