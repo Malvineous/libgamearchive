@@ -44,8 +44,6 @@ std::string FixedArchive::FixedEntry::getContent() const
 }
 */
 
-refcount_declclass(FixedArchive);
-
 FixedArchive::FixedArchive(iostream_sptr psArchive, FixedArchiveFile *files,
 	int numFiles
 )
@@ -54,7 +52,6 @@ FixedArchive::FixedArchive(iostream_sptr psArchive, FixedArchiveFile *files,
 		files(files),
 		numFiles(numFiles)
 {
-	refcount_qenterclass(FixedArchive);
 	for (int i = 0; i < numFiles; i++) {
 		FixedEntry *fe = new FixedEntry();
 		EntryPtr ep(fe);
@@ -73,7 +70,6 @@ FixedArchive::FixedArchive(iostream_sptr psArchive, FixedArchiveFile *files,
 FixedArchive::~FixedArchive()
 	throw ()
 {
-	refcount_qexitclass(FixedArchive);
 }
 
 const FixedArchive::VC_ENTRYPTR& FixedArchive::getFileList()

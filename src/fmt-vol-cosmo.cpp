@@ -41,18 +41,14 @@
 namespace camoto {
 namespace gamearchive {
 
-refcount_declclass(VOLType);
-
 VOLType::VOLType()
 	throw ()
 {
-	refcount_qenterclass(VOLType);
 }
 
 VOLType::~VOLType()
 	throw ()
 {
-	refcount_qexitclass(VOLType);
 }
 
 std::string VOLType::getArchiveCode() const
@@ -172,8 +168,6 @@ MP_SUPPLIST VOLType::getRequiredSupps(const std::string& filenameArchive) const
 }
 
 
-refcount_declclass(VOLArchive);
-
 VOLArchive::VOLArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
 		FATArchive(psArchive, VOL_FIRST_FILE_OFFSET)
@@ -231,13 +225,11 @@ VOLArchive::VOLArchive(iostream_sptr psArchive)
 			}
 		}
 	} // else empty archive
-	refcount_qenterclass(VOLArchive);
 }
 
 VOLArchive::~VOLArchive()
 	throw ()
 {
-	refcount_qexitclass(VOLArchive);
 }
 
 void VOLArchive::rename(EntryPtr& id, const std::string& strNewName)

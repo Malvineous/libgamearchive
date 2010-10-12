@@ -29,19 +29,15 @@
 namespace camoto {
 namespace gamearchive {
 
-refcount_declclass(SubdirArchive);
-
 SubdirArchive::SubdirArchive(ArchivePtr& rootFolder)
 	throw () :
 		rootFolder(rootFolder)
 {
-	refcount_qenterclass(SubdirArchive);
 }
 
 SubdirArchive::~SubdirArchive()
 	throw ()
 {
-	refcount_qexitclass(SubdirArchive);
 }
 
 const SubdirArchive::VC_ENTRYPTR& SubdirArchive::getFileList()

@@ -26,15 +26,11 @@
 namespace camoto {
 namespace gamearchive {
 
-refcount_declclass(FATEntry);
-
 FATArchive::FATEntry::FATEntry()
 {
-	refcount_qenterclass(FATEntry);
 }
 FATArchive::FATEntry::~FATEntry()
 {
-	refcount_qexitclass(FATEntry);
 }
 std::string FATArchive::FATEntry::getContent() const
 {
@@ -52,14 +48,11 @@ Archive::EntryPtr getFileAt(const Archive::VC_ENTRYPTR& files, int index)
 	return Archive::EntryPtr();
 }
 
-refcount_declclass(FATArchive);
-
 FATArchive::FATArchive(iostream_sptr psArchive, io::stream_offset offFirstFile)
 	throw (std::ios::failure) :
 		psArchive(new segmented_stream(psArchive)),
 		offFirstFile(offFirstFile)
 {
-	refcount_qenterclass(FATArchive);
 }
 
 FATArchive::~FATArchive()
@@ -68,7 +61,6 @@ FATArchive::~FATArchive()
 	// Can't flush here as it could throw std::ios::failure and we have no way
 	// of handling it.
 	//this->flush(); // make sure it saves on close just in case
-	refcount_qexitclass(FATArchive);
 }
 
 const FATArchive::VC_ENTRYPTR& FATArchive::getFileList()

@@ -51,18 +51,14 @@
 namespace camoto {
 namespace gamearchive {
 
-refcount_declclass(GRPType);
-
 GRPType::GRPType()
 	throw ()
 {
-	refcount_qenterclass(GRPType);
 }
 
 GRPType::~GRPType()
 	throw ()
 {
-	refcount_qexitclass(GRPType);
 }
 
 std::string GRPType::getArchiveCode() const
@@ -139,8 +135,6 @@ MP_SUPPLIST GRPType::getRequiredSupps(const std::string& filenameArchive) const
 }
 
 
-refcount_declclass(GRPArchive);
-
 GRPArchive::GRPArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
 		FATArchive(psArchive, GRP_FIRST_FILE_OFFSET)
@@ -178,14 +172,11 @@ GRPArchive::GRPArchive(iostream_sptr psArchive)
 		this->vcFAT.push_back(ep);
 		offNext += fatEntry->iSize;
 	}
-
-	refcount_qenterclass(GRPArchive);
 }
 
 GRPArchive::~GRPArchive()
 	throw ()
 {
-	refcount_qexitclass(GRPArchive);
 }
 
 // Does not invalidate existing EntryPtrs

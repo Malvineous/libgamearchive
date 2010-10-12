@@ -48,18 +48,14 @@
 namespace camoto {
 namespace gamearchive {
 
-refcount_declclass(DAT_WackyType);
-
 DAT_WackyType::DAT_WackyType()
 	throw ()
 {
-	refcount_qenterclass(DAT_WackyType);
 }
 
 DAT_WackyType::~DAT_WackyType()
 	throw ()
 {
-	refcount_qexitclass(DAT_WackyType);
 }
 
 std::string DAT_WackyType::getArchiveCode() const
@@ -163,8 +159,6 @@ MP_SUPPLIST DAT_WackyType::getRequiredSupps(const std::string& filenameArchive) 
 }
 
 
-refcount_declclass(DAT_WackyArchive);
-
 DAT_WackyArchive::DAT_WackyArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
 		FATArchive(psArchive, DAT_FIRST_FILE_OFFSET)
@@ -203,13 +197,11 @@ DAT_WackyArchive::DAT_WackyArchive(iostream_sptr psArchive)
 		this->vcFAT.push_back(ep);
 	}
 
-	refcount_qenterclass(DAT_WackyArchive);
 }
 
 DAT_WackyArchive::~DAT_WackyArchive()
 	throw ()
 {
-	refcount_qexitclass(DAT_WackyArchive);
 }
 
 void DAT_WackyArchive::rename(EntryPtr& id, const std::string& strNewName)

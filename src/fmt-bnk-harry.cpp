@@ -58,18 +58,14 @@
 namespace camoto {
 namespace gamearchive {
 
-refcount_declclass(BNKType);
-
 BNKType::BNKType()
 	throw ()
 {
-	refcount_qenterclass(BNKType);
 }
 
 BNKType::~BNKType()
 	throw ()
 {
-	refcount_qexitclass(BNKType);
 }
 
 std::string BNKType::getArchiveCode() const
@@ -141,8 +137,6 @@ MP_SUPPLIST BNKType::getRequiredSupps(const std::string& filenameArchive) const
 }
 
 
-refcount_declclass(BNKArchive);
-
 BNKArchive::BNKArchive(iostream_sptr psArchive, iostream_sptr psFAT, FN_TRUNCATE fnTruncFAT)
 	throw (std::ios::failure) :
 		FATArchive(psArchive, BNK_FIRST_FILE_OFFSET),
@@ -201,13 +195,11 @@ BNKArchive::BNKArchive(iostream_sptr psArchive, iostream_sptr psFAT, FN_TRUNCATE
 			throw std::ios::failure("archive has been truncated or FAT is corrupt");
 		}
 	}
-	refcount_qenterclass(BNKArchive);
 }
 
 BNKArchive::~BNKArchive()
 	throw ()
 {
-	refcount_qexitclass(BNKArchive);
 }
 
 void BNKArchive::rename(EntryPtr& id, const std::string& strNewName)

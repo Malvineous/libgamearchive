@@ -49,18 +49,14 @@
 namespace camoto {
 namespace gamearchive {
 
-refcount_declclass(DAT_BashType);
-
 DAT_BashType::DAT_BashType()
 	throw ()
 {
-	refcount_qenterclass(DAT_BashType);
 }
 
 DAT_BashType::~DAT_BashType()
 	throw ()
 {
-	refcount_qexitclass(DAT_BashType);
 }
 
 std::string DAT_BashType::getArchiveCode() const
@@ -169,8 +165,6 @@ MP_SUPPLIST DAT_BashType::getRequiredSupps(const std::string& filenameArchive) c
 }
 
 
-refcount_declclass(DAT_BashArchive);
-
 DAT_BashArchive::DAT_BashArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
 		FATArchive(psArchive, DAT_FIRST_FILE_OFFSET)
@@ -227,13 +221,11 @@ DAT_BashArchive::DAT_BashArchive(iostream_sptr psArchive)
 		numFiles++;
 	}
 
-	refcount_qenterclass(DAT_BashArchive);
 }
 
 DAT_BashArchive::~DAT_BashArchive()
 	throw ()
 {
-	refcount_qexitclass(DAT_BashArchive);
 }
 
 void DAT_BashArchive::rename(EntryPtr& id, const std::string& strNewName)

@@ -45,18 +45,14 @@
 namespace camoto {
 namespace gamearchive {
 
-refcount_declclass(PODType);
-
 PODType::PODType()
 	throw ()
 {
-	refcount_qenterclass(PODType);
 }
 
 PODType::~PODType()
 	throw ()
 {
-	refcount_qexitclass(PODType);
 }
 
 std::string PODType::getArchiveCode() const
@@ -168,8 +164,6 @@ MP_SUPPLIST PODType::getRequiredSupps(const std::string& filenameArchive) const
 }
 
 
-refcount_declclass(PODArchive);
-
 PODArchive::PODArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
 		FATArchive(psArchive, POD_FIRST_FILE_OFFSET)
@@ -220,13 +214,11 @@ PODArchive::PODArchive(iostream_sptr psArchive)
 		pEntry->bValid = true;
 		this->vcFAT.push_back(EntryPtr(pEntry));
 	}
-	refcount_qenterclass(PODArchive);
 }
 
 PODArchive::~PODArchive()
 	throw ()
 {
-	refcount_qexitclass(PODArchive);
 }
 
 void PODArchive::rename(EntryPtr& id, const std::string& strNewName)

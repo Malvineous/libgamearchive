@@ -40,8 +40,6 @@
 namespace camoto {
 namespace gamearchive {
 
-refcount_declclass(DAT_HocusType);
-
 // Truncate function that doesn't do anything (since the FAT is inside the EXE,
 // and a fixed size, so there's no need to alter the size of the .exe)
 void dummyTrunc(unsigned long len)
@@ -51,13 +49,11 @@ void dummyTrunc(unsigned long len)
 DAT_HocusType::DAT_HocusType()
 	throw ()
 {
-	refcount_qenterclass(DAT_HocusType);
 }
 
 DAT_HocusType::~DAT_HocusType()
 	throw ()
 {
-	refcount_qexitclass(DAT_HocusType);
 }
 
 std::string DAT_HocusType::getArchiveCode() const
@@ -148,8 +144,6 @@ MP_SUPPLIST DAT_HocusType::getRequiredSupps(const std::string& filenameArchive) 
 }
 
 
-refcount_declclass(DAT_HocusArchive);
-
 DAT_HocusArchive::DAT_HocusArchive(iostream_sptr psArchive, iostream_sptr psFAT)
 	throw (std::ios::failure) :
 		FATArchive(psArchive, BNK_FIRST_FILE_OFFSET),
@@ -185,13 +179,11 @@ DAT_HocusArchive::DAT_HocusArchive(iostream_sptr psArchive, iostream_sptr psFAT)
 		}
 		this->numFiles++;
 	}
-	refcount_qenterclass(DAT_HocusArchive);
 }
 
 DAT_HocusArchive::~DAT_HocusArchive()
 	throw ()
 {
-	refcount_qexitclass(DAT_HocusArchive);
 }
 
 void DAT_HocusArchive::rename(EntryPtr& id, const std::string& strNewName)

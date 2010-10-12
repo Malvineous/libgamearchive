@@ -52,18 +52,14 @@
 namespace camoto {
 namespace gamearchive {
 
-refcount_declclass(EPFType);
-
 EPFType::EPFType()
 	throw ()
 {
-	refcount_qenterclass(EPFType);
 }
 
 EPFType::~EPFType()
 	throw ()
 {
-	refcount_qexitclass(EPFType);
 }
 
 std::string EPFType::getArchiveCode() const
@@ -152,8 +148,6 @@ MP_SUPPLIST EPFType::getRequiredSupps(const std::string& filenameArchive) const
 }
 
 
-refcount_declclass(EPFArchive);
-
 EPFArchive::EPFArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
 		FATArchive(psArchive, EPF_FIRST_FILE_OFFSET)
@@ -218,13 +212,11 @@ EPFArchive::EPFArchive(iostream_sptr psArchive)
 		offNext += fatEntry->iSize;
 	}
 	// TODO: hidden data after FAT until EOF?
-	refcount_qenterclass(EPFArchive);
 }
 
 EPFArchive::~EPFArchive()
 	throw ()
 {
-	refcount_qexitclass(EPFArchive);
 }
 
 // Does not invalidate existing EntryPtrs

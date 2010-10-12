@@ -46,18 +46,14 @@
 namespace camoto {
 namespace gamearchive {
 
-refcount_declclass(HOGType);
-
 HOGType::HOGType()
 	throw ()
 {
-	refcount_qenterclass(HOGType);
 }
 
 HOGType::~HOGType()
 	throw ()
 {
-	refcount_qexitclass(HOGType);
 }
 
 std::string HOGType::getArchiveCode() const
@@ -132,8 +128,6 @@ MP_SUPPLIST HOGType::getRequiredSupps(const std::string& filenameArchive) const
 }
 
 
-refcount_declclass(HOGArchive);
-
 HOGArchive::HOGArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
 		FATArchive(psArchive, HOG_FIRST_FILE_OFFSET)
@@ -176,14 +170,11 @@ HOGArchive::HOGArchive(iostream_sptr psArchive)
 			throw std::ios::failure("too many files or corrupted archive");
 		}
 	}
-
-	refcount_qenterclass(HOGArchive);
 }
 
 HOGArchive::~HOGArchive()
 	throw ()
 {
-	refcount_qexitclass(HOGArchive);
 }
 
 // Does not invalidate existing EntryPtrs

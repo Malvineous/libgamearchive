@@ -44,18 +44,14 @@
 namespace camoto {
 namespace gamearchive {
 
-refcount_declclass(RESType);
-
 RESType::RESType()
 	throw ()
 {
-	refcount_qenterclass(RESType);
 }
 
 RESType::~RESType()
 	throw ()
 {
-	refcount_qexitclass(RESType);
 }
 
 std::string RESType::getArchiveCode() const
@@ -142,9 +138,6 @@ MP_SUPPLIST RESType::getRequiredSupps(const std::string& filenameArchive) const
 }
 
 
-
-refcount_declclass(RESArchiveFolder);
-
 RESArchiveFolder::RESArchiveFolder(iostream_sptr psArchive)
 	throw (std::ios::failure) :
 		FATArchive(psArchive, RES_FIRST_FILE_OFFSET)
@@ -183,13 +176,11 @@ RESArchiveFolder::RESArchiveFolder(iostream_sptr psArchive)
 		}
 		psArchive->seekg(pEntry->iSize, std::ios::cur);
 	}
-	refcount_qenterclass(RESArchiveFolder);
 }
 
 RESArchiveFolder::~RESArchiveFolder()
 	throw ()
 {
-	refcount_qexitclass(RESArchiveFolder);
 }
 
 // Does not invalidate existing EntryPtrs

@@ -38,18 +38,14 @@
 namespace camoto {
 namespace gamearchive {
 
-refcount_declclass(DAT_HugoType);
-
 DAT_HugoType::DAT_HugoType()
 	throw ()
 {
-	refcount_qenterclass(DAT_HugoType);
 }
 
 DAT_HugoType::~DAT_HugoType()
 	throw ()
 {
-	refcount_qexitclass(DAT_HugoType);
 }
 
 std::string DAT_HugoType::getArchiveCode() const
@@ -163,8 +159,6 @@ MP_SUPPLIST DAT_HugoType::getRequiredSupps(const std::string& filenameArchive) c
 }
 
 
-refcount_declclass(DAT_HugoArchive);
-
 DAT_HugoArchive::DAT_HugoArchive(iostream_sptr psArchive, iostream_sptr psFAT, FN_TRUNCATE fnTruncFAT)
 	throw (std::ios::failure) :
 		FATArchive(psArchive, DAT_FIRST_FILE_OFFSET),
@@ -245,13 +239,11 @@ DAT_HugoArchive::DAT_HugoArchive(iostream_sptr psArchive, iostream_sptr psFAT, F
 		}
 	} // else file is blank, treat as empty archive
 
-	refcount_qenterclass(DAT_HugoArchive);
 }
 
 DAT_HugoArchive::~DAT_HugoArchive()
 	throw ()
 {
-	refcount_qexitclass(DAT_HugoArchive);
 }
 
 void DAT_HugoArchive::rename(EntryPtr& id, const std::string& strNewName)

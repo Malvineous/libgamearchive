@@ -38,21 +38,6 @@
 namespace camoto {
 namespace gamearchive {
 
-#ifdef DEBUG
-static bool registered_exit_func = false;
-void exitFunc()
-{
-	std::cerr << "\e[44m --- Instance counts --- \e[49m\n";
-	refcount_dump(GRPType);
-	refcount_dump(GRPArchive);
-	refcount_dump(FATArchive);
-	refcount_dump(FATEntry);
-	refcount_dump(SubdirArchive);
-	refcount_dump(substream_device);
-	refcount_dump(segmented_stream_device);
-}
-#endif
-
 ManagerPtr getManager()
 	throw ()
 {
@@ -62,12 +47,6 @@ ManagerPtr getManager()
 Manager::Manager()
 	throw ()
 {
-#ifdef DEBUG
-	if (!registered_exit_func) {
-		atexit(exitFunc);
-		registered_exit_func = true;
-	}
-#endif
 	this->vcTypes.push_back(ArchiveTypePtr(new GRPType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new VOLType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new PODType()));
