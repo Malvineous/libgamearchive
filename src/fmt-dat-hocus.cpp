@@ -102,9 +102,9 @@ ArchivePtr DAT_HocusType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) c
 	io::stream_offset lenEXE = si.stream->tellg();
 	io::stream_offset offFAT, lenFAT;
 	switch (lenEXE) {
-		case 178592: // shareware v1.0 (untested!)
+		case 178592: // shareware v1.0
 			offFAT = 0x01EE04;
-			lenFAT = 8 * 651;
+			lenFAT = 8 * 252;
 			break;
 		case 179360: // shareware v1.1
 			offFAT = 0x01F0E4;
