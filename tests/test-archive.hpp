@@ -325,7 +325,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long))
 	name[MAX_FILENAME_LEN + 1] = 0;
 
 	BOOST_CHECK_THROW(
-		ga::Archive::EntryPtr ep = pArchive->insert(epb, name, 5),
+		ga::Archive::EntryPtr ep = pArchive->insert(epb, name, 5, FILETYPE_GENERIC, ga::EA_NONE),
 		std::ios::failure
 	);
 
@@ -346,7 +346,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long))
 	name[MAX_FILENAME_LEN] = 0;
 
 	BOOST_CHECK_NO_THROW(
-		ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), name, 5)
+		ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), name, 5, FILETYPE_GENERIC, ga::EA_NONE)
 	);
 
 }
@@ -358,9 +358,9 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_end))
 
 	// Insert the file
 #if MAX_FILENAME_LEN > 0
-	ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), FILENAME3, 17);
+	ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), FILENAME3, 17, FILETYPE_GENERIC, ga::EA_NONE);
 #else
-	ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), "dummy", 17);
+	ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), "dummy", 17, FILETYPE_GENERIC, ga::EA_NONE);
 #endif
 
 	// Make sure it went in ok
@@ -398,7 +398,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_mid))
 		"Couldn't find " FILENAME2 " in sample archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, 17);
+	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, 17, FILETYPE_GENERIC, ga::EA_NONE);
 #else
 	// No filenames in this format, do it by order
 	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
@@ -409,7 +409,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_mid))
 		"Couldn't find second file in sample archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, "dummy", 17);
+	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, "dummy", 17, FILETYPE_GENERIC, ga::EA_NONE);
 #endif
 
 	// Make sure it went in ok
@@ -447,7 +447,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 		"Couldn't find " FILENAME2 " in sample archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep1 = pArchive->insert(idBefore, FILENAME3, 17);
+	ga::Archive::EntryPtr ep1 = pArchive->insert(idBefore, FILENAME3, 17, FILETYPE_GENERIC, ga::EA_NONE);
 #else
 	// No filenames in this format, do it by order
 	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
@@ -458,7 +458,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 		"Couldn't find second file in sample archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep1 = pArchive->insert(idBefore, "dummy", 17);
+	ga::Archive::EntryPtr ep1 = pArchive->insert(idBefore, "dummy", 17, FILETYPE_GENERIC, ga::EA_NONE);
 #endif
 
 	// Make sure it went in ok
@@ -480,7 +480,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 		"Couldn't find " FILENAME2 " in sample archive after first insert");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep2 = pArchive->insert(idBefore, FILENAME4, 16);
+	ga::Archive::EntryPtr ep2 = pArchive->insert(idBefore, FILENAME4, 16, FILETYPE_GENERIC, ga::EA_NONE);
 #else
 	// No filenames in this format, do it by order
 
@@ -491,7 +491,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 		"Couldn't find second file in sample archive after first insert");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep2 = pArchive->insert(idBefore, "dummy", 16);
+	ga::Archive::EntryPtr ep2 = pArchive->insert(idBefore, "dummy", 16, FILETYPE_GENERIC, ga::EA_NONE);
 #endif
 
 	// Make sure it went in ok
@@ -609,7 +609,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_remove))
 		"Couldn't find " FILENAME2 " in sample archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, 17);
+	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, 17, FILETYPE_GENERIC, ga::EA_NONE);
 #else
 	// No filenames in this format, do it by order
 	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
@@ -620,7 +620,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_remove))
 		"Couldn't find second file in sample archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, "dummy", 17);
+	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, "dummy", 17, FILETYPE_GENERIC, ga::EA_NONE);
 #endif
 
 	// Make sure it went in ok
@@ -697,7 +697,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_insert))
 		"Couldn't find " FILENAME2 " in sample archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, 17);
+	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, 17, FILETYPE_GENERIC, ga::EA_NONE);
 #else
 	// No filenames in this format, do it by order
 	ga::Archive::EntryPtr idBefore = ga::getFileAt(files, 0); // FILENAME2 is the first (only) file in the archive at this point
@@ -707,7 +707,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_insert))
 		"Couldn't find second file in sample archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, "dummy", 17);
+	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, "dummy", 17, FILETYPE_GENERIC, ga::EA_NONE);
 #endif
 
 	// Make sure it went in ok
@@ -970,10 +970,10 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_all_re_add))
 
 #if MAX_FILENAME_LEN > 0
 	// Add the files back again
-	idOne = pArchive->insert(ga::Archive::EntryPtr(), FILENAME1, 15);
+	idOne = pArchive->insert(ga::Archive::EntryPtr(), FILENAME1, 15, FILETYPE_GENERIC, ga::EA_NONE);
 #else
 	// No filenames in this format
-	idOne = pArchive->insert(ga::Archive::EntryPtr(), "dummy", 15);
+	idOne = pArchive->insert(ga::Archive::EntryPtr(), "dummy", 15, FILETYPE_GENERIC, ga::EA_NONE);
 #endif
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idOne),
 		"Couldn't insert new file after removing all files");
@@ -983,10 +983,10 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_all_re_add))
 	pfsNew->flush();
 
 #if MAX_FILENAME_LEN > 0
-	idTwo = pArchive->insert(ga::Archive::EntryPtr(), FILENAME2, 15);
+	idTwo = pArchive->insert(ga::Archive::EntryPtr(), FILENAME2, 15, FILETYPE_GENERIC, ga::EA_NONE);
 #else
 	// No filenames in this format
-	idTwo = pArchive->insert(ga::Archive::EntryPtr(), "dummy", 15);
+	idTwo = pArchive->insert(ga::Archive::EntryPtr(), "dummy", 15, FILETYPE_GENERIC, ga::EA_NONE);
 #endif
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idTwo),
 		"Couldn't insert second new file after removing all files");

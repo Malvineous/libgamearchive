@@ -38,6 +38,8 @@ namespace gamearchive {
 
 /// File attribute flags.  Can be OR'd together.
 enum E_ATTRIBUTE {
+	/// No attributes set
+	EA_NONE       = 0x00,
 	/// There's currently no file at this location
 	EA_EMPTY      = 0x01,
 	/// File is hidden between two FAT entries
