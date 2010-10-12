@@ -25,14 +25,18 @@
 #include <boost/progress.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
 #include <iostream>
 #include <exception>
 #include <string.h>
 
-#include "fmt-dat-bash.hpp"
+#include <camoto/filteredstream.hpp>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/debug.hpp>
 #include <camoto/util.hpp>
+#include <camoto/lzw.hpp>
+#include "fmt-dat-bash.hpp"
+#include "filter-bash-rle.hpp"
 
 #define DAT_FIRST_FILE_OFFSET    0
 #define DAT_MAX_FILENAME_LEN     30
@@ -194,6 +198,10 @@ DAT_BashArchive::DAT_BashArchive(iostream_sptr psArchive)
 			>> nullPadded(fatEntry->strName, DAT_FILENAME_FIELD_LEN)
 			>> u16le(decompSize);
 
+		if (decompSize) {
+			fatEntry->fAttr |= EA_COMPRESSED;
+		}
+
 		switch (type) {
 			case 3:
 				fatEntry->type = "image/bash-tiles-bg";
@@ -226,6 +234,44 @@ DAT_BashArchive::DAT_BashArchive(iostream_sptr psArchive)
 DAT_BashArchive::~DAT_BashArchive()
 	throw ()
 {
+}
+
+boost::shared_ptr<std::iostream> DAT_BashArchive::open(const EntryPtr& id)
+	throw ()
+{
+	// TESTED BY: fmt_epf_lionking_open - TODO
+	FATEntry *pEntry = dynamic_cast<FATEntry *>(id.get());
+	assert(pEntry);
+
+	iostream_sptr sub = this->FATArchive::open(id);
+
+	if (pEntry->fAttr & EA_COMPRESSED) {
+		try {
+			// File needs to be decompressed
+			filtering_istream_sptr pinf(new io::filtering_istream());
+			pinf->push(bash_unrle_filter());
+			pinf->push(lzw_decompress_filter(
+				9,   // initial codeword length (in bits)
+				12,  // maximum codeword length (in bits)
+				257, // first valid codeword
+				256, // EOF codeword is first codeword
+				0,   // reset codeword is unused
+				LZW_LITTLE_ENDIAN    | // bits are split into bytes in little-endian order
+				LZW_EOF_PARAM_VALID    // Has codeword reserved for EOF - TODO: confirm
+			));
+			filtering_ostream_sptr poutf(new io::filtering_ostream());
+			iostream_sptr dec(new filteredstream(sub, pinf, poutf));
+			return dec;
+		} catch (ECorruptedData& e) {
+			std::cerr << e.what() << "\nReturning file in compressed state."
+				<< std::endl;
+			sub->seekg(0);
+			// continue on to return sub below
+		}
+	}
+
+	// Else file is not compressed
+	return sub;
 }
 
 void DAT_BashArchive::rename(EntryPtr& id, const std::string& strNewName)

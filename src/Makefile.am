@@ -33,6 +33,7 @@ EXTRA_libgamearchive_la_SOURCES += fmt-dat-hugo.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-exe-ccaves.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-dat-bash.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-dat-hocus.hpp
+EXTRA_libgamearchive_la_SOURCES += filter-bash-rle.hpp
 
 AM_CPPFLAGS = $(DEBUG_CPPFLAGS) $(BOOST_CPPFLAGS) -I $(top_srcdir)/include $(libgamecommon_CFLAGS)
 AM_CXXFLAGS = $(DEBUG_CXXFLAGS)
