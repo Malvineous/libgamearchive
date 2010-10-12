@@ -280,5 +280,11 @@ void RESArchiveFolder::preRemoveFile(const FATEntry *pid)
 	return;
 }
 
+FATArchive::FATEntry *RESArchiveFolder::createNewFATEntry()
+	throw ()
+{
+	return new RESArchiveFolder::RESEntry();
+}
+
 } // namespace gamearchive
 } // namespace camoto

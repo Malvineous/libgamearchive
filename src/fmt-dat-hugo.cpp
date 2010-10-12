@@ -331,5 +331,11 @@ void DAT_HugoArchive::preRemoveFile(const FATEntry *pid)
 	return;
 }
 
+FATArchive::FATEntry *DAT_HugoArchive::createNewFATEntry()
+	throw ()
+{
+	return new DAT_HugoEntry();
+}
+
 } // namespace gamearchive
 } // namespace camoto

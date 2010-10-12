@@ -113,6 +113,9 @@ class EPFArchive: virtual public FATArchive {
 		virtual void preRemoveFile(const FATEntry *pid)
 			throw (std::ios_base::failure);
 
+		virtual FATEntry *createNewFATEntry()
+			throw ();
+
 	protected:
 		void updateFileCount(uint16_t iNewCount)
 			throw (std::ios::failure);

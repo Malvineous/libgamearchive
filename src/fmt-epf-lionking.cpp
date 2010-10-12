@@ -382,6 +382,12 @@ void EPFArchive::preRemoveFile(const FATEntry *pid)
 	return;
 }
 
+FATArchive::FATEntry *EPFArchive::createNewFATEntry()
+	throw ()
+{
+	return new EPFEntry();
+}
+
 void EPFArchive::updateFileCount(uint16_t iNewCount)
 	throw (std::ios::failure)
 {

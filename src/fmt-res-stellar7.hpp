@@ -101,6 +101,9 @@ class RESArchiveFolder: virtual public FATArchive, virtual public ArchiveWithFol
 		virtual void preRemoveFile(const FATEntry *pid)
 			throw (std::ios_base::failure);
 
+		virtual FATEntry *createNewFATEntry()
+			throw ();
+
 };
 
 } // namespace gamearchive

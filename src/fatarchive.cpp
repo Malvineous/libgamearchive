@@ -122,7 +122,7 @@ FATArchive::EntryPtr FATArchive::insert(const EntryPtr& idBeforeThis,
 	// TESTED BY: fmt_grp_duke3d_remove_insert
 	// TESTED BY: fmt_grp_duke3d_insert_remove
 
-	FATEntry *pNewFile = new FATEntry();
+	FATEntry *pNewFile = this->createNewFATEntry();
 	EntryPtr ep(pNewFile);
 
 	pNewFile->strName = strFilename;
@@ -335,6 +335,12 @@ void FATArchive::postRemoveFile(const FATEntry *pid)
 	throw (std::ios_base::failure)
 {
 	// No-op default
+}
+
+FATArchive::FATEntry *FATArchive::createNewFATEntry()
+	throw ()
+{
+	return new FATEntry();
 }
 
 } // namespace gamearchive

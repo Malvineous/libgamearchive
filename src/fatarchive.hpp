@@ -179,6 +179,19 @@ class FATArchive: virtual public Archive {
 		virtual void postRemoveFile(const FATEntry *pid)
 			throw (std::ios::failure);
 
+		/// Allocate a new, empty FAT entry.
+		/**
+		 * This function creates a new FATEntry instance.  A default implementation
+		 * is provided which creates a new FATEntry instance.  If you are
+		 * implementing a new archive format and you need to extend FATEntry to hold
+		 * additional information, you will need to replace this function with one
+		 * that allocates your extended class instead, otherwise the EntryPtrs
+		 * passed to the other functions will be a mixture of FATEntry and whatever
+		 * your extended class is.  See fmt-epf-lionking.cpp for an example.
+		 */
+		virtual FATEntry *createNewFATEntry()
+			throw ();
+
 	/// Do not use, see below.
 	friend EntryPtr getFileAt(const VC_ENTRYPTR& files, int index);
 

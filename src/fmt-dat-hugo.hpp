@@ -99,6 +99,9 @@ class DAT_HugoArchive: virtual public FATArchive {
 		void preRemoveFile(const FATEntry *pid)
 			throw (std::ios_base::failure);
 
+		virtual FATEntry *createNewFATEntry()
+			throw ();
+
 };
 
 } // namespace gamearchive
