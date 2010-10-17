@@ -55,6 +55,23 @@
 namespace camoto {
 namespace gamearchive {
 
+EPFArchive::EPFEntry::EPFEntry()
+{
+}
+EPFArchive::EPFEntry::~EPFEntry()
+{
+}
+std::string EPFArchive::EPFEntry::getContent() const
+{
+	std::ostringstream ss;
+	ss << this->FATEntry::getContent()
+		<< ";epf_flags=" << (int)this->flags
+		<< ";epf_decompressedSize=" << this->decompressedSize
+	;
+	return ss.str();
+}
+
+
 EPFType::EPFType()
 	throw ()
 {
@@ -198,16 +215,14 @@ EPFArchive::EPFArchive(iostream_sptr psArchive)
 		fatEntry->fAttr = 0;
 		fatEntry->bValid = true;
 
-		uint8_t flags;
-
 		// Read the data in from the FAT entry in the file
 		this->psArchive
 			>> nullPadded(fatEntry->strName, EPF_FILENAME_FIELD_LEN)
-			>> u8(flags)
+			>> u8(fatEntry->flags)
 			>> u32le(fatEntry->iSize)
 			>> u32le(fatEntry->decompressedSize);
 
-		if (flags & EPF_FAT_FLAG_COMPRESSED) {
+		if (fatEntry->flags & EPF_FAT_FLAG_COMPRESSED) {
 			fatEntry->fAttr |= EA_COMPRESSED;
 		}
 

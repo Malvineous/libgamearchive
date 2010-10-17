@@ -70,8 +70,12 @@ class EPFArchive: virtual public FATArchive {
 		io::stream_offset offFAT;  // offset of the FAT from the start of the file
 
 		struct EPFEntry: virtual public FATEntry {
-			bool isCompressed;
+			uint8_t flags;
 			uint32_t decompressedSize;
+
+			EPFEntry();
+			virtual ~EPFEntry();
+			virtual std::string getContent() const;
 		};
 
 	public:
