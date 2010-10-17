@@ -1,3 +1,5 @@
 library_includedir = $(includedir)/@camoto_release@/camoto/
-nobase_library_include_HEADERS = gamearchive.hpp types.hpp \
-	gamearchive/archive.hpp gamearchive/archivetype.hpp gamearchive/manager.hpp
+nobase_library_include_HEADERS = gamearchive.hpp
+nobase_library_include_HEADERS += gamearchive/archive.hpp
+nobase_library_include_HEADERS += gamearchive/archivetype.hpp
+nobase_library_include_HEADERS += gamearchive/manager.hpp
