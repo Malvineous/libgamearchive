@@ -34,6 +34,7 @@
 #include "fmt-exe-ccaves.hpp"
 #include "fmt-dat-bash.hpp"
 #include "fmt-dat-hocus.hpp"
+#include "fmt-dat-sango.hpp"
 
 namespace camoto {
 namespace gamearchive {
@@ -55,9 +56,14 @@ Manager::Manager()
 	this->vcTypes.push_back(ArchiveTypePtr(new HOGType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new EPFType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_WackyType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new DAT_HugoType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new EXE_CCavesType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_BashType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new DAT_SangoType()));
+
+	// The following formats are difficult to autodetect, so putting them last
+	// means they should only be checked if all the more robust formats above
+	// have already failed to match.
+	this->vcTypes.push_back(ArchiveTypePtr(new DAT_HugoType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_HocusType()));
 }
 
