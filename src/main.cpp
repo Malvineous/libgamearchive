@@ -35,6 +35,7 @@
 #include "fmt-dat-bash.hpp"
 #include "fmt-dat-hocus.hpp"
 #include "fmt-dat-sango.hpp"
+#include "fmt-lbr-vinyl.hpp"
 
 namespace camoto {
 namespace gamearchive {
@@ -59,6 +60,7 @@ Manager::Manager()
 	this->vcTypes.push_back(ArchiveTypePtr(new EXE_CCavesType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_BashType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_SangoType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new LBRType()));
 
 	// The following formats are difficult to autodetect, so putting them last
 	// means they should only be checked if all the more robust formats above
