@@ -201,7 +201,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(open))
 {
 	BOOST_TEST_MESSAGE("Opening file in archive");
 
-#if MAX_FILENAME_LEN > 0
+#if !NO_FILENAMES
 	// Find the file we're going to open
 	ga::Archive::EntryPtr ep = pArchive->find(FILENAME1);
 
@@ -233,7 +233,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(open))
 	);
 }
 
-#if MAX_FILENAME_LEN > 0
+#if !NO_FILENAMES
 BOOST_AUTO_TEST_CASE(TEST_NAME(rename))
 {
 	BOOST_TEST_MESSAGE("Renaming file inside archive");
@@ -357,7 +357,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_end))
 	BOOST_TEST_MESSAGE("Inserting file into archive");
 
 	// Insert the file
-#if MAX_FILENAME_LEN > 0
+#if !NO_FILENAMES
 	ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), FILENAME3, 17, FILETYPE_GENERIC, ga::EA_NONE);
 #else
 	ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), "dummy", 17, FILETYPE_GENERIC, ga::EA_NONE);
@@ -390,7 +390,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_mid))
 	BOOST_TEST_MESSAGE("Inserting file into middle of archive");
 
 	// Find the file we're going to insert before
-#if MAX_FILENAME_LEN > 0
+#if !NO_FILENAMES
 	ga::Archive::EntryPtr idBefore = pArchive->find(FILENAME2);
 
 	// Make sure we found it
@@ -438,7 +438,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 {
 	BOOST_TEST_MESSAGE("Inserting multiple files");
 
-#if MAX_FILENAME_LEN > 0
+#if !NO_FILENAMES
 	// Find the file we're going to insert before
 	ga::Archive::EntryPtr idBefore = pArchive->find(FILENAME2);
 
@@ -470,7 +470,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 	pfsNew1->write("This is three.dat", 17);
 	pfsNew1->flush();
 
-#if MAX_FILENAME_LEN > 0
+#if !NO_FILENAMES
 	// Find the file we're going to insert before (since the previous insert
 	// invalidated all EntryPtrs.)
 	idBefore = pArchive->find(FILENAME2);
@@ -519,7 +519,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove))
 {
 	BOOST_TEST_MESSAGE("Removing file from archive");
 
-#if MAX_FILENAME_LEN > 0
+#if !NO_FILENAMES
 	// Find the file we're going to remove
 	ga::Archive::EntryPtr ep = pArchive->find(FILENAME1);
 
@@ -556,7 +556,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove2))
 {
 	BOOST_TEST_MESSAGE("Removing multiple files from archive");
 
-#if MAX_FILENAME_LEN > 0
+#if !NO_FILENAMES
 	// Find the files we're going to remove
 	ga::Archive::EntryPtr ep1 = pArchive->find(FILENAME1);
 	ga::Archive::EntryPtr ep2 = pArchive->find(FILENAME2);
@@ -600,7 +600,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_remove))
 {
 	BOOST_TEST_MESSAGE("Insert then remove file from archive");
 
-#if MAX_FILENAME_LEN > 0
+#if !NO_FILENAMES
 	// Find the file we're going to insert before
 	ga::Archive::EntryPtr idBefore = pArchive->find(FILENAME2);
 
@@ -632,7 +632,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_remove))
 	pfsNew->write("This is three.dat", 17);
 	pfsNew->flush();
 
-#if MAX_FILENAME_LEN > 0
+#if !NO_FILENAMES
 	// Find the file we're going to remove
 	ga::Archive::EntryPtr ep2 = pArchive->find(FILENAME1);
 
@@ -668,7 +668,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_insert))
 {
 	BOOST_TEST_MESSAGE("Remove then insert file from archive");
 
-#if MAX_FILENAME_LEN > 0
+#if !NO_FILENAMES
 	// Find the file we're going to remove
 	ga::Archive::EntryPtr ep2 = pArchive->find(FILENAME1);
 
@@ -688,7 +688,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_insert))
 	// Remove it
 	pArchive->remove(ep2);
 
-#if MAX_FILENAME_LEN > 0
+#if !NO_FILENAMES
 	// Find the file we're going to insert before
 	ga::Archive::EntryPtr idBefore = pArchive->find(FILENAME2);
 
@@ -739,7 +739,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(move))
 {
 	BOOST_TEST_MESSAGE("Moving file inside archive");
 
-#if MAX_FILENAME_LEN > 0
+#if !NO_FILENAMES
 	// Find the file we're going to move
 	ga::Archive::EntryPtr ep1 = pArchive->find(FILENAME1);
 	ga::Archive::EntryPtr ep2 = pArchive->find(FILENAME2);
@@ -782,7 +782,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_larger))
 {
 	BOOST_TEST_MESSAGE("Enlarging a file inside the archive");
 
-#if MAX_FILENAME_LEN > 0
+#if !NO_FILENAMES
 	// Find the file we're going to resize
 	ga::Archive::EntryPtr ep = pArchive->find(FILENAME1);
 
@@ -819,7 +819,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_smaller))
 {
 	BOOST_TEST_MESSAGE("Shrink a file inside the archive");
 
-#if MAX_FILENAME_LEN > 0
+#if !NO_FILENAMES
 	// Find the file we're going to resize
 	ga::Archive::EntryPtr ep = pArchive->find(FILENAME1);
 
@@ -856,7 +856,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_write))
 {
 	BOOST_TEST_MESSAGE("Enlarging a file inside the archive");
 
-#if MAX_FILENAME_LEN > 0
+#if !NO_FILENAMES
 	// Find the file we're going to resize
 	ga::Archive::EntryPtr ep = pArchive->find(FILENAME1);
 
@@ -894,7 +894,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_write))
 
 	// Open the file following it to make sure it was moved out of the way
 
-#if MAX_FILENAME_LEN > 0
+#if !NO_FILENAMES
 	// Find the file we're going to open
 	ga::Archive::EntryPtr ep2 = pArchive->find(FILENAME2);
 
@@ -934,7 +934,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_all_re_add))
 {
 	BOOST_TEST_MESSAGE("Remove all files then add them again");
 
-#if MAX_FILENAME_LEN > 0
+#if !NO_FILENAMES
 	ga::Archive::EntryPtr idOne = pArchive->find(FILENAME1);
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idOne),
 		"Couldn't find " FILENAME1 " in sample archive");
@@ -950,7 +950,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_all_re_add))
 
 	pArchive->remove(idOne);
 
-#if MAX_FILENAME_LEN > 0
+#if !NO_FILENAMES
 	ga::Archive::EntryPtr idTwo = pArchive->find(FILENAME2);
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idTwo),
 		"Couldn't find " FILENAME2 " in sample archive");
@@ -968,7 +968,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_all_re_add))
 	const ga::Archive::VC_ENTRYPTR& allfiles = pArchive->getFileList();
 	BOOST_REQUIRE_EQUAL(allfiles.size(), 0);
 
-#if MAX_FILENAME_LEN > 0
+#if !NO_FILENAMES
 	// Add the files back again
 	idOne = pArchive->insert(ga::Archive::EntryPtr(), FILENAME1, 15, FILETYPE_GENERIC, ga::EA_NONE);
 #else
@@ -982,7 +982,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_all_re_add))
 	pfsNew->write("This is one.dat", 15);
 	pfsNew->flush();
 
-#if MAX_FILENAME_LEN > 0
+#if !NO_FILENAMES
 	idTwo = pArchive->insert(ga::Archive::EntryPtr(), FILENAME2, 15, FILETYPE_GENERIC, ga::EA_NONE);
 #else
 	// No filenames in this format

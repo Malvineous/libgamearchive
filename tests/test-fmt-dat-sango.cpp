@@ -101,6 +101,7 @@
 	"Now resized to 23 chars" \
 	"This is two.dat"
 
+#define NO_FILENAMES 1
 #define MAX_FILENAME_LEN  0
 
 #define ARCHIVE_CLASS fmt_dat_sango
