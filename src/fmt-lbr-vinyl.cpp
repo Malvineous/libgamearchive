@@ -42,11 +42,313 @@
 
 #define LBR_FATENTRY_OFFSET(e) (LBR_HEADER_LEN + e->iIndex * LBR_FAT_ENTRY_LEN)
 
-#define LBR_FILEHASH_OFFSET(e)    LBR_FATENTRY_OFFSET(e)
+#define LBR_HASH_OFFSET(e)    LBR_FATENTRY_OFFSET(e)
 #define LBR_FILEOFFSET_OFFSET(e) (LBR_FATENTRY_OFFSET(e) + 2)
 
 namespace camoto {
 namespace gamearchive {
+
+const char *filenames[] = {
+"1000P.CMP",
+"100P.CMP",
+"250P.CMP",
+"500P.CMP",
+"50P.CMP",
+"APPLE.CMP",
+"APPLE.SND",
+"BAMBOOP.CMP",
+"BAPPLE0.OMP",
+"BETA.BIN",
+"BGRENSHT.CMP",
+"BLOOK.CMP",
+"BLUEBALL.CMP",
+"BLUEKEY.CMP",
+"BLUE.PAL",
+"BLUE.TLS",
+"BOTTLE.CMP",
+"BOUNCE.CMP",
+"BRAIN.CMP",
+"BREATH.CMP",
+"BRIDGE.CMP",
+"BSHOT.CMP",
+"BUTFLY.CMP",
+"CANNON.CMP",
+"CASPLAT1.CMP",
+"CASPLAT2.CMP",
+"CASPLAT3.CMP",
+"CASPLAT4.CMP",
+"CASTLE.PAL",
+"CASTLE.TLS",
+"COVERUP.MUS",
+"CREDITS.PAL",
+"CREDITS.SCR",
+"CRUSH.MUS",
+"CSTARS.CMP",
+"DATA.DAT",
+"DDARKBAR2.GRA",
+"DEATH.CMP",
+"DEMO_1.DTA",
+"DEMO_2.DTA",
+"DEMO_3.DTA",
+"DIFFBUTN.CMP",
+"DIFFMENU.CMP",
+"DOTS1.CMP",
+"DUNGEON.PAL",
+"DUNGEON.TLS",
+"DUNPLAT1.CMP",
+"DUSTCLUD.CMP",
+"ECHOT1.CMP",
+"EGYPPLAT.CMP",
+"EGYPT.PAL",
+"EGYPT.TLS",
+"ENDBOSSW.CMP",
+"ENDING.SCN",
+"ENTER2.SND",
+"EPISODE.PAL",
+"EPISODE.SCR",
+"EVILEYE.MUS",
+"EXIT.CMP",
+"EXPL1.SND",
+"FEVER.MUS",
+"FIRE231.CMP",
+"FRUIT.SND",
+"GAME1.PAL",
+"GAMEOPT.GRA",
+"GATEKEY.CMP",
+"GOLDKEY.CMP",
+"GRAVE.PAL",
+"GRAVE.TLS",
+"GREYKEY.CMP",
+"GRID.DTA",
+"HARDHEAD.CMP",
+"HEALJUG.CMP",
+"HEALPOT.CMP",
+"HEALPOTD.CMP",
+"HEALPOT.SND",
+"HELLO.T",
+"HORUS.MUS",
+"HURT.SND",
+"HUTS.PAL",
+"HUTS.TLS",
+"INBET.PAL",
+"INBETW.SCR",
+"INOUTP00.CMP",
+"INSURED.MUS",
+"INTRO.MUS",
+"JFIREB.CMP",
+"JILL.CMP",
+"JILLEXPB.CMP",
+"JILLEXP.CMP",
+"JILLFIRE.CMP",
+"JILL.SPR",
+"JUNGLE2.FON",
+"JUNGLE.FON",
+"KNIFE.CMP",
+"LAND.SND",
+"LC_CAPS.RAW",
+"LC_NUMS.RAW",
+"LEVEL1-1.M",
+"LEVEL1-2.M",
+"LEVEL1-3.M",
+"LEVEL1-4.M",
+"LEVEL1-5.M",
+"LEVEL1-6.M",
+"LEVEL1-7.M",
+"LEVEL1-8.M",
+"LEVEL1-9.M",
+"LEVEL2-1.M",
+"LEVEL2-2.M",
+"LEVEL2-3.M",
+"LEVEL2-4.M",
+"LEVEL2-5.M",
+"LEVEL2-6.M",
+"LEVEL2-7.M",
+"LEVEL2-8.M",
+"LEVEL2-9.M",
+"LEVEL3-1.M",
+"LEVEL3-2.M",
+"LEVEL3-3.M",
+"LEVEL3-4.M",
+"LEVEL3-5.M",
+"LEVEL3-6.M",
+"LEVEL3-7.M",
+"LEVEL3-8.M",
+"LEVEL3-9.M",
+"LGRENSHT.CMP",
+"LITSCROL.CMP",
+"MAINFONT.GRA",
+"MANEATPL.CMP",
+"MENU2.RAW",
+"MENUCH.GRA",
+"MENUCLIK.SND",
+"MENU.RAW",
+"MENUYSNO.GRA",
+"MIDLEVEL.CMP",
+"MIDPOST.SND",
+"MMREST.GRA",
+"MONDIE.SND",
+"MOUNT.TLS",
+"MPLAT211.CMP",
+"MPLAT212.CMP",
+"MPLAT221.CMP",
+"MPLAT311.CMP",
+"MPLAT331.CMP",
+"MPLAT332.CMP",
+"MUSHSHOT.CMP",
+"MYSTIC.MUS",
+"NEWBEH.CMP",
+"OLDBEH.CMP",
+"ORDER.RES",
+"OSIRIS.MUS",
+"OUTGATE.CMP",
+"OVERHEAD.PAL",
+"OVERHEAD.TLS",
+"OVERHED1.MAP",
+"OVERHED2.MAP",
+"OVERHED3.MAP",
+"PAN2.SND",
+"PRESENT.GRA",
+"PRESENT.PAL",
+"PROWLER.MUS",
+"PURPLE.PAL",
+"PURPLE.TLS",
+"PUZZ6.MUS",
+"RABBIT.CMP",
+"RABBITD.CMP",
+"REDKEY.CMP",
+"RETROJIL.MUS",
+"RING.CMP",
+"RUFEYE.CMP",
+"RUFEYES.CMP",
+"RUFEYSE.CMP",
+"SAVEBOXG.GRA",
+"SAVEBOXO.GRA",
+"SCORE.CMP",
+"SCROLLO.CMP",
+"SGREENE.CMP",
+"SHOTEXPL.CMP",
+"SHOTTEST.CMP",
+"SHWRREM.GRA",
+"SIXPS.GRA",
+"SIXPS.PAL",
+"SKELBONE.CMP",
+"SKELETON.CMP",
+"SKELETON.SND",
+"SKELFLY.CMP",
+"SMALLEX.CMP",
+"SMALNUM.CMP",
+"SPARE.SCR",
+"SPIKEBA.CMP",
+"SPLADY.CMP",
+"SPLAT211.CMP",
+"SPLAT223.CMP",
+"SPLAT231.CMP",
+"SPRING.SND",
+"SPROIN.CMP",
+"SQUARE.TLS",
+"STAR.CMP",
+"STARDUST.MUS",
+"STHORNSH.CMP",
+"STICKEYE.CMP",
+"STIKHORN.CMP",
+"STLSPIKE.CMP",
+"STORY.PAL",
+"STORY.SCR",
+"STRIKE.MUS",
+"STRYFNT1.GRA",
+"SVINYL.SPR",
+"TAFA.MUS",
+"T.CMP",
+"TEST0004.CMP",
+"THROW.SND",
+"TITLE.PAL",
+"TITLE.SCR",
+"TORNADO.CMP",
+"TRAMPLE.MUS",
+"TREEMPLA.CMP",
+"TREES.PAL",
+"TREES.TLS",
+"TWILIGHT.MUS",
+"UGH.CMP",
+"UNLOGIC1.GRA",
+"UNLOGIC1.PAL",
+"UNLOGIC.UNM",
+"VINE.CMP",
+"VINYLDIE.SND",
+"VINYL.GRA",
+"VINYL.PAL",
+"VINYL.SPR",
+"VSMALLE.CMP",
+"WEAPBLNK.OMP",
+"WEAPBLUE.OMP",
+"WEAPBOTL.OMP",
+"WEAPFIRE.OMP",
+"WEAPFSKF.OMP",
+"WEAPSLKF.OMP",
+"WEAPSTAR.OMP",
+"WFIREB.CMP",
+"WOODSPIK.CMP",
+"XHUTS.PAL",
+"YELLOW.PAL",
+"YELLOW.TLS",
+"YES.CMP",
+
+// These names were guessed by looking at others
+"ENDG1.PAL",
+"ENDG1.SCR",
+"ENDG2.PAL",
+"ENDG2.SCR",
+"ENDG3.PAL",
+"ENDG3.SCR",
+"MOUNT.PAL",
+"JUNGLE3.FON",
+
+// These names were brute-forced from the hashes against a dictionary, so they
+// could be wrong (each hash matches about 56 billion different filenames...)
+"BEGIN.PAL",    // Also ARCHIL.PAL.   Before Bl, so probably correct.
+"P.PAL",        // Also SANGGIL.PAL.  Between O-P, maybe correct.
+
+// These names were guessed from the music filenames but with a different
+// extension for the instruments.
+"COVERUP.TIM",
+"CRUSH.TIM",
+"EVILEYE.TIM",
+"FEVER.TIM",
+"HORUS.TIM",
+"INSURED.TIM",
+"INTRO.TIM",
+"MYSTIC.TIM",
+"OSIRIS.TIM",
+"PROWLER.TIM",
+"PUZZ6.TIM",
+"RETROJIL.TIM",
+"STARDUST.TIM",
+"STRIKE.TIM",
+"TAFA.TIM",
+"TRAMPLE.TIM",
+"TWILIGHT.TIM",
+
+// Files used by test code
+"ONE.DAT",
+"TWO.DAT",
+"THREE.DAT",
+"FOUR.DAT",
+
+};
+
+/// Hash function to convert filenames into LBR hashes
+int calcHash(const std::string& data)
+{
+	int hash = 0;
+	for (std::string::const_iterator i = data.begin(); i != data.end(); i++) {
+		hash ^= *i << 8;
+		for (int j = 0; j < 8; j++) {
+			hash <<= 1;
+			if (hash & 0x10000) hash ^= 0x1021;
+		}
+	}
+	return hash & 0xffff;
+}
 
 LBRType::LBRType()
 	throw ()
@@ -154,6 +456,13 @@ LBRArchive::LBRArchive(iostream_sptr psArchive)
 	this->psArchive >> u16le(numFiles);
 
 	if (numFiles > 0) {
+
+		// Pre-calculate all the hashes
+		std::map<int, const char *> fn;
+		for (int f = 0; f < sizeof(filenames) / sizeof(char *); f++) {
+			fn[calcHash(filenames[f])] = filenames[f];
+		}
+
 		uint32_t offNext, offCur;
 		uint16_t hashNext, hashCur; // TODO: store in new LBREntry class
 		this->psArchive
@@ -182,7 +491,15 @@ LBRArchive::LBRArchive(iostream_sptr psArchive)
 			fatEntry->type = FILETYPE_GENERIC;
 			fatEntry->fAttr = 0;
 			fatEntry->bValid = true;
-
+			std::map<int, const char *>::iterator fnit = fn.find(hashCur);
+			if (fnit != fn.end()) {
+				fatEntry->strName = fnit->second;
+			} else {
+				// No match, use the hash as the filename
+				std::stringstream ss;
+				ss << std::hex << hashCur;
+				fatEntry->strName = ss.str();
+			}
 
 			this->vcFAT.push_back(ep);
 			offCur = offNext;
@@ -196,11 +513,19 @@ LBRArchive::~LBRArchive()
 {
 }
 
-// Does not invalidate existing EntryPtrs
 void LBRArchive::rename(EntryPtr& id, const std::string& strNewName)
 	throw (std::ios_base::failure)
 {
-	throw std::ios::failure("This archive format does not support filenames.");
+	// TESTED BY: fmt_lbr_vinyl_rename
+	assert(this->isValid(id));
+	FATEntry *pEntry = dynamic_cast<FATEntry *>(id.get());
+
+	this->psArchive->seekp(LBR_HASH_OFFSET(pEntry));
+	this->psArchive << u16le(calcHash(strNewName));
+
+	pEntry->strName = strNewName;
+
+	return;
 }
 
 void LBRArchive::updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
@@ -221,7 +546,6 @@ FATArchive::FATEntry *LBRArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_lbr_vinyl_insert*
-
 	// Set the format-specific variables
 	pNewEntry->lenHeader = 0;
 
@@ -232,7 +556,7 @@ FATArchive::FATEntry *LBRArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	this->psArchive->insert(LBR_FAT_ENTRY_LEN);
 
 	this->psArchive
-		<< u16le(0) // TODO: hash
+		<< u16le(calcHash(pNewEntry->strName))
 		<< u32le(pNewEntry->iOffset)
 	;
 
