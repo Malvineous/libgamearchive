@@ -33,5 +33,6 @@ doxygen/full/
 
 # Compiled binaries
 examples/gamearch
+examples/gamecomp
 examples/hello
 tests/tests

@@ -1,0 +1,66 @@
+.\" t
+.de TQ
+.  br
+.  ns
+.  TP \\$1
+..
+.TH GAMEARCH "1" "November 2010" "Camoto" "User Commands"
+.SH NAME
+gamecomp \- apply or reverse compression and encryption algorithms used by
+games
+.SH SYNOPSIS
+.B gamecomp
+\fB--type=\fR\fItype\fR [\fB--apply\fR] < \fIinfile\fR > \fIoutfile\fR
+.PP
+.B gamecomp
+\fB--list\fR
+.SH DESCRIPTION
+.\" Add any additional description here
+.PP
+Filter data from standard input and send it to standard output, using the
+algorithm given by the \fB--type\fR parameter.  The default is to reverse the
+algorithm (which will decompress or decrypt the input data) however the
+\fB--apply\fR option will apply the algorithm instead (resulting in the input
+data being compressed or encrypted.)
+.SH OPTIONS
+.TP
+\fB-l\fR, \fB--list\fR
+list all the algorithms on stdout instead
+.TP
+\fB-t\fR, \fB--type\fR
+specify the algorithm to use, from the list shown by \fB--list\fR
+.SH "EXAMPLES"
+.TP
+\fBgamearch bash1.dat -u -x mb1_h1.txt\fR
+.TQ
+\fBgamecomp -t lzw-bash < mb1_h1.txt > decompressed.txt\fR
+extract mb1_h1.txt from the Monster Bash archive file (-x), without
+decompressing it (-u).  Then use \fBgamecomp\fR to decompress it
+instead, saving the data into decompressed.txt.
+.TP
+\fBgamecomp -a -t lzw-bash < input.txt > mb1_h1.txt\fR
+take the plain text in input.txt, compress it using the Monster Bash
+compression algorithm and store the compressed data in mb1_h1.txt.
+.SH NOTES
+.PP
+Exit status is 0 on success, 1 on bad parameters and 2 on an I/O error.
+.SH KNOWN ISSUES
+.PP
+Not all algorithms support compression.
+.SH AUTHOR
+Written by Adam Nielsen <malvineous@shikadi.net>.
+.SH "REPORTING BUGS"
+Report bugs to <malvineous@shikadi.net>.
+.SH COPYRIGHT
+Copyright \(co 2010 Adam Nielsen.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+.br
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+.SH "SEE ALSO"
+\fBgamearch\fR(1), <http://www.shikadi.net/camoto>
+.PP
+All the algorithms supported by this utility are fully documented on the
+Game Modding Wiki \fB<http://www.shikadi.net/moddingwiki>\fR.
+.PP
+This utility is part of the Camoto suite of tools.

@@ -18,6 +18,8 @@ libgamearchive_la_SOURCES += fmt-dat-bash.cpp
 libgamearchive_la_SOURCES += fmt-dat-hocus.cpp
 libgamearchive_la_SOURCES += fmt-dat-sango.cpp
 libgamearchive_la_SOURCES += fmt-lbr-vinyl.cpp
+libgamearchive_la_SOURCES += filter-bash.cpp
+libgamearchive_la_SOURCES += filter-epfs.cpp
 
 EXTRA_libgamearchive_la_SOURCES = fatarchive.hpp
 EXTRA_libgamearchive_la_SOURCES += fixedarchive.hpp
@@ -36,6 +38,8 @@ EXTRA_libgamearchive_la_SOURCES += fmt-dat-hocus.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-dat-sango.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-lbr-vinyl.hpp
 EXTRA_libgamearchive_la_SOURCES += filter-bash-rle.hpp
+EXTRA_libgamearchive_la_SOURCES += filter-bash.hpp
+EXTRA_libgamearchive_la_SOURCES += filter-epfs.hpp
 
 AM_CPPFLAGS = $(DEBUG_CPPFLAGS) $(BOOST_CPPFLAGS) -I $(top_srcdir)/include $(libgamecommon_CFLAGS)
 AM_CXXFLAGS = $(DEBUG_CXXFLAGS)

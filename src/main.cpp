@@ -37,6 +37,9 @@
 #include "fmt-dat-sango.hpp"
 #include "fmt-lbr-vinyl.hpp"
 
+#include "filter-bash.hpp"
+#include "filter-epfs.hpp"
+
 namespace camoto {
 namespace gamearchive {
 
@@ -67,6 +70,9 @@ Manager::Manager()
 	// have already failed to match.
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_HugoType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_HocusType()));
+
+	this->vcFilters.push_back(FilterTypePtr(new BashFilterType()));
+	this->vcFilters.push_back(FilterTypePtr(new EPFSFilterType()));
 }
 
 Manager::~Manager()
@@ -84,10 +90,30 @@ ArchiveTypePtr Manager::getArchiveType(int iIndex)
 ArchiveTypePtr Manager::getArchiveTypeByCode(const std::string& strCode)
 	throw ()
 {
-	for (VC_ARCHIVETYPE::const_iterator i = this->vcTypes.begin(); i != this->vcTypes.end(); i++) {
+	for (VC_ARCHIVETYPE::const_iterator i = this->vcTypes.begin();
+		i != this->vcTypes.end(); i++
+	) {
 		if ((*i)->getArchiveCode().compare(strCode) == 0) return *i;
 	}
 	return ArchiveTypePtr();
+}
+
+FilterTypePtr Manager::getFilterType(int iIndex)
+	throw ()
+{
+	if (iIndex >= this->vcFilters.size()) return FilterTypePtr();
+	return this->vcFilters[iIndex];
+}
+
+FilterTypePtr Manager::getFilterTypeByCode(const std::string& strCode)
+	throw ()
+{
+	for (VC_FILTERTYPE::const_iterator i = this->vcFilters.begin();
+		i != this->vcFilters.end(); i++
+	) {
+		if ((*i)->getFilterCode().compare(strCode) == 0) return *i;
+	}
+	return FilterTypePtr();
 }
 
 } // namespace gamearchive

@@ -117,6 +117,20 @@ class Archive {
 			 */
 			std::string type;
 
+			/// Compression/encryption type (like MIME type) or empty if not
+			/// compressed or encrypted.
+			/**
+			 * This is used for archives which can compress some or all of their
+			 * files.  Leave this as an empty string when this particular file
+			 * is not compressed or encrypted.
+			 *
+			 * When opening the archive file the Archive instance will return the
+			 * compressed data exactly as it appears in the file.  If this field
+			 * is not empty it can be used by the caller to load a compression filter
+			 * to decompress (and recompress) the data.
+			 */
+			std::string filter;
+
 			/// One or more E_ATTRIBUTE flags
 			int fAttr;
 

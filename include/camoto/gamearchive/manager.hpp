@@ -26,6 +26,7 @@
 
 #include <camoto/types.hpp>
 #include <camoto/gamearchive/archivetype.hpp>
+#include <camoto/gamearchive/filtertype.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -63,6 +64,9 @@ class Manager {
 		/// List of available archive types.
 		VC_ARCHIVETYPE vcTypes;
 
+		/// List of available filter types.
+		VC_FILTERTYPE vcFilters;
+
 		Manager()
 			throw ();
 
@@ -94,6 +98,33 @@ class Manager {
 		 */
 		ArchiveTypePtr getArchiveTypeByCode(const std::string& strCode)
 			throw ();
+
+		/// Get a FilterType instance for a supported filtering algorithm.
+		/**
+		 * This can be used to enumerate all available filters.
+		 *
+		 * @param iIndex
+		 *   Index of the filter, starting from 0.
+		 *
+		 * @return A shared pointer to a FilterType for the given index, or
+		 *   an empty pointer once iIndex goes out of range.
+		 *
+		 * @todo Remove this and replace it with a function that just returns the vector.
+		 */
+		FilterTypePtr getFilterType(int iIndex)
+			throw ();
+
+		/// Get a FilterType instance by its code.
+		/**
+		 * @param strCode
+		 *   Filter code (e.g. "lzw-bash")
+		 *
+		 * @return A shared pointer to a FilterType for the given code, or
+		 *   an empty pointer on an invalid code.
+		 */
+		FilterTypePtr getFilterTypeByCode(const std::string& strCode)
+			throw ();
+
 };
 
 } // namespace gamearchive
