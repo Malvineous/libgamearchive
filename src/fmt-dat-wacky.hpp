@@ -1,5 +1,6 @@
-/*
- * fmt-dat-wacky.cpp - Implementation of Wacky Wheels .DAT file reader/writer.
+/**
+ * @file   fmt-dat-wacky.hpp
+ * @brief  Implementation of Wacky Wheels .DAT file reader/writer.
  *
  * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
  *

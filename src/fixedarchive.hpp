@@ -95,7 +95,7 @@ class FixedArchive: virtual public Archive {
 		virtual bool isValid(const EntryPtr& id)
 			throw ();
 
-		virtual boost::shared_ptr<std::iostream> open(const EntryPtr& id)
+		virtual iostream_sptr open(const EntryPtr& id)
 			throw ();
 
 		/**

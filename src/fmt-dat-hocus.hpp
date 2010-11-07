@@ -1,5 +1,6 @@
-/*
- * fmt-dat-hocus.hpp - Hocus Pocus .DAT file reader/writer.
+/**
+ * @file   fmt-dat-hocus.hpp
+ * @brief  Hocus Pocus .DAT file reader/writer.
  *
  * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
  *

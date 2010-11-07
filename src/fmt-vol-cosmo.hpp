@@ -1,5 +1,6 @@
-/*
- * fmt-vol-cosmo.cpp - Implementation of Duke Nukem 3D Group Files (.grp)
+/**
+ * @file   fmt-vol-cosmo.hpp
+ * @brief  Implementation of Cosmo .VOL file reader/writer.
  *
  * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
  *

@@ -1,5 +1,6 @@
-/*
- * fmt-bnk-harry.hpp - Halloween Harry .BNK file reader/writer.
+/**
+ * @file   fmt-bnk-harry.hpp
+ * @brief  Halloween Harry .BNK file reader/writer.
  *
  * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
  *

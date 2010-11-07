@@ -99,7 +99,7 @@ bool FixedArchive::isValid(const EntryPtr& id)
 	return ((id2) && (id2->index < this->numFiles));
 }
 
-boost::shared_ptr<std::iostream> FixedArchive::open(const EntryPtr& id)
+iostream_sptr FixedArchive::open(const EntryPtr& id)
 	throw ()
 {
 	// TESTED BY: TODO

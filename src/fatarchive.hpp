@@ -86,14 +86,13 @@ class FATArchive: virtual public Archive {
 		virtual bool isValid(const EntryPtr& id)
 			throw ();
 
-		virtual boost::shared_ptr<std::iostream> open(const EntryPtr& id)
+		virtual iostream_sptr open(const EntryPtr& id)
 			throw ();
 
 		virtual EntryPtr insert(const EntryPtr& idBeforeThis,
 			const std::string& strFilename, offset_t iSize, std::string type,
 			int attr
-		)
-			throw (std::ios::failure);
+		) throw (std::ios::failure);
 
 		virtual void remove(EntryPtr& id)
 			throw (std::ios::failure);

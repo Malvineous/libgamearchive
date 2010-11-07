@@ -1,5 +1,6 @@
-/*
- * fmt-hog-descent.cpp - Implementation of Descent HOG files (.hog)
+/**
+ * @file   fmt-hog-descent.hpp
+ * @brief  Implementation of Descent .HOG file reader/writer.
  *
  * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
  *

@@ -1,8 +1,9 @@
-/*
- * fmt-res-stellar7.cpp - Implementation of Stellar 7 .RES file reader/writer.
+/**
+ * @file   fmt-res-stellar7.cpp
+ * @brief  Implementation of Stellar 7 .RES file reader/writer.
  *
  * This file format is fully documented on the ModdingWiki:
- *   http://www.shikadi.net/moddingwiki/RES_Format
+ *   http://www.shikadi.net/moddingwiki/RES_Format_(Stellar_7)
  *
  * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -20,18 +21,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
-#include <boost/progress.hpp>
-#include <boost/shared_array.hpp>
 #include <boost/algorithm/string.hpp>
-#include <iostream>
-#include <exception>
-#include <string.h>
+#include <camoto/iostream_helpers.hpp>
+#include <camoto/util.hpp>
 
 #include "fmt-res-stellar7.hpp"
-#include <camoto/iostream_helpers.hpp>
-#include <camoto/debug.hpp>
 
 #define RES_FAT_OFFSET            0
 #define RES_FIRST_FILE_OFFSET     RES_FAT_OFFSET

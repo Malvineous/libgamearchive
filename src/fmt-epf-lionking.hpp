@@ -1,5 +1,7 @@
-/*
- * fmt-epf-lionking.cpp - Implementation of Lion King EPFS files (.epf)
+/**
+ * @file   fmt-epf-lionking.hpp
+ * @brief  Implementation of reader/writer for East Point Software's .EPF file
+ *         format, used in The Lion King among other games.
  *
  * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
  *

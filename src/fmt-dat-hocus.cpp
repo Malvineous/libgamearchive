@@ -1,5 +1,6 @@
-/*
- * fmt-dat-hocus.cpp - Hocus Pocus .DAT file reader/writer.
+/**
+ * @file   fmt-dat-hocus.cpp
+ * @brief  Hocus Pocus .DAT file reader/writer.
  *
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/BNK_Format
@@ -20,16 +21,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
-#include <boost/progress.hpp>
-#include <boost/pointer_cast.hpp>
-#include <iostream>
-#include <exception>
-
-#include "fmt-dat-hocus.hpp"
 #include <camoto/iostream_helpers.hpp>
-#include <camoto/debug.hpp>
+#include "fmt-dat-hocus.hpp"
 
 #define BNK_FIRST_FILE_OFFSET     0
 

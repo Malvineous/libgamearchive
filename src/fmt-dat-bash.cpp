@@ -1,5 +1,6 @@
-/*
- * fmt-dat-bash.cpp - Implementation of Monster Bash .DAT file reader/writer.
+/**
+ * @file   fmt-dat-bash.cpp
+ * @brief  Implementation of Monster Bash .DAT file reader/writer.
  *
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/DAT_Format_%28Monster_Bash%29
@@ -20,21 +21,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
-#include <boost/progress.hpp>
-#include <boost/shared_array.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
-#include <iostream>
-#include <exception>
-#include <string.h>
 
 #include <camoto/filteredstream.hpp>
 #include <camoto/iostream_helpers.hpp>
-#include <camoto/debug.hpp>
 #include <camoto/util.hpp>
 #include <camoto/lzw.hpp>
+
 #include "fmt-dat-bash.hpp"
 #include "filter-bash-rle.hpp"
 

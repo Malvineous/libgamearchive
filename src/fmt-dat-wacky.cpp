@@ -1,8 +1,10 @@
-/*
- * fmt-dat-wacky.cpp - Implementation of Wacky Wheels .DAT file reader/writer.
+/**
+ * @file   fmt-dat-wacky.cpp
+ * @brief  Implementation of Wacky Wheels .DAT file reader/writer.
  *
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/DAT_Format_%28Wacky_Wheels%29
+ *
  * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,18 +21,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
-#include <boost/progress.hpp>
-#include <boost/shared_array.hpp>
 #include <boost/algorithm/string.hpp>
-#include <iostream>
-#include <exception>
-#include <string.h>
+#include <camoto/iostream_helpers.hpp>
+#include <camoto/util.hpp>
 
 #include "fmt-dat-wacky.hpp"
-#include <camoto/iostream_helpers.hpp>
-#include <camoto/debug.hpp>
 
 #define DAT_FILECOUNT_OFFSET     0
 #define DAT_MAX_FILENAME_LEN     12

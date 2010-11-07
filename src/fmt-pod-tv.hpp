@@ -1,5 +1,6 @@
-/*
- * fmt-pod-tv.hpp - Terminal Velocity .POD file reader/writer.
+/**
+ * @file   fmt-pod-tv.hpp
+ * @brief  Terminal Velocity .POD file reader/writer.
  *
  * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
  *

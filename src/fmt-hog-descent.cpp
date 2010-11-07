@@ -1,5 +1,6 @@
-/*
- * fmt-hog-descent.cpp - Implementation of Descent .HOG file reader/writer.
+/**
+ * @file   fmt-hog-descent.cpp
+ * @brief  Implementation of Descent .HOG file reader/writer.
  *
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/HOG_Format
@@ -20,18 +21,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
-#include <boost/progress.hpp>
-#include <boost/shared_array.hpp>
 #include <boost/algorithm/string.hpp>
-#include <iostream>
-#include <exception>
-#include <string.h>
+#include <camoto/iostream_helpers.hpp>
+#include <camoto/util.hpp>
 
 #include "fmt-hog-descent.hpp"
-#include <camoto/iostream_helpers.hpp>
-#include <camoto/debug.hpp>
 
 #define HOG_HEADER_LEN            3
 #define HOG_MAX_FILENAME_LEN      12
