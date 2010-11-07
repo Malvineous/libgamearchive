@@ -1,5 +1,6 @@
-/*
- * fmt-grp-duke3d.cpp - Implementation of Duke Nukem 3D Group Files (.grp)
+/**
+ * @file   fmt-grp-duke3d.hpp
+ * @brief  Implementation of Duke3D .GRP file reader/writer.
  *
  * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
  *

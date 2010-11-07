@@ -132,40 +132,43 @@ HOGArchive::HOGArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
 		FATArchive(psArchive, HOG_FIRST_FILE_OFFSET)
 {
-	psArchive->seekg(0, std::ios::end);
-	io::stream_offset lenArchive = psArchive->tellg();
+	this->psArchive->seekg(0, std::ios::end);
+	io::stream_offset lenArchive = this->psArchive->tellg();
 
-	psArchive->seekg(HOG_FIRST_FILE_OFFSET, std::ios::beg); // skip sig
+	this->psArchive->seekg(HOG_FIRST_FILE_OFFSET, std::ios::beg); // skip sig
 
 	// We still have to perform sanity checks in case the user forced an archive
 	// to open even though it failed the signature check.
-	if (psArchive->tellg() != HOG_FIRST_FILE_OFFSET) {
+	if (this->psArchive->tellg() != HOG_FIRST_FILE_OFFSET) {
 		throw std::ios::failure("File too short");
 	}
 
 	io::stream_offset offNext = HOG_FIRST_FILE_OFFSET;
 	for (int i = 0; (offNext + HOG_FAT_ENTRY_LEN <= lenArchive); i++) {
-		uint8_t buf[HOG_FAT_ENTRY_LEN];
-		psArchive->read((char *)buf, HOG_FAT_ENTRY_LEN);
-		FATEntry *pEntry = new FATEntry();
-		pEntry->iIndex = i;
-		pEntry->strName = string_from_buf(buf, HOG_MAX_FILENAME_LEN);
-		pEntry->iOffset = offNext;
-		pEntry->iSize = u32le_from_buf(&buf[HOG_FAT_FILESIZE_OFFSET]);
-		pEntry->lenHeader = HOG_FAT_ENTRY_LEN;
-		pEntry->type = FILETYPE_GENERIC;
-		pEntry->fAttr = 0;
-		pEntry->bValid = true;
-		this->vcFAT.push_back(EntryPtr(pEntry));
+		FATEntry *fatEntry = new FATEntry();
+		EntryPtr ep(fatEntry);
+
+		this->psArchive
+			>> nullPadded(fatEntry->strName, HOG_FILENAME_FIELD_LEN)
+			>> u32le(fatEntry->iSize)
+		;
+
+		fatEntry->iIndex = i;
+		fatEntry->iOffset = offNext;
+		fatEntry->lenHeader = HOG_FAT_ENTRY_LEN;
+		fatEntry->type = FILETYPE_GENERIC;
+		fatEntry->fAttr = 0;
+		fatEntry->bValid = true;
+		this->vcFAT.push_back(ep);
 
 		// Update the offset for the next file
-		offNext += HOG_FAT_ENTRY_LEN + pEntry->iSize;
+		offNext += HOG_FAT_ENTRY_LEN + fatEntry->iSize;
 		if (offNext > lenArchive) {
 			std::cerr << "Warning: File has been truncated or is not in HOG format, "
 				"file list may be incomplete or complete garbage..." << std::endl;
 			break;
 		}
-		psArchive->seekg(pEntry->iSize, std::ios::cur);
+		this->psArchive->seekg(fatEntry->iSize, std::ios::cur);
 		if (i >= HOG_SAFETY_MAX_FILECOUNT) {
 			throw std::ios::failure("too many files or corrupted archive");
 		}

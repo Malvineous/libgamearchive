@@ -144,56 +144,40 @@ BNKArchive::BNKArchive(iostream_sptr psArchive, iostream_sptr psFAT, FN_TRUNCATE
 		fnTruncFAT(fnTruncFAT),
 		isAC(false) // TODO: detect and set this
 {
-	psArchive->seekg(0, std::ios::end);
-	io::stream_offset lenArchive = psArchive->tellg();
-
-	psFAT->seekg(0, std::ios::end);
-	io::stream_offset lenFAT = psFAT->tellg();
+	this->psFAT->seekg(0, std::ios::end);
+	io::stream_offset lenFAT = this->psFAT->tellg();
 	unsigned long numFiles = lenFAT / BNK_FAT_ENTRY_LEN;
+	this->vcFAT.reserve(numFiles);
 
-	boost::shared_array<uint8_t> pFATBuf;
-	try {
-		pFATBuf.reset(new uint8_t[lenFAT]);
-		this->vcFAT.reserve(numFiles);
-	} catch (std::bad_alloc) {
-		std::cerr << "Unable to allocate enough memory for " << numFiles
-			<< " files." << std::endl;
-		throw std::ios::failure("Memory allocation failure (archive file corrupted?)");
-	}
-
-	// Read in all the FAT in one operation
-	psFAT->seekg(0, std::ios::beg);
-	psFAT->read((char *)pFATBuf.get(), lenFAT);
+	this->psFAT->seekg(0, std::ios::beg);
 
 	for (int i = 0; i < numFiles; i++) {
-		FATEntry *pEntry = new FATEntry();
-		pEntry->iIndex = i;
-		uint8_t lenName = pFATBuf[i * BNK_FAT_ENTRY_LEN + BNK_FAT_FILENAME_OFFSET];
-		pEntry->strName = string_from_buf(&pFATBuf[i * BNK_FAT_ENTRY_LEN + BNK_FAT_FILENAME_OFFSET + 1], lenName);
+		FATEntry *fatEntry = new FATEntry();
+		EntryPtr ep(fatEntry);
+
+		uint8_t lenName;
+		this->psFAT
+			>> u8(lenName)
+			>> nullPadded(fatEntry->strName, BNK_MAX_FILENAME_LEN)
+			>> u32le(fatEntry->iOffset)
+			>> u32le(fatEntry->iSize)
+		;
+		fatEntry->strName = fatEntry->strName.substr(0, lenName);
+
 		// The offsets are of the start of the file data (skipping over the
 		// embedded header) so we need to subtract a bit to include the
 		// header.
-		pEntry->iOffset = u32le_from_buf(&pFATBuf[i * BNK_FAT_ENTRY_LEN + BNK_FAT_FILEOFFSET_OFFSET])
-			- BNK_EFAT_ENTRY_LEN;
-		pEntry->iSize = u32le_from_buf(&pFATBuf[i * BNK_FAT_ENTRY_LEN + BNK_FAT_FILESIZE_OFFSET]);
-		pEntry->lenHeader = BNK_EFAT_ENTRY_LEN;
-		pEntry->type = FILETYPE_GENERIC;
-		pEntry->fAttr = 0;
-		pEntry->bValid = true;
-		if (pEntry->strName[0] == '\0') {
-			// Invalid entry, or empty archive
-			delete pEntry;
-			break;
-		}
-		this->vcFAT.push_back(EntryPtr(pEntry));
+		fatEntry->iOffset -= BNK_EFAT_ENTRY_LEN;
 
-		if (pEntry->iOffset + pEntry->iSize > lenArchive) {
-			std::cerr << "BNK file has been truncated, file @" << i
-				<< " ends at offset " << pEntry->iOffset + pEntry->iSize
-				<< " but the BNK file is only " << lenArchive
-				<< " bytes long." << std::endl;
-			throw std::ios::failure("archive has been truncated or FAT is corrupt");
-		}
+		fatEntry->iIndex = i;
+		fatEntry->lenHeader = BNK_EFAT_ENTRY_LEN;
+		fatEntry->type = FILETYPE_GENERIC;
+		fatEntry->fAttr = 0;
+		fatEntry->bValid = true;
+
+		if (fatEntry->strName[0] == '\0') fatEntry->fAttr = EA_EMPTY;
+
+		this->vcFAT.push_back(ep);
 	}
 }
 

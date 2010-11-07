@@ -97,15 +97,19 @@ E_CERTAINTY RESType::isInstance(iostream_sptr psArchive) const
 		(i < RES_SAFETY_MAX_FILECOUNT) &&
 		(offNext + RES_FAT_ENTRY_LEN <= lenArchive)
 	); i++) {
-		uint8_t buf[RES_FAT_ENTRY_LEN];
-		psArchive->read((char *)buf, RES_FAT_ENTRY_LEN);
 
-		// Make sure there are no control characters in the filenames
-		// TESTED BY: fmt_res_stellar7_isinstance_c01
-		for (int j = 0; (buf[j] != 0) && (j < RES_MAX_FILENAME_LEN); j++) {
-			if (buf[j] < 32) return EC_DEFINITELY_NO;
+		// Make sure there aren't any invalid characters in the filename
+		char fn[RES_MAX_FILENAME_LEN];
+		psArchive->read(fn, RES_MAX_FILENAME_LEN);
+		for (int j = 0; j < RES_MAX_FILENAME_LEN; j++) {
+			if (!fn[j]) break; // stop on terminating null
+
+			// Fail on control characters in the filename
+			// TESTED BY: fmt_res_stellar7_isinstance_c01
+			if (fn[j] < 32) return EC_DEFINITELY_NO;
 		}
-		uint32_t isfolder_length = u32le_from_buf(&buf[RES_FAT_FILESIZE_OFFSET]);
+		uint32_t isfolder_length;
+		psArchive >> u32le(isfolder_length);
 		uint32_t iSize = isfolder_length & 0x7FFFFFFF;
 		offNext += RES_FAT_ENTRY_LEN + iSize;
 
@@ -141,39 +145,46 @@ RESArchiveFolder::RESArchiveFolder(iostream_sptr psArchive)
 	throw (std::ios::failure) :
 		FATArchive(psArchive, RES_FIRST_FILE_OFFSET)
 {
-	psArchive->seekg(0, std::ios::end);
-	io::stream_offset lenArchive = psArchive->tellg();
+	this->psArchive->seekg(0, std::ios::end);
+	io::stream_offset lenArchive = this->psArchive->tellg();
 
-	psArchive->seekg(0, std::ios::beg);
+	this->psArchive->seekg(0, std::ios::beg);
 
 	io::stream_offset offNext = 0;
 	for (int i = 0; (
 		(i < RES_SAFETY_MAX_FILECOUNT) &&
 		(offNext + RES_FAT_ENTRY_LEN <= lenArchive)
 	); i++) {
-		uint8_t buf[RES_FAT_ENTRY_LEN];
-		psArchive->read((char *)buf, RES_FAT_ENTRY_LEN);
-		RESEntry *pEntry = new RESEntry();
-		pEntry->iIndex = i;
-		pEntry->strName = string_from_buf(buf, RES_MAX_FILENAME_LEN);
-		pEntry->iOffset = offNext;
-		uint32_t isfolder_length = u32le_from_buf(&buf[RES_FAT_FILESIZE_OFFSET]);
-		pEntry->isFolder = isfolder_length & 0x80000000;
-		pEntry->iSize = isfolder_length & 0x7FFFFFFF;
-		pEntry->lenHeader = RES_FAT_ENTRY_LEN;
-		pEntry->type = FILETYPE_GENERIC;
-		pEntry->fAttr = 0;
-		pEntry->bValid = true;
-		this->vcFAT.push_back(EntryPtr(pEntry));
+
+		FATEntry *fatEntry = new FATEntry();
+		EntryPtr ep(fatEntry);
+
+		// Read the data in from the FAT entry in the file
+		uint32_t isfolder_length;
+		this->psArchive
+			>> nullPadded(fatEntry->strName, RES_MAX_FILENAME_LEN)
+			>> u32le(isfolder_length)
+		;
+
+		fatEntry->iIndex = i;
+		fatEntry->iOffset = offNext;
+		fatEntry->lenHeader = RES_FAT_ENTRY_LEN;
+		fatEntry->type = FILETYPE_GENERIC;
+		fatEntry->fAttr = 0;
+		if (isfolder_length & 0x80000000) fatEntry->fAttr |= EA_FOLDER;
+		fatEntry->iSize = isfolder_length & 0x7FFFFFFF;
+		fatEntry->bValid = true;
+
+		this->vcFAT.push_back(ep);
 
 		// Update the offset for the next file
-		offNext += RES_FAT_ENTRY_LEN + pEntry->iSize;
+		offNext += RES_FAT_ENTRY_LEN + fatEntry->iSize;
 		if (offNext > lenArchive) {
 			std::cerr << "Warning: File has been truncated or is not in RES format, "
 				"file list may be incomplete or complete garbage..." << std::endl;
 			break;
 		}
-		psArchive->seekg(pEntry->iSize, std::ios::cur);
+		this->psArchive->seekg(fatEntry->iSize, std::ios::cur);
 	}
 }
 

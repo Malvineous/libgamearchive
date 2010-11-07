@@ -168,46 +168,21 @@ PODArchive::PODArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
 		FATArchive(psArchive, POD_FIRST_FILE_OFFSET)
 {
-	psArchive->seekg(0, std::ios::beg);
-
+	this->psArchive->seekg(0, std::ios::beg);
 	uint32_t numFiles;
-	psArchive >> u32le(numFiles);
-	unsigned long lenFAT = numFiles * POD_FAT_ENTRY_LEN;
+	this->psArchive >> u32le(numFiles);
+	this->vcFAT.reserve(numFiles);
 
-	char description[POD_DESCRIPTION_LEN + 1];
-	psArchive->read(description, POD_DESCRIPTION_LEN);
-	description[POD_DESCRIPTION_LEN] = 0;
-	// TODO: set description as metadata
-	// TODO: see whether description can span two file entries (80 bytes) or
-	// whether the offsets have to be null
-
-	boost::shared_array<uint8_t> pFATBuf;
-	try {
-		pFATBuf.reset(new uint8_t[lenFAT]);
-		this->vcFAT.reserve(numFiles);
-	} catch (std::bad_alloc) {
-		std::cerr << "Unable to allocate enough memory for " << numFiles
-			<< " files." << std::endl;
-		throw std::ios::failure("Memory allocation failure (archive file corrupted?)");
-	}
-
-	// Read in all the FAT in one operation
-	//psArchive->seekg(0, std::ios::beg);
-	psArchive->read((char *)pFATBuf.get(), lenFAT);
-	if (psArchive->gcount() != lenFAT) {
-		std::cerr << "POD file only " << psArchive->gcount()
-			<< " bytes long (FAT is meant to be first " << lenFAT
-			<< " bytes.)" << std::endl;
-		throw std::ios::failure("File has been truncated, it stops in the middle "
-			"of the FAT!");
-	}
+	this->psArchive->seekg(POD_FAT_OFFSET, std::ios::beg);
 
 	for (int i = 0; i < numFiles; i++) {
 		FATEntry *pEntry = new FATEntry();
 		pEntry->iIndex = i;
-		pEntry->strName = string_from_buf(&pFATBuf[i*POD_FAT_ENTRY_LEN], POD_MAX_FILENAME_LEN);
-		pEntry->iSize = u32le_from_buf(&pFATBuf[i*POD_FAT_ENTRY_LEN + POD_FAT_ENTRY_SIZE_POS]);
-		pEntry->iOffset = u32le_from_buf(&pFATBuf[i*POD_FAT_ENTRY_LEN + POD_FAT_ENTRY_OFFSET_POS]);
+		this->psArchive
+			>> nullPadded(pEntry->strName, POD_MAX_FILENAME_LEN)
+			>> u32le(pEntry->iSize)
+			>> u32le(pEntry->iOffset)
+		;
 		pEntry->lenHeader = 0;
 		pEntry->type = FILETYPE_GENERIC;
 		pEntry->fAttr = 0;
@@ -255,6 +230,8 @@ std::string PODArchive::getMetadata(E_METADATA item) const
 	// TESTED BY: fmt_pod_tv_get_metadata_description
 	switch (item) {
 		case EM_DESCRIPTION: {
+			// TODO: see whether description can span two file entries (80 bytes) or
+			// whether the offsets have to be null
 			psArchive->seekg(POD_DESCRIPTION_OFFSET, std::ios::beg);
 			char description[POD_DESCRIPTION_LEN + 1];
 			psArchive->read(description, POD_DESCRIPTION_LEN);

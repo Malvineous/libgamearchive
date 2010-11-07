@@ -172,56 +172,41 @@ VOLArchive::VOLArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
 		FATArchive(psArchive, VOL_FIRST_FILE_OFFSET)
 {
-	psArchive->seekg(0, std::ios::end);
-	io::stream_offset lenArchive = psArchive->tellg();
+	this->psArchive->seekg(0, std::ios::end);
+	io::stream_offset lenArchive = this->psArchive->tellg();
 	if (lenArchive > 0) {
 
-		psArchive->seekg(12, std::ios::beg); // skip to offset of first filesize
+		this->psArchive->seekg(12, std::ios::beg); // skip to offset of first filesize
 
 		// TODO: Do we assume the files are in order and read up until the first one,
 		// or do we read 4000 chars, or do we somehow scan the probable files and
 		// read up until the first one in case they're out of order...?
 		// I guess it depends on what works with the games.
 		uint32_t lenFAT;
-		psArchive >> u32le(lenFAT);
+		this->psArchive >> u32le(lenFAT);
 
 		uint32_t numFiles = lenFAT / VOL_FAT_ENTRY_LEN;
-		boost::shared_array<uint8_t> pFATBuf;
-		try {
-			pFATBuf.reset(new uint8_t[lenFAT]);
-			this->vcFAT.reserve(numFiles);
-		} catch (std::bad_alloc) {
-			std::cerr << "Unable to allocate enough memory for " << numFiles
-				<< " files." << std::endl;
-			throw std::ios::failure("Memory allocation failure (archive corrupted?)");
-		}
+		this->vcFAT.reserve(numFiles);
 
-		// Read in all the FAT in one operation
-		psArchive->seekg(0, std::ios::beg);
-		psArchive->read((char *)pFATBuf.get(), lenFAT);
-		if (psArchive->gcount() != lenFAT) {
-			std::cerr << "VOL file only " << psArchive->gcount()
-				<< " bytes long (FAT is meant to be first " << lenFAT
-				<< " bytes.)" << std::endl;
-			throw std::ios::failure("File has been truncated, it stops in the middle "
-				"of the FAT!");
-		}
-
+		this->psArchive->seekg(0, std::ios::beg);
 		for (int i = 0; i < numFiles; i++) {
-			FATEntry *pEntry = new FATEntry();
-			pEntry->iIndex = i;
-			pEntry->strName = string_from_buf(&pFATBuf[i*VOL_FAT_ENTRY_LEN], VOL_MAX_FILENAME_LEN);
-			pEntry->iOffset = u32le_from_buf(&pFATBuf[i*VOL_FAT_ENTRY_LEN + VOL_MAX_FILENAME_LEN]);
-			pEntry->iSize = u32le_from_buf(&pFATBuf[i*VOL_FAT_ENTRY_LEN + VOL_MAX_FILENAME_LEN + 4]);
-			pEntry->lenHeader = 0;
-			pEntry->type = FILETYPE_GENERIC;
-			pEntry->fAttr = 0;
-			pEntry->bValid = true;
+			FATEntry *fatEntry = new FATEntry();
+			EntryPtr ep(fatEntry);
+
+			this->psArchive
+				>> nullPadded(fatEntry->strName, VOL_MAX_FILENAME_LEN)
+				>> u32le(fatEntry->iOffset)
+				>> u32le(fatEntry->iSize)
+			;
+
+			fatEntry->iIndex = i;
+			fatEntry->lenHeader = 0;
+			fatEntry->type = FILETYPE_GENERIC;
+			fatEntry->fAttr = 0;
+			fatEntry->bValid = true;
 			// Blank FAT entries have an offset of zero
-			if (pEntry->iOffset > 0) {
-				this->vcFAT.push_back(EntryPtr(pEntry));
-			} else {
-				delete pEntry;  // ergh, inefficient
+			if (fatEntry->iOffset > 0) {
+				this->vcFAT.push_back(ep);
 			}
 		}
 	} // else empty archive
