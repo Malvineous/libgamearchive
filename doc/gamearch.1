@@ -82,6 +82,16 @@ again.  Valid attributes are: empty (file slot is unused), hidden
 values are supported by a given archive format, and a warning will be shown
 if an unsupported value is used.
 .TP
+\fB-u\fR, \fB--unfiltered\fR
+do not filter files.  When extracting files, if they are compressed or
+encrypted inside the archive, they will not be decompressed or decrypted, and
+the output file will contain the unmodified data directly from the archive.
+This allows use of an external utility to perform the decompression, such as
+\fBgamecomp\fR.  When adding files to the archive, they will not be
+compressed/encrypted and must already be in the format the archive expects
+(i.e. they should be compressed by an external utility first.)  If the file is
+not encrypted or compressed inside the archive, this option has no effect.
+.TP
 \fB-f\fR, \fB--force\fR
 open the archive as the given --type, even if it doesn't look like it's in
 that format.
@@ -235,9 +245,9 @@ License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
 .SH "SEE ALSO"
-\fBfile\fR(1), <http://www.shikadi.net/camoto>
+\fBfile\fR(1), \fBgamecomp\fR(1), <http://www.shikadi.net/camoto>
 .PP
-All the archive formats supported by this utility are fully documented on the Game Modding
-Wiki \fB<http://www.shikadi.net/moddingwiki>\fR.
+All the archive formats supported by this utility are fully documented on the
+Game Modding Wiki \fB<http://www.shikadi.net/moddingwiki>\fR.
 .PP
 This utility is part of the Camoto suite of tools.

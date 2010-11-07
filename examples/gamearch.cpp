@@ -24,6 +24,7 @@
 #include <boost/iostreams/copy.hpp>
 #include <boost/bind.hpp>
 #include <camoto/gamearchive.hpp>
+#include <camoto/util.hpp>
 #include <iostream>
 #include <fstream>
 
@@ -50,6 +51,12 @@ namespace ga = camoto::gamearchive;
 
 /// Return value that will be used
 int iRet = RET_OK;
+
+/// Use any decompression filters? (unset with -u option)
+bool bUseFilters = true;
+
+/// Handle to the libgamearchive entry interface
+ga::ManagerPtr pManager;
 
 // Split a string in two at a delimiter, e.g. "one=two" becomes "one" and "two"
 // and true is returned.  If there is no delimiter both output strings will be
@@ -98,6 +105,38 @@ void sanitisePath(std::string& strInput)
 	}
 	return;
 }
+
+/// Apply the correct filter to the stream.
+/**
+ * If the given entry pointer has a filter attached, apply it to the given
+ * stream pointer.
+ *
+ * @note This function will always apply the filter, don't call it if the user
+ *   has given the -u option to bypass filtering.
+ *
+ * @param ppStream
+ *   Pointer to the stream.  On return may point to a different stream.
+ *
+ * @param id
+ *   EntryPtr for the stream.
+ */
+void applyFilter(camoto::iostream_sptr *ppStream, ga::Archive::EntryPtr id)
+	throw (std::ios::failure)
+{
+	if (!id->filter.empty()) {
+		// The file needs to be filtered first
+		ga::FilterTypePtr pFilterType(::pManager->getFilterTypeByCode(id->filter));
+		if (!pFilterType) {
+			throw std::ios::failure(createString(
+				"could not find filter \"" << id->filter << "\""
+			));
+		}
+		// TODO: use boost::bind to find the arch's truncate function
+		*ppStream = pFilterType->apply(*ppStream, NULL);
+	}
+	return;
+}
+
 
 /// Find the given file, or if it starts with an '@', the file at that index.
 /**
@@ -198,7 +237,8 @@ bool insertFile(ga::Archive *pArchive, const std::string& strLocalFile,
 		pArchive->insert(idBeforeThis, strArchFile, iSize, type, attr);
 
 	// Open the new (empty) file in the archive
-	boost::shared_ptr<std::iostream> psNew(pArchive->open(id));
+	camoto::iostream_sptr psNew(pArchive->open(id));
+	if (bUseFilters) applyFilter(&psNew, id);
 
 	// Copy all the data from the file on disk into the archive file.
 	try {
@@ -356,7 +396,8 @@ void extractAll(ga::ArchivePtr pArchive, bool bScript)
 
 			// Open on disk
 			try {
-				boost::shared_ptr<std::iostream> pfsIn(pArchive->open(*i));
+				camoto::iostream_sptr pfsIn(pArchive->open(*i));
+				if (bUseFilters) applyFilter(&pfsIn, *i);
 				std::ofstream fsOut;
 				fsOut.exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
 
@@ -443,6 +484,8 @@ int main(int iArgC, char *cArgV[])
 			"specify the file type when inserting (default is generic file)")
 		("attribute,b", po::value<std::string>(),
 			"specify the file attributes when inserting (optional)")
+		("unfiltered,u",
+			"do not filter files (no encrypt/decrypt/compress/decompress)")
 		("script,s",
 			"format output suitable for script parsing")
 		("force,f",
@@ -478,7 +521,7 @@ int main(int iArgC, char *cArgV[])
 				if (!strFilename.empty()) {
 					std::cerr << "Error: unexpected extra parameter (multiple archive "
 						"filenames given?!)" << std::endl;
-					return 1;
+					return RET_BADARGS;
 				}
 				assert(i->value.size() > 0);  // can't have no values with no name!
 				strFilename = i->value[0];
@@ -515,6 +558,11 @@ int main(int iArgC, char *cArgV[])
 				(i->string_key.compare("force") == 0)
 			) {
 				bForceOpen = true;
+			} else if (
+				(i->string_key.compare("u") == 0) ||
+				(i->string_key.compare("unfiltered") == 0)
+			) {
+				bUseFilters = false;
 			}
 		}
 
@@ -538,7 +586,7 @@ int main(int iArgC, char *cArgV[])
 		}
 
 		// Get the format handler for this file format
-		boost::shared_ptr<ga::Manager> pManager(ga::getManager());
+		::pManager = ga::getManager();
 
 		ga::ArchiveTypePtr pArchType;
 		if (strType.empty()) {
@@ -692,23 +740,24 @@ finishTesting:
 						iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
 					} else {
 						// Found it, open on disk
-						boost::shared_ptr<std::iostream> pfsIn(destArch->open(id));
+						camoto::iostream_sptr pfsIn(destArch->open(id));
+						if (bUseFilters) applyFilter(&pfsIn, id);
 						std::ofstream fsOut;
 						fsOut.exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
 						try {
 							fsOut.open(strLocalFile.c_str(), std::ios::trunc | std::ios::binary);
 							try {
 								boost::iostreams::copy(*pfsIn, fsOut);
-							} catch (std::ios::failure& e) {
+							} catch (const std::ios::failure& e) {
 								std::cout << " [failed; read/write error: " << e.what() << "]";
 								iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
 							}
-						} catch (std::ios::failure& e) {
+						} catch (const std::ios::failure& e) {
 							std::cout << " [failed; unable to create output file]";
 							iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
 						}
 					}
-				} catch (std::ios::failure& e) {
+				} catch (const std::ios::failure& e) {
 					std::cout << " [failed; " << e.what() << "]";
 					iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
 				}
@@ -885,9 +934,10 @@ finishTesting:
 								}
 								// Now the file has been resized it's safe to open (if we opened
 								// it before the resize it'd be stuck at the old size)
-								boost::shared_ptr<std::iostream> psDest(destArch->open(id));
-									boost::iostreams::copy(sSrc, *psDest);
-									psDest->flush();
+								camoto::iostream_sptr psDest(destArch->open(id));
+								if (bUseFilters) applyFilter(&psDest, id);
+								boost::iostreams::copy(sSrc, *psDest);
+								psDest->flush();
 							} else {
 								std::cout << " [failed; unable to open replacement file]";
 								iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
