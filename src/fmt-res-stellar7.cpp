@@ -122,12 +122,11 @@ E_CERTAINTY RESType::isInstance(iostream_sptr psArchive) const
 	return EC_DEFINITELY_YES;
 }
 
-// Preconditions: isInstance() has returned > EC_DEFINITELY_NO
 ArchivePtr RESType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
 	throw (std::ios::failure)
 {
 	ArchivePtr root(new RESArchiveFolder(psArchive));
-	return ArchivePtr(new SubdirArchive(root));
+	return root;
 }
 
 MP_SUPPLIST RESType::getRequiredSupps(const std::string& filenameArchive) const
@@ -206,9 +205,8 @@ void RESArchiveFolder::rename(EntryPtr& id, const std::string& strNewName)
 ArchivePtr RESArchiveFolder::openFolder(const EntryPtr& id)
 	throw (std::ios::failure)
 {
-	const SubdirEntry *sd = dynamic_cast<const SubdirEntry *>(id.get());
-	assert(sd);
-	assert(sd->isFolder == true);
+	// Make sure we're opening a folder
+	assert(id->fAttr & EA_FOLDER);
 
 	iostream_sptr folderContents = this->open(id);
 	return ArchivePtr(new RESArchiveFolder(folderContents));
@@ -269,12 +267,6 @@ void RESArchiveFolder::preRemoveFile(const FATEntry *pid)
 	// removed by FATArchive and there's no other FAT to update.
 
 	return;
-}
-
-FATArchive::FATEntry *RESArchiveFolder::createNewFATEntry()
-	throw ()
-{
-	return new RESArchiveFolder::RESEntry();
 }
 
 } // namespace gamearchive

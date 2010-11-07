@@ -1,5 +1,6 @@
-/*
- * fmt-res-stellar7.cpp - Implementation of Duke Nukem 3D Group Files (.res)
+/**
+ * @file   fmt-res-stellar7.hpp
+ * @brief  Implementation of Stellar 7 resource files (.res)
  *
  * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -63,12 +64,7 @@ class RESType: virtual public ArchiveType {
 
 };
 
-class RESArchiveFolder: virtual public FATArchive, virtual public ArchiveWithFolders {
-
-	protected:
-
-		struct RESEntry: virtual public FATEntry, virtual public SubdirEntry {
-		};
+class RESArchiveFolder: virtual public FATArchive {
 
 	public:
 		RESArchiveFolder(iostream_sptr psArchive)
@@ -80,9 +76,7 @@ class RESArchiveFolder: virtual public FATArchive, virtual public ArchiveWithFol
 		// As per Archive (see there for docs)
 
 		virtual void rename(EntryPtr& id, const std::string& strNewName)
-			throw (std::ios_base::failure);
-
-		// As per ArchiveWithFolders (see there for docs)
+			throw (std::ios::failure);
 
 		virtual ArchivePtr openFolder(const EntryPtr& id)
 			throw (std::ios::failure);
@@ -93,16 +87,13 @@ class RESArchiveFolder: virtual public FATArchive, virtual public ArchiveWithFol
 			throw (std::ios::failure);
 
 		virtual void updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
-			throw (std::ios_base::failure);
+			throw (std::ios::failure);
 
 		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-			throw (std::ios_base::failure);
+			throw (std::ios::failure);
 
 		virtual void preRemoveFile(const FATEntry *pid)
-			throw (std::ios_base::failure);
-
-		virtual FATEntry *createNewFATEntry()
-			throw ();
+			throw (std::ios::failure);
 
 };
 

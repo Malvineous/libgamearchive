@@ -89,10 +89,18 @@ bool FATArchive::isValid(const EntryPtr& id)
 	return ((id2) && (id2->bValid));
 }
 
-boost::shared_ptr<std::iostream> FATArchive::open(const EntryPtr& id)
+iostream_sptr FATArchive::open(const EntryPtr& id)
 	throw ()
 {
 	// TESTED BY: fmt_grp_duke3d_open
+
+	// Make sure we're not trying to open a folder as a file
+	//assert((id->fAttr & EA_FOLDER) == 0);
+	// We can't do this because some folder formats have their FAT and
+	// everything stored as a "file" in the parent archive, so the subfolder
+	// code opens this file (even though it's flagged as a folder) and then
+	// passes the data to the Archive.
+
 	const FATEntry *pFAT = dynamic_cast<const FATEntry *>(id.get());
 	substream_sptr psSub(
 		new substream(

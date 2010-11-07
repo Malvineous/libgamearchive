@@ -1,5 +1,6 @@
-/*
- * gamearch.cpp - command-line interface to libgamearchive.
+/**
+ * @file   gamearch.cpp
+ * @brief  Command-line interface to libgamearchive.
  *
  * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -19,6 +20,7 @@
 
 #include <boost/algorithm/string.hpp> // for case-insensitive string compare
 #include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/bind.hpp>
 #include <camoto/gamearchive.hpp>
@@ -26,23 +28,28 @@
 #include <fstream>
 
 namespace po = boost::program_options;
+namespace fs = boost::filesystem;
 namespace ga = camoto::gamearchive;
 
 #define PROGNAME "gamearch"
 
 /*** Return values ***/
-// All is good
+/// All is good
 #define RET_OK                 0
-// Bad arguments (missing/invalid parameters)
+/// Bad arguments (missing/invalid parameters)
 #define RET_BADARGS            1
-// Major error (couldn't open archive file, etc.)
+/// Major error (couldn't open archive file, etc.)
 #define RET_SHOWSTOPPER        2
-// More info needed (-t auto didn't work, specify a type)
+/// More info needed (-t auto didn't work, specify a type)
 #define RET_BE_MORE_SPECIFIC   3
-// One or more files failed, probably user error (file not found, etc.)
+/// One or more files failed, probably user error (file not found, etc.)
 #define RET_NONCRITICAL_FAILURE 4
-// Some files failed, but not in a common way (cut off write, disk full, etc.)
+/// Some files failed, but not in a common way (cut off write, disk full, etc.)
 #define RET_UNCOMMON_FAILURE   5
+
+
+/// Return value that will be used
+int iRet = RET_OK;
 
 // Split a string in two at a delimiter, e.g. "one=two" becomes "one" and "two"
 // and true is returned.  If there is no delimiter both output strings will be
@@ -74,21 +81,51 @@ bool split(const std::string& in, char delim, std::string *out1, std::string *ou
 // create the file on the local filesystem.  Escape any potentially hostile
 // characters (possibly included slashes which might put files in different
 // directories - TODO: unless -d or something has been specified)
-std::string sanitisePath(const std::string& strInput)
+void sanitisePath(std::string& strInput)
 {
 	// TODO: Check strLocalFile, replace backslashes, make any intermediate
 	// directories
-	return strInput;
+	for (std::string::iterator i = strInput.begin(); i != strInput.end(); i++) {
+		switch (*i) {
+			case '/':
+#ifdef WIN32
+			case '\\':
+			case ':':
+#endif
+				*i = '_';
+				break;
+		}
+	}
+	return;
 }
 
-// Find the given file, or if it starts with an '@', the file at that index.
-ga::Archive::EntryPtr findFile(const ga::ArchivePtr& archive, const std::string& filename)
+/// Find the given file, or if it starts with an '@', the file at that index.
+/**
+ * @param archive
+ *   On input, the archive file.  On output, the archive holding the file.
+ *   Normally this will be the same, unless the archive has subfolders, in
+ *   which case the value on output will be the Archive instance of the
+ *   subfolder itself.
+ *
+ * @param filename
+ *   Filename to look for.
+ *
+ * @return EntryPtr to the file (or folder!) specified, or an empty EntryPtr if
+ *   the file couldn't be found.  Note that the EntryPtr is only valid for the
+ *   output archive parameter, which may be a different archive to what was
+ *   passed in.
+ */
+ga::Archive::EntryPtr findFile(ga::ArchivePtr& archive, const std::string& filename)
 {
-	ga::Archive::EntryPtr id = archive->find(filename);
-	if (archive->isValid(id)) return id;
+	// Save the original archive pointer in case we get half way through a
+	// subfolder tree and get a file-not-found.
+	ga::ArchivePtr orig = archive;
 
-	// The file doesn't exist, so see if it's an index.
+	// See if it's an index.  This check is performed first so that regardless
+	// of what the filename is, it will always be possible to extract files
+	// by index number.
 	if ((filename[0] == '@') && (filename.length() > 1)) {
+// TODO: split at dots into subfolders
 		char *endptr;
 		// strtoul allows arbitrary whitespace at the start, so if ever there is
 		// a file called "@5" which gets extracted instead of the fifth file,
@@ -101,12 +138,52 @@ ga::Archive::EntryPtr findFile(const ga::ArchivePtr& archive, const std::string&
 			throw std::ios::failure("index too large");
 		}
 	}
+
+	// Filename isn't an index, see if it matches a name
+	ga::Archive::EntryPtr id = archive->find(filename);
+	if (archive->isValid(id)) return id;
+
+	// The file doesn't exist, it's not an index, see if it can be split up
+	// into subfolders.
+	fs::path p(filename);
+	for (fs::path::iterator i = p.begin(); i != p.end(); i++) {
+
+		if (archive->isValid(id)) {
+			// The ID is valid, which means it was set to a file in the
+			// previous loop iteration, but if we're here then it means
+			// there is another element in the path.  Since this means
+			// a file has been specified like a folder, we have to abort.
+			id = ga::Archive::EntryPtr();
+			break;
+		}
+
+		ga::Archive::EntryPtr j = archive->find(*i);
+		if (!archive->isValid(j)) break;
+
+		if (j->fAttr & ga::EA_FOLDER) {
+			// Open the folder and continue with the next path element
+			archive = archive->openFolder(j);
+			if (!archive) {
+				archive = orig; // make sure archive is valid for below
+				break;
+			}
+		} else {
+			// This is a file, it had better be the last one!
+			id = j;
+		}
+
+	}
+	if (archive->isValid(id)) return id;
+
+	// Restore the archive pointer to what it was originally
+	archive = orig;
+
 	return ga::Archive::EntryPtr(); // file not found
 }
 
 // Insert a file at the given location.  Shared by --insert and --add.
 bool insertFile(ga::Archive *pArchive, const std::string& strLocalFile,
-	const std::string& strArchFile, const camoto::gamearchive::Archive::EntryPtr& idBeforeThis,
+	const std::string& strArchFile, const ga::Archive::EntryPtr& idBeforeThis,
 	const std::string& type, int attr)
 {
 	// Open the file
@@ -117,7 +194,7 @@ bool insertFile(ga::Archive *pArchive, const std::string& strLocalFile,
 	fsIn.seekg(0, std::ios::beg);
 
 	// Create a new entry in the archive large enough to hold the file
-	camoto::gamearchive::Archive::EntryPtr id =
+	ga::Archive::EntryPtr id =
 		pArchive->insert(idBeforeThis, strArchFile, iSize, type, attr);
 
 	// Open the new (empty) file in the archive
@@ -132,6 +209,194 @@ bool insertFile(ga::Archive *pArchive, const std::string& strLocalFile,
 		return false;
 	}
 	return true;
+}
+
+/// List the files in the archive and any subfolders.
+/**
+ * This function is recursive and will call itself to list files in any
+ * subfolders found.
+ */
+void listFiles(const std::string& idPrefix, const std::string& path, ga::ArchivePtr pArchive, bool bScript)
+{
+	ga::Archive::VC_ENTRYPTR vcEntries = pArchive->getFileList();
+
+	std::string prefix = idPrefix;
+	if (!idPrefix.empty()) prefix.append(".");
+
+	int j = 0;
+	for (ga::Archive::VC_ENTRYPTR::const_iterator i =
+		vcEntries.begin(); i != vcEntries.end(); i++, j++)
+	{
+		int len = path.length() + (*i)->strName.length();
+		if ((*i)->fAttr & ga::EA_FOLDER) {
+			// This is a folder, not a file
+			if (bScript) {
+				std::cout << "index=" << prefix << j << ";path=" << path
+					<< ';' << (*i)->getContent() << std::endl;
+			} else {
+				std::cout << "@" << prefix << j << "\t" << path << (*i)->strName << '/';
+				len++; // because of trailing slash we just added
+				if (len < 25) std::cout << std::string(25 - len, ' ');
+				std::cout << "[dir";
+				if ((*i)->fAttr & ga::EA_HIDDEN) std::cout << "; hidden";
+				if ((*i)->fAttr & ga::EA_COMPRESSED) std::cout << "; compressed";
+				if ((*i)->fAttr & ga::EA_ENCRYPTED) std::cout << "; encrypted";
+				std::cout << "]\n";
+			}
+			ga::ArchivePtr subArch = pArchive->openFolder(*i);
+			std::ostringstream ss(prefix);
+			ss << j;
+			std::string newPath(path);
+			newPath.append((*i)->strName);
+			newPath.append("/");
+			listFiles(ss.str(), newPath, subArch, bScript);
+		} else {
+			if (bScript) {
+				std::cout << "index=" << prefix << j << ";path=" << path
+					<< ';' << (*i)->getContent() << std::endl;
+			} else {
+				std::cout << "@" << prefix << j << "\t" << path << (*i)->strName;
+				// Pad the filename out to 25 chars if it's short enough
+				if (len < 25) std::cout << std::string(25 - len, ' ');
+
+				std::cout << "[";
+
+				// Display the "MIME" type if there is one
+				if (!(*i)->type.empty()) std::cout << (*i)->type << "; ";
+
+				/// Display any attributes
+				if ((*i)->fAttr & ga::EA_EMPTY) std::cout << "empty slot; ";
+				if ((*i)->fAttr & ga::EA_HIDDEN) std::cout << "hidden; ";
+				if ((*i)->fAttr & ga::EA_COMPRESSED) std::cout << "compressed; ";
+				if ((*i)->fAttr & ga::EA_ENCRYPTED) std::cout << "encrypted; ";
+
+				// Display file size
+				std::cout << (*i)->iSize << " bytes]\n";
+			}
+		}
+	}
+	return;
+}
+
+/// Extract all the files in the archive.
+/**
+ * Calls itself recursively to extract any subfolders as well.
+ */
+void extractAll(ga::ArchivePtr pArchive, bool bScript)
+{
+	ga::Archive::VC_ENTRYPTR vcEntries = pArchive->getFileList();
+	for (ga::Archive::VC_ENTRYPTR::const_iterator i =
+		vcEntries.begin(); i != vcEntries.end(); i++)
+	{
+		// Get the name of the file we're extracting from the archive.
+		std::string strLocalFile = (*i)->strName;
+		sanitisePath(strLocalFile);
+		if (strLocalFile.empty()) {
+			// This file has no filename (probably the archive format doesn't
+			// support filenames) so we have to make one up.
+			std::ostringstream ss;
+			ss << "@" << (i - vcEntries.begin());
+			strLocalFile = ss.str();
+		}
+
+		if ((*i)->fAttr & ga::EA_FOLDER) {
+			// Tell the user what's going on
+			if (bScript) {
+				std::cout << "mkdir=" << strLocalFile;
+			} else {
+				std::cout << "      mkdir: " << strLocalFile << '/' << std::flush;
+			}
+			fs::path old;
+			try {
+				// If the folder exists, add .1 .2 .3 etc. onto the end until an
+				// unused name is found.  This allows extracting folders with the
+				// same name, without their files ending up lumped together in
+				// the same real on-disk folder.
+				if (fs::exists(strLocalFile)) {
+					std::ostringstream ss;
+					int j = 1;
+					do {
+						ss.str(std::string()); // empty the stringstream
+						ss << strLocalFile << '.' << j;
+						j++;
+					} while (fs::exists(ss.str()));
+					strLocalFile = ss.str();
+					if (!bScript) {
+						std::cout << " (as " << strLocalFile << ")";
+					}
+				}
+
+				fs::create_directory(strLocalFile);
+				if (bScript) std::cout << ";created=" << strLocalFile;
+				old = fs::current_path();
+				fs::current_path(strLocalFile);
+				if (bScript) std::cout << ";status=ok";
+
+				std::cout << std::endl;
+			} catch (const fs::filesystem_error& e) {
+				if (bScript) {
+					std::cout << ";status=fail";
+				} else {
+					std::cout << " [failed; skipping folder]";
+				}
+				::iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
+				std::cout << std::endl;
+				continue;
+			}
+			ga::ArchivePtr subArch = pArchive->openFolder(*i);
+			extractAll(subArch, bScript);
+			fs::current_path(old);
+		} else {
+			// Tell the user what's going on
+			if (bScript) {
+				std::cout << "extracting=" << strLocalFile;
+			} else {
+				std::cout << " extracting: " << strLocalFile;
+			}
+
+			// Open on disk
+			try {
+				boost::shared_ptr<std::iostream> pfsIn(pArchive->open(*i));
+				std::ofstream fsOut;
+				fsOut.exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
+
+				// If the file exists, add .1 .2 .3 etc. onto the end until an
+				// unused name is found.  This allows extracting files with the
+				// same name, without them getting overwritten.
+				if (fs::exists(strLocalFile)) {
+					std::ostringstream ss;
+					int j = 1;
+					do {
+						ss.str(std::string()); // empty the stringstream
+						ss << strLocalFile << '.' << j;
+						j++;
+					} while (fs::exists(ss.str()));
+					strLocalFile = ss.str();
+					if (!bScript) {
+						std::cout << " (into " << strLocalFile << ")";
+					}
+				}
+				std::cout << std::flush;
+
+				if (bScript) std::cout << ";wrote=" << strLocalFile;
+				fsOut.open(strLocalFile.c_str(), std::ios::trunc | std::ios::binary);
+
+				// Copy the data from the in-archive stream to the on-disk stream
+				boost::iostreams::copy(*pfsIn, fsOut);
+
+				if (bScript) std::cout << ";status=ok";
+			} catch (...) {
+				if (bScript) {
+					std::cout << ";status=fail";
+				} else {
+					std::cout << " [error]";
+				}
+				::iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
+			}
+			std::cout << std::endl;
+		}
+	}
+	return;
 }
 
 int main(int iArgC, char *cArgV[])
@@ -395,8 +660,6 @@ finishTesting:
 		assert(pArchive);
 		pArchive->fnTruncate = boost::bind<void>(truncate, strFilename.c_str(), _1);
 
-		int iRet = RET_OK;
-
 		// File type of inserted files defaults to empty, which means 'generic file'
 		std::string strLastFiletype;
 
@@ -406,108 +669,46 @@ finishTesting:
 		// Run through the actions on the command line
 		for (std::vector<po::option>::iterator i = pa.options.begin(); i != pa.options.end(); i++) {
 			if (i->string_key.compare("list") == 0) {
-				camoto::gamearchive::Archive::VC_ENTRYPTR vcEntries = pArchive->getFileList();
-				std::cout << "Found " << vcEntries.size() << " files" << std::endl;
-
-				int j = 0;
-				for (camoto::gamearchive::Archive::VC_ENTRYPTR::const_iterator i =
-					vcEntries.begin(); i != vcEntries.end(); i++, j++)
-				{
-					if (bScript) {
-						std::cout << "index=" << j << ';' << (*i)->getContent() << std::endl;
-					} else {
-						std::cout << j << ": " << (*i)->strName;
-						int len = (*i)->strName.length();
-						// Pad the filename out to 14 chars if it's short enough
-						if (len < 14) std::cout << std::string(14 - len, ' ');
-
-						std::cout << "\t[";
-
-						// Display the "MIME" type if there is one
-						if (!(*i)->type.empty()) std::cout << (*i)->type << "; ";
-
-						/// Display any attributes
-						if ((*i)->fAttr & ga::EA_EMPTY) std::cout << "empty slot; ";
-						if ((*i)->fAttr & ga::EA_HIDDEN) std::cout << "hidden; ";
-						if ((*i)->fAttr & ga::EA_COMPRESSED) std::cout << "compressed; ";
-						if ((*i)->fAttr & ga::EA_ENCRYPTED) std::cout << "encrypted; ";
-
-						// Display file size
-						std::cout << (*i)->iSize << " bytes]\n";
-					}
-				}
+				listFiles(std::string(), std::string(), pArchive, bScript);
 
 			} else if (i->string_key.compare("extract-all") == 0) {
-				camoto::gamearchive::Archive::VC_ENTRYPTR vcEntries = pArchive->getFileList();
-				if (!bScript)
-					std::cout << "Extracting " << vcEntries.size() << " files" << std::endl;
-
-				for (camoto::gamearchive::Archive::VC_ENTRYPTR::const_iterator i =
-					vcEntries.begin(); i != vcEntries.end(); i++)
-				{
-					// Get the name of the file we're extracting from the archive.
-					std::string strArchFile = (*i)->strName;
-					if (strArchFile.empty()) {
-						// This file has no filename (probably the archive format doesn't
-						// support filenames) so we have to make one up.
-						std::ostringstream ss;
-						ss << "@" << (i - vcEntries.begin());
-						strArchFile = ss.str();
-					}
-
-					// Tell the user what's going on
-					if (bScript) {
-						std::cout << "extracted=" << strArchFile << ";status=";
-					} else {
-						std::cout << " extracting: " << strArchFile << std::flush;
-					}
-
-					// Open on disk
-					try {
-						boost::shared_ptr<std::iostream> pfsIn(pArchive->open(*i));
-						std::ofstream fsOut;
-						fsOut.exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
-						fsOut.open(strArchFile.c_str(), std::ios::trunc | std::ios::binary);
-
-						// Copy the data from the in-archive stream to the on-disk stream
-						boost::iostreams::copy(*pfsIn, fsOut);
-
-						if (bScript) std::cout << "ok";
-					} catch (...) {
-						if (bScript) {
-							std::cout << "fail";
-						} else {
-							std::cout << " [error]";
-						}
-						iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
-					}
-					std::cout << std::endl;
-				}
+				extractAll(pArchive, bScript);
 
 			} else if (i->string_key.compare("extract") == 0) {
 				std::string strArchFile, strLocalFile;
 				bool bAltDest = split(i->value[0], '=', &strArchFile, &strLocalFile);
-				if (!bAltDest) strLocalFile = sanitisePath(strLocalFile);
+				if (!bAltDest) sanitisePath(strLocalFile);
 
 				std::cout << " extracting: " << strArchFile;
-				if (bAltDest) std::cout << " (into " << strLocalFile << ")";
+				if (strArchFile.compare(strLocalFile)) std::cout << " (into " << strLocalFile << ")";
 				std::cout << std::flush;
 
 				try {
 					// Find the file
-					ga::Archive::EntryPtr id = findFile(pArchive, strArchFile);
+					ga::ArchivePtr destArch = pArchive;
+					ga::Archive::EntryPtr id = findFile(destArch, strArchFile);
 					if (!id) {
 						std::cout << " [failed; file not found]";
 						iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
 					} else {
 						// Found it, open on disk
-						boost::shared_ptr<std::iostream> pfsIn(pArchive->open(id));
+						boost::shared_ptr<std::iostream> pfsIn(destArch->open(id));
 						std::ofstream fsOut;
 						fsOut.exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
-						fsOut.open(strLocalFile.c_str(), std::ios::trunc | std::ios::binary);
-						boost::iostreams::copy(*pfsIn, fsOut);
+						try {
+							fsOut.open(strLocalFile.c_str(), std::ios::trunc | std::ios::binary);
+							try {
+								boost::iostreams::copy(*pfsIn, fsOut);
+							} catch (std::ios::failure& e) {
+								std::cout << " [failed; read/write error: " << e.what() << "]";
+								iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
+							}
+						} catch (std::ios::failure& e) {
+							std::cout << " [failed; unable to create output file]";
+							iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
+						}
 					}
-				} catch (std::ios_base::failure& e) {
+				} catch (std::ios::failure& e) {
 					std::cout << " [failed; " << e.what() << "]";
 					iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
 				}
@@ -518,12 +719,13 @@ finishTesting:
 				std::cout << "   deleting: " << strArchFile << std::flush;
 
 				try {
-					ga::Archive::EntryPtr id = findFile(pArchive, strArchFile);
+					ga::ArchivePtr destArch = pArchive;
+					ga::Archive::EntryPtr id = findFile(destArch, strArchFile);
 					if (!id) {
 						std::cout << " [failed; file not found]";
 						iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
 					} else {
-						pArchive->remove(id);
+						destArch->remove(id);
 					}
 				} catch (std::ios_base::failure& e) {
 					std::cout << " [failed; " << e.what() << "]";
@@ -551,7 +753,8 @@ finishTesting:
 				std::cout << ")" << std::flush;
 
 				// Try to find strInsertBefore
-				ga::Archive::EntryPtr idBeforeThis = findFile(pArchive, strInsertBefore);
+				ga::ArchivePtr destArch = pArchive;
+				ga::Archive::EntryPtr idBeforeThis = findFile(destArch, strInsertBefore);
 				if (!idBeforeThis) {
 					std::cout << " [failed; could not find " << strInsertBefore << "]";
 					iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
@@ -559,7 +762,7 @@ finishTesting:
 				}
 
 				try {
-					insertFile(pArchive.get(), strLocalFile, strArchFile, idBeforeThis,
+					insertFile(destArch.get(), strLocalFile, strArchFile, idBeforeThis,
 						strLastFiletype, iLastAttr);
 				} catch (std::ios_base::failure& e) {
 					std::cout << " [failed; " << e.what() << "]";
@@ -642,12 +845,13 @@ finishTesting:
 							<< strLocalFile << std::flush;
 
 						try {
-							ga::Archive::EntryPtr id = findFile(pArchive, strArchFile);
+							ga::ArchivePtr destArch = pArchive;
+							ga::Archive::EntryPtr id = findFile(destArch, strArchFile);
 							if (!id) {
 								std::cout << " [failed; file not found inside archive]";
 								iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
 							} else {
-								pArchive->rename(id, strLocalFile);
+								destArch->rename(id, strLocalFile);
 							}
 						} catch (std::ios_base::failure& e) {
 							std::cout << " [failed; " << e.what() << "]";
@@ -663,7 +867,8 @@ finishTesting:
 
 					try {
 						// Find the file
-						ga::Archive::EntryPtr id = findFile(pArchive, strArchFile);
+						ga::ArchivePtr destArch = pArchive;
+						ga::Archive::EntryPtr id = findFile(destArch, strArchFile);
 						if (!id) {
 							std::cout << " [failed; file not found inside archive]";
 							iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
@@ -680,7 +885,7 @@ finishTesting:
 								}
 								// Now the file has been resized it's safe to open (if we opened
 								// it before the resize it'd be stuck at the old size)
-								boost::shared_ptr<std::iostream> psDest(pArchive->open(id));
+								boost::shared_ptr<std::iostream> psDest(destArch->open(id));
 									boost::iostreams::copy(sSrc, *psDest);
 									psDest->flush();
 							} else {

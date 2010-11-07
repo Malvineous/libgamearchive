@@ -1,5 +1,6 @@
-/*
- * archive.cpp - Generic functions common to all Archive types.
+/**
+ * @file   archive.cpp
+ * @brief  Generic functions common to all Archive types.
  *
  * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -39,6 +40,18 @@ Archive::Archive()
 Archive::~Archive()
 	throw ()
 {
+}
+
+ArchivePtr Archive::openFolder(const Archive::EntryPtr& id)
+	throw (std::ios::failure)
+{
+	// This function should only be called for folders (not files)
+	assert(id->fAttr & EA_FOLDER);
+
+	// But if we got this far, the archive format has folders but didn't
+	// override this function so they could be opened!
+	assert(false);
+	throw std::ios::failure("BUG: Archive format doesn't implement openFolder()");
 }
 
 void Archive::move(const EntryPtr& idBeforeThis, EntryPtr& id)

@@ -38,22 +38,17 @@ namespace gamearchive {
 
 /// File attribute flags.  Can be OR'd together.
 enum E_ATTRIBUTE {
-	/// No attributes set
-	EA_NONE       = 0x00,
-	/// There's currently no file at this location
-	EA_EMPTY      = 0x01,
-	/// File is hidden between two FAT entries
-	EA_HIDDEN     = 0x02,
-	/// File is compressed
-	EA_COMPRESSED = 0x04,
-	/// File is encrypted
-	EA_ENCRYPTED  = 0x08,
+	EA_NONE       = 0x00,  ///< No attributes set
+	EA_EMPTY      = 0x01,  ///< There's currently no file at this location
+	EA_HIDDEN     = 0x02,  ///< File is hidden between two FAT entries
+	EA_COMPRESSED = 0x04,  ///< File is compressed
+	EA_ENCRYPTED  = 0x08,  ///< File is encrypted
+	EA_FOLDER     = 0x80,  ///< This entry is a folder, not a file
 };
 
 /// Metadata item types.
 enum E_METADATA {
-	/// %Archive description
-	EM_DESCRIPTION,
+	EM_DESCRIPTION,  ///< %Archive description
 };
 
 /// Vector of metadata item types.
@@ -66,6 +61,12 @@ class ENotFound: public std::exception {
 /// Generic "invalid archive format" exception.
 class EInvalidFormat: public std::exception {
 };
+
+class Archive;
+
+/// Shared pointer to an Archive.
+typedef boost::shared_ptr<Archive> ArchivePtr;
+
 
 /// Primary interface to an archive file.
 /**
@@ -218,26 +219,60 @@ class Archive {
 		virtual iostream_sptr open(const EntryPtr& id)
 			throw () = 0;
 
+		/// Open a folder in the archive.
+		/**
+		 * There is a default implementation of this which triggers an
+		 * assertion failure, which means the function only needs to be
+		 * overridden for archives actually supporting subfolders.
+		 *
+		 * @note  This function only needs to be implemented for archive formats
+		 *   where each subfolder has an independent FAT.  For those formats which
+		 *   simply have paths in the filenames, this function does not need to
+		 *   be implemented.
+		 *
+		 * @pre  The entry must have the EA_FOLDER attribute set.
+		 *
+		 * @param id
+		 *   A valid file entry, obtained from find(), getFileList(), etc.
+		 *
+		 * @return  Another Archive instance representing the files in the folder.
+		 */
+		virtual ArchivePtr openFolder(const EntryPtr& id)
+			throw (std::ios::failure);
+
 		/// Insert a new file into the archive.
 		/**
 		 * It will be inserted before idBeforeThis, or at the end of the archive if
 		 * idBeforeThis is not valid.  Does not check if this filename already
 		 * exists - check first yourself or you will add duplicates!
 		 *
-		 * @note   For performance reasons, this operation is cached so it does not
-		 *         immediately affect the archive file.  When the time comes to
-		 *         flush() the changes, all the insert/delete/resize operations are
-		 *         done in a single pass.  However providing this class is the sole
-		 *         method of accessing the archive file, this is of no concern.
-		 * @post   Existing EntryPtrs become invalid.  Any open files remain valid.
-		 * @param  idBeforeThis The new file will be inserted before this one.  If
-		 *         it is not valid, the new file will be last in the archive.
-		 * @param  strFilename Filename of the new file.
-		 * @param  iSize Initial size of the new file.
-		 * @param  type MIME-like file type, or empty string for generic file.  See
-		 *         FileEntry::type.
+		 * @note  For performance reasons, this operation is cached so it does not
+		 *   immediately affect the archive file.  When the time comes to
+		 *   flush() the changes, all the insert/delete/resize operations are
+		 *   done in a single pass.  However providing this class is the sole
+		 *   method of accessing the archive file, this is of no concern.
+		 *
+		 * @post  Existing EntryPtrs become invalid.  Any open files remain valid.
+		 *
+		 * @param idBeforeThis
+		 *   The new file will be inserted before this one.  If it is not valid,
+		 *   the new file will be last in the archive.
+		 *
+		 * @param strFilename
+		 *   Filename of the new file.
+		 *
+		 * @param iSize
+		 *   Initial size of the new file.
+		 *
+		 * @param type
+		 *   MIME-like file type, or empty string for generic file.  See
+		 *   FileEntry::type.
+		 *
+		 * @param attr
+		 *   File attributes (one or more E_ATTRIBUTES)
+		 *
 		 * @return An EntryPtr to the newly added file, which can be immediately
-		 *         passed to open() if needed.
+		 *   passed to open() if needed.
 		 */
 		virtual EntryPtr insert(const EntryPtr& idBeforeThis,
 			const std::string& strFilename, offset_t iSize, std::string type,
@@ -399,9 +434,6 @@ class Archive {
 			throw (std::ios::failure);
 
 };
-
-/// Shared pointer to an Archive.
-typedef boost::shared_ptr<Archive> ArchivePtr;
 
 /// Vector of Archive shared pointers.
 typedef std::vector<ArchivePtr> VC_ARCHIVE;
