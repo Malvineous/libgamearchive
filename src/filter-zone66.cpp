@@ -93,7 +93,7 @@ class z66_decompress_filter: public io::multichar_input_filter {
 						break;
 					}
 					case 1: {
-						if (this->data.read(cbNext, this->codeLength, &this->code) < 0) {
+						if (this->data.read(cbNext, this->codeLength, &this->code) != this->codeLength) {
 							goto done;
 						}
 						this->curCode = this->code;
@@ -121,12 +121,12 @@ class z66_decompress_filter: public io::multichar_input_filter {
 						break;
 					case 3: {
 						int value;
-						if (this->data.read(cbNext, 8, &value) < 0) goto done;
+						if (this->data.read(cbNext, 8, &value) != 8) goto done;
 						s[r++] = value;
 
-						if (this->code >= this->curDicIndex) {
+						if (this->code >= 0x100 + this->curDicIndex) {
 							// This code hasn't been put in the dictionary yet (tpal.z66)
-							this->code = 0;
+							this->code = 0x100;
 						}
 						nodes[curDicIndex].code = this->code;
 						nodes[curDicIndex].nextCode = value;
