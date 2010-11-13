@@ -956,11 +956,11 @@ finishTesting:
 	} catch (po::unknown_option& e) {
 		std::cerr << PROGNAME ": " << e.what()
 			<< ".  Use --help for help." << std::endl;
-		return 1;
+		return RET_BADARGS;
 	} catch (po::invalid_command_line_syntax& e) {
 		std::cerr << PROGNAME ": " << e.what()
 			<< ".  Use --help for help." << std::endl;
-		return 1;
+		return RET_BADARGS;
 	}
 
 	return 0;

@@ -160,12 +160,16 @@ int main(int iArgC, char *cArgV[])
 	} catch (po::unknown_option& e) {
 		std::cerr << PROGNAME ": " << e.what()
 			<< ".  Use --help for help." << std::endl;
-		return 1;
+		return RET_BADARGS;
 	} catch (po::invalid_command_line_syntax& e) {
 		std::cerr << PROGNAME ": " << e.what()
 			<< ".  Use --help for help." << std::endl;
-		return 1;
+		return RET_BADARGS;
+	} catch (const camoto::ECorruptedData& e) {
+		std::cout << std::flush; // keep as much data as we could process
+		std::cerr << PROGNAME ": Decompression failed.  " << e.what() << std::endl;
+		return RET_SHOWSTOPPER;
 	}
 
-	return 0;
+	return RET_OK;
 }
