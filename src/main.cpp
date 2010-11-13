@@ -39,6 +39,7 @@
 
 #include "filter-bash.hpp"
 #include "filter-epfs.hpp"
+#include "filter-zone66.hpp"
 
 namespace camoto {
 namespace gamearchive {
@@ -73,6 +74,7 @@ Manager::Manager()
 
 	this->vcFilters.push_back(FilterTypePtr(new BashFilterType()));
 	this->vcFilters.push_back(FilterTypePtr(new EPFSFilterType()));
+	this->vcFilters.push_back(FilterTypePtr(new Zone66FilterType()));
 }
 
 Manager::~Manager()
