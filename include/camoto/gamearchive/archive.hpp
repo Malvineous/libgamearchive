@@ -283,7 +283,7 @@ class Archive: virtual public Metadata {
 		 *   FileEntry::type.
 		 *
 		 * @param attr
-		 *   File attributes (one or more E_ATTRIBUTES)
+		 *   File attributes (one or more E_ATTRIBUTEs)
 		 *
 		 * @return An EntryPtr to the newly added file, which can be immediately
 		 *   passed to open() if needed.
