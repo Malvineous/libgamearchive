@@ -277,8 +277,12 @@ FATArchive::FATEntry *DAT_WackyArchive::preInsertFile(
 		<< u32le(deltaOffset);
 
 	// Update the offsets now there's a new FAT entry taking up space.
-	this->shiftFiles(DAT_FAT_OFFSET + this->vcFAT.size() * DAT_FAT_ENTRY_LEN,
-		DAT_FAT_ENTRY_LEN, 0);
+	this->shiftFiles(
+		pNewEntry,
+		DAT_FAT_OFFSET + this->vcFAT.size() * DAT_FAT_ENTRY_LEN,
+		DAT_FAT_ENTRY_LEN,
+		0
+	);
 
 	this->updateFileCount(this->vcFAT.size() + 1);
 	return pNewEntry;
@@ -293,8 +297,12 @@ void DAT_WackyArchive::preRemoveFile(const FATEntry *pid)
 	// must be called before the FAT is altered, because it will write a new
 	// offset into the FAT entry we're about to erase (and if we erase it first
 	// it'll overwrite something else.)
-	this->shiftFiles(DAT_FAT_OFFSET + this->vcFAT.size() * DAT_FAT_ENTRY_LEN,
-		-DAT_FAT_ENTRY_LEN, 0);
+	this->shiftFiles(
+		NULL,
+		DAT_FAT_OFFSET + this->vcFAT.size() * DAT_FAT_ENTRY_LEN,
+		-DAT_FAT_ENTRY_LEN,
+		0
+	);
 
 	this->psArchive->seekp(DAT_FATENTRY_OFFSET(pid));
 	this->psArchive->remove(DAT_FAT_ENTRY_LEN);

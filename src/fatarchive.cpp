@@ -167,14 +167,18 @@ FATArchive::EntryPtr FATArchive::insert(const EntryPtr& idBeforeThis,
 	if (this->isValid(idBeforeThis)) {
 		// Update the offsets of any files located after this one (since they will
 		// all have been shifted forward to make room for the insert.)
-		this->shiftFiles(pNewFile->iOffset + pNewFile->lenHeader, pNewFile->iSize, 1);
-	}
+		this->shiftFiles(
+			pNewFile,
+			pNewFile->iOffset + pNewFile->lenHeader,
+			pNewFile->iSize,
+			1
+		);
 
-	// Add the new file to the vector now all the existing offsets have been
-	// updated.
-	if (this->isValid(idBeforeThis)) {
+		// Add the new file to the vector now all the existing offsets have been
+		// updated.
 		// TESTED BY: fmt_grp_duke3d_insert_mid
-		VC_ENTRYPTR::iterator itBeforeThis = std::find(this->vcFAT.begin(), this->vcFAT.end(), idBeforeThis);
+		VC_ENTRYPTR::iterator itBeforeThis = std::find(this->vcFAT.begin(),
+			this->vcFAT.end(), idBeforeThis);
 		assert(itBeforeThis != this->vcFAT.end());
 		this->vcFAT.insert(itBeforeThis, ep);
 	} else {
@@ -218,7 +222,12 @@ void FATArchive::remove(EntryPtr& id)
 
 	// Update the offsets of any files located after this one (since they will
 	// all have been shifted back to fill the gap made by the removal.)
-	this->shiftFiles(pFATDel->iOffset, -(pFATDel->iSize + pFATDel->lenHeader), -1);
+	this->shiftFiles(
+		pFATDel,
+		pFATDel->iOffset,
+		-(pFATDel->iSize + pFATDel->lenHeader),
+		-1
+	);
 
 	// Remove the file's data from the archive
 	this->psArchive->seekp(pFATDel->iOffset);
@@ -257,16 +266,28 @@ void FATArchive::resize(EntryPtr& id, size_t iNewSize)
 		return; // no change
 	}
 
-	pFAT->iSize += iDelta;
+	pFAT->iSize = iNewSize;
 
 	// Update the FAT with the file's new size
 	this->updateFileSize(pFAT, iDelta);
 
 	// Adjust the in-memory offsets etc. of the rest of the files in the archive,
 	// including any open streams.
-	this->shiftFiles(iStart, iDelta, 0);
+	this->shiftFiles(pFAT, iStart, iDelta, 0);
 
-	pFAT->iSize = iNewSize;
+	// Resize any open substreams
+	for (substream_vc::iterator i = this->vcSubStream.begin();
+		i != this->vcSubStream.end();
+		i++
+	) {
+		if (substream_sptr sub = i->lock()) {
+			if (sub->getOffset() == pFAT->iOffset) {
+				sub->setSize(iNewSize);
+				// no break, could be multiple opens for same entry
+			}
+		}
+	}
+
 	return;
 }
 
@@ -296,12 +317,13 @@ FATArchive::EntryPtr FATArchive::entryPtrFromStream(const iostream_sptr openFile
 	return EntryPtr();
 }
 
-void FATArchive::shiftFiles(io::stream_offset offStart, std::streamsize deltaOffset,
-	int deltaIndex)
+void FATArchive::shiftFiles(const FATEntry *fatSkip, io::stream_offset offStart,
+	std::streamsize deltaOffset, int deltaIndex)
 	throw (std::ios::failure)
 {
 	for (VC_ENTRYPTR::iterator i = this->vcFAT.begin(); i != this->vcFAT.end(); i++) {
 		FATEntry *pFAT = dynamic_cast<FATEntry *>(i->get());
+		if (pFAT == fatSkip) continue; // don't alter this file
 		if (pFAT->iOffset >= offStart) {
 			// This file is located after the one we're deleting, so tweak its offset
 			pFAT->iOffset += deltaOffset;
@@ -317,11 +339,21 @@ void FATArchive::shiftFiles(io::stream_offset offStart, std::streamsize deltaOff
 	}
 
 	// Relocate any open substreams
-	for (substream_vc::iterator i = this->vcSubStream.begin(); i != this->vcSubStream.end(); i++) {
-		if ((*i)->getOffset() >= offStart) {
-			(*i)->relocate(deltaOffset);
-		}
+	bool clean = false;
+	for (substream_vc::iterator i = this->vcSubStream.begin();
+		i != this->vcSubStream.end();
+		i++
+	) {
+		if (substream_sptr sub = i->lock()) {
+			if (sub->getOffset() >= offStart) {
+				sub->relocate(deltaOffset);
+			}
+		} else clean = true;
 	}
+
+	// If one substream has closed, clean up
+	if (clean) this->cleanOpenSubstreams();
+
 	return;
 }
 
@@ -341,6 +373,30 @@ FATArchive::FATEntry *FATArchive::createNewFATEntry()
 	throw ()
 {
 	return new FATEntry();
+}
+
+void FATArchive::cleanOpenSubstreams()
+	throw ()
+{
+	bool clean;
+	do {
+		clean = true;
+		// Run through the list looking for the first expired item
+		for (substream_vc::iterator i = this->vcSubStream.begin();
+			i != this->vcSubStream.end();
+			i++
+		) {
+			if (i->expired()) {
+				// Found one so remove it and restart the search (since removing an
+				// item invalidates the iterator.)
+				this->vcSubStream.erase(i);
+				clean = false;
+				break;
+			};
+		}
+	} while (!clean);
+
+	return;
 }
 
 } // namespace gamearchive

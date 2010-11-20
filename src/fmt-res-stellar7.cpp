@@ -258,7 +258,7 @@ FATArchive::FATEntry *RESArchiveFolder::preInsertFile(const FATEntry *idBeforeTh
 
 	// Since we've inserted some data for the embedded header, we need to update
 	// the other file offsets accordingly.
-	this->shiftFiles(pNewEntry->iOffset, pNewEntry->lenHeader, 0);
+	this->shiftFiles(pNewEntry, pNewEntry->iOffset, pNewEntry->lenHeader, 0);
 
 	return pNewEntry;
 }

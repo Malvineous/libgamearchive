@@ -237,7 +237,12 @@ FATArchive::FATEntry *GRPArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 		<< u32le(pNewEntry->iSize);
 
 	// Update the offsets now there's a new FAT entry taking up space.
-	this->shiftFiles(GRP_FAT_OFFSET + this->vcFAT.size() * GRP_FAT_ENTRY_LEN, GRP_FAT_ENTRY_LEN, 0);
+	this->shiftFiles(
+		pNewEntry,
+		GRP_FAT_OFFSET + this->vcFAT.size() * GRP_FAT_ENTRY_LEN,
+		GRP_FAT_ENTRY_LEN,
+		0
+	);
 
 	this->updateFileCount(this->vcFAT.size() + 1);
 	return pNewEntry;
@@ -252,7 +257,12 @@ void GRPArchive::preRemoveFile(const FATEntry *pid)
 	// must be called before the FAT is altered, because it will write a new
 	// offset into the FAT entry we're about to erase (and if we erase it first
 	// it'll overwrite something else.)
-	this->shiftFiles(GRP_FAT_OFFSET + this->vcFAT.size() * GRP_FAT_ENTRY_LEN, -GRP_FAT_ENTRY_LEN, 0);
+	this->shiftFiles(
+		NULL,
+		GRP_FAT_OFFSET + this->vcFAT.size() * GRP_FAT_ENTRY_LEN,
+		-GRP_FAT_ENTRY_LEN,
+		0
+	);
 
 	this->psArchive->seekp(GRP_FATENTRY_OFFSET(pid));
 	this->psArchive->remove(GRP_FAT_ENTRY_LEN);

@@ -299,8 +299,12 @@ FATArchive::FATEntry *DAT_HugoArchive::preInsertFile(
 	;
 
 	// Update the offsets now there's a new FAT entry taking up space.
-	this->shiftFiles(this->vcFAT.size() * DAT_FAT_ENTRY_LEN,
-		DAT_FAT_ENTRY_LEN, 0);
+	this->shiftFiles(
+		pNewEntry,
+		this->vcFAT.size() * DAT_FAT_ENTRY_LEN,
+		DAT_FAT_ENTRY_LEN,
+		0
+	);
 
 	return pNewEntry;
 }
@@ -314,8 +318,12 @@ void DAT_HugoArchive::preRemoveFile(const FATEntry *pid)
 	// must be called before the FAT is altered, because it will write a new
 	// offset into the FAT entry we're about to erase (and if we erase it first
 	// it'll overwrite something else.)
-	this->shiftFiles(this->vcFAT.size() * DAT_FAT_ENTRY_LEN,
-		-DAT_FAT_ENTRY_LEN, 0);
+	this->shiftFiles(
+		NULL,
+		this->vcFAT.size() * DAT_FAT_ENTRY_LEN,
+		-DAT_FAT_ENTRY_LEN,
+		0
+	);
 
 	this->psArchive->seekp(DAT_FATENTRY_OFFSET(pid));
 	this->psArchive->remove(DAT_FAT_ENTRY_LEN);

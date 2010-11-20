@@ -342,6 +342,14 @@ class Archive: virtual public Metadata {
 		 *         size the excess data is lost, if it is larger than the current
 		 *         size the new data is random (whatever was there from before.)
 		 * @post   Existing EntryPtrs remain valid.
+		 * @note   Resizing files to zero will cause problems if files are already
+		 *         opened.  This is because already open files are identified by
+		 *         offset and having zero-length files means multiple files will
+		 *         share the same offset.  If these are open during a resize and
+		 *         one of the zero-length files is resized, all the streams
+		 *         sharing the same offset will be resized (but the actual files in
+		 *         the archive won't.)  This problem does not exist if the resize
+		 *         is done while none of the archive's files are open.
 		 */
 		virtual void resize(EntryPtr& id, size_t iNewSize)
 			throw (std::ios::failure) = 0;

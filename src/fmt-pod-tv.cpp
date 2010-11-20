@@ -304,7 +304,12 @@ FATArchive::FATEntry *PODArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 		<< u32le(pNewEntry->iOffset);
 
 	// Update the offsets now there's a new FAT entry taking up space.
-	this->shiftFiles(POD_FAT_OFFSET + this->vcFAT.size() * POD_FAT_ENTRY_LEN, POD_FAT_ENTRY_LEN, 0);
+	this->shiftFiles(
+		pNewEntry,
+		POD_FAT_OFFSET + this->vcFAT.size() * POD_FAT_ENTRY_LEN,
+		POD_FAT_ENTRY_LEN,
+		0
+	);
 
 	this->updateFileCount(this->vcFAT.size() + 1);
 
@@ -320,7 +325,12 @@ void PODArchive::preRemoveFile(const FATEntry *pid)
 	// must be called before the FAT is altered, because it will write a new
 	// offset into the FAT entry we're about to erase (and if we erase it first
 	// it'll overwrite something else.)
-	this->shiftFiles(POD_FAT_OFFSET + this->vcFAT.size() * POD_FAT_ENTRY_LEN, -POD_FAT_ENTRY_LEN, 0);
+	this->shiftFiles(
+		NULL,
+		POD_FAT_OFFSET + this->vcFAT.size() * POD_FAT_ENTRY_LEN,
+		-POD_FAT_ENTRY_LEN,
+		0
+	);
 
 	// Remove the FAT entry
 	this->psArchive->seekp(POD_FAT_OFFSET + pid->iIndex * POD_FAT_ENTRY_LEN);

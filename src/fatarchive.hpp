@@ -20,14 +20,14 @@
 #ifndef _CAMOTO_FATARCHIVE_HPP_
 #define _CAMOTO_FATARCHIVE_HPP_
 
-#include <camoto/gamearchive/archive.hpp>
-
 #include <iostream>
 #include <vector>
 #include <boost/iostreams/stream.hpp>
+#include <boost/weak_ptr.hpp>
 
 #include <camoto/substream.hpp>
 #include <camoto/segmented_stream.hpp>
+#include <camoto/gamearchive/archive.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -67,8 +67,15 @@ class FATArchive: virtual public Archive {
 		// order on-disk.  Use the iIndex member for that.)
 		VC_ENTRYPTR vcFAT;
 
-		typedef std::vector<substream_sptr> substream_vc;
-		substream_vc vcSubStream; // List of substreams currently open
+		/// Vector of substream references
+		/**
+		 * These are weak pointers so that we don't hold a file open simply because
+		 * we're keeping track of it.
+		 */
+		typedef std::vector< boost::weak_ptr<substream> > substream_vc;
+
+		/// List of substreams currently open
+		substream_vc vcSubStream;
 
 	public:
 
@@ -197,6 +204,10 @@ class FATArchive: virtual public Archive {
 	/// Do not use, see below.
 	friend EntryPtr getFileAt(const VC_ENTRYPTR& files, int index);
 
+	private:
+		/// Remove any substreams from the cached list if they have closed.
+		void cleanOpenSubstreams()
+			throw ();
 };
 
 /// Function for test code only, do not use.  Searches for files based on the

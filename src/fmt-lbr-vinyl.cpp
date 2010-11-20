@@ -561,7 +561,12 @@ FATArchive::FATEntry *LBRArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	;
 
 	// Update the offsets now there's a new FAT entry taking up space.
-	this->shiftFiles(LBR_FAT_OFFSET + this->vcFAT.size() * LBR_FAT_ENTRY_LEN, LBR_FAT_ENTRY_LEN, 0);
+	this->shiftFiles(
+		pNewEntry,
+		LBR_FAT_OFFSET + this->vcFAT.size() * LBR_FAT_ENTRY_LEN,
+		LBR_FAT_ENTRY_LEN,
+		0
+	);
 
 	this->updateFileCount(this->vcFAT.size() + 1);
 	return pNewEntry;
@@ -576,7 +581,12 @@ void LBRArchive::preRemoveFile(const FATEntry *pid)
 	// must be called before the FAT is altered, because it will write a new
 	// offset into the FAT entry we're about to erase (and if we erase it first
 	// it'll overwrite something else.)
-	this->shiftFiles(LBR_FAT_OFFSET + this->vcFAT.size() * LBR_FAT_ENTRY_LEN, -LBR_FAT_ENTRY_LEN, 0);
+	this->shiftFiles(
+		NULL,
+		LBR_FAT_OFFSET + this->vcFAT.size() * LBR_FAT_ENTRY_LEN,
+		-LBR_FAT_ENTRY_LEN,
+		0
+	);
 
 	this->psArchive->seekp(LBR_FATENTRY_OFFSET(pid));
 	this->psArchive->remove(LBR_FAT_ENTRY_LEN);

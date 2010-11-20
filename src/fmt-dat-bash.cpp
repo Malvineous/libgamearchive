@@ -320,7 +320,7 @@ FATArchive::FATEntry *DAT_BashArchive::preInsertFile(
 	// we need to do this after the insert() call above to make sure the extra
 	// data has been inserted.  Then when updateFileOffset() writes data out it
 	// will go into the correct spot.
-	this->shiftFiles(pNewEntry->iOffset, pNewEntry->lenHeader, 0);
+	this->shiftFiles(pNewEntry, pNewEntry->iOffset, pNewEntry->lenHeader, 0);
 
 	return pNewEntry;
 }

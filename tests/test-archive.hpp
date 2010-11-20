@@ -1007,6 +1007,43 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_all_re_add))
 #endif
 }
 
+// The function shifting files can get confused if a zero-length file is
+// inserted, incorrectly moving it because of the zero size.
+BOOST_AUTO_TEST_CASE(TEST_NAME(insert_zero_then_resize))
+{
+	BOOST_TEST_MESSAGE("Inserting empty file into archive, then resize it");
+
+	// Insert the file
+#if !NO_FILENAMES
+	ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), FILENAME3, 0, FILETYPE_GENERIC, ga::EA_NONE);
+#else
+	ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), "dummy", 0, FILETYPE_GENERIC, ga::EA_NONE);
+#endif
+
+	// Make sure it went in ok
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
+		"Couldn't create new file in sample archive");
+
+	// Open it
+	pArchive->resize(ep, 17);
+	boost::shared_ptr<std::iostream> pfsNew(pArchive->open(ep));
+	pfsNew->seekp(0, std::ios::beg);
+	pfsNew->write("This is three.dat", 17);
+	pfsNew->flush();
+
+	BOOST_CHECK_MESSAGE(
+		is_equal(makeString(TEST_RESULT(insert_end))),
+		"Error resizing newly inserted empty file"
+	);
+
+#ifdef HAS_FAT
+	BOOST_CHECK_MESSAGE(
+		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_insert_end))),
+		"Error resizing newly inserted empty file"
+	);
+#endif
+}
+
 //
 // Metadata tests
 //

@@ -217,7 +217,12 @@ FATArchive::FATEntry *DAT_SangoArchive::preInsertFile(const FATEntry *idBeforeTh
 		<< u32le(pNewEntry->iOffset);
 
 	// Update the offsets now there's a new FAT entry taking up space.
-	this->shiftFiles((this->vcFAT.size() + 1) * DAT_FAT_ENTRY_LEN, DAT_FAT_ENTRY_LEN, 0);
+	this->shiftFiles(
+		pNewEntry,
+		(this->vcFAT.size() + 1) * DAT_FAT_ENTRY_LEN,
+		DAT_FAT_ENTRY_LEN,
+		0
+	);
 
 	return pNewEntry;
 }
@@ -231,7 +236,12 @@ void DAT_SangoArchive::preRemoveFile(const FATEntry *pid)
 	// must be called before the FAT is altered, because it will write a new
 	// offset into the FAT entry we're about to erase (and if we erase it first
 	// it'll overwrite something else.)
-	this->shiftFiles((this->vcFAT.size() + 1) * DAT_FAT_ENTRY_LEN, -DAT_FAT_ENTRY_LEN, 0);
+	this->shiftFiles(
+		NULL,
+		(this->vcFAT.size() + 1) * DAT_FAT_ENTRY_LEN,
+		-DAT_FAT_ENTRY_LEN,
+		0
+	);
 
 	// Update the last FAT entry (the one that points to EOF.)
 	this->updateLastEntry(-(pid->iSize + DAT_FAT_ENTRY_LEN));
