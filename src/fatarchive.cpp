@@ -63,17 +63,20 @@ FATArchive::~FATArchive()
 	//this->flush(); // make sure it saves on close just in case
 }
 
-const FATArchive::VC_ENTRYPTR& FATArchive::getFileList()
+const FATArchive::VC_ENTRYPTR& FATArchive::getFileList() const
 	throw ()
 {
 	return this->vcFAT;
 }
 
-FATArchive::EntryPtr FATArchive::find(const std::string& strFilename)
+FATArchive::EntryPtr FATArchive::find(const std::string& strFilename) const
 	throw ()
 {
 	// TESTED BY: fmt_grp_duke3d_*
-	for (VC_ENTRYPTR::iterator i = this->vcFAT.begin(); i != this->vcFAT.end(); i++) {
+	for (VC_ENTRYPTR::const_iterator i = this->vcFAT.begin();
+		i != this->vcFAT.end();
+		i++
+	) {
 		const FATEntry *pFAT = dynamic_cast<const FATEntry *>(i->get());
 		if (boost::iequals(pFAT->strName, strFilename)) {
 			return *i;  // *i is the original shared_ptr
@@ -82,7 +85,7 @@ FATArchive::EntryPtr FATArchive::find(const std::string& strFilename)
 	return EntryPtr();
 }
 
-bool FATArchive::isValid(const EntryPtr& id)
+bool FATArchive::isValid(const EntryPtr& id) const
 	throw ()
 {
 	const FATEntry *id2 = dynamic_cast<const FATEntry *>(id.get());

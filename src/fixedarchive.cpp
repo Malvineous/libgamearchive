@@ -72,17 +72,20 @@ FixedArchive::~FixedArchive()
 {
 }
 
-const FixedArchive::VC_ENTRYPTR& FixedArchive::getFileList()
+const FixedArchive::VC_ENTRYPTR& FixedArchive::getFileList() const
 	throw ()
 {
 	return this->vcFixedEntries;
 }
 
-FixedArchive::EntryPtr FixedArchive::find(const std::string& strFilename)
+FixedArchive::EntryPtr FixedArchive::find(const std::string& strFilename) const
 	throw ()
 {
 	// TESTED BY: TODO
-	for (VC_ENTRYPTR::iterator i = this->vcFixedEntries.begin(); i != this->vcFixedEntries.end(); i++) {
+	for (VC_ENTRYPTR::const_iterator i = this->vcFixedEntries.begin();
+		i != this->vcFixedEntries.end();
+		i++
+	) {
 		const FixedEntry *entry = dynamic_cast<const FixedEntry *>(i->get());
 		const FixedArchiveFile *file = &this->files[entry->index];
 		if (boost::iequals(file->name, strFilename)) {
@@ -92,7 +95,7 @@ FixedArchive::EntryPtr FixedArchive::find(const std::string& strFilename)
 	return EntryPtr();
 }
 
-bool FixedArchive::isValid(const EntryPtr& id)
+bool FixedArchive::isValid(const EntryPtr& id) const
 	throw ()
 {
 	const FixedEntry *id2 = dynamic_cast<const FixedEntry *>(id.get());

@@ -200,7 +200,7 @@ class Archive: virtual public Metadata {
 		 * @return EntryPtr to the requested file, or an empty EntryPtr() if the
 		 * file can't be found (EntryPtr::bValid will be false.)
 		 */
-		virtual EntryPtr find(const std::string& strFilename)
+		virtual EntryPtr find(const std::string& strFilename) const
 			throw () = 0;
 
 		/// Get a list of all files in the archive.
@@ -208,7 +208,7 @@ class Archive: virtual public Metadata {
 		 * @return A vector of FileEntry with one element for each file in the
 		 *         archive.
 		 */
-		virtual const VC_ENTRYPTR& getFileList(void)
+		virtual const VC_ENTRYPTR& getFileList(void) const
 			throw () = 0;
 
 		/// Checks that the EntryPtr points to a file that still exists.
@@ -219,7 +219,7 @@ class Archive: virtual public Metadata {
 		 * @param  id Entry to check
 		 * @return true if the EntryPtr is valid.
 		 */
-		virtual bool isValid(const EntryPtr& id)
+		virtual bool isValid(const EntryPtr& id) const
 			throw () = 0;
 
 		/// Open a file in the archive.

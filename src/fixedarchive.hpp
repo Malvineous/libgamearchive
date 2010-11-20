@@ -86,13 +86,13 @@ class FixedArchive: virtual public Archive {
 		virtual ~FixedArchive()
 			throw ();
 
-		virtual EntryPtr find(const std::string& strFilename)
+		virtual EntryPtr find(const std::string& strFilename) const
 			throw ();
 
-		virtual const VC_ENTRYPTR& getFileList(void)
+		virtual const VC_ENTRYPTR& getFileList(void) const
 			throw ();
 
-		virtual bool isValid(const EntryPtr& id)
+		virtual bool isValid(const EntryPtr& id) const
 			throw ();
 
 		virtual iostream_sptr open(const EntryPtr& id)
