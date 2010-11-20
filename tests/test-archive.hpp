@@ -1017,10 +1017,10 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(get_metadata_description))
 	BOOST_TEST_MESSAGE("get 'description' metadata field");
 
 	// Make sure this format reports having a 'description' metadata field
-	ga::VC_METADATA_ITEMS items = pArchive->getMetadataList();
+	camoto::Metadata::MetadataTypes items = pArchive->getMetadataList();
 	bool bFound = false;
-	for (ga::VC_METADATA_ITEMS::iterator i = items.begin(); i != items.end(); i++) {
-		if (*i == ga::EM_DESCRIPTION) {
+	for (camoto::Metadata::MetadataTypes::iterator i = items.begin(); i != items.end(); i++) {
+		if (*i == camoto::Metadata::Description) {
 			bFound = true;
 			break;
 		}
@@ -1028,7 +1028,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(get_metadata_description))
 	BOOST_REQUIRE_EQUAL(bFound, true);
 
 	// Change the field's value
-	std::string value = pArchive->getMetadata(ga::EM_DESCRIPTION);
+	std::string value = pArchive->getMetadata(camoto::Metadata::Description);
 
 	// Make sure we didn't read in extra data (e.g. 400MB with a broken length)
 	BOOST_REQUIRE_EQUAL(value.length(), sizeof(TEST_RESULT(get_metadata_description)) - 1);
@@ -1054,7 +1054,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(set_metadata_description_larger))
 	// get_metadata_description above.
 
 	// Change the field's value
-	pArchive->setMetadata(ga::EM_DESCRIPTION, TEST_RESULT(set_metadata_description_target_larger));
+	pArchive->setMetadata(camoto::Metadata::Description, TEST_RESULT(set_metadata_description_target_larger));
 
 	BOOST_CHECK_MESSAGE(
 		is_equal(makeString(TEST_RESULT(set_metadata_description_larger))),
@@ -1077,7 +1077,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(set_metadata_description_smaller))
 	// get_metadata_description above.
 
 	// Change the field's value
-	pArchive->setMetadata(ga::EM_DESCRIPTION, TEST_RESULT(set_metadata_description_target_smaller));
+	pArchive->setMetadata(camoto::Metadata::Description, TEST_RESULT(set_metadata_description_target_smaller));
 
 	BOOST_CHECK_MESSAGE(
 		is_equal(makeString(TEST_RESULT(set_metadata_description_smaller))),

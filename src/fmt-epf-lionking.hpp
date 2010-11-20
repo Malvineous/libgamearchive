@@ -93,13 +93,13 @@ class EPFArchive: virtual public FATArchive {
 		virtual void rename(EntryPtr& id, const std::string& strNewName)
 			throw (std::ios_base::failure);
 
-		virtual VC_METADATA_ITEMS getMetadataList() const
+		virtual MetadataTypes getMetadataList() const
 			throw ();
 
-		virtual std::string getMetadata(E_METADATA item) const
+		virtual std::string getMetadata(MetadataType item) const
 			throw (std::ios::failure);
 
-		virtual void setMetadata(E_METADATA item, const std::string& value)
+		virtual void setMetadata(MetadataType item, const std::string& value)
 			throw (std::ios::failure);
 
 		// As per FATArchive (see there for docs)

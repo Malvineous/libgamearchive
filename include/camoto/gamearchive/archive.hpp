@@ -29,6 +29,7 @@
 #include <vector>
 
 #include <camoto/types.hpp>
+#include <camoto/metadata.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -45,14 +46,6 @@ enum E_ATTRIBUTE {
 	EA_ENCRYPTED  = 0x08,  ///< File is encrypted
 	EA_FOLDER     = 0x80,  ///< This entry is a folder, not a file
 };
-
-/// Metadata item types.
-enum E_METADATA {
-	EM_DESCRIPTION,  ///< %Archive description
-};
-
-/// Vector of metadata item types.
-typedef std::vector<E_METADATA> VC_METADATA_ITEMS;
 
 /// Generic "file not found" exception.
 class ENotFound: public std::exception {
@@ -77,7 +70,7 @@ typedef boost::shared_ptr<Archive> ArchivePtr;
  *       of the functions seek around the underlying stream and thus will break
  *       if two or more functions are executing at the same time.
  */
-class Archive {
+class Archive: virtual public Metadata {
 
 	public:
 		/// Offset type used by FileEntry
@@ -399,60 +392,6 @@ class Archive {
 		 */
 		virtual int getSupportedAttributes() const
 			throw ();
-
-		// The metadata functions all have no-op defaults, they only need to be
-		// overridden for archive formats that have metadata.
-
-		/// Get a list of supported metadata elements that can be set.
-		/**
-		 * Some archive formats have room for additional data, such as a comment
-		 * or copyright notice.  This function is used to obtain a list of the
-		 * metadata elements supported by the current archive.  Not every archive
-		 * supports all the metadata types, and any optional elements will be
-		 * included in this list (but getMetadata() may return an empty string for
-		 * those.)
-		 *
-		 * Note to archive format implementors: There is a default implementation
-		 * of this function which returns an empty vector.  Thus this only needs
-		 * to be overridden if the archive format does actually support metadata.
-		 *
-		 * @return std::vector of \ref E_METADATA items.
-		 */
-		virtual VC_METADATA_ITEMS getMetadataList() const
-			throw ();
-
-		/// Get the value of a metadata element.
-		/**
-		 * Returns the value of a metadata item reported to exist by
-		 * getMetadataList().
-		 *
-		 * Note to archive format implementors: There is a default implementation
-		 * of this function which always throws an exception.  Thus this only needs
-		 * to be overridden if the archive format does actually support metadata.
-		 *
-		 * @param  item Item to retrieve.  Must have been included in the list
-		 *         returned by getMetadataList().
-		 * @return A string containing the metadata (may be empty.)
-		 */
-		virtual std::string getMetadata(E_METADATA item) const
-			throw (std::ios::failure);
-
-		/// Change the value of a metadata element.
-		/**
-		 * Only elements returned by getMetadataList() can be changed.
-		 *
-		 * Note to archive format implementors: There is a default implementation
-		 * of this function which always throws an exception.  Thus this only needs
-		 * to be overridden if the archive format does actually support metadata.
-		 *
-		 * @param  item Item to set.  Must have been included in the list returned
-		 *         by getMetadataList().
-		 * @param  value The value to set.  Passing an empty string will remove
-		 *         the metadata element if possible, otherwise it will be set to
-		 *         a blank.
-		 */
-		virtual void setMetadata(E_METADATA item, const std::string& value)
-			throw (std::ios::failure);
 
 };
 

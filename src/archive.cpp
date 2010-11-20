@@ -100,30 +100,5 @@ int Archive::getSupportedAttributes() const
 	return 0;
 }
 
-VC_METADATA_ITEMS Archive::getMetadataList() const
-	throw ()
-{
-	return VC_METADATA_ITEMS();
-}
-
-std::string Archive::getMetadata(E_METADATA item) const
-	throw (std::ios::failure)
-{
-	// This should never be called because getMetadataList() returned an empty
-	// list.
-	assert(false);
-	throw std::ios::failure("unsupported metadata item");
-}
-
-// Change the value of a metadata element.
-void Archive::setMetadata(E_METADATA item, const std::string& value)
-	throw (std::ios::failure)
-{
-	// This should never be called because getMetadataList() returned an empty
-	// list.
-	assert(false);
-	throw std::ios::failure("unsupported metadata item");
-}
-
 } // namespace gamearchive
 } // namespace camoto

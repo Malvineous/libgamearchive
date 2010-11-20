@@ -249,21 +249,21 @@ void EPFArchive::rename(EntryPtr& id, const std::string& strNewName)
 	return;
 }
 
-VC_METADATA_ITEMS EPFArchive::getMetadataList() const
+EPFArchive::MetadataTypes EPFArchive::getMetadataList() const
 	throw ()
 {
 	// TESTED BY: fmt_epf_lionking_get_metadata_description
-	VC_METADATA_ITEMS m;
-	m.push_back(EM_DESCRIPTION);
+	MetadataTypes m;
+	m.push_back(Description);
 	return m;
 }
 
-std::string EPFArchive::getMetadata(E_METADATA item) const
+std::string EPFArchive::getMetadata(MetadataType item) const
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_epf_lionking_get_metadata_description
 	switch (item) {
-		case EM_DESCRIPTION: {
+		case Description: {
 			io::stream_offset offDesc = this->getDescOffset();
 			std::streamsize sizeDesc = this->offFAT - offDesc;
 			std::string strDesc;
@@ -280,13 +280,13 @@ std::string EPFArchive::getMetadata(E_METADATA item) const
 	}
 }
 
-void EPFArchive::setMetadata(E_METADATA item, const std::string& value)
+void EPFArchive::setMetadata(MetadataType item, const std::string& value)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_epf_lionking_set_metadata_description
 	// TESTED BY: fmt_epf_lionking_new_to_initialstate
 	switch (item) {
-		case EM_DESCRIPTION: {
+		case Description: {
 			io::stream_offset offDesc = this->getDescOffset();
 			std::streamsize sizeDesc = this->offFAT - offDesc;
 			std::streamsize sizeDelta = value.length() - sizeDesc;

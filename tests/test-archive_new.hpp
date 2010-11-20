@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(new_to_initialstate))
 	// If this format has metadata, set it to the same value used when comparing
 	// against the initialstate, so that this new archive will hopefully match
 	// the initialstate itself.
-	pArchive->setMetadata(ga::EM_DESCRIPTION, TEST_RESULT(get_metadata_description));
+	pArchive->setMetadata(camoto::Metadata::Description, TEST_RESULT(get_metadata_description));
 #endif
 
 	BOOST_CHECK_MESSAGE(

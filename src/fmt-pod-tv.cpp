@@ -209,21 +209,21 @@ void PODArchive::rename(EntryPtr& id, const std::string& strNewName)
 	return;
 }
 
-VC_METADATA_ITEMS PODArchive::getMetadataList() const
+PODArchive::MetadataTypes PODArchive::getMetadataList() const
 	throw ()
 {
 	// TESTED BY: fmt_pod_tv_get_metadata_description
-	VC_METADATA_ITEMS m;
-	m.push_back(EM_DESCRIPTION);
+	MetadataTypes m;
+	m.push_back(Description);
 	return m;
 }
 
-std::string PODArchive::getMetadata(E_METADATA item) const
+std::string PODArchive::getMetadata(MetadataType item) const
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_pod_tv_get_metadata_description
 	switch (item) {
-		case EM_DESCRIPTION: {
+		case Description: {
 			// TODO: see whether description can span two file entries (80 bytes) or
 			// whether the offsets have to be null
 			psArchive->seekg(POD_DESCRIPTION_OFFSET, std::ios::beg);
@@ -238,13 +238,13 @@ std::string PODArchive::getMetadata(E_METADATA item) const
 	}
 }
 
-void PODArchive::setMetadata(E_METADATA item, const std::string& value)
+void PODArchive::setMetadata(MetadataType item, const std::string& value)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_pod_tv_set_metadata_description
 	// TESTED BY: fmt_pod_tv_new_to_initialstate
 	switch (item) {
-		case EM_DESCRIPTION:
+		case Description:
 			if (value.length() > POD_DESCRIPTION_LEN) {
 				throw std::ios::failure("description too long");
 			}
