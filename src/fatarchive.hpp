@@ -52,6 +52,9 @@ class FATArchive: virtual public Archive {
 			FATEntry();
 			virtual ~FATEntry();
 			virtual std::string getContent() const;
+
+			private:
+				FATEntry(const FATEntry&);
 		};
 
 		// This is a vector of file entries.  Although we have a specific FAT type

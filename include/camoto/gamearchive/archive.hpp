@@ -141,6 +141,13 @@ class Archive {
 					<< this->type << ";attr=" << fAttr;
 				return ss.str();
 			}
+
+			FileEntry();
+			virtual ~FileEntry();
+
+			private:
+				/// Can't copy FileEntry instances, must use references/pointers.
+				FileEntry(const FileEntry&);
 		};
 
 		/// Shared pointer to a FileEntry

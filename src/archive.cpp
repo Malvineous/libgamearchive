@@ -25,6 +25,14 @@
 namespace camoto {
 namespace gamearchive {
 
+Archive::FileEntry::FileEntry()
+{
+}
+
+Archive::FileEntry::~FileEntry()
+{
+}
+
 ArchivePtr ArchiveType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
 	throw (std::ios::failure)
 {
