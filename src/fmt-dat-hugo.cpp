@@ -300,7 +300,7 @@ FATArchive::FATEntry *DAT_HugoArchive::preInsertFile(
 
 	// Update the offsets now there's a new FAT entry taking up space.
 	this->shiftFiles(
-		pNewEntry,
+		NULL,
 		this->vcFAT.size() * DAT_FAT_ENTRY_LEN,
 		DAT_FAT_ENTRY_LEN,
 		0

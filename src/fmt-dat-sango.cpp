@@ -218,7 +218,7 @@ FATArchive::FATEntry *DAT_SangoArchive::preInsertFile(const FATEntry *idBeforeTh
 
 	// Update the offsets now there's a new FAT entry taking up space.
 	this->shiftFiles(
-		pNewEntry,
+		NULL,
 		(this->vcFAT.size() + 1) * DAT_FAT_ENTRY_LEN,
 		DAT_FAT_ENTRY_LEN,
 		0

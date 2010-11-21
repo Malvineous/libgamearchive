@@ -562,7 +562,7 @@ FATArchive::FATEntry *LBRArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 
 	// Update the offsets now there's a new FAT entry taking up space.
 	this->shiftFiles(
-		pNewEntry,
+		NULL,
 		LBR_FAT_OFFSET + this->vcFAT.size() * LBR_FAT_ENTRY_LEN,
 		LBR_FAT_ENTRY_LEN,
 		0

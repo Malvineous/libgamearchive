@@ -1025,8 +1025,8 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_zero_then_resize))
 		"Couldn't create new file in sample archive");
 
 	// Open it
+	camoto::iostream_sptr pfsNew(pArchive->open(ep));
 	pArchive->resize(ep, 17);
-	boost::shared_ptr<std::iostream> pfsNew(pArchive->open(ep));
 	pfsNew->seekp(0, std::ios::beg);
 	pfsNew->write("This is three.dat", 17);
 	pfsNew->flush();

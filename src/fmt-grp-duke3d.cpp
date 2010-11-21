@@ -238,7 +238,7 @@ FATArchive::FATEntry *GRPArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 
 	// Update the offsets now there's a new FAT entry taking up space.
 	this->shiftFiles(
-		pNewEntry,
+		NULL,
 		GRP_FAT_OFFSET + this->vcFAT.size() * GRP_FAT_ENTRY_LEN,
 		GRP_FAT_ENTRY_LEN,
 		0

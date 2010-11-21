@@ -236,7 +236,7 @@ FATArchive::FATEntry *HOGArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	this->psArchive << u32le(pNewEntry->iSize);
 
 	// Update the offsets now the embedded FAT entry has been inserted
-	this->shiftFiles(pNewEntry, pNewEntry->iOffset, pNewEntry->lenHeader, 0);
+	this->shiftFiles(NULL, pNewEntry->iOffset, pNewEntry->lenHeader, 0);
 
 	return pNewEntry;
 }

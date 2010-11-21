@@ -286,7 +286,7 @@ FATArchive::FATEntry *BNKArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	// we need to do this after the insert() call above to make sure the extra
 	// data has been inserted.  Then when updateFileOffset() writes data out it
 	// will go into the correct spot.
-	this->shiftFiles(pNewEntry, pNewEntry->iOffset, pNewEntry->lenHeader, 0);
+	this->shiftFiles(NULL, pNewEntry->iOffset, pNewEntry->lenHeader, 0);
 
 	// Write out same again but into the BNK file's external FAT
 	this->psFAT->seekp(pNewEntry->iIndex * BNK_FAT_ENTRY_LEN);

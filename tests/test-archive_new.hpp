@@ -139,4 +139,103 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(new_to_initialstate))
 #endif
 }
 
+// The function shifting files can get confused if a zero-length file is
+// inserted, incorrectly moving it because of the zero size.
+BOOST_AUTO_TEST_CASE(TEST_NAME(manipulate_zero_length_files))
+{
+	BOOST_TEST_MESSAGE("Inserting empty files into archive, then resizing them");
+
+#ifdef testdata_get_metadata_description
+	// If this format has metadata, set it to the same value used when comparing
+	// against the initialstate, so that this new archive will hopefully match
+	// the initialstate itself.
+	pArchive->setMetadata(camoto::Metadata::Description, TEST_RESULT(get_metadata_description));
+#endif
+
+	// Insert the file
+#if !NO_FILENAMES
+	ga::Archive::EntryPtr ep3 = pArchive->insert(ga::Archive::EntryPtr(), FILENAME3, 0, FILETYPE_GENERIC, ga::EA_NONE);
+#else
+	ga::Archive::EntryPtr ep3 = pArchive->insert(ga::Archive::EntryPtr(), "dummy", 0, FILETYPE_GENERIC, ga::EA_NONE);
+#endif
+	// Make sure it went in ok
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep3),
+		"Couldn't create new file in archive");
+	// Open it
+	camoto::iostream_sptr file3(pArchive->open(ep3));
+
+#if !NO_FILENAMES
+	ga::Archive::EntryPtr ep1 = pArchive->insert(ep3, FILENAME1, 0, FILETYPE_GENERIC, ga::EA_NONE);
+#else
+	ga::Archive::EntryPtr ep1 = pArchive->insert(ep3, "dummy", 0, FILETYPE_GENERIC, ga::EA_NONE);
+#endif
+	// Make sure it went in ok
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep1),
+		"Couldn't create new file in archive");
+	// Open it
+	camoto::iostream_sptr file1(pArchive->open(ep1));
+
+#if !NO_FILENAMES
+	ga::Archive::EntryPtr ep2 = pArchive->insert(ep3, FILENAME2, 0, FILETYPE_GENERIC, ga::EA_NONE);
+#else
+	ga::Archive::EntryPtr ep2 = pArchive->insert(ep3, "dummy", 0, FILETYPE_GENERIC, ga::EA_NONE);
+#endif
+	// Make sure it went in ok
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep2),
+		"Couldn't create new file in archive");
+	// Open it
+	camoto::iostream_sptr file2(pArchive->open(ep2));
+
+	// Get offsets of each file for later testing
+	ga::FATArchive::FATEntryPtr fat1 =
+		boost::dynamic_pointer_cast<ga::FATArchive::FATEntry>(ep1);
+	ga::FATArchive::FATEntryPtr fat3 =
+		boost::dynamic_pointer_cast<ga::FATArchive::FATEntry>(ep3);
+
+	int off1 = fat1->iOffset;
+	int off3 = fat3->iOffset;
+
+	// This will resize the second file.  Since all three files are zero-length,
+	// they currently all share the same offset.  This should result in file1
+	// keeping its original offset (same as file2) and file3's offset being
+	// increased.
+	pArchive->resize(ep2, 15);
+	file2->write("This is two.dat", 15);
+	file2->flush();
+
+	// Make sure the first file hasn't moved
+	BOOST_REQUIRE_EQUAL(fat1->iOffset, off1);
+
+	// Make sure the third file has moved.  In theory this could fail if an
+	// archive format comes along that can do this correctly without moving the
+	// file, but if that ever happens this test can be adjusted then.
+	BOOST_REQUIRE_GT(fat3->iOffset, off3);
+
+	pArchive->resize(ep1, 15);
+	file1->write("This is one.dat", 15);
+	file1->flush();
+
+	// Make sure the first file hasn't moved
+	BOOST_REQUIRE_EQUAL(fat1->iOffset, off1);
+
+	// Make sure the third file has moved again.  Same caveat as above.
+	BOOST_REQUIRE_GT(fat3->iOffset, off3);
+
+	pArchive->resize(ep3, 17);
+	file3->write("This is three.dat", 17);
+	file3->flush();
+
+	BOOST_CHECK_MESSAGE(
+		is_equal(makeString(TEST_RESULT(insert_end))),
+		"Error manipulating zero-length files"
+	);
+
+#ifdef HAS_FAT
+	BOOST_CHECK_MESSAGE(
+		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_insert_end))),
+		"Error manipulating zero-length files"
+	);
+#endif
+}
+
 BOOST_AUTO_TEST_SUITE_END()

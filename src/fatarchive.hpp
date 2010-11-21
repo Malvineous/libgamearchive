@@ -21,7 +21,7 @@
 #define _CAMOTO_FATARCHIVE_HPP_
 
 #include <iostream>
-#include <vector>
+#include <map>
 #include <boost/iostreams/stream.hpp>
 #include <boost/weak_ptr.hpp>
 
@@ -36,14 +36,13 @@ namespace io = boost::iostreams;
 
 class FATArchive: virtual public Archive {
 
-	protected:
-		// The archive stream must be mutable, because we need to change it by
-		// seeking and reading data in our get() functions, which don't logically
-		// change the archive's state.
-		mutable segstream_sptr psArchive;
+	public:
 
-		io::stream_offset offFirstFile; // offset of first file in empty archive
-
+		/// FAT-related fields to add to EntryPtr.
+		/**
+		 * This shouldn't really be public, but sometimes it is handy to access the
+		 * FAT fields (especially from within the unit tests.)
+		 */
 		struct FATEntry: virtual public FileEntry {
 			/// Index of file in archive.
 			/**
@@ -63,6 +62,18 @@ class FATArchive: virtual public Archive {
 				FATEntry(const FATEntry&);
 		};
 
+		/// Shared pointer of FAT-specific file entry.
+		typedef boost::shared_ptr<FATEntry> FATEntryPtr;
+
+	protected:
+		/// The archive stream must be mutable, because we need to change it by
+		/// seeking and reading data in our get() functions, which don't logically
+		/// change the archive's state.
+		mutable segstream_sptr psArchive;
+
+		/// Offset of the first file in an empty archive.
+		io::stream_offset offFirstFile;
+
 		/// Vector of all files in the archive.
 		/**
 		 * Although we have a specific FAT type for each entry we can't use a
@@ -75,15 +86,19 @@ class FATArchive: virtual public Archive {
 		 */
 		VC_ENTRYPTR vcFAT;
 
-		/// Vector of substream references
+		/// Vector of substream references.
 		/**
 		 * These are weak pointers so that we don't hold a file open simply because
-		 * we're keeping track of it.
+		 * we're keeping track of it.  We need to keep track of it so that open
+		 * files can be moved around as other files are inserted, resized, etc.
 		 */
-		typedef std::vector< boost::weak_ptr<substream> > substream_vc;
+		typedef std::multimap< FATEntryPtr, boost::weak_ptr<substream> > OPEN_FILES;
 
-		/// List of substreams currently open
-		substream_vc vcSubStream;
+		/// Helper type when inserting elements into openFiles.
+		typedef std::pair< FATEntryPtr, boost::weak_ptr<substream> > OPEN_FILE;
+
+		/// List of substreams currently open.
+		OPEN_FILES openFiles;
 
 	public:
 
@@ -256,12 +271,17 @@ class FATArchive: virtual public Archive {
 		virtual FATEntry *createNewFATEntry()
 			throw ();
 
-	/// Do not use, see below.
+	/// Test code only, do not use, see below.
 	friend EntryPtr getFileAt(const VC_ENTRYPTR& files, int index);
 
 	private:
 		/// Remove any substreams from the cached list if they have closed.
 		void cleanOpenSubstreams()
+			throw ();
+
+		/// Should the given entry be moved during an insert/resize operation?
+		bool entryInRange(const FATEntry *fat, io::stream_offset offStart,
+			const FATEntry *fatSkip)
 			throw ();
 };
 

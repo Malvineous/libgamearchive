@@ -305,7 +305,7 @@ FATArchive::FATEntry *PODArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 
 	// Update the offsets now there's a new FAT entry taking up space.
 	this->shiftFiles(
-		pNewEntry,
+		NULL,
 		POD_FAT_OFFSET + this->vcFAT.size() * POD_FAT_ENTRY_LEN,
 		POD_FAT_ENTRY_LEN,
 		0

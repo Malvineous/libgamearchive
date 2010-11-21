@@ -278,7 +278,7 @@ FATArchive::FATEntry *DAT_WackyArchive::preInsertFile(
 
 	// Update the offsets now there's a new FAT entry taking up space.
 	this->shiftFiles(
-		pNewEntry,
+		NULL,
 		DAT_FAT_OFFSET + this->vcFAT.size() * DAT_FAT_ENTRY_LEN,
 		DAT_FAT_ENTRY_LEN,
 		0
