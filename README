@@ -34,7 +34,13 @@ have been implemented:
   * Vinyl Goddess From Mars (.lbr)
   * Wacky Wheels (.dat)
 
-Many more formats are planned.
+Many more formats are planned.  The library also implements the following
+compression algorithms used by these formats:
+
+  * Lion King (decompress only)
+  * Monster Bash (decompress only)
+  * Stellar 7 (decompress only)
+  * Zone 66 (decompress only)
 
 The library is compiled and installed in the usual way:
 
@@ -51,6 +57,12 @@ a command-line interface to the library as well as an example of how to use
 the library.  This program is installed as part of the "make install" process.
 See "man gamearch" for full details (note the manpage is currently documenting
 intended behaviour, but not everything has been implemented yet.)
+
+A second example is also included ("gamecomp") which provides command line
+access to the compression algorithms implemented in the library.  Although
+gamearch will automatically decompress files on extraction, gamecomp can be
+used to decompress files that are not contained within an archive (such as
+the Zone 66 data files.)
 
 All supported archive formats are fully documented on the ModdingWiki - see
 http://www.shikadi.net/moddingwiki/
