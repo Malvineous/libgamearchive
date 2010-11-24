@@ -24,7 +24,6 @@
 #include <camoto/gamearchive.hpp>
 
 #include "fatarchive.hpp"
-#include "subdirarchive.hpp"
 
 namespace camoto {
 namespace gamearchive {
