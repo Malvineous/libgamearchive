@@ -263,16 +263,5 @@ FATArchive::FATEntry *RESArchiveFolder::preInsertFile(const FATEntry *idBeforeTh
 	return pNewEntry;
 }
 
-void RESArchiveFolder::preRemoveFile(const FATEntry *pid)
-	throw (std::ios::failure)
-{
-	// TESTED BY: fmt_res_stellar7_remove*
-
-	// We don't have to do anything here, because the embedded FAT will be
-	// removed by FATArchive and there's no other FAT to update.
-
-	return;
-}
-
 } // namespace gamearchive
 } // namespace camoto

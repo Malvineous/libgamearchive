@@ -217,7 +217,7 @@ class FATArchive: virtual public Archive {
 		 */
 		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis,
 			FATEntry *pNewEntry)
-			throw (std::ios::failure) = 0;
+			throw (std::ios::failure);
 
 		/// Called after the file data has been inserted.
 		/**
@@ -245,7 +245,7 @@ class FATArchive: virtual public Archive {
 		 * Invalidates existing EntryPtrs.
 		 */
 		virtual void preRemoveFile(const FATEntry *pid)
-			throw (std::ios::failure) = 0;
+			throw (std::ios::failure);
 
 		/// Called after the file data has been removed and the FAT has been
 		/// updated.

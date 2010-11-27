@@ -325,11 +325,5 @@ FATArchive::FATEntry *DAT_BashArchive::preInsertFile(
 	return pNewEntry;
 }
 
-void DAT_BashArchive::preRemoveFile(const FATEntry *pid)
-	throw (std::ios::failure)
-{
-	return;
-}
-
 } // namespace gamearchive
 } // namespace camoto

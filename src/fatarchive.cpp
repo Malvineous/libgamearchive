@@ -143,6 +143,7 @@ FATArchive::EntryPtr FATArchive::insert(const EntryPtr& idBeforeThis,
 	pNewFile->iSize = iSize;
 	pNewFile->type = type;
 	pNewFile->fAttr = attr;
+	pNewFile->lenHeader = 0;
 	pNewFile->bValid = false; // not yet valid
 
 	// Figure out where the new file is going to go
@@ -378,8 +379,21 @@ void FATArchive::shiftFiles(const FATEntry *fatSkip, io::stream_offset offStart,
 	return;
 }
 
+FATArchive::FATEntry *FATArchive::preInsertFile(const FATEntry *idBeforeThis,
+	FATEntry *pNewEntry)
+	throw (std::ios::failure)
+{
+	// No-op default
+}
+
 void FATArchive::postInsertFile(FATEntry *pNewEntry)
 	throw (std::ios_base::failure)
+{
+	// No-op default
+}
+
+void FATArchive::preRemoveFile(const FATEntry *pid)
+	throw (std::ios::failure)
 {
 	// No-op default
 }

@@ -241,14 +241,5 @@ FATArchive::FATEntry *HOGArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	return pNewEntry;
 }
 
-void HOGArchive::preRemoveFile(const FATEntry *pid)
-	throw (std::ios::failure)
-{
-	// TESTED BY: fmt_hog_descent_remove*
-
-	// Don't need to do anything, FATArchive takes care of the embedded FAT
-	return;
-}
-
 } // namespace gamearchive
 } // namespace camoto

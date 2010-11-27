@@ -91,9 +91,6 @@ class RESArchiveFolder: virtual public FATArchive {
 		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 			throw (std::ios::failure);
 
-		virtual void preRemoveFile(const FATEntry *pid)
-			throw (std::ios::failure);
-
 };
 
 } // namespace gamearchive

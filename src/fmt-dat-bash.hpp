@@ -90,11 +90,6 @@ class DAT_BashArchive: virtual public FATArchive {
 		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 			throw (std::ios_base::failure);
 
-		void preRemoveFile(const FATEntry *pid)
-			throw (std::ios_base::failure);
-
-	private:
-
 };
 
 } // namespace gamearchive
