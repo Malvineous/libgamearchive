@@ -22,6 +22,7 @@
 #define _CAMOTO_GAMEARCHIVE_TESTS_HPP_
 
 #include <boost/test/unit_test.hpp>
+#include <camoto/gamearchive/archive.hpp>
 
 /// Allow a string constant to be passed around with embedded nulls
 #define makeString(x)  std::string((x), sizeof((x)) - 1)
@@ -40,5 +41,23 @@ struct default_sample {
 };
 
 void stringStreamTruncate(std::stringstream *ss, int len);
+
+/// Apply the correct filter to the stream.
+/**
+ * If the given entry pointer has a filter attached, apply it to the given
+ * stream pointer.
+ *
+ * @note This function will always apply the filter, don't call it if the user
+ *   has given the -u option to bypass filtering.
+ *
+ * @param ppStream
+ *   Pointer to the stream.  On return may point to a different stream.
+ *
+ * @param id
+ *   EntryPtr for the stream.
+ */
+void applyFilter(camoto::iostream_sptr *ppStream,
+	camoto::gamearchive::Archive::EntryPtr id)
+	throw (std::ios::failure);
 
 #endif // _CAMOTO_GAMEARCHIVE_TESTS_HPP_

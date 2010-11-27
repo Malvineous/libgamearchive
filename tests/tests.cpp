@@ -25,7 +25,9 @@
 #include <iostream>
 #include <iomanip>
 
-#include <camoto/debug.hpp>
+#include <camoto/gamearchive/manager.hpp>
+#include <camoto/debug.hpp> // for ANSI colours
+#include <camoto/util.hpp>  // createString
 #include "tests.hpp"
 
 void default_sample::printNice(boost::test_tools::predicate_result& res,
@@ -49,7 +51,7 @@ void default_sample::printNice(boost::test_tools::predicate_result& res,
 				res.message() << CLR_YELLOW;
 			}
 		}
-		if (s[i] < 32) {
+		if ((s[i] < 32) || (s[i] == 127)) {
 			res.message() << "\\x" << std::setfill('0') << std::setw(2)
 				<< std::hex << (int)((uint8_t)s[i]);
 		} else {
@@ -105,6 +107,26 @@ void stringStreamTruncate(std::stringstream *ss, int len)
 
 		*ss << std::string(len - pos, '\0');
 		assert(ss->tellp() == len);
+	}
+	return;
+}
+
+void applyFilter(camoto::iostream_sptr *ppStream,
+	camoto::gamearchive::Archive::EntryPtr id)
+	throw (std::ios::failure)
+{
+	if (!id->filter.empty()) {
+		// The file needs to be filtered first
+		camoto::gamearchive::ManagerPtr pManager(camoto::gamearchive::getManager());
+		camoto::gamearchive::FilterTypePtr pFilterType(
+			pManager->getFilterTypeByCode(id->filter));
+		if (!pFilterType) {
+			throw std::ios::failure(createString(
+				"could not find filter \"" << id->filter << "\""
+			));
+		}
+		// TODO: use boost::bind to find the arch's truncate function
+		*ppStream = pFilterType->apply(*ppStream, NULL);
 	}
 	return;
 }

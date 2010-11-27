@@ -15,6 +15,8 @@ tests_SOURCES += test-fmt-dat-bash.cpp
 tests_SOURCES += test-fmt-dat-sango.cpp
 tests_SOURCES += test-fmt-lbr-vinyl.cpp
 tests_SOURCES += test-filter-bash-rle.cpp
+tests_SOURCES += test-filter-xor.cpp
+tests_SOURCES += test-filter-xor-blood.cpp
 
 EXTRA_tests_SOURCES = tests.hpp test-archive.hpp
 

@@ -1,5 +1,6 @@
-/*
- * fmt-rff-blood.cpp - Implementation of reader/writer for Blood's .RFF format
+/**
+ * @file   fmt-rff-blood.hpp
+ * @brief  Implementation of reader/writer for Blood's .RFF format.
  *
  * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -23,7 +24,6 @@
 #include <camoto/gamearchive.hpp>
 #include <camoto/substream.hpp>
 #include "fatarchive.hpp"
-#include "cipher-rff-blood.hpp"
 
 namespace camoto {
 namespace gamearchive {
@@ -68,16 +68,8 @@ class RFFArchive: virtual public FATArchive {
 
 	protected:
 
-		substream_sptr fatSubStream;
-		segstream_sptr fatStream;
-		boost::shared_ptr<RFF_FAT_Cipher> cipheredStream;
-		io::stream_offset offFAT;  // offset of the FAT from the start of the file
-
-		uint32_t version;  // file version
-		struct RFFEntry: virtual public FATEntry {
-			uint8_t rffFlags;
-			uint32_t decompressedSize;
-		};
+		substream_sptr fatSubStream;  ///< Substream storing the FAT
+		uint32_t version;             ///< File format version
 
 	public:
 
@@ -89,17 +81,21 @@ class RFFArchive: virtual public FATArchive {
 
 		// As per Archive (see there for docs)
 
-		virtual boost::shared_ptr<std::iostream> open(const EntryPtr& id)
-			throw ();
-
 		virtual void rename(EntryPtr& id, const std::string& strNewName)
 			throw (std::ios_base::failure);
 
-		virtual void flush()
+		virtual MetadataTypes getMetadataList() const
+			throw ();
+
+		virtual std::string getMetadata(MetadataType item) const
 			throw (std::ios::failure);
 
-		virtual EntryPtr entryPtrFromStream(const iostream_sptr openFile)
-			throw ();
+		virtual void setMetadata(MetadataType item, const std::string& value)
+			throw (std::ios::failure);
+
+		/// Write out the FAT with the updated encryption key.
+		virtual void flush()
+			throw (std::ios::failure);
 
 		// As per FATArchive (see there for docs)
 
@@ -113,9 +109,6 @@ class RFFArchive: virtual public FATArchive {
 			throw (std::ios_base::failure);
 
 		virtual void postInsertFile(FATEntry *pNewEntry)
-			throw (std::ios::failure);
-
-		virtual void preRemoveFile(const FATEntry *pid)
 			throw (std::ios::failure);
 
 		virtual void postRemoveFile(const FATEntry *pid)
@@ -132,9 +125,6 @@ class RFFArchive: virtual public FATArchive {
 
 		io::stream_offset getDescOffset() const
 			throw (std::ios_base::failure);
-
-		void truncateFAT(std::streamsize len)
-			throw (std::ios::failure);
 
 		void splitFilename(const std::string& full, std::string *base, std::string *ext)
 			throw (std::ios::failure);

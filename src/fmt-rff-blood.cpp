@@ -1,5 +1,6 @@
-/*
- * fmt-rff-blood.cpp - Implementation of reader/writer for Blood's .RFF format
+/**
+ * @file   fmt-rff-blood.cpp
+ * @brief  Implementation of reader/writer for Blood's .RFF format.
  *
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/RFF_Format
@@ -21,14 +22,16 @@
  */
 
 #include <boost/algorithm/string.hpp>
+#include <boost/iostreams/invert.hpp>
 #include <boost/bind.hpp>
 #include <iostream>
 #include <exception>
 #include <string.h>
 
 #include <camoto/iostream_helpers.hpp>
+#include <camoto/filteredstream.hpp>
 #include "fmt-rff-blood.hpp"
-#include "cipher-rff-blood.hpp"
+#include "filter-xor-blood.hpp"
 #include "debug.hpp"
 
 #define RFF_FATOFFSET_OFFSET         8
@@ -52,18 +55,14 @@
 namespace camoto {
 namespace gamearchive {
 
-refcount_declclass(RFFType);
-
 RFFType::RFFType()
 	throw ()
 {
-	refcount_qenterclass(RFFType);
 }
 
 RFFType::~RFFType()
 	throw ()
 {
-	refcount_qexitclass(RFFType);
 }
 
 std::string RFFType::getArchiveCode() const
@@ -146,8 +145,6 @@ MP_SUPPLIST RFFType::getRequiredSupps(const std::string& filenameArchive) const
 }
 
 
-refcount_declclass(RFFArchive);
-
 RFFArchive::RFFArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
 		FATArchive(psArchive, RFF_FIRST_FILE_OFFSET)
@@ -178,162 +175,215 @@ RFFArchive::RFFArchive(iostream_sptr psArchive)
 		)
 	);
 	this->fatSubStream->exceptions(std::ios::badbit | std::ios::failbit);
-std::cerr << "fat substream @ " << this->fatSubStream << " is "
-<< offFAT << " to " << numFiles * RFF_FAT_ENTRY_LEN << std::endl;
-this->fatSubStream->seekp(0, std::ios::end);
-io::stream_offset plenStream = this->fatSubStream->tellp();
-std::cerr << "fat substream is " << plenStream << " @ " << this->fatSubStream << std::endl;
+	this->fatSubStream->seekg(0, std::ios::beg);
 
-
+	filtering_istream_sptr fatFilter(new io::filtering_istream());
 	iostream_sptr baseFATStream;
 	if (this->version >= 0x301) {
 		// The FAT is encrypted in this version
-		this->cipheredStream.reset(new RFF_FAT_Cipher(this->fatSubStream, offFAT & 0xFF));
-		this->cipheredStream->exceptions(std::ios::badbit | std::ios::failbit);
-		baseFATStream = this->cipheredStream;
-	} else {
-		// FAT is not encrypted
-		baseFATStream = this->fatSubStream;
+		fatFilter->push(rff_crypt_filter(0, offFAT & 0xFF));
 	}
-	this->fatStream = segstream_sptr(new segmented_stream(baseFATStream));
-	this->fatStream->exceptions(std::ios::badbit | std::ios::failbit);
-this->fatSubStream->seekp(0, std::ios::end);
-plenStream = this->fatSubStream->tellp();
-std::cerr << "before read fat: fat substream is " << plenStream << " @ " << this->fatSubStream << std::endl;
-	this->fatStream->seekg(0, std::ios::beg);
+	fatFilter->push(*this->fatSubStream);
 
 	for (int i = 0; i < numFiles; i++) {
-		RFFEntry *fatEntry = new RFFEntry();
+		FATEntry *fatEntry = new FATEntry();
 		EntryPtr ep(fatEntry);
 
 		fatEntry->iIndex = i;
 		fatEntry->lenHeader = 0;
-		fatEntry->eType = EFT_USEFILENAME;
+		fatEntry->type = FILETYPE_GENERIC;
 		fatEntry->fAttr = 0;
 		fatEntry->bValid = true;
 
 		uint32_t lastModified, unknown2, unknown3;
 		uint8_t flags;
+		std::string dummy;
 		std::string filename;
-		this->fatStream->seekg(16, std::ios::cur);
-		this->fatStream
+		//fatFilter->seekg(16, std::ios::cur);
+		fatFilter
+			>> fixedLength(dummy, 16)
 			>> u32le(fatEntry->iOffset)
 			>> u32le(fatEntry->iSize)
 			>> u32le(unknown2)
 			>> u32le(lastModified)
-			>> u8(fatEntry->rffFlags)
+			>> u8(flags)
 			>> fixedLength(filename, 11) // TODO convert to 8.3
 			>> u32le(unknown3);
 
-		if (fatEntry->rffFlags & RFF_FILE_ENCRYPTED) fatEntry->fAttr |= EA_ENCRYPTED;
+		if (flags & RFF_FILE_ENCRYPTED) {
+			fatEntry->fAttr |= EA_ENCRYPTED;
+			fatEntry->filter = "xor-blood"; // decryption algorithm
+		}
 
 		int lenExt = 0, lenBase = 0;
 		while (lenExt  < 3) { if (!filename[    lenExt ]) break; lenExt++; }
 		while (lenBase < 8) { if (!filename[3 + lenBase]) break; lenBase++; }
 		fatEntry->strName = filename.substr(3, lenBase) + "." + filename.substr(0, lenExt);
 		// TODO: test this with 1) <8 char filename, 2) 8 char filename, 3) <3 char file ext
-		/*std::cout
-			<< "File: " << fatEntry->strName << "/" << fatEntry->strName.length()
-			<< ", off: " << fatEntry->iOffset
-			<< ", size: " << fatEntry->iSize
-			<< ", unknown2: " << unknown2
-			<< ", lastModified: " << lastModified
-			<< ", flags: " << flags
-			<< ", unknown3: " << unknown3
-			<< std::endl;*/
 		this->vcFAT.push_back(ep);
 		// TODO: What happens when reading files past EOF?
 	}
-	refcount_qenterclass(RFFArchive);
-this->fatSubStream->seekp(0, std::ios::end);
-plenStream = this->fatSubStream->tellp();
-std::cerr << "after read fat: fat substream is " << plenStream << " @ " << this->fatSubStream << std::endl;
 }
 
 RFFArchive::~RFFArchive()
 	throw ()
 {
-	refcount_qexitclass(RFFArchive);
-}
-
-boost::shared_ptr<std::iostream> RFFArchive::open(const EntryPtr& id)
-	throw ()
-{
-	const RFFEntry *fatEntry = dynamic_cast<const RFFEntry *>(id.get());
-	assert(fatEntry);
-
-	iostream_sptr file = this->FATArchive::open(id);
-
-	if (fatEntry->rffFlags & RFF_FILE_ENCRYPTED) {
-		iostream_sptr enc(new RFF_File_Cipher(file));
-		return enc;
-	} else {
-		return file;
-	}
 }
 
 // Does not invalidate existing EntryPtrs
 void RFFArchive::rename(EntryPtr& id, const std::string& strNewName)
 	throw (std::ios_base::failure)
 {
-this->fatSubStream->seekp(0, std::ios::end);
-io::stream_offset plenStream = this->fatSubStream->tellp();
-std::cerr << "before rename: fat substream is " << plenStream << " @ " << this->fatSubStream << std::endl;
 	// TESTED BY: fmt_rff_blood_rename
 	assert(this->isValid(id));
-	FATEntry *pEntry = dynamic_cast<FATEntry *>(id.get());
 
+	// See if the filename is valid
 	std::string base, ext;
 	this->splitFilename(strNewName, &base, &ext);
 
-	this->fatStream->seekp(RFF_FILENAME_OFFSET(pEntry));
-	this->fatStream
-		<< nullPadded(ext, 3)
-		<< nullPadded(base, 8);
+	// If we reach here the filename was OK
 
-	pEntry->strName = strNewName;
+	id->strName = strNewName;
 
-this->fatSubStream->seekp(0, std::ios::end);
-plenStream = this->fatSubStream->tellp();
-std::cerr << "after rename: fat substream is " << plenStream << " @ " << this->fatSubStream << std::endl;
+	return;
+}
+
+RFFArchive::MetadataTypes RFFArchive::getMetadataList() const
+	throw ()
+{
+	// TESTED BY: fmt_rff_blood_get_metadata_version
+	MetadataTypes m;
+	m.push_back(Version);
+	return m;
+}
+
+std::string RFFArchive::getMetadata(MetadataType item) const
+	throw (std::ios::failure)
+{
+	// TESTED BY: fmt_rff_blood_get_metadata_version
+	switch (item) {
+		case Version: {
+			std::stringstream ss;
+			ss << (this->version >> 8) << '.' << (this->version & 0xFF);
+			return ss.str();
+		}
+		default:
+			assert(false);
+			throw std::ios::failure("unsupported metadata item");
+	}
+}
+
+void RFFArchive::setMetadata(MetadataType item, const std::string& value)
+	throw (std::ios::failure)
+{
+	// TESTED BY: fmt_rff_blood_set_metadata_version
+	// TESTED BY: fmt_rff_blood_new_to_initialstate
+	switch (item) {
+		case Version: {
+			int dotPos = value.find_first_of('.');
+			std::string strMajor = value.substr(0, dotPos);
+			std::string strMinor = value.substr(dotPos + 1);
+			int iMajor = strtoul(strMajor.c_str(), NULL, 10);
+			int iMinor = strtoul(strMinor.c_str(), NULL, 10);
+			int newVersion = (iMajor << 8) | iMinor;
+			if (
+				(newVersion != 0x200) &&
+				(newVersion != 0x301)
+			) {
+				throw std::ios::failure("only versions 2.0 and 3.1 are supported");
+			}
+			if (newVersion < 0x301) {
+				// Moving from a version that supports encryption to one that doesn't,
+				// so make sure there are no encrypted files.
+				for (VC_ENTRYPTR::iterator i = this->vcFAT.begin(); i != this->vcFAT.end(); i++) {
+					FATEntry *pFAT = dynamic_cast<FATEntry *>(i->get());
+					if (pFAT->fAttr & EA_ENCRYPTED) {
+						throw std::ios::failure("cannot change to this version while the "
+							"archive contains encrypted files (the target version does not "
+							"support encryption)");
+					}
+				}
+			}
+			this->version = newVersion;
+
+			// Write new version number into file header
+			this->psArchive->seekg(4, std::ios::beg);
+			this->psArchive << u32le(this->version);
+			break;
+		}
+		default:
+			assert(false);
+			throw std::ios::failure("unsupported metadata item");
+	}
 	return;
 }
 
 void RFFArchive::flush()
 	throw (std::ios::failure)
 {
+	io::stream_offset offFAT = this->fatSubStream->getOffset();
+	this->fatSubStream->seekp(0, std::ios::beg);
+
+	// Cut off any leftover data after where the FAT will go
 	this->psArchive->seekp(0, std::ios::end);
-	io::stream_offset plenStream = this->psArchive->tellp();
-	assert(this->psArchive->good());
+	io::stream_offset lenArchive = this->psArchive->tellp();
+	io::stream_offset offEndFAT = offFAT + this->vcFAT.size() * RFF_FAT_ENTRY_LEN;
+	std::streamsize lenDelta = offEndFAT - lenArchive;
+	if (lenDelta < 0) {
+		this->psArchive->seekp(offEndFAT, std::ios::beg);
+		this->psArchive->remove(-lenDelta);
+	} else if (lenDelta > 0) {
+		this->psArchive->seekp(offEndFAT, std::ios::beg);
+		this->psArchive->insert(lenDelta);
+	} // else lenDelete == 0, no change required
+	this->fatSubStream->setSize(this->vcFAT.size() * RFF_FAT_ENTRY_LEN);
 
-std::cerr << "main stream is " << plenStream << " @ " << this->psArchive << std::endl;
+	// Create an encryption stream around the FAT, so that whenever we write into
+	// this stream encrypted data will end up in the underlying archive file.
+	filtering_ostream_sptr fatFilter(new io::filtering_ostream());
+	if (this->version >= 0x301) {
+		// The FAT is encrypted in this version
+		fatFilter->push(io::invert(rff_crypt_filter(0, offFAT & 0xFF)));
+	}
+	fatFilter->push(*this->fatSubStream);
 
-this->fatSubStream->seekp(0, std::ios::end);
-plenStream = this->fatSubStream->tellp();
-std::cerr << "fat stream is " << plenStream << " @ " << this->fatSubStream << std::endl;
+	// Rewrite the entire FAT into the FAT stream (so it gets encrypted and
+	// written into the archive.)
+	for (VC_ENTRYPTR::iterator i = this->vcFAT.begin(); i != this->vcFAT.end(); i++) {
+		FATEntry *fatEntry = dynamic_cast<FATEntry *>(i->get()); // RFF entry?
 
-this->cipheredStream->seekp(0, std::ios::end);
-plenStream = this->cipheredStream->tellp();
-std::cerr << "ciphered stream is " << plenStream << ", about to commit" << std::endl;
+		// Prepare filename field
+		std::string base, ext;
+		this->splitFilename(fatEntry->strName, &base, &ext);
 
-	this->fatStream->commit(boost::bind(&RFFArchive::truncateFAT, this, _1));
+		// Prepare flags field
+		uint8_t flags = 0;
+		if (fatEntry->fAttr & EA_ENCRYPTED) flags |= RFF_FILE_ENCRYPTED;
+
+		// Write FAT entry
+		fatFilter
+			<< nullPadded("", 16)
+			<< u32le(fatEntry->iOffset)
+			<< u32le(fatEntry->iSize)
+			<< u32le(0) // unknown2
+			<< u32le(0) // TODO: lastModified
+			<< u8(flags)
+			<< nullPadded(ext, 3)
+			<< nullPadded(base, 8)
+			<< u32le(0) // unknown3
+		;
+	}
+
+	// Commit this->psArchive
 	this->FATArchive::flush();
 	return;
-}
-
-FATArchive::EntryPtr RFFArchive::entryPtrFromStream(const iostream_sptr openFile)
-	throw ()
-{
-	assert(false); // TODO: test!
-	const RFF_File_Cipher *cipher = static_cast<RFF_File_Cipher *>(openFile.get());
-	return this->FATArchive::entryPtrFromStream(cipher->getParentStream());
 }
 
 void RFFArchive::updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
 	throw (std::ios::failure)
 {
-	this->fatStream->seekp(RFF_FILEOFFSET_OFFSET(pid));
-	this->fatStream << u32le(pid->iOffset);
+	// Don't need to do anything here as we won't be writing out any offsets
+	// until flush() is called (easier to handle the FAT encryption that way.)
 	return;
 }
 
@@ -344,14 +394,11 @@ void RFFArchive::updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
 	// TESTED BY: fmt_rff_blood_resize*
 
 	this->updateFATOffset(sizeDelta);
-
-	this->fatStream->seekp(RFF_FILESIZE_OFFSET(pid));
-	this->fatStream << u32le(pid->iSize);
-
 	return;
 }
 
-FATArchive::FATEntry *RFFArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+FATArchive::FATEntry *RFFArchive::preInsertFile(const FATEntry *idBeforeThis,
+	FATEntry *pNewEntry)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_rff_blood_insert*
@@ -360,33 +407,16 @@ FATArchive::FATEntry *RFFArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	std::string base, ext;
 	this->splitFilename(pNewEntry->strName, &base, &ext);
 	pNewEntry->lenHeader = 0;
+	if (pNewEntry->fAttr & EA_ENCRYPTED) {
+		if (this->version >= 0x301) {
+			pNewEntry->filter = "xor-blood";
+		} else {
+			// This version doesn't support encryption, remove the attribute
+			pNewEntry->fAttr &= ~EA_ENCRYPTED;
+		}
+	}
 
-	RFFEntry *rff = new RFFEntry();
-	*static_cast<FATEntry *>(rff) = *pNewEntry;
-	assert(rff->iOffset == pNewEntry->iOffset);
-	// TODO: Shared pointer stuff, plus custom RFF attributes
-	// Set the format-specific variables
-
-	// Add the new entry into the on-disk FAT.  This has to happen here (rather
-	// than in postInsertFile()) because on return FATArchive will update the
-	// offsets of all FAT entries following this one.  If we don't insert a new
-	// entry now, all the offset changes will be applied to the wrong files.
-	this->fatStream->seekp(RFF_FATENTRY_OFFSET(pNewEntry));
-	this->fatStream->insert(RFF_FAT_ENTRY_LEN);
-
-	uint8_t flags = 0;
-	this->fatStream
-		<< nullPadded("", 16) // unknown
-		<< u32le(pNewEntry->iOffset)
-		<< u32le(pNewEntry->iSize)
-		<< u32le(0) // unknown
-		<< u32le(0) // last modified time
-		<< u8(flags)
-		<< nullPadded(ext, 3)
-		<< nullPadded(base, 8)
-		<< u32le(0); // unknown
-
-	return rff;
+	return pNewEntry;
 }
 
 void RFFArchive::postInsertFile(FATEntry *pNewEntry)
@@ -394,14 +424,6 @@ void RFFArchive::postInsertFile(FATEntry *pNewEntry)
 {
 	this->updateFileCount(this->vcFAT.size());
 	this->updateFATOffset(pNewEntry->iSize);
-	return;
-}
-
-void RFFArchive::preRemoveFile(const FATEntry *pid)
-	throw (std::ios::failure)
-{
-	this->fatStream->seekp(RFF_FATENTRY_OFFSET(pid));
-	this->fatStream->remove(RFF_FAT_ENTRY_LEN);
 	return;
 }
 
@@ -429,12 +451,7 @@ void RFFArchive::updateFATOffset(std::streamsize delta)
 
 	this->fatSubStream->relocate(delta);
 
-	if (this->cipheredStream) {
-		// The FAT is encrypted, but because it has moved now it needs to be
-		// re-encrypted (because the offset is the initial encryption key.)
-		this->cipheredStream->changeSeed(this->fatSubStream->getOffset() & 0xFF);
-	}
-
+	// Write the new FAT offset into the file header
 	this->psArchive->seekp(RFF_FATOFFSET_OFFSET);
 	this->psArchive << u32le(this->fatSubStream->getOffset());
 
@@ -454,25 +471,6 @@ io::stream_offset RFFArchive::getDescOffset() const
 		offDesc = RFF_FIRST_FILE_OFFSET;
 	}
 	return offDesc;
-}
-
-void RFFArchive::truncateFAT(std::streamsize len)
-	throw (std::ios::failure)
-{
-	this->psArchive->seekp(0, std::ios::end);
-	io::stream_offset lenArchive = this->psArchive->tellp();
-	io::stream_offset offEndFAT = this->fatSubStream->getOffset() + len;
-	std::streamsize lenDelta = offEndFAT - lenArchive;
-	if (lenDelta < 0) {
-		this->psArchive->seekp(offEndFAT, std::ios::beg);
-		this->psArchive->remove(-lenDelta);
-	} else if (lenDelta > 0) {
-		this->psArchive->seekp(offEndFAT, std::ios::beg);
-		this->psArchive->insert(lenDelta);
-	} // else lenDelete == 0, no change required
-	this->fatSubStream->setSize(len);
-std::cerr << "set fat len to " << len << std::endl;
-	return;
 }
 
 void RFFArchive::splitFilename(const std::string& full, std::string *base, std::string *ext)

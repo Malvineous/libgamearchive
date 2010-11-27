@@ -42,6 +42,7 @@
 #include "filter-epfs.hpp"
 #include "filter-zone66.hpp"
 #include "filter-stellar7.hpp"
+#include "filter-xor-blood.hpp"
 
 namespace camoto {
 namespace gamearchive {
@@ -79,6 +80,7 @@ Manager::Manager()
 	this->vcFilters.push_back(FilterTypePtr(new EPFSFilterType()));
 	this->vcFilters.push_back(FilterTypePtr(new Zone66FilterType()));
 	this->vcFilters.push_back(FilterTypePtr(new Stellar7FilterType()));
+	this->vcFilters.push_back(FilterTypePtr(new RFFFilterType()));
 }
 
 Manager::~Manager()

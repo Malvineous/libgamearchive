@@ -209,6 +209,8 @@
 	"\x37\x00\x00\x00" "\x0f\x00\x00\x00" "\x00\x00\x00\x00" "\x00\x00\x00\x00" \
 	"\x00" "DATTWO\0\0\0\0\0" "\x00\x00\x00\x00"
 
+#define testdata_get_metadata_version "2.0" // file format version
+
 #define MAX_FILENAME_LEN  12
 
 #define ARCHIVE_CLASS fmt_rff_blood
@@ -232,7 +234,8 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long_base))
 	const char *name = "123456789.A";
 
 	BOOST_CHECK_THROW(
-		ga::Archive::EntryPtr ep = pArchive->insert(epb, name, 5),
+		ga::Archive::EntryPtr ep = pArchive->insert(epb, name, 5, FILETYPE_GENERIC,
+			ga::EA_NONE),
 		std::ios::failure
 	);
 
@@ -256,7 +259,8 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long_nodot))
 	const char *name = "123456789";
 
 	BOOST_CHECK_THROW(
-		ga::Archive::EntryPtr ep = pArchive->insert(epb, name, 5),
+		ga::Archive::EntryPtr ep = pArchive->insert(epb, name, 5, FILETYPE_GENERIC,
+			ga::EA_NONE),
 		std::ios::failure
 	);
 
@@ -280,7 +284,8 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long_ext))
 	const char *name = "12345.ABCD";
 
 	BOOST_CHECK_THROW(
-		ga::Archive::EntryPtr ep = pArchive->insert(epb, name, 5),
+		ga::Archive::EntryPtr ep = pArchive->insert(epb, name, 5, FILETYPE_GENERIC,
+			ga::EA_NONE),
 		std::ios::failure
 	);
 

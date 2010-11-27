@@ -31,6 +31,7 @@
 // Local headers that will not be installed
 #include <camoto/segmented_stream.hpp>
 
+using namespace camoto;
 namespace ga = camoto::gamearchive;
 
 // Defines to allow code reuse
@@ -51,6 +52,11 @@ namespace ga = camoto::gamearchive;
 #define makeString(x)  std::string((x), sizeof((x)) - 1)
 
 #include "../src/fatarchive.hpp"
+
+#ifndef INSERT_ATTRIBUTE
+/// Default attributes for newly inserted files, unless overridden
+#define INSERT_ATTRIBUTE ga::EA_NONE
+#endif
 
 struct FIXTURE_NAME: public default_sample {
 
@@ -85,7 +91,7 @@ struct FIXTURE_NAME: public default_sample {
 		BOOST_REQUIRE_NO_THROW(
 			this->baseData->exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
 
-			boost::shared_ptr<ga::Manager> pManager(ga::getManager());
+			ga::ManagerPtr pManager(ga::getManager());
 			ga::ArchiveTypePtr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE));
 			this->pArchive = pTestType->open(this->baseStream, this->suppData);
 			BOOST_REQUIRE_MESSAGE(this->pArchive, "Could not create archive class");
@@ -222,6 +228,9 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(open))
 	// Make sure the file opens at the start
 	BOOST_REQUIRE_EQUAL(pfsIn->tellg(), 0);
 
+	// Apply any decryption/decompression filter
+	applyFilter(&pfsIn, ep);
+
 	// Copy it into the stringstream
 	boost::iostreams::copy(*pfsIn, out);
 
@@ -325,7 +334,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long))
 	name[MAX_FILENAME_LEN + 1] = 0;
 
 	BOOST_CHECK_THROW(
-		ga::Archive::EntryPtr ep = pArchive->insert(epb, name, 5, FILETYPE_GENERIC, ga::EA_NONE),
+		ga::Archive::EntryPtr ep = pArchive->insert(epb, name, 5, FILETYPE_GENERIC, INSERT_ATTRIBUTE),
 		std::ios::failure
 	);
 
@@ -346,7 +355,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long))
 	name[MAX_FILENAME_LEN] = 0;
 
 	BOOST_CHECK_NO_THROW(
-		ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), name, 5, FILETYPE_GENERIC, ga::EA_NONE)
+		ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), name, 5, FILETYPE_GENERIC, INSERT_ATTRIBUTE)
 	);
 
 }
@@ -358,9 +367,9 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_end))
 
 	// Insert the file
 #if !NO_FILENAMES
-	ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), FILENAME3, 17, FILETYPE_GENERIC, ga::EA_NONE);
+	ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), FILENAME3, 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #else
-	ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), "dummy", 17, FILETYPE_GENERIC, ga::EA_NONE);
+	ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), "dummy", 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #endif
 
 	// Make sure it went in ok
@@ -368,7 +377,11 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_end))
 		"Couldn't create new file in sample archive");
 
 	// Open it
-	boost::shared_ptr<std::iostream> pfsNew(pArchive->open(ep));
+	iostream_sptr pfsNew(pArchive->open(ep));
+
+	// Apply any encryption/compression filter
+	applyFilter(&pfsNew, ep);
+
 	pfsNew->write("This is three.dat", 17);
 	pfsNew->flush();
 
@@ -398,7 +411,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_mid))
 		"Couldn't find " FILENAME2 " in sample archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, 17, FILETYPE_GENERIC, ga::EA_NONE);
+	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #else
 	// No filenames in this format, do it by order
 	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
@@ -409,7 +422,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_mid))
 		"Couldn't find second file in sample archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, "dummy", 17, FILETYPE_GENERIC, ga::EA_NONE);
+	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, "dummy", 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #endif
 
 	// Make sure it went in ok
@@ -417,7 +430,11 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_mid))
 		"Couldn't insert new file in sample archive");
 
 	// Open it
-	boost::shared_ptr<std::iostream> pfsNew(pArchive->open(ep));
+	iostream_sptr pfsNew(pArchive->open(ep));
+
+	// Apply any encryption/compression filter
+	applyFilter(&pfsNew, ep);
+
 	pfsNew->write("This is three.dat", 17);
 	pfsNew->flush();
 
@@ -447,7 +464,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 		"Couldn't find " FILENAME2 " in sample archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep1 = pArchive->insert(idBefore, FILENAME3, 17, FILETYPE_GENERIC, ga::EA_NONE);
+	ga::Archive::EntryPtr ep1 = pArchive->insert(idBefore, FILENAME3, 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #else
 	// No filenames in this format, do it by order
 	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
@@ -458,7 +475,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 		"Couldn't find second file in sample archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep1 = pArchive->insert(idBefore, "dummy", 17, FILETYPE_GENERIC, ga::EA_NONE);
+	ga::Archive::EntryPtr ep1 = pArchive->insert(idBefore, "dummy", 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #endif
 
 	// Make sure it went in ok
@@ -466,7 +483,11 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 		"Couldn't insert first new file in sample archive");
 
 	// Open it
-	boost::shared_ptr<std::iostream> pfsNew1(pArchive->open(ep1));
+	iostream_sptr pfsNew1(pArchive->open(ep1));
+
+	// Apply any encryption/compression filter
+	applyFilter(&pfsNew1, ep1);
+
 	pfsNew1->write("This is three.dat", 17);
 	pfsNew1->flush();
 
@@ -480,7 +501,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 		"Couldn't find " FILENAME2 " in sample archive after first insert");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep2 = pArchive->insert(idBefore, FILENAME4, 16, FILETYPE_GENERIC, ga::EA_NONE);
+	ga::Archive::EntryPtr ep2 = pArchive->insert(idBefore, FILENAME4, 16, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #else
 	// No filenames in this format, do it by order
 
@@ -491,14 +512,18 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 		"Couldn't find second file in sample archive after first insert");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep2 = pArchive->insert(idBefore, "dummy", 16, FILETYPE_GENERIC, ga::EA_NONE);
+	ga::Archive::EntryPtr ep2 = pArchive->insert(idBefore, "dummy", 16, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #endif
 
 	// Make sure it went in ok
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep2),
 		"Couldn't insert second new file in sample archive");
 
-	boost::shared_ptr<std::iostream> pfsNew2(pArchive->open(ep2));
+	iostream_sptr pfsNew2(pArchive->open(ep2));
+
+	// Apply any encryption/compression filter
+	applyFilter(&pfsNew2, ep2);
+
 	pfsNew2->write("This is four.dat", 16);
 	pfsNew2->flush();
 
@@ -609,7 +634,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_remove))
 		"Couldn't find " FILENAME2 " in sample archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, 17, FILETYPE_GENERIC, ga::EA_NONE);
+	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #else
 	// No filenames in this format, do it by order
 	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
@@ -620,7 +645,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_remove))
 		"Couldn't find second file in sample archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, "dummy", 17, FILETYPE_GENERIC, ga::EA_NONE);
+	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, "dummy", 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #endif
 
 	// Make sure it went in ok
@@ -628,7 +653,11 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_remove))
 		"Couldn't insert new file in sample archive");
 
 	// Open it
-	boost::shared_ptr<std::iostream> pfsNew(pArchive->open(ep));
+	iostream_sptr pfsNew(pArchive->open(ep));
+
+	// Apply any encryption/compression filter
+	applyFilter(&pfsNew, ep);
+
 	pfsNew->write("This is three.dat", 17);
 	pfsNew->flush();
 
@@ -697,7 +726,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_insert))
 		"Couldn't find " FILENAME2 " in sample archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, 17, FILETYPE_GENERIC, ga::EA_NONE);
+	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #else
 	// No filenames in this format, do it by order
 	ga::Archive::EntryPtr idBefore = ga::getFileAt(files, 0); // FILENAME2 is the first (only) file in the archive at this point
@@ -707,7 +736,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_insert))
 		"Couldn't find second file in sample archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, "dummy", 17, FILETYPE_GENERIC, ga::EA_NONE);
+	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, "dummy", 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #endif
 
 	// Make sure it went in ok
@@ -715,7 +744,11 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_insert))
 		"Couldn't insert new file in sample archive");
 
 	// Open it
-	boost::shared_ptr<std::iostream> pfsNew(pArchive->open(ep));
+	iostream_sptr pfsNew(pArchive->open(ep));
+
+	// Apply any encryption/compression filter
+	applyFilter(&pfsNew, ep);
+
 	pfsNew->write("This is three.dat", 17);
 	pfsNew->flush();
 
@@ -876,7 +909,11 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_write))
 	// Swap the file positions
 	pArchive->resize(ep, 23);
 
-	boost::shared_ptr<std::iostream> pfsNew(pArchive->open(ep));
+	iostream_sptr pfsNew(pArchive->open(ep));
+
+	// Apply any encryption/compression filter
+	applyFilter(&pfsNew, ep);
+
 	pfsNew->write("Now resized to 23 chars", 23);
 	pfsNew->flush();
 
@@ -914,6 +951,9 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_write))
 	camoto::iostream_sptr pfsIn(pArchive->open(ep2));
 	std::stringstream out;
 	out.exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
+
+	// Apply any decryption/decompression filter
+	applyFilter(&pfsIn, ep2);
 
 	// Copy it into the stringstream
 	boost::iostreams::copy(*pfsIn, out);
@@ -970,27 +1010,35 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_all_re_add))
 
 #if !NO_FILENAMES
 	// Add the files back again
-	idOne = pArchive->insert(ga::Archive::EntryPtr(), FILENAME1, 15, FILETYPE_GENERIC, ga::EA_NONE);
+	idOne = pArchive->insert(ga::Archive::EntryPtr(), FILENAME1, 15, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #else
 	// No filenames in this format
-	idOne = pArchive->insert(ga::Archive::EntryPtr(), "dummy", 15, FILETYPE_GENERIC, ga::EA_NONE);
+	idOne = pArchive->insert(ga::Archive::EntryPtr(), "dummy", 15, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #endif
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idOne),
 		"Couldn't insert new file after removing all files");
 
-	boost::shared_ptr<std::iostream> pfsNew(pArchive->open(idOne));
+	iostream_sptr pfsNew(pArchive->open(idOne));
+
+	// Apply any encryption/compression filter
+	applyFilter(&pfsNew, idOne);
+
 	pfsNew->write("This is one.dat", 15);
 	pfsNew->flush();
 
 #if !NO_FILENAMES
-	idTwo = pArchive->insert(ga::Archive::EntryPtr(), FILENAME2, 15, FILETYPE_GENERIC, ga::EA_NONE);
+	idTwo = pArchive->insert(ga::Archive::EntryPtr(), FILENAME2, 15, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #else
 	// No filenames in this format
-	idTwo = pArchive->insert(ga::Archive::EntryPtr(), "dummy", 15, FILETYPE_GENERIC, ga::EA_NONE);
+	idTwo = pArchive->insert(ga::Archive::EntryPtr(), "dummy", 15, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #endif
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idTwo),
 		"Couldn't insert second new file after removing all files");
 	pfsNew = pArchive->open(idTwo);
+
+	// Apply any encryption/compression filter
+	applyFilter(&pfsNew, idTwo);
+
 	pfsNew->write("This is two.dat", 15);
 	pfsNew->flush();
 
@@ -1015,9 +1063,9 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_zero_then_resize))
 
 	// Insert the file
 #if !NO_FILENAMES
-	ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), FILENAME3, 0, FILETYPE_GENERIC, ga::EA_NONE);
+	ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), FILENAME3, 0, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #else
-	ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), "dummy", 0, FILETYPE_GENERIC, ga::EA_NONE);
+	ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), "dummy", 0, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #endif
 
 	// Make sure it went in ok
@@ -1026,6 +1074,10 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_zero_then_resize))
 
 	// Open it
 	camoto::iostream_sptr pfsNew(pArchive->open(ep));
+
+	// Apply any encryption/compression filter
+	applyFilter(&pfsNew, ep);
+
 	pArchive->resize(ep, 17);
 	pfsNew->seekp(0, std::ios::beg);
 	pfsNew->write("This is three.dat", 17);
@@ -1051,7 +1103,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_zero_then_resize))
 #ifdef testdata_get_metadata_description
 BOOST_AUTO_TEST_CASE(TEST_NAME(get_metadata_description))
 {
-	BOOST_TEST_MESSAGE("get 'description' metadata field");
+	BOOST_TEST_MESSAGE("Get 'description' metadata field");
 
 	// Make sure this format reports having a 'description' metadata field
 	camoto::Metadata::MetadataTypes items = pArchive->getMetadataList();
@@ -1129,6 +1181,42 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(set_metadata_description_smaller))
 #endif
 }
 #endif // testdata_get_metadata_description
+
+#ifdef testdata_get_metadata_version
+BOOST_AUTO_TEST_CASE(TEST_NAME(get_metadata_version))
+{
+	BOOST_TEST_MESSAGE("Get 'version' metadata field");
+
+	// Make sure this format reports having a 'description' metadata field
+	camoto::Metadata::MetadataTypes items = pArchive->getMetadataList();
+	bool bFound = false;
+	for (camoto::Metadata::MetadataTypes::iterator i = items.begin(); i != items.end(); i++) {
+		if (*i == camoto::Metadata::Version) {
+			bFound = true;
+			break;
+		}
+	}
+	BOOST_REQUIRE_EQUAL(bFound, true);
+
+	// Change the field's value
+	std::string value = pArchive->getMetadata(camoto::Metadata::Version);
+
+	// Make sure we didn't read in extra data (e.g. 400MB with a broken length)
+	BOOST_REQUIRE_EQUAL(value.length(), sizeof(TEST_RESULT(get_metadata_version)) - 1);
+
+	// Put it in a stringstream to allow use of the standard checking mechanism
+	std::ostringstream out;
+	out << value;
+
+	BOOST_CHECK_MESSAGE(
+		default_sample::is_equal(makeString(
+			TEST_RESULT(get_metadata_version)
+		), out.str()),
+		"Error getting 'version' metadata field"
+	);
+
+}
+#endif
 
 BOOST_AUTO_TEST_SUITE_END()
 
