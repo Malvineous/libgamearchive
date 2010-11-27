@@ -24,6 +24,7 @@
  */
 
 #include <stack>
+#include <boost/iostreams/concepts.hpp>     // multichar_input_filter
 #include <boost/bind.hpp>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/filteredstream.hpp>
@@ -63,9 +64,9 @@ class z66_decompress_filter: public io::multichar_input_filter {
 		z66_decompress_filter()
 			: data(bitstream::bigEndian),
 			  state(0),
-				codeLength(9),
-				curDicIndex(0),
-				maxDicIndex(255)
+			  codeLength(9),
+			  curDicIndex(0),
+			  maxDicIndex(255)
 		{
 			for (int i = 0; i < 8192; i++) {
 				nodes[i].code = 0;

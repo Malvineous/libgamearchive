@@ -21,7 +21,6 @@
 #ifndef _CAMOTO_FILTER_ZONE66_HPP_
 #define _CAMOTO_FILTER_ZONE66_HPP_
 
-#include <boost/iostreams/concepts.hpp>     // multichar_input_filter
 #include <camoto/types.hpp>
 #include <camoto/gamearchive/filtertype.hpp>
 
