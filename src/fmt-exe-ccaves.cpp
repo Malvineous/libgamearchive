@@ -26,7 +26,7 @@ namespace gamearchive {
 #define MAPSIZE   (41*36)
 #define LEVELSIZE (41*24)
 #define SMLEVEL   (41*23)
-FixedArchiveFile file_list[] = {
+FixedArchiveFile ccaves_file_list[] = {
 	{0x8CE0,                            MAPSIZE,   "e1map.ccl"},
 	{0x8CE0 + MAPSIZE + LEVELSIZE * 0,  LEVELSIZE, "e1l01.ccl"},
 	{0x8CE0 + MAPSIZE + LEVELSIZE * 1,  LEVELSIZE, "e1l02.ccl"},
@@ -131,7 +131,7 @@ MP_SUPPLIST EXE_CCavesType::getRequiredSupps(const std::string& filenameArchive)
 
 EXE_CCavesArchive::EXE_CCavesArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
-		FixedArchive(psArchive, file_list, sizeof(file_list) / sizeof(FixedArchiveFile))
+		FixedArchive(psArchive, ccaves_file_list, sizeof(ccaves_file_list) / sizeof(FixedArchiveFile))
 {
 }
 

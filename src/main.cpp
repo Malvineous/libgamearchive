@@ -33,6 +33,7 @@
 #include "fmt-dat-wacky.hpp"
 #include "fmt-dat-hugo.hpp"
 #include "fmt-exe-ccaves.hpp"
+#include "fmt-exe-ddave.hpp"
 #include "fmt-dat-bash.hpp"
 #include "fmt-dat-hocus.hpp"
 #include "fmt-dat-sango.hpp"
@@ -66,6 +67,7 @@ Manager::Manager()
 	this->vcTypes.push_back(ArchiveTypePtr(new RFFType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_WackyType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new EXE_CCavesType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new EXE_DDaveType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_BashType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_SangoType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new LBRType()));
