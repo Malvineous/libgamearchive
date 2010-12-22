@@ -6,7 +6,6 @@ includedir=@includedir@
 Name: libgamearchive
 Description: Manipulate the archive files used by many games to store their data
 URL: http://www.shikadi.net/camoto/
-Requires: boost >= 1.37
 Version: @VERSION@
-Libs: -L${libdir}
+Libs: -L${libdir} -lgamearchive
 Cflags: -I${includedir}/@camoto_release@
