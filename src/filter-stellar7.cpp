@@ -44,20 +44,20 @@ Stellar7FilterType::~Stellar7FilterType()
 std::string Stellar7FilterType::getFilterCode() const
 	throw ()
 {
-	return "lzw-bash";
+	return "lzw-stellar7";
 }
 
 std::string Stellar7FilterType::getFriendlyName() const
 	throw ()
 {
-	return "Monster Stellar7 compression";
+	return "Stellar 7 compression";
 }
 
 std::vector<std::string> Stellar7FilterType::getGameList() const
 	throw ()
 {
 	std::vector<std::string> vcGames;
-	vcGames.push_back("Monster Stellar7");
+	vcGames.push_back("Stellar 7");
 	return vcGames;
 }
 
