@@ -4,3 +4,6 @@ Outstanding tasks
    length.)  Not sure how to fix this without embedding a decompressor.
 
  - Implement God of Thunder (de)compression
+
+ - Method of cutting off (and re-inserting) RLE'd size into first four bytes of
+   DDave file stream

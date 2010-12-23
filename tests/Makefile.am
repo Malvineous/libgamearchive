@@ -19,6 +19,7 @@ tests_SOURCES += test-fmt-dat-got.cpp
 tests_SOURCES += test-filter-bash-rle.cpp
 tests_SOURCES += test-filter-xor.cpp
 tests_SOURCES += test-filter-xor-blood.cpp
+tests_SOURCES += test-filter-ddave-rle.cpp
 
 EXTRA_tests_SOURCES = tests.hpp test-archive.hpp
 

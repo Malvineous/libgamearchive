@@ -28,6 +28,7 @@ libgamearchive_la_SOURCES += filter-zone66.cpp
 libgamearchive_la_SOURCES += filter-stellar7.cpp
 libgamearchive_la_SOURCES += filter-xor.cpp
 libgamearchive_la_SOURCES += filter-xor-blood.cpp
+libgamearchive_la_SOURCES += filter-ddave-rle.cpp
 
 EXTRA_libgamearchive_la_SOURCES = fatarchive.hpp
 EXTRA_libgamearchive_la_SOURCES += fixedarchive.hpp
@@ -56,6 +57,7 @@ EXTRA_libgamearchive_la_SOURCES += filter-zone66.hpp
 EXTRA_libgamearchive_la_SOURCES += filter-stellar7.hpp
 EXTRA_libgamearchive_la_SOURCES += filter-xor.hpp
 EXTRA_libgamearchive_la_SOURCES += filter-xor-blood.hpp
+EXTRA_libgamearchive_la_SOURCES += filter-ddave-rle.hpp
 
 AM_CPPFLAGS = $(DEBUG_CPPFLAGS) $(BOOST_CPPFLAGS) -I $(top_srcdir)/include $(libgamecommon_CFLAGS)
 AM_CXXFLAGS = $(DEBUG_CXXFLAGS)

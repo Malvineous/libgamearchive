@@ -18,6 +18,7 @@ have been implemented:
   * Blood (.rff)
   * Cosmo's Cosmic Adventures (.vol, .stn)
   * Crystal Caves (.exe)
+  * Dangerous Dave (.exe)
   * Descent (.hog)
   * Duke Nukem II (.cmp)
   * Duke Nukem 3D (.grp)
@@ -39,6 +40,7 @@ have been implemented:
 Many more formats are planned.  The library also implements the following
 compression algorithms used by these formats:
 
+  * Dangerous Dave
   * Lion King (decompress only)
   * Monster Bash (decompress only)
   * Stellar 7 (decompress only)
