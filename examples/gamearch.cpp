@@ -675,7 +675,7 @@ finishTesting:
 				std::cerr << "Invalid format: " << strFilename << " is not a "
 					<< pArchType->getFriendlyName() << "\n"
 					<< "Use the -f option to try anyway." << std::endl;
-				return 3;
+				return RET_BE_MORE_SPECIFIC;
 			}
 		}
 
@@ -963,5 +963,5 @@ finishTesting:
 		return RET_BADARGS;
 	}
 
-	return 0;
+	return iRet;
 }
