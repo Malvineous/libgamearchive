@@ -54,11 +54,19 @@ class FATArchive: virtual public Archive {
 			offset_t iOffset;    ///< Offset of file in archive
 			offset_t lenHeader;  ///< Size of embedded FAT entry at start of file data
 
-			FATEntry();
-			virtual ~FATEntry();
-			virtual std::string getContent() const;
+			/// Empty constructor
+			FATEntry()
+				throw ();
+
+			/// Empty destructor
+			virtual ~FATEntry()
+				throw ();
+
+			virtual std::string getContent() const
+				throw ();
 
 			private:
+				/// Prevent copying
 				FATEntry(const FATEntry&);
 		};
 

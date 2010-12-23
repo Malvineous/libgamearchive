@@ -26,11 +26,25 @@ namespace camoto {
 namespace gamearchive {
 
 Archive::FileEntry::FileEntry()
+	throw ()
 {
 }
 
 Archive::FileEntry::~FileEntry()
+	throw ()
 {
+}
+
+std::string Archive::FileEntry::getContent() const
+	throw ()
+{
+	std::ostringstream ss;
+	ss << "name=" << this->strName
+		<< ";size=" << this->iSize
+		<< ";type=" << this->type
+		<< ";filter=" << this->filter
+		<< ";attr=" << this->fAttr;
+	return ss.str();
 }
 
 ArchivePtr ArchiveType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const

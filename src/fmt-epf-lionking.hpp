@@ -75,9 +75,12 @@ class EPFArchive: virtual public FATArchive {
 			uint8_t flags;
 			uint32_t decompressedSize;
 
-			EPFEntry();
-			virtual ~EPFEntry();
-			virtual std::string getContent() const;
+			EPFEntry()
+				throw ();
+			virtual ~EPFEntry()
+				throw ();
+			virtual std::string getContent() const
+				throw ();
 		};
 
 	public:

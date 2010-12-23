@@ -27,15 +27,22 @@ namespace camoto {
 namespace gamearchive {
 
 FATArchive::FATEntry::FATEntry()
+	throw ()
 {
 }
 FATArchive::FATEntry::~FATEntry()
+	throw ()
 {
 }
 std::string FATArchive::FATEntry::getContent() const
+	throw ()
 {
 	std::ostringstream ss;
-	ss << this->FileEntry::getContent() << ";offset=" << iOffset;
+	ss << this->FileEntry::getContent()
+		<< ";fatindex=" << iIndex
+		<< ";offset=" << iOffset
+		<< ";header=" << lenHeader
+	;
 	return ss.str();
 }
 

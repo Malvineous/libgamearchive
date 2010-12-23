@@ -127,16 +127,18 @@ class Archive: virtual public Metadata {
 			/// One or more E_ATTRIBUTE flags
 			int fAttr;
 
-			/// Helper function (for debugging) to return all the data as a string
-			inline virtual std::string getContent() const {
-				std::ostringstream ss;
-				ss << "name=" << this->strName << ";size=" << this->iSize << ";type="
-					<< this->type << ";attr=" << fAttr;
-				return ss.str();
-			}
 
-			FileEntry();
-			virtual ~FileEntry();
+			/// Empty constructor
+			FileEntry()
+				throw ();
+
+			/// Empty destructor
+			virtual ~FileEntry()
+				throw ();
+
+			/// Helper function (for debugging) to return all the data as a string
+			virtual std::string getContent() const
+				throw ();
 
 			private:
 				/// Can't copy FileEntry instances, must use references/pointers.

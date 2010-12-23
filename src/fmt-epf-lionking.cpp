@@ -47,12 +47,15 @@ namespace camoto {
 namespace gamearchive {
 
 EPFArchive::EPFEntry::EPFEntry()
+	throw ()
 {
 }
 EPFArchive::EPFEntry::~EPFEntry()
+	throw ()
 {
 }
 std::string EPFArchive::EPFEntry::getContent() const
+	throw ()
 {
 	std::ostringstream ss;
 	ss << this->FATEntry::getContent()
