@@ -59,6 +59,7 @@ FixedArchive::FixedArchive(iostream_sptr psArchive, FixedArchiveFile *files,
 		fe->iSize = files[i].size;
 		fe->strName = files[i].name;
 		fe->type = FILETYPE_GENERIC;
+		fe->filter = files[i].filter;
 		fe->fAttr = 0;
 
 		fe->index = i;

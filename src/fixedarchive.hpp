@@ -44,6 +44,7 @@ struct FixedArchiveFile {
 	unsigned long offset;  ///< Offset of the subfile in the parent
 	unsigned long size;    ///< Length of the subfile in bytes
 	const char *name;      ///< Filename of the subfile
+	std::string filter;    ///< Filter type
 };
 
 class FixedArchive: virtual public Archive {

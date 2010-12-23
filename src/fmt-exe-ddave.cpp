@@ -24,26 +24,26 @@ namespace camoto {
 namespace gamearchive {
 
 FixedArchiveFile ddave_file_list[] = {
-	{0x0b4ff, 0x0c620 - 0x0b4ff, "first.bin"},
-	{0x0c620, 0x120f0 - 0x0c620, "cgadave.dav"},
-	{0x120f0, 0x1c4e0 - 0x120f0, "vgadave.dav"},
-	{0x1c4e0, 0x1d780 - 0x1c4e0, "sounds.spk"},
-	{0x1d780, 0x1ea40 - 0x1d780, "menucga.gfx"},
-	{0x1ea40, 0x20ec0 - 0x1ea40, "menuega.gfx"},
-	{0x20ec0, 0x256c0 - 0x20ec0, "menuvga.gfx"},
-	{0x26b0a, 768, "vga.pal"},
+	{0x0b4ff, 0x0c620 - 0x0b4ff, "first.bin",   FILTER_NONE},
+	{0x0c620, 0x120f0 - 0x0c620, "cgadave.dav", "rle-ddave"},
+	{0x120f0, 0x1c4e0 - 0x120f0, "vgadave.dav", "rle-ddave"},
+	{0x1c4e0, 0x1d780 - 0x1c4e0, "sounds.spk",  FILTER_NONE},
+	{0x1d780, 0x1ea40 - 0x1d780, "menucga.gfx", FILTER_NONE},
+	{0x1ea40, 0x20ec0 - 0x1ea40, "menuega.gfx", FILTER_NONE},
+	{0x20ec0, 0x256c0 - 0x20ec0, "menuvga.gfx", FILTER_NONE},
+	{0x26b0a, 768,               "vga.pal",     FILTER_NONE},
 #define SIZE_LEVEL  (256 + 100*10 + 24)
 #define LEVEL_OFFSET(x)  (0x26e0a + SIZE_LEVEL * (x))
-	{LEVEL_OFFSET(0), SIZE_LEVEL, "level01.dav"},
-	{LEVEL_OFFSET(1), SIZE_LEVEL, "level02.dav"},
-	{LEVEL_OFFSET(2), SIZE_LEVEL, "level03.dav"},
-	{LEVEL_OFFSET(3), SIZE_LEVEL, "level04.dav"},
-	{LEVEL_OFFSET(4), SIZE_LEVEL, "level05.dav"},
-	{LEVEL_OFFSET(5), SIZE_LEVEL, "level06.dav"},
-	{LEVEL_OFFSET(6), SIZE_LEVEL, "level07.dav"},
-	{LEVEL_OFFSET(7), SIZE_LEVEL, "level08.dav"},
-	{LEVEL_OFFSET(8), SIZE_LEVEL, "level09.dav"},
-	{LEVEL_OFFSET(9), SIZE_LEVEL, "level10.dav"},
+	{LEVEL_OFFSET(0), SIZE_LEVEL, "level01.dav", FILTER_NONE},
+	{LEVEL_OFFSET(1), SIZE_LEVEL, "level02.dav", FILTER_NONE},
+	{LEVEL_OFFSET(2), SIZE_LEVEL, "level03.dav", FILTER_NONE},
+	{LEVEL_OFFSET(3), SIZE_LEVEL, "level04.dav", FILTER_NONE},
+	{LEVEL_OFFSET(4), SIZE_LEVEL, "level05.dav", FILTER_NONE},
+	{LEVEL_OFFSET(5), SIZE_LEVEL, "level06.dav", FILTER_NONE},
+	{LEVEL_OFFSET(6), SIZE_LEVEL, "level07.dav", FILTER_NONE},
+	{LEVEL_OFFSET(7), SIZE_LEVEL, "level08.dav", FILTER_NONE},
+	{LEVEL_OFFSET(8), SIZE_LEVEL, "level09.dav", FILTER_NONE},
+	{LEVEL_OFFSET(9), SIZE_LEVEL, "level10.dav", FILTER_NONE},
 };
 
 EXE_DDaveType::EXE_DDaveType()

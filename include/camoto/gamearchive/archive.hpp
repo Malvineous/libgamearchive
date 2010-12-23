@@ -37,6 +37,8 @@ namespace gamearchive {
 #define FILETYPE_GENERIC         std::string()
 #define FILETYPE_RAWEGA_PLANAR   "image/ega-planar"
 
+#define FILTER_NONE              std::string()
+
 /// File attribute flags.  Can be OR'd together.
 enum E_ATTRIBUTE {
 	EA_NONE       = 0x00,  ///< No attributes set
