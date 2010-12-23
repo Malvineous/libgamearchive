@@ -65,7 +65,7 @@ iostream_sptr Stellar7FilterType::apply(iostream_sptr target, FN_TRUNCATE fnTrun
 	throw (ECorruptedData)
 {
 	// File needs to be decompressed
-	filtering_istream_sptr pinf(new io::filtering_istream());
+	filtered_istream_sptr pinf(new filtered_istream());
 	pinf->push(lzw_decompress_filter(
 		9,   // initial codeword length (in bits)
 		12,  // maximum codeword length (in bits)
@@ -76,7 +76,7 @@ iostream_sptr Stellar7FilterType::apply(iostream_sptr target, FN_TRUNCATE fnTrun
 		LZW_RESET_PARAM_VALID | // has codeword reserved for dictionary reset
 		LZW_FLUSH_ON_RESET      // Jump to next word boundary on dict reset
 	));
-	filtering_ostream_sptr poutf(new io::filtering_ostream());
+	filtered_ostream_sptr poutf(new filtered_ostream());
 	//poutf->push(lzw_compress_filter(12, LZW_LITTLE_ENDIAN));
 	iostream_sptr dec(new filteredstream(target, pinf, poutf));
 	return dec;
@@ -85,7 +85,7 @@ iostream_sptr Stellar7FilterType::apply(iostream_sptr target, FN_TRUNCATE fnTrun
 istream_sptr Stellar7FilterType::apply(istream_sptr target)
 	throw (ECorruptedData)
 {
-	filtering_istream_sptr pinf(new io::filtering_istream());
+	filtered_istream_sptr pinf(new filtered_istream());
 	pinf->push(lzw_decompress_filter(
 		9,   // initial codeword length (in bits)
 		12,  // maximum codeword length (in bits)
@@ -96,15 +96,15 @@ istream_sptr Stellar7FilterType::apply(istream_sptr target)
 		LZW_RESET_PARAM_VALID | // has codeword reserved for dictionary reset
 		LZW_FLUSH_ON_RESET      // Jump to next word boundary on dict reset
 	));
-	pinf->push(*target);
+	pinf->pushShared(target);
 	return pinf;
 }
 
 ostream_sptr Stellar7FilterType::apply(ostream_sptr target, FN_TRUNCATE fnTruncate)
 	throw (ECorruptedData)
 {
-	filtering_ostream_sptr poutf(new io::filtering_ostream());
-	poutf->push(*target);
+	filtered_ostream_sptr poutf(new filtered_ostream());
+	poutf->pushShared(target);
 	return poutf;
 }
 

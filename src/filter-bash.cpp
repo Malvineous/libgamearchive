@@ -65,7 +65,7 @@ iostream_sptr BashFilterType::apply(iostream_sptr target, FN_TRUNCATE fnTruncate
 	throw (ECorruptedData)
 {
 	// File needs to be decompressed
-	filtering_istream_sptr pinf(new io::filtering_istream());
+	filtered_istream_sptr pinf(new filtered_istream());
 	pinf->push(bash_unrle_filter());
 	pinf->push(lzw_decompress_filter(
 		9,   // initial codeword length (in bits)
@@ -76,7 +76,7 @@ iostream_sptr BashFilterType::apply(iostream_sptr target, FN_TRUNCATE fnTruncate
 		LZW_LITTLE_ENDIAN    | // bits are split into bytes in little-endian order
 		LZW_EOF_PARAM_VALID    // Has codeword reserved for EOF - TODO: confirm
 	));
-	filtering_ostream_sptr poutf(new io::filtering_ostream());
+	filtered_ostream_sptr poutf(new filtered_ostream());
 	//poutf->push(bash_rle_filter());
 	//poutf->push(lzw_compress_filter(12, LZW_LITTLE_ENDIAN));
 	iostream_sptr dec(new filteredstream(target, pinf, poutf));
@@ -86,7 +86,7 @@ iostream_sptr BashFilterType::apply(iostream_sptr target, FN_TRUNCATE fnTruncate
 istream_sptr BashFilterType::apply(istream_sptr target)
 	throw (ECorruptedData)
 {
-	filtering_istream_sptr pinf(new io::filtering_istream());
+	filtered_istream_sptr pinf(new filtered_istream());
 	pinf->push(bash_unrle_filter());
 	pinf->push(lzw_decompress_filter(
 		9,   // initial codeword length (in bits)
@@ -97,15 +97,15 @@ istream_sptr BashFilterType::apply(istream_sptr target)
 		LZW_LITTLE_ENDIAN    | // bits are split into bytes in little-endian order
 		LZW_EOF_PARAM_VALID    // Has codeword reserved for EOF - TODO: confirm
 	));
-	pinf->push(*target);
+	pinf->pushShared(target);
 	return pinf;
 }
 
 ostream_sptr BashFilterType::apply(ostream_sptr target, FN_TRUNCATE fnTruncate)
 	throw (ECorruptedData)
 {
-	filtering_ostream_sptr poutf(new io::filtering_ostream());
-	poutf->push(*target);
+	filtered_ostream_sptr poutf(new filtered_ostream());
+	poutf->pushShared(target);
 	return poutf;
 }
 

@@ -88,13 +88,22 @@ struct FIXTURE_NAME: public default_sample {
 		}
 		#endif
 
+		ga::ManagerPtr pManager;
+		ga::ArchiveTypePtr pTestType;
 		BOOST_REQUIRE_NO_THROW(
 			this->baseData->exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
 
-			ga::ManagerPtr pManager(ga::getManager());
-			ga::ArchiveTypePtr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE));
+			pManager = ga::getManager();
+			pTestType = pManager->getArchiveTypeByCode(ARCHIVE_TYPE);
+		);
+		BOOST_REQUIRE_MESSAGE(pTestType, "Could not find archive type " ARCHIVE_TYPE);
+
+		BOOST_REQUIRE_NO_THROW(
 			this->pArchive = pTestType->open(this->baseStream, this->suppData);
-			BOOST_REQUIRE_MESSAGE(this->pArchive, "Could not create archive class");
+		);
+		BOOST_REQUIRE_MESSAGE(this->pArchive, "Could not create archive class");
+
+		BOOST_REQUIRE_NO_THROW(
 			this->pArchive->fnTruncate = boost::bind<void>(
 				stringStreamTruncate, this->baseData.get(), _1);
 		);
@@ -142,6 +151,7 @@ BOOST_FIXTURE_TEST_SUITE(SUITE_NAME, FIXTURE_NAME)
 		\
 		boost::shared_ptr<ga::Manager> pManager(ga::getManager()); \
 		ga::ArchiveTypePtr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE)); \
+		BOOST_REQUIRE_MESSAGE(pTestType, "Could not find archive type " ARCHIVE_TYPE); \
 		\
 		boost::shared_ptr<std::stringstream> psstrBase(new std::stringstream); \
 		(*psstrBase) << makeString(d); \
@@ -229,7 +239,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(open))
 	BOOST_REQUIRE_EQUAL(pfsIn->tellg(), 0);
 
 	// Apply any decryption/decompression filter
-	applyFilter(&pfsIn, ep);
+	applyFilter(pArchive, ep, &pfsIn);
 
 	// Copy it into the stringstream
 	boost::iostreams::copy(*pfsIn, out);
@@ -380,7 +390,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_end))
 	iostream_sptr pfsNew(pArchive->open(ep));
 
 	// Apply any encryption/compression filter
-	applyFilter(&pfsNew, ep);
+	applyFilter(pArchive, ep, &pfsNew);
 
 	pfsNew->write("This is three.dat", 17);
 	pfsNew->flush();
@@ -433,7 +443,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_mid))
 	iostream_sptr pfsNew(pArchive->open(ep));
 
 	// Apply any encryption/compression filter
-	applyFilter(&pfsNew, ep);
+	applyFilter(pArchive, ep, &pfsNew);
 
 	pfsNew->write("This is three.dat", 17);
 	pfsNew->flush();
@@ -486,7 +496,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 	iostream_sptr pfsNew1(pArchive->open(ep1));
 
 	// Apply any encryption/compression filter
-	applyFilter(&pfsNew1, ep1);
+	applyFilter(pArchive, ep1, &pfsNew1);
 
 	pfsNew1->write("This is three.dat", 17);
 	pfsNew1->flush();
@@ -522,7 +532,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 	iostream_sptr pfsNew2(pArchive->open(ep2));
 
 	// Apply any encryption/compression filter
-	applyFilter(&pfsNew2, ep2);
+	applyFilter(pArchive, ep2, &pfsNew2);
 
 	pfsNew2->write("This is four.dat", 16);
 	pfsNew2->flush();
@@ -656,7 +666,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_remove))
 	iostream_sptr pfsNew(pArchive->open(ep));
 
 	// Apply any encryption/compression filter
-	applyFilter(&pfsNew, ep);
+	applyFilter(pArchive, ep, &pfsNew);
 
 	pfsNew->write("This is three.dat", 17);
 	pfsNew->flush();
@@ -747,7 +757,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_insert))
 	iostream_sptr pfsNew(pArchive->open(ep));
 
 	// Apply any encryption/compression filter
-	applyFilter(&pfsNew, ep);
+	applyFilter(pArchive, ep, &pfsNew);
 
 	pfsNew->write("This is three.dat", 17);
 	pfsNew->flush();
@@ -912,7 +922,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_write))
 	iostream_sptr pfsNew(pArchive->open(ep));
 
 	// Apply any encryption/compression filter
-	applyFilter(&pfsNew, ep);
+	applyFilter(pArchive, ep, &pfsNew);
 
 	pfsNew->write("Now resized to 23 chars", 23);
 	pfsNew->flush();
@@ -953,7 +963,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_write))
 	out.exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
 
 	// Apply any decryption/decompression filter
-	applyFilter(&pfsIn, ep2);
+	applyFilter(pArchive, ep2, &pfsIn);
 
 	// Copy it into the stringstream
 	boost::iostreams::copy(*pfsIn, out);
@@ -1021,7 +1031,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_all_re_add))
 	iostream_sptr pfsNew(pArchive->open(idOne));
 
 	// Apply any encryption/compression filter
-	applyFilter(&pfsNew, idOne);
+	applyFilter(pArchive, idOne, &pfsNew);
 
 	pfsNew->write("This is one.dat", 15);
 	pfsNew->flush();
@@ -1037,7 +1047,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_all_re_add))
 	pfsNew = pArchive->open(idTwo);
 
 	// Apply any encryption/compression filter
-	applyFilter(&pfsNew, idTwo);
+	applyFilter(pArchive, idTwo, &pfsNew);
 
 	pfsNew->write("This is two.dat", 15);
 	pfsNew->flush();
@@ -1076,7 +1086,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_zero_then_resize))
 	camoto::iostream_sptr pfsNew(pArchive->open(ep));
 
 	// Apply any encryption/compression filter
-	applyFilter(&pfsNew, ep);
+	applyFilter(pArchive, ep, &pfsNew);
 
 	pArchive->resize(ep, 17);
 	pfsNew->seekp(0, std::ios::beg);

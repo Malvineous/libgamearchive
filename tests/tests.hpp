@@ -56,8 +56,8 @@ void stringStreamTruncate(std::stringstream *ss, int len);
  * @param id
  *   EntryPtr for the stream.
  */
-void applyFilter(camoto::iostream_sptr *ppStream,
-	camoto::gamearchive::Archive::EntryPtr id)
+void applyFilter(camoto::gamearchive::ArchivePtr arch,
+	camoto::gamearchive::Archive::EntryPtr id, camoto::iostream_sptr *ppStream)
 	throw (std::ios::failure);
 
 #endif // _CAMOTO_GAMEARCHIVE_TESTS_HPP_

@@ -37,6 +37,8 @@ struct EMPTY_FIXTURE_NAME: public FIXTURE_NAME {
 		boost::shared_ptr<ga::Manager> pManager(ga::getManager());
 		ga::ArchiveTypePtr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE));
 
+		BOOST_REQUIRE_MESSAGE(pTestType, "Could not find archive type " ARCHIVE_TYPE);
+
 		BOOST_TEST_CHECKPOINT("About to call newArchive()");
 
 		// This should really use BOOST_REQUIRE_NO_THROW but the message is more
@@ -108,7 +110,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(new_to_initialstate))
 		"Couldn't insert new file in empty archive");
 	boost::shared_ptr<std::iostream> pfsNew(pArchive->open(idOne));
 	// Apply any encryption/compression filter
-	applyFilter(&pfsNew, idOne);
+	applyFilter(pArchive, idOne, &pfsNew);
 	pfsNew->write("This is one.dat", 15);
 	pfsNew->flush();
 
@@ -121,7 +123,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(new_to_initialstate))
 		"Couldn't insert second new file in empty archive");
 	pfsNew = pArchive->open(idTwo);
 	// Apply any encryption/compression filter
-	applyFilter(&pfsNew, idTwo);
+	applyFilter(pArchive, idTwo, &pfsNew);
 	pfsNew->write("This is two.dat", 15);
 	pfsNew->flush();
 
@@ -178,7 +180,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(manipulate_zero_length_files))
 	// Open it
 	camoto::iostream_sptr file3(pArchive->open(ep3));
 	// Apply any encryption/compression filter
-	applyFilter(&file3, ep3);
+	applyFilter(pArchive, ep3, &file3);
 
 #if !NO_FILENAMES
 	ga::Archive::EntryPtr ep1 = pArchive->insert(ep3, FILENAME1, 0, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
@@ -191,7 +193,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(manipulate_zero_length_files))
 	// Open it
 	camoto::iostream_sptr file1(pArchive->open(ep1));
 	// Apply any encryption/compression filter
-	applyFilter(&file1, ep1);
+	applyFilter(pArchive, ep1, &file1);
 
 #if !NO_FILENAMES
 	ga::Archive::EntryPtr ep2 = pArchive->insert(ep3, FILENAME2, 0, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
@@ -205,7 +207,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(manipulate_zero_length_files))
 	camoto::iostream_sptr file2(pArchive->open(ep2));
 
 	// Apply any encryption/compression filter
-	applyFilter(&file2, ep2);
+	applyFilter(pArchive, ep2, &file2);
 
 	// Get offsets of each file for later testing
 	ga::FATArchive::FATEntryPtr fat1 =

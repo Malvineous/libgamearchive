@@ -20,8 +20,8 @@
 #define BOOST_TEST_MODULE libgamearchive
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
-
 #include <boost/algorithm/string.hpp> // for case-insensitive string compare
+#include <boost/bind.hpp>
 #include <iostream>
 #include <iomanip>
 
@@ -111,8 +111,8 @@ void stringStreamTruncate(std::stringstream *ss, int len)
 	return;
 }
 
-void applyFilter(camoto::iostream_sptr *ppStream,
-	camoto::gamearchive::Archive::EntryPtr id)
+void applyFilter(camoto::gamearchive::ArchivePtr arch,
+	camoto::gamearchive::Archive::EntryPtr id, camoto::iostream_sptr *ppStream)
 	throw (std::ios::failure)
 {
 	if (!id->filter.empty()) {
@@ -125,8 +125,10 @@ void applyFilter(camoto::iostream_sptr *ppStream,
 				"could not find filter \"" << id->filter << "\""
 			));
 		}
-		// TODO: use boost::bind to find the arch's truncate function
-		*ppStream = pFilterType->apply(*ppStream, NULL);
+		// Bind the archive's resize() function to the truncate function.
+		camoto::FN_TRUNCATE fnTruncate = boost::bind<void>(
+			&camoto::gamearchive::Archive::resize, arch, id, _1);
+		*ppStream = pFilterType->apply(*ppStream, fnTruncate);
 	}
 	return;
 }

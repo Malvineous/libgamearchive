@@ -189,12 +189,12 @@ std::vector<std::string> Zone66FilterType::getGameList() const
 iostream_sptr Zone66FilterType::apply(iostream_sptr target, FN_TRUNCATE fnTruncate)
 	throw (ECorruptedData)
 {
-	filtering_istream_sptr pinf(new io::filtering_istream());
+	filtered_istream_sptr pinf(new filtered_istream());
 
 	// Decompress the data using the Zone 66 algorithm
 	pinf->push(z66_decompress_filter());
 
-	filtering_ostream_sptr poutf(new io::filtering_ostream());
+	filtered_ostream_sptr poutf(new filtered_ostream());
 	//poutf->push(z66_compress_filter());
 
 	iostream_sptr dec(new filteredstream(target, pinf, poutf));
@@ -204,22 +204,22 @@ iostream_sptr Zone66FilterType::apply(iostream_sptr target, FN_TRUNCATE fnTrunca
 istream_sptr Zone66FilterType::apply(istream_sptr target)
 	throw (ECorruptedData)
 {
-	filtering_istream_sptr pinf(new io::filtering_istream());
+	filtered_istream_sptr pinf(new filtered_istream());
 
 	// Decompress the data using the Zone 66 algorithm
 	pinf->push(z66_decompress_filter());
 
-	pinf->push(*target);
+	pinf->pushShared(target);
 	return pinf;
 }
 
 ostream_sptr Zone66FilterType::apply(ostream_sptr target, FN_TRUNCATE fnTruncate)
 	throw (ECorruptedData)
 {
-	filtering_ostream_sptr poutf(new io::filtering_ostream());
+	filtered_ostream_sptr poutf(new filtered_ostream());
 	//poutf->push(z66_compress_filter());
 
-	poutf->push(*target);
+	poutf->pushShared(target);
 	return poutf;
 }
 
