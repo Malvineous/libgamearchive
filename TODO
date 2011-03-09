@@ -2,3 +2,5 @@ Outstanding tasks
 
  - SkyRoads roads handler stores file length in size field (instead of decompressed
    length.)  Not sure how to fix this without embedding a decompressor.
+
+ - Implement God of Thunder (de)compression

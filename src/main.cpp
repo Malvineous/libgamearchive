@@ -39,6 +39,7 @@
 #include "fmt-dat-sango.hpp"
 #include "fmt-lbr-vinyl.hpp"
 #include "fmt-roads-skyroads.hpp"
+#include "fmt-dat-got.hpp"
 
 #include "filter-bash.hpp"
 #include "filter-epfs.hpp"
@@ -74,6 +75,7 @@ Manager::Manager()
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_SangoType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new LBRType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new SkyRoadsRoadsType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new DAT_GoTType()));
 
 	// The following formats are difficult to autodetect, so putting them last
 	// means they should only be checked if all the more robust formats above
