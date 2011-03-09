@@ -46,26 +46,6 @@
 namespace camoto {
 namespace gamearchive {
 
-EPFArchive::EPFEntry::EPFEntry()
-	throw ()
-{
-}
-EPFArchive::EPFEntry::~EPFEntry()
-	throw ()
-{
-}
-std::string EPFArchive::EPFEntry::getContent() const
-	throw ()
-{
-	std::ostringstream ss;
-	ss << this->FATEntry::getContent()
-		<< ";epf_flags=" << (int)this->flags
-		<< ";epf_decompressedSize=" << this->decompressedSize
-	;
-	return ss.str();
-}
-
-
 EPFType::EPFType()
 	throw ()
 {
@@ -198,8 +178,9 @@ EPFArchive::EPFArchive(iostream_sptr psArchive)
 	this->psArchive->seekg(this->offFAT, std::ios::beg);
 
 	io::stream_offset offNext = EPF_FIRST_FILE_OFFSET;
+	uint8_t flags;
 	for (int i = 0; i < numFiles; i++) {
-		EPFEntry *fatEntry = new EPFEntry();
+		FATEntry *fatEntry = new FATEntry();
 		EntryPtr ep(fatEntry);
 
 		fatEntry->iIndex = i;
@@ -212,11 +193,11 @@ EPFArchive::EPFArchive(iostream_sptr psArchive)
 		// Read the data in from the FAT entry in the file
 		this->psArchive
 			>> nullPadded(fatEntry->strName, EPF_FILENAME_FIELD_LEN)
-			>> u8(fatEntry->flags)
+			>> u8(flags)
 			>> u32le(fatEntry->iSize)
-			>> u32le(fatEntry->decompressedSize);
+			>> u32le(fatEntry->iExpandedSize);
 
-		if (fatEntry->flags & EPF_FAT_FLAG_COMPRESSED) {
+		if (flags & EPF_FAT_FLAG_COMPRESSED) {
 			fatEntry->fAttr |= EA_COMPRESSED;
 			fatEntry->filter = "lzw-epfs";
 		}
@@ -330,7 +311,7 @@ void EPFArchive::updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
 	this->psArchive->seekp(this->offFAT + pid->iIndex * EPF_FAT_ENTRY_LEN + EPF_FAT_FILESIZE_OFFSET);
 	this->psArchive
 		<< u32le(pid->iSize)    // compressed size
-		<< u32le(pid->iSize);   // decompressed size
+		<< u32le(pid->iExpandedSize);   // decompressed size
 
 	this->updateFATOffset();
 
@@ -360,11 +341,13 @@ void EPFArchive::postInsertFile(FATEntry *pNewEntry)
 	this->psArchive->seekp(this->offFAT + pNewEntry->iIndex * EPF_FAT_ENTRY_LEN);
 	this->psArchive->insert(EPF_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
+	uint8_t flags = 0;
+	if (pNewEntry->fAttr & EA_COMPRESSED) flags = 1;
 	this->psArchive
 		<< nullPadded(pNewEntry->strName, EPF_FILENAME_FIELD_LEN)
-		<< (uint8_t)0  // 0 == uncompressed, 1 == compressed
+		<< u8(flags)  // 0 == uncompressed, 1 == compressed
 		<< u32le(pNewEntry->iSize)  // compressed
-		<< u32le(pNewEntry->iSize); // decompressed
+		<< u32le(pNewEntry->iExpandedSize); // decompressed
 
 	this->updateFATOffset();
 	this->updateFileCount(this->vcFAT.size());
@@ -385,12 +368,6 @@ void EPFArchive::preRemoveFile(const FATEntry *pid)
 	this->updateFileCount(this->vcFAT.size() - 1);
 
 	return;
-}
-
-FATArchive::FATEntry *EPFArchive::createNewFATEntry()
-	throw ()
-{
-	return new EPFEntry();
 }
 
 void EPFArchive::updateFileCount(uint16_t iNewCount)

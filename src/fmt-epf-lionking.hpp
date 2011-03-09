@@ -71,18 +71,6 @@ class EPFArchive: virtual public FATArchive {
 
 		io::stream_offset offFAT;  // offset of the FAT from the start of the file
 
-		struct EPFEntry: virtual public FATEntry {
-			uint8_t flags;
-			uint32_t decompressedSize;
-
-			EPFEntry()
-				throw ();
-			virtual ~EPFEntry()
-				throw ();
-			virtual std::string getContent() const
-				throw ();
-		};
-
 	public:
 
 		EPFArchive(iostream_sptr psArchive)
@@ -121,9 +109,6 @@ class EPFArchive: virtual public FATArchive {
 
 		virtual void preRemoveFile(const FATEntry *pid)
 			throw (std::ios_base::failure);
-
-		virtual FATEntry *createNewFATEntry()
-			throw ();
 
 	protected:
 		void updateFileCount(uint16_t iNewCount)

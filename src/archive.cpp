@@ -41,6 +41,7 @@ std::string Archive::FileEntry::getContent() const
 	std::ostringstream ss;
 	ss << "name=" << this->strName
 		<< ";size=" << this->iSize
+		<< ";expandedSize=" << this->iExpandedSize
 		<< ";type=" << this->type
 		<< ";filter=" << this->filter
 		<< ";attr=" << this->fAttr;

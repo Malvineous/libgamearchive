@@ -169,7 +169,7 @@ DAT_BashArchive::DAT_BashArchive(iostream_sptr psArchive)
 	this->psArchive->seekg(0, std::ios::beg);
 
 	io::stream_offset pos = 0;
-	uint16_t type, decompSize;
+	uint16_t type;
 	int numFiles = 0;
 	while (pos < lenArchive) {
 		FATEntry *fatEntry = new FATEntry();
@@ -186,9 +186,9 @@ DAT_BashArchive::DAT_BashArchive(iostream_sptr psArchive)
 			>> u16le(type)
 			>> u16le(fatEntry->iSize)
 			>> nullPadded(fatEntry->strName, DAT_FILENAME_FIELD_LEN)
-			>> u16le(decompSize);
+			>> u16le(fatEntry->iExpandedSize);
 
-		if (decompSize) {
+		if (fatEntry->iExpandedSize) {
 			fatEntry->fAttr |= EA_COMPRESSED;
 			fatEntry->filter = "lzw-bash"; // decompression algorithm
 		}
@@ -269,6 +269,8 @@ void DAT_BashArchive::updateFileSize(const FATEntry *pid,
 	// TESTED BY: fmt_dat_bash_resize*
 	this->psArchive->seekp(DAT_FILESIZE_OFFSET(pid));
 	this->psArchive << u16le(pid->iSize);
+	this->psArchive->seekp(DAT_FILENAME_FIELD_LEN, std::ios::cur);
+	this->psArchive << u16le(pid->iExpandedSize);
 	return;
 }
 
@@ -312,7 +314,8 @@ FATArchive::FATEntry *DAT_BashArchive::preInsertFile(
 		<< u16le(typeNum)
 		<< u16le(pNewEntry->iSize)
 		<< nullPadded(pNewEntry->strName, DAT_FILENAME_FIELD_LEN)
-		<< u16le(0); // TODO: decompressed size
+		<< u16le(pNewEntry->iExpandedSize)
+	;
 
 	// Since we've inserted some data for the embedded header, we need to update
 	// the other file offsets accordingly.  This call updates the offset of the

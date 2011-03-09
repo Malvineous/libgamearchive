@@ -95,6 +95,14 @@ class Archive: virtual public Metadata {
 			/// Size of the file
 			offset_t iSize;
 
+			/// Size after decompression
+			/**
+			 * If fAttr has EA_COMPRESSED set then this indicates the file size after
+			 * decompression.  It may be zero if the field is unused in the archive,
+			 * but it should always be set when adding a file.
+			 */
+			offset_t iExpandedSize;
+
 			/// Filename (may be empty for some archives)
 			std::string strName;
 
