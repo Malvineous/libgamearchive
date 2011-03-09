@@ -27,9 +27,10 @@
 
 #include "fmt-vol-cosmo.hpp"
 
-#define VOL_FAT_LENGTH        4000
-#define VOL_MAX_FILENAME_LEN  12
+#define VOL_MAX_FILES         200
 #define VOL_FAT_ENTRY_LEN     20  // filename + u32le offset + u32le size
+#define VOL_FAT_LENGTH        (VOL_MAX_FILES * VOL_FAT_ENTRY_LEN)
+#define VOL_MAX_FILENAME_LEN  12
 #define VOL_FIRST_FILE_OFFSET VOL_FAT_LENGTH
 
 namespace camoto {
@@ -142,7 +143,7 @@ ArchivePtr VOLType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) c
 {
 	char emptyFAT[VOL_FAT_LENGTH];
 	memset(emptyFAT, 0, VOL_FAT_LENGTH);
-	psArchive->seekg(0, std::ios::beg);
+	psArchive->seekp(0, std::ios::beg);
 	psArchive->write(emptyFAT, VOL_FAT_LENGTH);
 	return ArchivePtr(new VOLArchive(psArchive));
 }
@@ -263,8 +264,8 @@ FATArchive::FATEntry *VOLArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	pNewEntry->lenHeader = 0;
 
 	// TODO: See if this is in fact a hard limitation
-	if (this->vcFAT.size() >= 200) {
-		throw std::ios::failure("too many files, maximum is 200");
+	if (this->vcFAT.size() >= VOL_MAX_FILES) {
+		throw std::ios::failure("too many files, maximum is " TOSTRING(VOL_MAX_FILES));
 	}
 	this->psArchive->seekp(pNewEntry->iIndex * VOL_FAT_ENTRY_LEN);
 	this->psArchive->insert(VOL_FAT_ENTRY_LEN);
@@ -279,7 +280,7 @@ FATArchive::FATEntry *VOLArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	// Because the FAT is a fixed size we have to remove a blank entry to
 	// compensate for the entry we just added.
 	if (this->vcFAT.size() > 0) {
-		int indexLast = 199;
+		int indexLast = VOL_MAX_FILES - 1;
 		for (VC_ENTRYPTR::reverse_iterator i = this->vcFAT.rbegin(); i != this->vcFAT.rend(); i++) {
 			FATEntry *pFAT = dynamic_cast<FATEntry *>(i->get());
 			if (pFAT->iIndex != indexLast) {

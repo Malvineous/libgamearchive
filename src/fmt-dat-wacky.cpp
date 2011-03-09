@@ -134,7 +134,7 @@ E_CERTAINTY DAT_WackyType::isInstance(iostream_sptr psArchive) const
 ArchivePtr DAT_WackyType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
 	throw (std::ios::failure)
 {
-	psArchive->seekg(0, std::ios::beg);
+	psArchive->seekp(0, std::ios::beg);
 	psArchive << u16le(0); // file count
 	return ArchivePtr(new DAT_WackyArchive(psArchive));
 }
