@@ -25,6 +25,7 @@ libgamearchive_la_SOURCES += filter-bash.cpp
 libgamearchive_la_SOURCES += filter-epfs.cpp
 libgamearchive_la_SOURCES += filter-zone66.cpp
 libgamearchive_la_SOURCES += filter-stellar7.cpp
+libgamearchive_la_SOURCES += filter-xor.cpp
 libgamearchive_la_SOURCES += filter-xor-blood.cpp
 
 EXTRA_libgamearchive_la_SOURCES = fatarchive.hpp
