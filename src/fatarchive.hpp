@@ -174,6 +174,7 @@ class FATArchive: virtual public Archive {
 		virtual void flush()
 			throw (std::ios::failure);
 
+	protected:
 		/// Shift any files *starting* at or after offStart by delta bytes.
 		/**
 		 * This updates the internal offsets and index numbers.  The FAT is updated
