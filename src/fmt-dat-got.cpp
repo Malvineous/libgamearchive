@@ -41,6 +41,10 @@
 #define GOT_FILEOFFSET_OFFSET(e) (GOT_FATENTRY_OFFSET(e) + GOT_FILENAME_FIELD_LEN)
 #define GOT_FILESIZE_OFFSET(e)   (GOT_FILEOFFSET_OFFSET(e) + 4)
 
+// Comment the next line out and also in the test file to run the tests
+// with no encryption to assist in debugging.
+#define USE_XOR
+
 namespace camoto {
 namespace gamearchive {
 
@@ -104,7 +108,9 @@ E_CERTAINTY DAT_GoTType::isInstance(iostream_sptr psArchive) const
 
 	xor_crypt_filter fatCrypt(0, 128);
 	filtered_iostream_sptr fatFilter(new filtered_iostream());
+#ifdef USE_XOR
 	fatFilter->push(fatCrypt);
+#endif
 	fatFilter->pushShared(fatSubStream);
 	segstream_sptr fatStream(new segmented_stream(fatFilter));
 
@@ -192,7 +198,9 @@ DAT_GoTArchive::DAT_GoTArchive(iostream_sptr psArchive)
 		)
 	);
 
+#ifdef USE_XOR
 	this->fatFilter->push(this->fatCrypt);
+#endif
 	this->fatFilter->pushShared(this->fatSubStream);
 
 	this->fatStream.reset(new segmented_stream(this->fatFilter));
