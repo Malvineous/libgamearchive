@@ -208,9 +208,11 @@ class Archive: virtual public Metadata {
 		 * use this function only with user input, and to otherwise use
 		 * EntryPtrs only, as returned by getFileList().
 		 *
-		 * @param  strFilename Name of the file to search for.
+		 * @param strFilename
+		 *   Name of the file to search for.
+		 *
 		 * @return EntryPtr to the requested file, or an empty EntryPtr() if the
-		 * file can't be found (EntryPtr::bValid will be false.)
+		 *   file can't be found (EntryPtr::bValid will be false.)
 		 */
 		virtual EntryPtr find(const std::string& strFilename) const
 			throw () = 0;
@@ -218,7 +220,7 @@ class Archive: virtual public Metadata {
 		/// Get a list of all files in the archive.
 		/**
 		 * @return A vector of FileEntry with one element for each file in the
-		 *         archive.
+		 *   archive.
 		 */
 		virtual const VC_ENTRYPTR& getFileList(void) const
 			throw () = 0;
@@ -228,7 +230,9 @@ class Archive: virtual public Metadata {
 		 * This is different to the bValid member in FileEntry as it confirms
 		 * that the EntryPtr is still valid for this particular archive file.
 		 *
-		 * @param  id Entry to check
+		 * @param id
+		 *   Entry to check.
+		 *
 		 * @return true if the EntryPtr is valid.
 		 */
 		virtual bool isValid(const EntryPtr& id) const
@@ -236,11 +240,13 @@ class Archive: virtual public Metadata {
 
 		/// Open a file in the archive.
 		/**
-		 * @param  id A valid file entry, obtained from find(), getFileList(), etc.
+		 * @param id
+		 *   A valid file entry, obtained from find(), getFileList(), etc.
+		 *
 		 * @return A C++ iostream containing the file data.  Writes to this stream
-		 *         will immediately update the data in the archive.  Writing beyond
-		 *         EOF is not permitted - use resize() if the file needs to change
-		 *         size (grow or shrink.)
+		 *   will immediately update the data in the archive.  Writing beyond EOF
+		 *   is not permitted - use resize() if the file needs to change size (grow
+		 *   or shrink.)
 		 */
 		virtual iostream_sptr open(const EntryPtr& id)
 			throw () = 0;
@@ -251,17 +257,17 @@ class Archive: virtual public Metadata {
 		 * assertion failure, which means the function only needs to be
 		 * overridden for archives actually supporting subfolders.
 		 *
-		 * @note  This function only needs to be implemented for archive formats
+		 * @note This function only needs to be implemented for archive formats
 		 *   where each subfolder has an independent FAT.  For those formats which
 		 *   simply have paths in the filenames, this function does not need to
 		 *   be implemented.
 		 *
-		 * @pre  The entry must have the EA_FOLDER attribute set.
+		 * @pre The entry must have the EA_FOLDER attribute set.
 		 *
 		 * @param id
 		 *   A valid file entry, obtained from find(), getFileList(), etc.
 		 *
-		 * @return  Another Archive instance representing the files in the folder.
+		 * @return Another Archive instance representing the files in the folder.
 		 */
 		virtual ArchivePtr openFolder(const EntryPtr& id)
 			throw (std::ios::failure);
@@ -272,13 +278,13 @@ class Archive: virtual public Metadata {
 		 * idBeforeThis is not valid.  Does not check if this filename already
 		 * exists - check first yourself or you will add duplicates!
 		 *
-		 * @note  For performance reasons, this operation is cached so it does not
+		 * @note For performance reasons, this operation is cached so it does not
 		 *   immediately affect the archive file.  When the time comes to
 		 *   flush() the changes, all the insert/delete/resize operations are
 		 *   done in a single pass.  However providing this class is the sole
 		 *   method of accessing the archive file, this is of no concern.
 		 *
-		 * @post  Existing EntryPtrs become invalid.  Any open files remain valid.
+		 * @post Existing EntryPtrs become invalid.  Any open files remain valid.
 		 *
 		 * @param idBeforeThis
 		 *   The new file will be inserted before this one.  If it is not valid,
@@ -315,23 +321,31 @@ class Archive: virtual public Metadata {
 
 		/// Delete the given entry from the archive.
 		/**
-		 * @note   For performance reasons, this operation is cached so it does not
-		 *         immediately affect the archive file.  When the time comes to
-		 *         flush() the changes, all the insert/delete/resize operations are
-		 *         done in a single pass.  However providing this class is the sole
-		 *         method of accessing the archive file, this is of no concern.
-		 * @param  id The file to delete.
-		 * @post   Existing EntryPtrs become invalid.  Any open files remain valid.
+		 * @note For performance reasons, this operation is cached so it does not
+		 *   immediately affect the archive file.  When the time comes to
+		 *   flush() the changes, all the insert/delete/resize operations are
+		 *   done in a single pass.  However providing this class is the sole
+		 *   method of accessing the archive file, this is of no concern.
+		 *
+		 * @param id
+		 *   The file to delete.
+		 *
+		 * @post Existing EntryPtrs become invalid.  Any open files remain valid.
 		 */
 		virtual void remove(EntryPtr& id)
 			throw (std::ios::failure) = 0;
 
 		/// Rename a file.
 		/**
-		 * @note   Will throw exceptions on invalid names (e.g. name too long)
-		 * @param  id The file to rename.
-		 * @param  strNewName The new filename.
-		 * @post   Existing EntryPtrs remain valid.
+		 * @note Will throw exceptions on invalid names (e.g. name too long)
+		 *
+		 * @param id
+		 *   The file to rename.
+		 *
+		 * @param strNewName
+		 *   The new filename.
+		 *
+		 * @post Existing EntryPtrs remain valid.
 		 */
 		virtual void rename(EntryPtr& id, const std::string& strNewName)
 			throw (std::ios::failure) = 0;
@@ -341,10 +355,14 @@ class Archive: virtual public Metadata {
 		 * Take id and place it before idBeforeThis, or last if idBeforeThis is not
 		 * valid.
 		 *
-		 * @param  id File to move
-		 * @param  idBeforeThis File will be inserted before this one.  If it is
-		 *         not valid, the file will become last in the archive.
-		 * @post   Existing EntryPtrs become invalid.  Any open files remain valid.
+		 * @param id
+		 *   File to move.
+		 *
+		 * @param idBeforeThis
+		 *   File will be inserted before this one.  If it is not valid, the file
+		 *   will become last in the archive.
+		 *
+		 * @post Existing EntryPtrs become invalid.  Any open files remain valid.
 		 */
 		virtual void move(const EntryPtr& idBeforeThis, EntryPtr& id)
 			throw (std::ios::failure);
@@ -399,7 +417,7 @@ class Archive: virtual public Metadata {
 		 * shuffling around many hundreds of megabytes of data, so don't call this
 		 * function unless you have good reason to!
 		 *
-		 * @pre    The \ref fnTruncate member must be valid before this call.
+		 * @pre The \ref fnTruncate member must be valid before this call.
 		 */
 		virtual void flush()
 			throw (std::ios::failure) = 0;

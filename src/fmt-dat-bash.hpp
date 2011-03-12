@@ -1,7 +1,8 @@
-/*
- * fmt-dat-bash.cpp - Implementation of Monster Bash .DAT file reader/writer.
+/**
+ * @file  fmt-dat-bash.cpp
+ * @brief Implementation of Monster Bash .DAT file reader/writer.
  *
- * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

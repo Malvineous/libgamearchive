@@ -1197,7 +1197,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(get_metadata_version))
 {
 	BOOST_TEST_MESSAGE("Get 'version' metadata field");
 
-	// Make sure this format reports having a 'description' metadata field
+	// Make sure this format reports having a 'version' metadata field
 	camoto::Metadata::MetadataTypes items = pArchive->getMetadataList();
 	bool bFound = false;
 	for (camoto::Metadata::MetadataTypes::iterator i = items.begin(); i != items.end(); i++) {

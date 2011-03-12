@@ -1,5 +1,6 @@
-/*
- * debug.hpp - Helper functions to assist with debugging.
+/**
+ * @file  debug.hpp
+ * @brief Helper functions to assist with debugging.
  *
  * Copyright (C) 2009 Adam Nielsen <malvineous@shikadi.net>
  *

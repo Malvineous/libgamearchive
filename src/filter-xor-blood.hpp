@@ -2,7 +2,7 @@
  * @file   filter-xor-blood.hpp
  * @brief  Filter that encrypts and decrypts data in Blood RFF archives.
  *
- * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

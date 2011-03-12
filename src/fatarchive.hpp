@@ -1,7 +1,8 @@
-/*
- * fatarchive.hpp - Implementation of a FAT-style archive format.
+/**
+ * @file  fatarchive.hpp
+ * @brief Implementation of a FAT-style archive format.
  *
- * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -180,6 +181,8 @@ class FATArchive: virtual public Archive {
 		 * (which should never happen) that file won't be affected, only those
 		 * following it.  This function must notify any open files that their offset
 		 * has moved.
+		 *
+		 * @throws std::ios::failure on I/O error.
 		 */
 		virtual void shiftFiles(const FATEntry *fatSkip, io::stream_offset offStart,
 			std::streamsize deltaOffset, int deltaIndex)
@@ -219,6 +222,8 @@ class FATArchive: virtual public Archive {
 		 * @param offDelta
 		 *   Amount the offset has changed, in case this value is needed.
 		 *
+		 * @throws std::ios::failure on I/O error.
+		 *
 		 * @note pid->offset is already set to the new offset, do not add offDelta
 		 *   to this or you will get the wrong offset!
 		 */
@@ -232,6 +237,8 @@ class FATArchive: virtual public Archive {
 		 *
 		 * @param sizeDelta
 		 *   Amount the size has changed, in case this value is needed.
+		 *
+		 * @throws std::ios::failure on I/O error.
 		 *
 		 * @note pid->size is already set to the new size, do not add sizeDelta
 		 *   to this or you will get the wrong size!
@@ -267,6 +274,8 @@ class FATArchive: virtual public Archive {
 		 *
 		 * @return Real entry to use.  Will usually (but not always) be the same as
 		 *   pNewEntry.
+		 *
+		 * @throws std::ios::failure on I/O error.
 		 */
 		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis,
 			FATEntry *pNewEntry)
@@ -278,9 +287,14 @@ class FATArchive: virtual public Archive {
 		 * has been set.  pNewEntry can be changed if need be, but this is not
 		 * required.
 		 *
+		 * @param pNewEntry
+		 *   New file that was just inserted.  May be modified.
+		 *
+		 * @throws std::ios::failure on I/O error.
+		 *
 		 * @note preInsertFile() and all subsequent FAT updates and file shifting
-		 * is done without the new file, then the new file data is insert last, and
-		 * postInsertFile() immediately called.
+		 * is done without the new file, then the new file data is inserted last,
+		 * and postInsertFile() immediately called.
 		 */
 		virtual void postInsertFile(FATEntry *pNewEntry)
 			throw (std::ios::failure);
@@ -296,6 +310,8 @@ class FATArchive: virtual public Archive {
 		 * function.
 		 *
 		 * Invalidates existing EntryPtrs.
+		 *
+		 * @throws std::ios::failure on I/O error.
 		 */
 		virtual void preRemoveFile(const FATEntry *pid)
 			throw (std::ios::failure);
@@ -307,6 +323,8 @@ class FATArchive: virtual public Archive {
 		 * the file has been removed) but for this function only, the other
 		 * parameters are still correct, although no longer used (e.g. the offset
 		 * it was at, its size, etc.)
+		 *
+		 * @throws std::ios::failure on I/O error.
 		 */
 		virtual void postRemoveFile(const FATEntry *pid)
 			throw (std::ios::failure);
@@ -319,7 +337,7 @@ class FATArchive: virtual public Archive {
 		 * additional information, you will need to replace this function with one
 		 * that allocates your extended class instead, otherwise the EntryPtrs
 		 * passed to the other functions will be a mixture of FATEntry and whatever
-		 * your extended class is.  See fmt-epf-lionking.cpp for an example.
+		 * your extended class is.  See fmt-dat-hugo.cpp for an example.
 		 */
 		virtual FATEntry *createNewFATEntry()
 			throw ();
@@ -339,7 +357,7 @@ class FATArchive: virtual public Archive {
 };
 
 /// Function for test code only, do not use.  Searches for files based on the
-/// order/index field as this the order in the archive, which is different to
+/// order/index field as this is the order in the archive, which is different to
 /// the order in the vector.
 Archive::EntryPtr getFileAt(const Archive::VC_ENTRYPTR& files, int index);
 
