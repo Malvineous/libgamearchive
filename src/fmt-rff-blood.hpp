@@ -2,7 +2,7 @@
  * @file   fmt-rff-blood.hpp
  * @brief  Implementation of reader/writer for Blood's .RFF format.
  *
- * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,10 @@
 #define _CAMOTO_FMT_RFF_BLOOD_HPP_
 
 #include <camoto/gamearchive.hpp>
-#include <camoto/substream.hpp>
+#include <camoto/segmented_stream.hpp>
+#include <camoto/filteredstream.hpp>
 #include "fatarchive.hpp"
+#include "filter-xor-blood.hpp"
 
 namespace camoto {
 namespace gamearchive {
@@ -66,11 +68,6 @@ class RFFType: virtual public ArchiveType {
 
 class RFFArchive: virtual public FATArchive {
 
-	protected:
-
-		substream_sptr fatSubStream;  ///< Substream storing the FAT
-		uint32_t version;             ///< File format version
-
 	public:
 
 		RFFArchive(iostream_sptr psArchive)
@@ -80,9 +77,6 @@ class RFFArchive: virtual public FATArchive {
 			throw ();
 
 		// As per Archive (see there for docs)
-
-		virtual void rename(EntryPtr& id, const std::string& strNewName)
-			throw (std::ios_base::failure);
 
 		virtual MetadataTypes getMetadataList() const
 			throw ();
@@ -99,32 +93,38 @@ class RFFArchive: virtual public FATArchive {
 
 		// As per FATArchive (see there for docs)
 
+		virtual void updateFileName(const FATEntry *pid, const std::string& strNewName)
+			throw (std::ios::failure);
+
 		virtual void updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
 			throw (std::ios::failure);
 
 		virtual void updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
-			throw (std::ios_base::failure);
+			throw (std::ios::failure);
 
 		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-			throw (std::ios_base::failure);
+			throw (std::ios::failure);
 
 		virtual void postInsertFile(FATEntry *pNewEntry)
+			throw (std::ios::failure);
+
+		virtual void preRemoveFile(const FATEntry *pid)
 			throw (std::ios::failure);
 
 		virtual void postRemoveFile(const FATEntry *pid)
 			throw (std::ios::failure);
 
 	protected:
+
+		segstream_sptr fatStream;    ///< In-memory stream storing the cleartext FAT
+		uint32_t version;            ///< File format version
+		bool modifiedFAT;            ///< Has the FAT been changed?
+
 		void updateFileCount(uint32_t newCount)
 			throw (std::ios::failure);
 
-		// Update the header with the offset of the FAT (which sits at the end of
-		// the archive, after the file data.)
-		void updateFATOffset(std::streamsize delta)
-			throw (std::ios_base::failure);
-
 		io::stream_offset getDescOffset() const
-			throw (std::ios_base::failure);
+			throw (std::ios::failure);
 
 		void splitFilename(const std::string& full, std::string *base, std::string *ext)
 			throw (std::ios::failure);

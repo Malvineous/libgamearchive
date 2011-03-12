@@ -32,26 +32,11 @@ namespace gamearchive {
 /// Encrypt a stream using XOR encryption, incrementing the key only every
 /// second byte.
 class rff_crypt_filter: public xor_crypt_filter {
-	protected:
-		bool bit;
 
 	public:
-		rff_crypt_filter(int lenCrypt, int seed)
-			: xor_crypt_filter(lenCrypt, seed),
-			  bit(false)
-		{
-		}
+		rff_crypt_filter(int lenCrypt, int seed);
 
-		virtual void nextSeed(int delta)
-		{
-			int amt = delta / 2;
-			if (delta % 2) {
-				if (this->bit) amt++;
-				this->bit ^= 1;
-			}
-			this->seed += amt;
-			return;
-		}
+		virtual uint8_t getKey();
 };
 
 class RFFFilterType: virtual public FilterType {

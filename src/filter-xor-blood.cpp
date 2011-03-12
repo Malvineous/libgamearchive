@@ -27,6 +27,17 @@ namespace gamearchive {
 
 #define RFF_FILE_CRYPT_LEN 256  // number of bytes encrypted from start of file
 
+rff_crypt_filter::rff_crypt_filter(int lenCrypt, int seed)
+	: xor_crypt_filter(lenCrypt, seed)
+{
+}
+
+uint8_t rff_crypt_filter::getKey()
+{
+	return (uint8_t)(this->seed + (this->offset >> 1));
+}
+
+
 RFFFilterType::RFFFilterType()
 	throw ()
 {
@@ -60,21 +71,8 @@ std::vector<std::string> RFFFilterType::getGameList() const
 iostream_sptr RFFFilterType::apply(iostream_sptr target, FN_TRUNCATE fnTruncate)
 	throw (ECorruptedData)
 {
-	/*filtered_istream_sptr pinf(new io::filtered_istream());
-
-	// Decrypt the data using the Blood XOR algorithm
-	pinf->push(rff_crypt_filter(RFF_FILE_CRYPT_LEN, 0));
-
-	filtered_ostream_sptr poutf(new io::filtered_ostream());
-	poutf->push(io::invert(rff_crypt_filter(RFF_FILE_CRYPT_LEN, 0)));
-
-	iostream_sptr dec(new filteredstream(target, pinf, poutf));
-	return dec;*/
 	filtered_iostream_sptr pf(new filtered_iostream());
-
-	// Decrypt the data using the Blood XOR algorithm
 	pf->push(rff_crypt_filter(RFF_FILE_CRYPT_LEN, 0));
-
 	pf->pushShared(target);
 	return pf;
 }
@@ -83,8 +81,6 @@ istream_sptr RFFFilterType::apply(istream_sptr target)
 	throw (ECorruptedData)
 {
 	filtered_istream_sptr pinf(new filtered_istream());
-
-	// Decrypt the data using the Blood XOR algorithm
 	pinf->push(rff_crypt_filter(RFF_FILE_CRYPT_LEN, 0));
 
 	pinf->pushShared(target);

@@ -243,6 +243,11 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(open))
 
 	// Copy it into the stringstream
 	boost::iostreams::copy(*pfsIn, out);
+	/*char buf[1024];
+	int len;
+	while ((len = pfsIn->rdbuf()->sgetn(buf, 1024))) {
+		out.rdbuf()->sputn(buf, len);
+	}*/
 
 	BOOST_CHECK_MESSAGE(
 		default_sample::is_equal(makeString(
@@ -387,14 +392,32 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_end))
 		"Couldn't create new file in sample archive");
 
 	// Open it
+	{
 	iostream_sptr pfsNew(pArchive->open(ep));
-
+//std::cout << " substream has use count of " << pfsNew.use_count() << std::endl;
+iostream_sptr temp = pfsNew;
+//std::cout << " substream after temp copy has use count of " << pfsNew.use_count() << std::endl;
 	// Apply any encryption/compression filter
 	applyFilter(pArchive, ep, &pfsNew);
 
+//std::cout << " filter-applied stream has use count of " << pfsNew.use_count() << std::endl;
+//std::cout << " original temp copy has use count of " << temp.use_count() << std::endl;
 	pfsNew->write("This is three.dat", 17);
-	pfsNew->flush();
+//std::cout << "-begin substream+filter flush" << std::endl;
+	pfsNew->flush(); // Write data to substream
+	//if (io::flush(*pfsNew, *temp)) std::cout << "filter flush ok" << std::endl;
+	//else std::cout << "filter flush failed" << std::endl;
+//std::cout << "-end substream+filter flush" << std::endl;
 
+	BOOST_CHECK_MESSAGE(
+		is_equal(makeString(TEST_RESULT(insert_end))),
+		"Error inserting file at end of archive"
+	);
+//std::cout << "@@ about to destroy" << std::endl;
+	}
+//std::cout << "@@ destroyed, clearing arch" << std::endl;
+//pArchive.reset();
+//std::cout << "@@ destroyed" << std::endl;
 	BOOST_CHECK_MESSAGE(
 		is_equal(makeString(TEST_RESULT(insert_end))),
 		"Error inserting file at end of archive"
