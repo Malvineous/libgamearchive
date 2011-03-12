@@ -843,7 +843,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_larger))
 #endif
 
 	// Swap the file positions
-	pArchive->resize(ep, 20);
+	pArchive->resize(ep, 20, 20);
 
 	BOOST_CHECK_MESSAGE(
 		is_equal(makeString(TEST_RESULT(resize_larger))),
@@ -880,7 +880,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_smaller))
 #endif
 
 	// Swap the file positions
-	pArchive->resize(ep, 10);
+	pArchive->resize(ep, 10, 10);
 
 	BOOST_CHECK_MESSAGE(
 		is_equal(makeString(TEST_RESULT(resize_smaller))),
@@ -917,7 +917,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_write))
 #endif
 
 	// Swap the file positions
-	pArchive->resize(ep, 23);
+	pArchive->resize(ep, 23, 23);
 
 	iostream_sptr pfsNew(pArchive->open(ep));
 
@@ -1088,7 +1088,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_zero_then_resize))
 	// Apply any encryption/compression filter
 	applyFilter(pArchive, ep, &pfsNew);
 
-	pArchive->resize(ep, 17);
+	pArchive->resize(ep, 17, 17);
 	pfsNew->seekp(0, std::ios::beg);
 	pfsNew->write("This is three.dat", 17);
 	pfsNew->flush();

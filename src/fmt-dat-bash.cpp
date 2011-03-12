@@ -186,9 +186,9 @@ DAT_BashArchive::DAT_BashArchive(iostream_sptr psArchive)
 			>> u16le(type)
 			>> u16le(fatEntry->iSize)
 			>> nullPadded(fatEntry->strName, DAT_FILENAME_FIELD_LEN)
-			>> u16le(fatEntry->iExpandedSize);
+			>> u16le(fatEntry->iPrefilteredSize);
 
-		if (fatEntry->iExpandedSize) {
+		if (fatEntry->iPrefilteredSize) {
 			fatEntry->fAttr |= EA_COMPRESSED;
 			fatEntry->filter = "lzw-bash"; // decompression algorithm
 		}
@@ -269,8 +269,14 @@ void DAT_BashArchive::updateFileSize(const FATEntry *pid,
 	// TESTED BY: fmt_dat_bash_resize*
 	this->psArchive->seekp(DAT_FILESIZE_OFFSET(pid));
 	this->psArchive << u16le(pid->iSize);
+
+	// Write out the decompressed size too
 	this->psArchive->seekp(DAT_FILENAME_FIELD_LEN, std::ios::cur);
-	this->psArchive << u16le(pid->iExpandedSize);
+	if (pid->fAttr & EA_COMPRESSED) {
+		this->psArchive << u16le(pid->iPrefilteredSize);
+	} else {
+		this->psArchive << u16le(0);
+	}
 	return;
 }
 
@@ -280,10 +286,37 @@ FATArchive::FATEntry *DAT_BashArchive::preInsertFile(
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_dat_bash_insert*
-	if (pNewEntry->strName.length() > DAT_MAX_FILENAME_LEN) {
-		throw std::ios::failure("maximum filename length is "
-			TOSTRING(DAT_MAX_FILENAME_LEN) " chars");
+
+	// Set the format-specific variables
+	pNewEntry->lenHeader = DAT_EFAT_ENTRY_LEN;
+
+	// Because the new entry isn't in the vector yet we need to shift it manually
+	//pNewEntry->iOffset += DAT_EFAT_ENTRY_LEN;
+
+	this->psArchive->seekp(pNewEntry->iOffset);
+	this->psArchive->insert(DAT_EFAT_ENTRY_LEN);
+	boost::to_upper(pNewEntry->strName);
+
+	if (pNewEntry->fAttr & EA_COMPRESSED) {
+		pNewEntry->filter = "lzw-bash";
 	}
+
+	// Since we've inserted some data for the embedded header, we need to update
+	// the other file offsets accordingly.  This call updates the offset of the
+	// files, then calls updateFileOffset() on them, using the *new* offset, so
+	// we need to do this after the insert() call above to make sure the extra
+	// data has been inserted.  Then when updateFileOffset() writes data out it
+	// will go into the correct spot.
+	this->shiftFiles(NULL, pNewEntry->iOffset, pNewEntry->lenHeader, 0);
+
+	return pNewEntry;
+}
+
+void DAT_BashArchive::postInsertFile(FATEntry *pNewEntry)
+	throw (std::ios::failure)
+{
+	this->psArchive->seekp(pNewEntry->iOffset);
+
 	int typeNum;
 	if (pNewEntry->type.empty()) {
 		typeNum = 32;
@@ -299,33 +332,21 @@ FATArchive::FATEntry *DAT_BashArchive::preInsertFile(
 		typeNum = strtod(pNewEntry->type.substr(14).c_str(), NULL);
 	}
 
-	// Set the format-specific variables
-	pNewEntry->lenHeader = DAT_EFAT_ENTRY_LEN;
-
-	// Because the new entry isn't in the vector yet we need to shift it manually
-	//pNewEntry->iOffset += DAT_EFAT_ENTRY_LEN;
-
-	this->psArchive->seekp(pNewEntry->iOffset);
-	this->psArchive->insert(DAT_EFAT_ENTRY_LEN);
-	boost::to_upper(pNewEntry->strName);
+	uint16_t expandedSize;
+	if (pNewEntry->fAttr & EA_COMPRESSED) {
+		expandedSize = pNewEntry->iPrefilteredSize;
+	} else {
+		expandedSize = 0;
+	}
 
 	// Write out the entry
 	this->psArchive
 		<< u16le(typeNum)
 		<< u16le(pNewEntry->iSize)
 		<< nullPadded(pNewEntry->strName, DAT_FILENAME_FIELD_LEN)
-		<< u16le(pNewEntry->iExpandedSize)
+		<< u16le(expandedSize)
 	;
-
-	// Since we've inserted some data for the embedded header, we need to update
-	// the other file offsets accordingly.  This call updates the offset of the
-	// files, then calls updateFileOffset() on them, using the *new* offset, so
-	// we need to do this after the insert() call above to make sure the extra
-	// data has been inserted.  Then when updateFileOffset() writes data out it
-	// will go into the correct spot.
-	this->shiftFiles(NULL, pNewEntry->iOffset, pNewEntry->lenHeader, 0);
-
-	return pNewEntry;
+	return;
 }
 
 } // namespace gamearchive

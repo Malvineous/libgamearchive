@@ -206,13 +206,12 @@ DAT_GoTArchive::DAT_GoTArchive(iostream_sptr psArchive)
 		FATEntry *fatEntry = new FATEntry();
 		EntryPtr ep(fatEntry);
 
-		uint32_t decompSize;
 		uint16_t flags;
 		this->fatStream
 			>> nullPadded(fatEntry->strName, GOT_FILENAME_FIELD_LEN)
 			>> u32le(fatEntry->iOffset)
 			>> u32le(fatEntry->iSize)
-			>> u32le(decompSize)
+			>> u32le(fatEntry->iPrefilteredSize)
 			>> u16le(flags)
 		;
 
@@ -268,6 +267,12 @@ void DAT_GoTArchive::flush()
 	return;
 }
 
+int DAT_GoTArchive::getSupportedAttributes() const
+	throw ()
+{
+	return EA_COMPRESSED;
+}
+
 void DAT_GoTArchive::updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
 	throw (std::ios::failure)
 {
@@ -285,8 +290,7 @@ void DAT_GoTArchive::updateFileSize(const FATEntry *pid, std::streamsize sizeDel
 	// TESTED BY: fmt_got_dat_resize*
 	this->fatStream->seekp(GOT_FILESIZE_OFFSET(pid));
 	this->fatStream << u32le(pid->iSize);
-	// TEMP: Update decompressed-size too
-	this->fatStream << u32le(pid->iSize);
+	this->fatStream << u32le(pid->iPrefilteredSize);
 	return;
 }
 
@@ -308,20 +312,15 @@ FATArchive::FATEntry *DAT_GoTArchive::preInsertFile(const FATEntry *idBeforeThis
 			TOSTRING(GOT_MAX_FILES));
 	}
 
+	if (pNewEntry->fAttr & EA_COMPRESSED) {
+		pNewEntry->filter = "lzss-got";
+	}
+
+	// Allocate the space in the FAT now, so that the correct offsets can be
+	// updated on return.
 	this->fatStream->seekp(GOT_FATENTRY_OFFSET(pNewEntry));
 	this->fatStream->insert(GOT_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
-
-	// Write out the entry
-	uint32_t decompSize = pNewEntry->iSize;
-	uint16_t flags = 0; // == not compressed
-	this->fatStream
-		<< nullPadded(pNewEntry->strName, GOT_FILENAME_FIELD_LEN)
-		<< u32le(pNewEntry->iOffset)
-		<< u32le(pNewEntry->iSize)
-		<< u32le(decompSize)
-		<< u16le(flags)
-	;
 
 	// Because the FAT is a fixed size we have to remove a blank entry to
 	// compensate for the entry we just added.
@@ -350,6 +349,23 @@ FATArchive::FATEntry *DAT_GoTArchive::preInsertFile(const FATEntry *idBeforeThis
 	}
 
 	return pNewEntry;
+}
+
+void DAT_GoTArchive::postInsertFile(FATEntry *pNewEntry)
+	throw (std::ios::failure)
+{
+	// Write out the entry into the space we allocated in preInsertFile(),
+	// now that the sizes are set.
+	this->fatStream->seekp(GOT_FATENTRY_OFFSET(pNewEntry));
+	uint16_t flags = (pNewEntry->fAttr & EA_COMPRESSED) ? 1 : 0; // 0 == not compressed
+	this->fatStream
+		<< nullPadded(pNewEntry->strName, GOT_FILENAME_FIELD_LEN)
+		<< u32le(pNewEntry->iOffset)
+		<< u32le(pNewEntry->iSize)
+		<< u32le(pNewEntry->iPrefilteredSize)
+		<< u16le(flags)
+	;
+	return;
 }
 
 void DAT_GoTArchive::preRemoveFile(const FATEntry *pid)

@@ -127,7 +127,7 @@ void applyFilter(camoto::gamearchive::ArchivePtr arch,
 		}
 		// Bind the archive's resize() function to the truncate function.
 		camoto::FN_TRUNCATE fnTruncate = boost::bind<void>(
-			&camoto::gamearchive::Archive::resize, arch, id, _1);
+			&camoto::gamearchive::Archive::resize, arch, id, _1, _1);
 		*ppStream = pFilterType->apply(*ppStream, fnTruncate);
 	}
 	return;

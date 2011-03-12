@@ -82,6 +82,9 @@ class DAT_GoTArchive: virtual public FATArchive {
 		virtual void flush()
 			throw (std::ios::failure);
 
+		virtual int getSupportedAttributes() const
+			throw ();
+
 		// As per FATArchive (see there for docs)
 
 		virtual void updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
@@ -92,6 +95,9 @@ class DAT_GoTArchive: virtual public FATArchive {
 
 		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 			throw (std::ios_base::failure);
+
+		virtual void postInsertFile(FATEntry *pNewEntry)
+			throw (std::ios::failure);
 
 		void preRemoveFile(const FATEntry *pid)
 			throw (std::ios_base::failure);

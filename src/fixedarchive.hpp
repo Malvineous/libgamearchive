@@ -132,7 +132,8 @@ class FixedArchive: virtual public Archive {
 		/**
 		 * @note Will always throw an exception as fixed files can't be resized.
 		 */
-		virtual void resize(EntryPtr& id, size_t iNewSize)
+		virtual void resize(EntryPtr& id, offset_t iNewSize,
+			offset_t iNewPrefilteredSize)
 			throw (std::ios::failure);
 
 		virtual void flush()

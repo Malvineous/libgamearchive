@@ -81,6 +81,9 @@ class EPFArchive: virtual public FATArchive {
 
 		// As per Archive (see there for docs)
 
+		virtual int getSupportedAttributes() const
+			throw ();
+
 		virtual void rename(EntryPtr& id, const std::string& strNewName)
 			throw (std::ios_base::failure);
 

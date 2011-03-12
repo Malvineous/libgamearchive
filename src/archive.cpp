@@ -41,7 +41,7 @@ std::string Archive::FileEntry::getContent() const
 	std::ostringstream ss;
 	ss << "name=" << this->strName
 		<< ";size=" << this->iSize
-		<< ";expandedSize=" << this->iExpandedSize
+		<< ";prefilteredSize=" << this->iPrefilteredSize
 		<< ";type=" << this->type
 		<< ";filter=" << this->filter
 		<< ";attr=" << this->fAttr;
@@ -74,6 +74,8 @@ ArchivePtr Archive::openFolder(const Archive::EntryPtr& id)
 	// But if we got this far, the archive format has folders but didn't
 	// override this function so they could be opened!
 	assert(false);
+
+	// Throw an exception if assertions have been disabled.
 	throw std::ios::failure("BUG: Archive format doesn't implement openFolder()");
 }
 
@@ -89,12 +91,23 @@ void Archive::move(const EntryPtr& idBeforeThis, EntryPtr& id)
 		id->type, id->fAttr);
 	assert(n->bValid);
 
+	if (n->filter.compare(id->filter) != 0) {
+		this->remove(n);
+		throw std::ios::failure("Cannot move file to this position (filter change)"
+			" - try removing and then adding it instead");
+	}
+
 	iostream_sptr dst(this->open(n));
 	assert(dst);
 
 	// Copy the data into the new file's position
 	boost::iostreams::copy(*src, *dst);
 	dst->flush();
+
+	// If there's a filter set then bring the unfiltered size across too.
+	if (!n->filter.empty()) {
+		this->resize(n, n->iSize, id->iPrefilteredSize);
+	}
 
 	this->remove(id);
 

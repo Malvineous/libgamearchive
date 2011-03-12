@@ -222,7 +222,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(manipulate_zero_length_files))
 	// they currently all share the same offset.  This should result in file1
 	// keeping its original offset (same as file2) and file3's offset being
 	// increased.
-	pArchive->resize(ep2, 15);
+	pArchive->resize(ep2, 15, 15);
 	file2->write("This is two.dat", 15);
 	file2->flush();
 
@@ -234,7 +234,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(manipulate_zero_length_files))
 	// file, but if that ever happens this test can be adjusted then.
 	BOOST_REQUIRE_GT(fat3->iOffset, off3);
 
-	pArchive->resize(ep1, 15);
+	pArchive->resize(ep1, 15, 15);
 	file1->write("This is one.dat", 15);
 	file1->flush();
 
@@ -244,7 +244,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(manipulate_zero_length_files))
 	// Make sure the third file has moved again.  Same caveat as above.
 	BOOST_REQUIRE_GT(fat3->iOffset, off3);
 
-	pArchive->resize(ep3, 17);
+	pArchive->resize(ep3, 17, 17);
 	file3->write("This is three.dat", 17);
 	file3->flush();
 

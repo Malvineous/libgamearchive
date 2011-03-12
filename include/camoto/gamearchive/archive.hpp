@@ -92,16 +92,16 @@ class Archive: virtual public Metadata {
 			 */
 			bool bValid;
 
-			/// Size of the file
+			/// Size of the file in the archive.
 			offset_t iSize;
 
-			/// Size after decompression
+			/// Size before filtering/compression (uncompressed size)
 			/**
 			 * If fAttr has EA_COMPRESSED set then this indicates the file size after
-			 * decompression.  It may be zero if the field is unused in the archive,
-			 * but it should always be set when adding a file.
+			 * decompression.  If the file is not compressed or filtered it will be
+			 * ignored but by convention should be set to the same value as iSize.
 			 */
-			offset_t iExpandedSize;
+			offset_t iPrefilteredSize;
 
 			/// Filename (may be empty for some archives)
 			std::string strName;
@@ -288,7 +288,9 @@ class Archive: virtual public Metadata {
 		 *   Filename of the new file.
 		 *
 		 * @param iSize
-		 *   Initial size of the new file.
+		 *   Initial size of the new file.  If the file is compressed (attr
+		 *   includes EA_COMPRESSED) then this is the compressed size of the file -
+		 *   the amount of space to allocate inside the archive.
 		 *
 		 * @param type
 		 *   MIME-like file type, or empty string for generic file.  See
@@ -299,11 +301,16 @@ class Archive: virtual public Metadata {
 		 *
 		 * @return An EntryPtr to the newly added file, which can be immediately
 		 *   passed to open() if needed.
+		 *
+		 * @note The returned EntryPtr may have a filter set, in the case of a
+		 *   file with the EA_COMPRESSED attribute.  In this case the caller must
+		 *   pass the data through the appropriate filter before writing it to the
+		 *   file.  The file may also need to be resized if the filtered data ends
+		 *   up being a different size to the unfiltered data.
 		 */
 		virtual EntryPtr insert(const EntryPtr& idBeforeThis,
 			const std::string& strFilename, offset_t iSize, std::string type,
-			int attr
-		)
+			int attr)
 			throw (std::ios::failure) = 0;
 
 		/// Delete the given entry from the archive.
@@ -344,26 +351,38 @@ class Archive: virtual public Metadata {
 
 		/// Enlarge or shrink an existing file.
 		/**
-		 * @note   For performance reasons, this operation is cached so it does not
-		 *         immediately affect the archive file.  When the time comes to
-		 *         flush() the changes, all the insert/delete/resize operations are
-		 *         done in a single pass.  However providing this class is the sole
-		 *         method of accessing the archive file, this is of no concern.
-		 * @param  id File to resize.
-		 * @param  iNewSize File's new size.  If this is smaller than the current
-		 *         size the excess data is lost, if it is larger than the current
-		 *         size the new data is random (whatever was there from before.)
-		 * @post   Existing EntryPtrs remain valid.
-		 * @note   Resizing files to zero will cause problems if files are already
-		 *         opened.  This is because already open files are identified by
-		 *         offset and having zero-length files means multiple files will
-		 *         share the same offset.  If these are open during a resize and
-		 *         one of the zero-length files is resized, all the streams
-		 *         sharing the same offset will be resized (but the actual files in
-		 *         the archive won't.)  This problem does not exist if the resize
-		 *         is done while none of the archive's files are open.
+		 * @note For performance reasons, this operation is cached so it does not
+		 *   immediately affect the archive file.  When the time comes to flush()
+		 *   the changes, all the insert/delete/resize operations are done in a
+		 *   single pass.  However providing this class is the sole method of
+		 *   accessing the archive file stream, this is of no concern.
+		 *
+		 * @param id
+		 *   File to resize.
+		 *
+		 * @param iNewSize
+		 *   File's new size.  If this is smaller than the current size the excess
+		 *   data is lost, if it is larger than the current size the new data is
+		 *   random (whatever was there from before.)
+		 *
+		 * @param iNewPrefilteredSize
+		 *   File's new size before filtering (if any.)  Should be set to the same
+		 *   value as iNewSize unless the file is compressed, in which case this
+		 *   value will usually be larger (the decompressed size.)
+		 *
+		 * @post Existing EntryPtrs remain valid.
+		 *
+		 * @note Resizing files to zero will cause problems if files are already
+		 *   opened.  This is because already open files are identified by offset
+		 *   and having zero-length files means multiple files will share the same
+		 *   offset.  If these are open during a resize and one of the zero-length
+		 *   files is resized, all the streams sharing the same offset will be
+		 *   resized (but the actual files in the archive won't.)  This problem
+		 *   does not exist if the resize is done while none of the archive's files
+		 *   are open.
 		 */
-		virtual void resize(EntryPtr& id, size_t iNewSize)
+		virtual void resize(EntryPtr& id, offset_t iNewSize,
+			offset_t iNewPrefilteredSize)
 			throw (std::ios::failure) = 0;
 
 		/// Write out any cached changes to the underlying stream.

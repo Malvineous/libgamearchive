@@ -195,7 +195,7 @@ EPFArchive::EPFArchive(iostream_sptr psArchive)
 			>> nullPadded(fatEntry->strName, EPF_FILENAME_FIELD_LEN)
 			>> u8(flags)
 			>> u32le(fatEntry->iSize)
-			>> u32le(fatEntry->iExpandedSize);
+			>> u32le(fatEntry->iPrefilteredSize);
 
 		if (flags & EPF_FAT_FLAG_COMPRESSED) {
 			fatEntry->fAttr |= EA_COMPRESSED;
@@ -211,6 +211,12 @@ EPFArchive::EPFArchive(iostream_sptr psArchive)
 EPFArchive::~EPFArchive()
 	throw ()
 {
+}
+
+int EPFArchive::getSupportedAttributes() const
+	throw ()
+{
+	return EA_COMPRESSED;
 }
 
 // Does not invalidate existing EntryPtrs
@@ -311,7 +317,7 @@ void EPFArchive::updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
 	this->psArchive->seekp(this->offFAT + pid->iIndex * EPF_FAT_ENTRY_LEN + EPF_FAT_FILESIZE_OFFSET);
 	this->psArchive
 		<< u32le(pid->iSize)    // compressed size
-		<< u32le(pid->iExpandedSize);   // decompressed size
+		<< u32le(pid->iPrefilteredSize);   // decompressed size
 
 	this->updateFATOffset();
 
@@ -330,6 +336,11 @@ FATArchive::FATEntry *EPFArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	// Set the format-specific variables
 	pNewEntry->lenHeader = 0;
 
+	// Set the filter to use if the file should be compressed
+	if (pNewEntry->fAttr & EA_COMPRESSED) {
+		pNewEntry->filter = "lzw-epfs";
+	}
+
 	return pNewEntry;
 }
 
@@ -347,7 +358,7 @@ void EPFArchive::postInsertFile(FATEntry *pNewEntry)
 		<< nullPadded(pNewEntry->strName, EPF_FILENAME_FIELD_LEN)
 		<< u8(flags)  // 0 == uncompressed, 1 == compressed
 		<< u32le(pNewEntry->iSize)  // compressed
-		<< u32le(pNewEntry->iExpandedSize); // decompressed
+		<< u32le(pNewEntry->iPrefilteredSize); // decompressed
 
 	this->updateFATOffset();
 	this->updateFileCount(this->vcFAT.size());

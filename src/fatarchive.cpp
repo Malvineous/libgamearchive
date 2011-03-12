@@ -19,9 +19,9 @@
  */
 
 #include <boost/algorithm/string.hpp>
+#include <camoto/util.hpp> // createString
 
 #include "fatarchive.hpp"
-#include <camoto/debug.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -55,10 +55,12 @@ Archive::EntryPtr getFileAt(const Archive::VC_ENTRYPTR& files, int index)
 	return Archive::EntryPtr();
 }
 
-FATArchive::FATArchive(iostream_sptr psArchive, io::stream_offset offFirstFile)
+FATArchive::FATArchive(iostream_sptr psArchive, io::stream_offset offFirstFile,
+	int lenMaxFilename)
 	throw (std::ios::failure) :
 		psArchive(new segmented_stream(psArchive)),
-		offFirstFile(offFirstFile)
+		offFirstFile(offFirstFile),
+		lenMaxFilename(lenMaxFilename)
 {
 }
 
@@ -148,6 +150,7 @@ FATArchive::EntryPtr FATArchive::insert(const EntryPtr& idBeforeThis,
 
 	pNewFile->strName = strFilename;
 	pNewFile->iSize = iSize;
+	pNewFile->iPrefilteredSize = iSize; // default to no filter
 	pNewFile->type = type;
 	pNewFile->fAttr = attr;
 	pNewFile->lenHeader = 0;
@@ -184,6 +187,10 @@ FATArchive::EntryPtr FATArchive::insert(const EntryPtr& idBeforeThis,
 	if (returned != pNewFile) {
 		ep.reset(returned);
 		pNewFile = returned;
+	}
+
+	if (!pNewFile->filter.empty()) {
+		// The format handler wants us to apply a filter to this file.
 	}
 
 	// Now it's mostly valid.  Really this is here so that it's invalid during
@@ -269,9 +276,8 @@ void FATArchive::remove(EntryPtr& id)
 	return;
 }
 
-// Enlarge or shrink an existing file entry.
-// Postconditions: Existing EntryPtrs and open files remain valid.
-void FATArchive::resize(EntryPtr& id, size_t iNewSize)
+void FATArchive::resize(EntryPtr& id, size_t iNewSize,
+	offset_t iNewPrefilteredSize)
 	throw (std::ios::failure)
 {
 	assert(this->isValid(id));
@@ -290,31 +296,34 @@ void FATArchive::resize(EntryPtr& id, size_t iNewSize)
 		iStart = pFAT->iOffset + pFAT->lenHeader + iNewSize;
 		this->psArchive->seekp(iStart);
 		this->psArchive->remove(-iDelta);
-	} else {
+	} else if (pFAT->iPrefilteredSize == iNewPrefilteredSize) {
 		return; // no change
 	}
 
 	pFAT->iSize = iNewSize;
+	pFAT->iPrefilteredSize = iNewPrefilteredSize;
 
 	// Update the FAT with the file's new size
 	this->updateFileSize(pFAT, iDelta);
 
-	// Adjust the in-memory offsets etc. of the rest of the files in the archive,
-	// including any open streams.
-	this->shiftFiles(pFAT, iStart, iDelta, 0);
+	if (iDelta != 0) {
+		// Adjust the in-memory offsets etc. of the rest of the files in the archive,
+		// including any open streams.
+		this->shiftFiles(pFAT, iStart, iDelta, 0);
 
-	// Resize any open substreams for this file
-	for (OPEN_FILES::iterator i = this->openFiles.begin();
-		i != this->openFiles.end();
-		i++
-	) {
-		if (i->first.get() == pFAT) {
-			if (substream_sptr sub = i->second.lock()) {
-				sub->setSize(iNewSize);
-				// no break, could be multiple opens for same entry
+		// Resize any open substreams for this file
+		for (OPEN_FILES::iterator i = this->openFiles.begin();
+			i != this->openFiles.end();
+			i++
+		) {
+			if (i->first.get() == pFAT) {
+				if (substream_sptr sub = i->second.lock()) {
+					sub->setSize(iNewSize);
+					// no break, could be multiple opens for same entry
+				}
 			}
 		}
-	}
+	} // else only iPrefilteredSize changed
 
 	return;
 }

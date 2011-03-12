@@ -223,18 +223,22 @@ ga::Archive::EntryPtr findFile(ga::ArchivePtr& archive, const std::string& filen
 // Insert a file at the given location.  Shared by --insert and --add.
 bool insertFile(ga::Archive *pArchive, const std::string& strLocalFile,
 	const std::string& strArchFile, const ga::Archive::EntryPtr& idBeforeThis,
-	const std::string& type, int attr)
+	const std::string& type, int attr, ga::Archive::offset_t lenPrefiltered)
 {
 	// Open the file
 	std::ifstream fsIn(strLocalFile.c_str(), std::ios::binary);
 	// Figure out how big it is
 	fsIn.seekg(0, std::ios::end);
-	boost::iostreams::stream_offset iSize = fsIn.tellg();
+	boost::iostreams::stream_offset lenSource = fsIn.tellg();
 	fsIn.seekg(0, std::ios::beg);
 
+	// Make sure either filters are active, or we've got a nonzero prefilter
+	// length (but it's ok to have a zero prefilter length if the file is empty)
+	assert(bUseFilters || (lenSource == 0) || (lenPrefiltered != 0));
+
 	// Create a new entry in the archive large enough to hold the file
-	ga::Archive::EntryPtr id =
-		pArchive->insert(idBeforeThis, strArchFile, iSize, type, attr);
+	ga::Archive::EntryPtr id = pArchive->insert(idBeforeThis, strArchFile,
+		lenSource, type, attr);
 
 	// Open the new (empty) file in the archive
 	camoto::iostream_sptr psNew(pArchive->open(id));
@@ -248,6 +252,21 @@ bool insertFile(ga::Archive *pArchive, const std::string& strLocalFile,
 		//iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
 		return false;
 	}
+
+	if (!bUseFilters) {
+		// Since filters were skipped we will pretend we applied the filter and
+		// we got more source data than we really did, so the next check works.
+		lenSource = lenPrefiltered;
+	}
+
+	// If the data that went in was a different length to what we expected it
+	// must have been compressed so update the file size (keeping the original
+	// size as the 'uncompressed length' field.)
+	boost::iostreams::stream_offset lenActual = psNew->tellp();
+	if (lenActual != lenSource) {
+		pArchive->resize(id, lenActual, lenSource);
+	}
+
 	return true;
 }
 
@@ -474,6 +493,9 @@ int main(int iArgC, char *cArgV[])
 
 		("delete,d", po::value<std::string>(),
 			"remove a file from the archive")
+
+		("uncompressed-size,z", po::value<int>(),
+			"[with -u only] specify the uncompressed size to use with -i")
 	;
 
 	po::options_description poOptions("Options");
@@ -712,7 +734,10 @@ finishTesting:
 		std::string strLastFiletype;
 
 		// Last attribute value set with -b
-		int iLastAttr;
+		int iLastAttr = 0;
+
+		// Last value set with -z
+		ga::Archive::offset_t lenPrefiltered = 0;
 
 		// Run through the actions on the command line
 		for (std::vector<po::option>::iterator i = pa.options.begin(); i != pa.options.end(); i++) {
@@ -788,7 +813,7 @@ finishTesting:
 					std::cerr << PROGNAME ": -i/--insert requires a file to insert "
 						"before (parameter should end with \":beforeme.xyz\")\n"
 						"Or use --add instead." << std::endl;
-					return 1;
+					return RET_BADARGS;
 				}
 
 				std::string strArchFile, strLocalFile;
@@ -799,7 +824,9 @@ finishTesting:
 				std::cout << " (before "
 					<< strInsertBefore;
 				if (bAltDest) std::cout << ", from " << strLocalFile;
-				std::cout << ")" << std::flush;
+				std::cout << ")";
+				if (lenPrefiltered != 0) std::cout << ", with uncompressed size " << lenPrefiltered;
+				std::cout << std::flush;
 
 				// Try to find strInsertBefore
 				ga::ArchivePtr destArch = pArchive;
@@ -812,7 +839,7 @@ finishTesting:
 
 				try {
 					insertFile(destArch.get(), strLocalFile, strArchFile, idBeforeThis,
-						strLastFiletype, iLastAttr);
+						strLastFiletype, iLastAttr, lenPrefiltered);
 				} catch (std::ios_base::failure& e) {
 					std::cout << " [failed; " << e.what() << "]";
 					iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
@@ -824,6 +851,7 @@ finishTesting:
 			} else if (i->string_key.compare("filetype") == 0) {
 			//} else if (i->string_key.compare("y") == 0) {
 				strLastFiletype = i->value[0];
+
 			// Remember --attributes/-b
 			} else if (i->string_key.compare("attribute") == 0) {
 			//} else if (i->string_key.compare("b") == 0) {
@@ -853,6 +881,18 @@ finishTesting:
 							"ignoring: " << nextAttr << std::endl;
 					}
 				}
+
+			// Remember --uncompressed-size/-z
+			} else if (i->string_key.compare("uncompressed-size") == 0) {
+			//} else if (i->string_key.compare("z") == 0) {
+				if (bUseFilters) {
+					std::cerr << PROGNAME ": -z/--uncompressed-size only needs to be "
+						"specified when it can't be determined automatically (i.e. when "
+						"-u/--unfiltered is in use.)" << std::endl;
+					return RET_BADARGS;
+				}
+				lenPrefiltered = strtoul(i->value[0].c_str(), NULL, 0);
+
 			// Ignore --type/-t
 			} else if (i->string_key.compare("type") == 0) {
 			} else if (i->string_key.compare("t") == 0) {
@@ -875,11 +915,13 @@ finishTesting:
 					std::cout << "     adding: " << strArchFile;
 					if (!strLastFiletype.empty()) std::cout << " as type " << strLastFiletype;
 					if (bAltDest) std::cout << " (from " << strLocalFile << ")";
+					if (lenPrefiltered != 0) std::cout << ", with uncompressed size set to " << lenPrefiltered;
 					std::cout << std::endl;
 
 					try {
 						insertFile(pArchive.get(), strLocalFile, strArchFile,
-							ga::Archive::EntryPtr(), strLastFiletype, iLastAttr);
+							ga::Archive::EntryPtr(), strLastFiletype, iLastAttr,
+							lenPrefiltered);
 					} catch (std::ios_base::failure& e) {
 						std::cout << " [failed; " << e.what() << "]";
 						iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
@@ -912,6 +954,7 @@ finishTesting:
 				} else if (i->string_key.compare("overwrite") == 0) {
 					std::cout << "overwriting: " << strArchFile;
 					if (bAltDest) std::cout << " (from " << strLocalFile << ")";
+					if (lenPrefiltered != 0) std::cout << ", with uncompressed size set to " << lenPrefiltered;
 					std::cout << std::flush;
 
 					try {
@@ -927,10 +970,10 @@ finishTesting:
 							if (sSrc.is_open()) {
 								// Figure out how big our incoming file is
 								sSrc.seekg(0, std::ios::end);
-								boost::iostreams::stream_offset iIncomingSize = sSrc.tellg();
+								boost::iostreams::stream_offset lenSource = sSrc.tellg();
 								sSrc.seekg(0, std::ios::beg);
-								if (iIncomingSize != id->iSize) {
-									pArchive->resize(id, iIncomingSize);
+								if (lenSource != id->iSize) {
+									pArchive->resize(id, lenSource, lenSource);
 								}
 								// Now the file has been resized it's safe to open (if we opened
 								// it before the resize it'd be stuck at the old size)
@@ -938,6 +981,22 @@ finishTesting:
 								if (bUseFilters) applyFilter(&psDest, id);
 								boost::iostreams::copy(sSrc, *psDest);
 								psDest->flush();
+
+								if (!bUseFilters) {
+									// Since filters were skipped we will pretend we applied the
+									// filter and we got more source data than we really did, so
+									// the next check works.
+									lenSource = lenPrefiltered;
+								}
+
+								// If the data that went in was a different length to what we
+								// expected it must have been compressed so update the file
+								// size (keeping the original size as the 'uncompressed length'
+								// field.)
+								boost::iostreams::stream_offset lenActual = psDest->tellp();
+								if (lenActual != lenSource) {
+									pArchive->resize(id, lenActual, lenSource);
+								}
 							} else {
 								std::cout << " [failed; unable to open replacement file]";
 								iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
