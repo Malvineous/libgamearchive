@@ -138,9 +138,6 @@ class FixedArchive: virtual public Archive {
 		virtual void flush()
 			throw (std::ios::failure);
 
-		virtual EntryPtr entryPtrFromStream(const iostream_sptr openFile)
-			throw ();
-
 };
 
 } // namespace gamearchive

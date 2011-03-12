@@ -162,22 +162,5 @@ void FixedArchive::flush()
 	return;
 }
 
-FixedArchive::EntryPtr FixedArchive::entryPtrFromStream(const iostream_sptr openFile)
-	throw ()
-{
-	substream *d = static_cast<substream *>(openFile.get());
-	io::stream_offset offStart = d->getOffset();
-
-	// Find an EntryPtr with the same offset
-	for (VC_ENTRYPTR::iterator i = this->vcFixedEntries.begin(); i != this->vcFixedEntries.end(); i++) {
-		const FixedEntry *entry = dynamic_cast<const FixedEntry *>(i->get());
-		const FixedArchiveFile *file = &this->files[entry->index];
-		if (file->offset == offStart) {
-			return *i;
-		}
-	}
-	return EntryPtr();
-}
-
 } // namespace gamearchive
 } // namespace camoto

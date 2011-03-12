@@ -329,22 +329,6 @@ void FATArchive::flush()
 	return;
 }
 
-FATArchive::EntryPtr FATArchive::entryPtrFromStream(const iostream_sptr openFile)
-	throw ()
-{
-	substream *d = static_cast<substream *>(openFile.get());
-	io::stream_offset offStart = d->getOffset();
-
-	// Find an EntryPtr with the same offset
-	for (VC_ENTRYPTR::iterator i = this->vcFAT.begin(); i != this->vcFAT.end(); i++) {
-		FATEntry *pFAT = dynamic_cast<FATEntry *>(i->get());
-		if (pFAT->iOffset + pFAT->lenHeader >= offStart) {
-			return *i;
-		}
-	}
-	return EntryPtr();
-}
-
 void FATArchive::shiftFiles(const FATEntry *fatSkip, io::stream_offset offStart,
 	std::streamsize deltaOffset, int deltaIndex)
 	throw (std::ios::failure)

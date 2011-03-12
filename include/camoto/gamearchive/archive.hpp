@@ -385,20 +385,6 @@ class Archive: virtual public Metadata {
 		virtual void flush()
 			throw (std::ios::failure) = 0;
 
-		/// Convert an iostream pointer of an already-open file back into an
-		/// EntryPtr.
-		/**
-		 * This is useful after a call to insert/remove, as these functions
-		 * invalidate any existing EntryPtrs but the EntryPtr can be recovered from
-		 * the open stream with this function.
-		 *
-		 * @param  openFile A stream pointer returned previously by open().
-		 * @return An valid EntryPtr for the open file, or an invalid EntryPtr if
-		 *         the file no longer exists.
-		 */
-		virtual EntryPtr entryPtrFromStream(const iostream_sptr openFile)
-			throw () = 0;
-
 		/// Find out which attributes can be set on files in this archive.
 		/**
 		 * If an attribute is not returned by this function, that attribute must

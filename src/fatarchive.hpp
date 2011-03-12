@@ -149,9 +149,6 @@ class FATArchive: virtual public Archive {
 		virtual void flush()
 			throw (std::ios::failure);
 
-		virtual EntryPtr entryPtrFromStream(const iostream_sptr openFile)
-			throw ();
-
 		/// Shift any files *starting* at or after offStart by delta bytes.
 		/**
 		 * This updates the internal offsets and index numbers.  The FAT is updated
