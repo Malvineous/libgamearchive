@@ -34,6 +34,9 @@ namespace gamearchive {
 
 namespace io = boost::iostreams;
 
+/// Common value for lenMaxFilename in FATArchive::FATArchive()
+#define ARCH_STD_DOS_FILENAMES  12     // 8.3 + dot
+
 class FATArchive: virtual public Archive {
 
 	public:
@@ -108,12 +111,32 @@ class FATArchive: virtual public Archive {
 		/// List of substreams currently open.
 		OPEN_FILES openFiles;
 
-	public:
+		/// Maximum length of filenames in this archive format.
+		int lenMaxFilename;
 
-		// We can't throw an 'invalid format' error here, because we wouldn't be
-		// in this function if the format's isValid() function returned true!
-		FATArchive(iostream_sptr psArchive, io::stream_offset offFirstFile)
+		/// Create a new FATArchive.
+		/**
+		 * @param psArchive
+		 *   Archive data stream, in whatever format the class descended from this
+		 *   can handle.
+		 *
+		 * @param offFirstFile
+		 *   The offset (from the start of the archive) where the first file should
+		 *   be inserted, if the archive has no existing files.
+		 *
+		 * @param lenMaxFilename
+		 *   Maximum length of the filename including the dot if 8.3 format.  Set
+		 *   to zero if there is no limit.  Used by verify() to ensure the
+		 *   filename is valid before being passed to insert().  The predefined
+		 *   constant %ARCH_STD_DOS_FILENAMES can be used for 8.3 files.
+		 *
+		 * @throws std::ios::failure on I/O error.
+		 */
+		FATArchive(iostream_sptr psArchive, io::stream_offset offFirstFile,
+			int lenMaxFilename)
 			throw (std::ios::failure);
+
+	public:
 
 		virtual ~FATArchive()
 			throw ();
@@ -132,14 +155,14 @@ class FATArchive: virtual public Archive {
 
 		virtual EntryPtr insert(const EntryPtr& idBeforeThis,
 			const std::string& strFilename, offset_t iSize, std::string type,
-			int attr
-		) throw (std::ios::failure);
+			int attr)
+			throw (std::ios::failure);
 
 		virtual void remove(EntryPtr& id)
 			throw (std::ios::failure);
 
-		// rename() [inherited here from Archive] must be implemented by descendent
-		// classes
+		virtual void rename(EntryPtr& id, const std::string& strNewName)
+			throw (std::ios::failure);
 
 		// move() uses implementation from Archive
 
@@ -163,6 +186,30 @@ class FATArchive: virtual public Archive {
 			throw (std::ios::failure);
 
 		// Methods to be filled out by descendent classes
+
+		/// Adjust the name of the given file in the on-disk FAT.
+		/**
+		 * @param pid
+		 *   The entry to update.
+		 *
+		 * @param name
+		 *   New filename.  This will be within the maximum length passed to the
+		 *   constructor, so this function does not need to check that the filename
+		 *   length is within range.
+		 *
+		 * @throws std::ios::failure on I/O error.
+		 *
+		 * @return If this function returns (as opposed to throwing an exception)
+		 *   then the filename in pid will be updated.  If an exception is thrown
+		 *   the filename will be unchanged.
+		 *
+		 * @note If zero was passed to the constructor as the maximum filename
+		 *   length then the length check will not happen and this function will
+		 *   need to ensure the filename length is within the limit (if there is
+		 *   one).
+		 */
+		virtual void updateFileName(const FATEntry *pid, const std::string& name)
+			throw (std::ios::failure) = 0;
 
 		/// Adjust the offset of the given file in the on-disk FAT.
 		/**

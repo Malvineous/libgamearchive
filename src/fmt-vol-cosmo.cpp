@@ -165,7 +165,7 @@ MP_SUPPLIST VOLType::getRequiredSupps(const std::string& filenameArchive) const
 
 VOLArchive::VOLArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
-		FATArchive(psArchive, VOL_FIRST_FILE_OFFSET)
+		FATArchive(psArchive, VOL_FIRST_FILE_OFFSET, VOL_MAX_FILENAME_LEN)
 {
 	this->psArchive->seekg(0, std::ios::end);
 	io::stream_offset lenArchive = this->psArchive->tellg();
@@ -212,22 +212,13 @@ VOLArchive::~VOLArchive()
 {
 }
 
-void VOLArchive::rename(EntryPtr& id, const std::string& strNewName)
-	throw (std::ios_base::failure)
+void VOLArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_vol_cosmo_rename
-	assert(this->isValid(id));
-	FATEntry *pEntry = dynamic_cast<FATEntry *>(id.get());
-
-	if (strNewName.length() > VOL_MAX_FILENAME_LEN) {
-		throw std::ios_base::failure("new filename too long, max is "
-			TOSTRING(VOL_MAX_FILENAME_LEN) " chars");
-	}
-
-	this->psArchive->seekp(pEntry->iIndex * VOL_FAT_ENTRY_LEN);
+	assert(strNewName.length() <= VOL_MAX_FILENAME_LEN);
+	this->psArchive->seekp(pid->iIndex * VOL_FAT_ENTRY_LEN);
 	this->psArchive << nullPadded(strNewName, VOL_MAX_FILENAME_LEN);
-	pEntry->strName = strNewName;
-
 	return;
 }
 
@@ -251,14 +242,12 @@ void VOLArchive::updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
 	return;
 }
 
-FATArchive::FATEntry *VOLArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+FATArchive::FATEntry *VOLArchive::preInsertFile(const FATEntry *idBeforeThis,
+	FATEntry *pNewEntry)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_vol_cosmo_insert*
-	if (pNewEntry->strName.length() > VOL_MAX_FILENAME_LEN) {
-		throw std::ios::failure("maximum filename length is "
-			TOSTRING(VOL_MAX_FILENAME_LEN) " chars");
-	}
+	assert(pNewEntry->strName.length() <= VOL_MAX_FILENAME_LEN);
 
 	// Set the format-specific variables
 	pNewEntry->lenHeader = 0;

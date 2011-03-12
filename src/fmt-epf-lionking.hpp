@@ -84,9 +84,6 @@ class EPFArchive: virtual public FATArchive {
 		virtual int getSupportedAttributes() const
 			throw ();
 
-		virtual void rename(EntryPtr& id, const std::string& strNewName)
-			throw (std::ios_base::failure);
-
 		virtual MetadataTypes getMetadataList() const
 			throw ();
 
@@ -98,20 +95,23 @@ class EPFArchive: virtual public FATArchive {
 
 		// As per FATArchive (see there for docs)
 
+		virtual void updateFileName(const FATEntry *pid, const std::string& strNewName)
+			throw (std::ios::failure);
+
 		virtual void updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
 			throw (std::ios::failure);
 
 		virtual void updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
-			throw (std::ios_base::failure);
+			throw (std::ios::failure);
 
 		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-			throw (std::ios_base::failure);
+			throw (std::ios::failure);
 
 		virtual void postInsertFile(FATEntry *pNewEntry)
 			throw (std::ios::failure);
 
 		virtual void preRemoveFile(const FATEntry *pid)
-			throw (std::ios_base::failure);
+			throw (std::ios::failure);
 
 	protected:
 		void updateFileCount(uint16_t iNewCount)
@@ -120,10 +120,10 @@ class EPFArchive: virtual public FATArchive {
 		// Update the header with the offset of the FAT (which sits at the end of
 		// the archive, after the file data.)
 		void updateFATOffset()
-			throw (std::ios_base::failure);
+			throw (std::ios::failure);
 
 		io::stream_offset getDescOffset() const
-			throw (std::ios_base::failure);
+			throw (std::ios::failure);
 
 };
 

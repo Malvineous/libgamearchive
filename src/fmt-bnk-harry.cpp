@@ -133,7 +133,7 @@ MP_SUPPLIST BNKType::getRequiredSupps(const std::string& filenameArchive) const
 
 BNKArchive::BNKArchive(iostream_sptr psArchive, iostream_sptr psFAT, FN_TRUNCATE fnTruncFAT)
 	throw (std::ios::failure) :
-		FATArchive(psArchive, BNK_FIRST_FILE_OFFSET),
+		FATArchive(psArchive, BNK_FIRST_FILE_OFFSET, BNK_MAX_FILENAME_LEN),
 		psFAT(new segmented_stream(psFAT)),
 		fnTruncFAT(fnTruncFAT),
 		isAC(false) // TODO: detect and set this
@@ -180,33 +180,6 @@ BNKArchive::~BNKArchive()
 {
 }
 
-void BNKArchive::rename(EntryPtr& id, const std::string& strNewName)
-	throw (std::ios_base::failure)
-{
-	// TESTED BY: fmt_bnk_harry_rename
-	assert(this->isValid(id));
-	FATEntry *pEntry = dynamic_cast<FATEntry *>(id.get());
-
-	int len = strNewName.length();
-	if (len > BNK_MAX_FILENAME_LEN) {
-		throw std::ios_base::failure("new filename too long, max is "
-			TOSTRING(BNK_MAX_FILENAME_LEN) " chars");
-	}
-
-	uint8_t lenByte = len;
-	this->psFAT->seekp(pEntry->iIndex * BNK_FAT_ENTRY_LEN + BNK_FAT_FILENAME_OFFSET);
-	this->psFAT->rdbuf()->sputn((char *)&lenByte, 1);
-	this->psFAT << nullPadded(strNewName, BNK_MAX_FILENAME_LEN);
-
-	this->psArchive->seekp(pEntry->iOffset + BNK_EFAT_FILENAME_OFFSET);
-	this->psArchive->rdbuf()->sputn((char *)&lenByte, 1);
-	this->psArchive << nullPadded(strNewName, BNK_MAX_FILENAME_LEN);
-
-	pEntry->strName = strNewName;
-
-	return;
-}
-
 void BNKArchive::flush()
 	throw (std::ios::failure)
 {
@@ -214,6 +187,24 @@ void BNKArchive::flush()
 
 	// Write out to the underlying stream for the supplemental files
 	this->psFAT->commit(this->fnTruncFAT);
+
+	return;
+}
+
+void BNKArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+	throw (std::ios::failure)
+{
+	// TESTED BY: fmt_bnk_harry_rename
+	assert(strNewName.length() <= BNK_MAX_FILENAME_LEN);
+
+	uint8_t lenByte = strNewName.length();
+	this->psFAT->seekp(pid->iIndex * BNK_FAT_ENTRY_LEN + BNK_FAT_FILENAME_OFFSET);
+	this->psFAT->rdbuf()->sputn((char *)&lenByte, 1);
+	this->psFAT << nullPadded(strNewName, BNK_MAX_FILENAME_LEN);
+
+	this->psArchive->seekp(pid->iOffset + BNK_EFAT_FILENAME_OFFSET);
+	this->psArchive->rdbuf()->sputn((char *)&lenByte, 1);
+	this->psArchive << nullPadded(strNewName, BNK_MAX_FILENAME_LEN);
 
 	return;
 }
@@ -252,10 +243,7 @@ FATArchive::FATEntry *BNKArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 {
 	// TESTED BY: fmt_bnk_harry_insert*
 	int len = pNewEntry->strName.length();
-	if (len > BNK_MAX_FILENAME_LEN) {
-		throw std::ios::failure("maximum filename length is "
-			TOSTRING(BNK_MAX_FILENAME_LEN) " chars");
-	}
+	assert(len <= BNK_MAX_FILENAME_LEN);
 
 	// Set the format-specific variables
 	pNewEntry->lenHeader = BNK_EFAT_ENTRY_LEN;
@@ -264,16 +252,9 @@ FATArchive::FATEntry *BNKArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	boost::to_upper(pNewEntry->strName);
 
 	// Write out the new embedded FAT entry
-	// Insert some space for the embedded header
-/*	if (this->vcFAT.size() == 0) {
-		// This is the first file, so overwrite the signature
-		this->psArchive->seekp(pNewEntry->iOffset + BNK_EFAT_FILENAME_OFFSET);
-		this->psArchive->insert(BNK_EFAT_ENTRY_LEN - BNK_EFAT_FILENAME_OFFSET);
-		this->psArchive->seekp(pNewEntry->iOffset);
-	} else {*/
-		this->psArchive->seekp(pNewEntry->iOffset);
-		this->psArchive->insert(BNK_EFAT_ENTRY_LEN);
-	//}
+	this->psArchive->seekp(pNewEntry->iOffset);
+	this->psArchive->insert(BNK_EFAT_ENTRY_LEN);
+
 	// Write the header
 	this->psArchive->rdbuf()->sputn("\x04-ID-", 5);
 	this->psArchive->rdbuf()->sputn((char *)&lenByte, 1);
@@ -307,16 +288,8 @@ void BNKArchive::preRemoveFile(const FATEntry *pid)
 	// TESTED BY: fmt_bnk_harry_remove*
 
 	// Remove the FAT entry
-	/*if (this->vcFAT.size() == 1) {
-		// This is the last file, so don't remove the signature (otherwise we
-		// can't tell it's a BNK file.)
-		std::cerr << "last file" << std::endl;
-		this->psFAT->seekp(pid->iIndex * BNK_FAT_ENTRY_LEN + BNK_EFAT_FILENAME_OFFSET);
-		this->psFAT->remove(BNK_FAT_ENTRY_LEN - BNK_EFAT_FILENAME_OFFSET);
-	} else {*/
-		this->psFAT->seekp(pid->iIndex * BNK_FAT_ENTRY_LEN);
-		this->psFAT->remove(BNK_FAT_ENTRY_LEN);
-	//}
+	this->psFAT->seekp(pid->iIndex * BNK_FAT_ENTRY_LEN);
+	this->psFAT->remove(BNK_FAT_ENTRY_LEN);
 
 	return;
 }

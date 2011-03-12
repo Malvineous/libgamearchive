@@ -443,7 +443,7 @@ MP_SUPPLIST LBRType::getRequiredSupps(const std::string& filenameArchive) const
 
 LBRArchive::LBRArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
-		FATArchive(psArchive, LBR_FIRST_FILE_OFFSET)
+		FATArchive(psArchive, LBR_FIRST_FILE_OFFSET, 0 /* no max filename len */)
 {
 	psArchive->seekg(0, std::ios::end);
 	io::stream_offset lenArchive = psArchive->tellg();
@@ -513,18 +513,12 @@ LBRArchive::~LBRArchive()
 {
 }
 
-void LBRArchive::rename(EntryPtr& id, const std::string& strNewName)
-	throw (std::ios_base::failure)
+void LBRArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_lbr_vinyl_rename
-	assert(this->isValid(id));
-	FATEntry *pEntry = dynamic_cast<FATEntry *>(id.get());
-
-	this->psArchive->seekp(LBR_HASH_OFFSET(pEntry));
+	this->psArchive->seekp(LBR_HASH_OFFSET(pid));
 	this->psArchive << u16le(calcHash(strNewName));
-
-	pEntry->strName = strNewName;
-
 	return;
 }
 
@@ -546,6 +540,7 @@ FATArchive::FATEntry *LBRArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_lbr_vinyl_insert*
+
 	// Set the format-specific variables
 	pNewEntry->lenHeader = 0;
 
@@ -596,7 +591,7 @@ void LBRArchive::preRemoveFile(const FATEntry *pid)
 }
 
 void LBRArchive::updateFileCount(uint32_t iNewCount)
-	throw (std::ios_base::failure)
+	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_lbr_vinyl_insert*
 	// TESTED BY: fmt_lbr_vinyl_remove*

@@ -137,7 +137,7 @@ MP_SUPPLIST RESType::getRequiredSupps(const std::string& filenameArchive) const
 
 RESArchiveFolder::RESArchiveFolder(iostream_sptr psArchive)
 	throw (std::ios::failure) :
-		FATArchive(psArchive, RES_FIRST_FILE_OFFSET)
+		FATArchive(psArchive, RES_FIRST_FILE_OFFSET, RES_MAX_FILENAME_LEN)
 {
 	this->psArchive->seekg(0, std::ios::end);
 	io::stream_offset lenArchive = this->psArchive->tellg();
@@ -187,26 +187,6 @@ RESArchiveFolder::~RESArchiveFolder()
 {
 }
 
-// Does not invalidate existing EntryPtrs
-void RESArchiveFolder::rename(EntryPtr& id, const std::string& strNewName)
-	throw (std::ios_base::failure)
-{
-	// TESTED BY: fmt_res_stellar7_rename
-	assert(this->isValid(id));
-	FATEntry *pEntry = dynamic_cast<FATEntry *>(id.get());
-
-	if (strNewName.length() > RES_MAX_FILENAME_LEN) {
-		throw std::ios_base::failure("new filename too long, max is "
-			TOSTRING(RES_MAX_FILENAME_LEN) " chars");
-	}
-
-	this->psArchive->seekp(pEntry->iOffset + RES_FAT_FILENAME_OFFSET);
-	this->psArchive << nullPadded(strNewName, RES_MAX_FILENAME_LEN);
-	pEntry->strName = strNewName;
-
-	return;
-}
-
 ArchivePtr RESArchiveFolder::openFolder(const EntryPtr& id)
 	throw (std::ios::failure)
 {
@@ -217,6 +197,15 @@ ArchivePtr RESArchiveFolder::openFolder(const EntryPtr& id)
 	return ArchivePtr(new RESArchiveFolder(folderContents));
 }
 
+void RESArchiveFolder::updateFileName(const FATEntry *pid, const std::string& strNewName)
+	throw (std::ios::failure)
+{
+	// TESTED BY: fmt_res_stellar7_rename
+	assert(strNewName.length() <= RES_MAX_FILENAME_LEN);
+	this->psArchive->seekp(pid->iOffset + RES_FAT_FILENAME_OFFSET);
+	this->psArchive << nullPadded(strNewName, RES_MAX_FILENAME_LEN);
+	return;
+}
 
 void RESArchiveFolder::updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
 	throw (std::ios::failure)
@@ -241,11 +230,7 @@ FATArchive::FATEntry *RESArchiveFolder::preInsertFile(const FATEntry *idBeforeTh
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_res_stellar7_insert*
-	if (pNewEntry->strName.length() > RES_MAX_FILENAME_LEN) {
-		throw std::ios::failure("maximum filename length is "
-			TOSTRING(RES_MAX_FILENAME_LEN) " chars"
-		);
-	}
+	assert(pNewEntry->strName.length() <= RES_MAX_FILENAME_LEN);
 
 	// Set the format-specific variables
 	pNewEntry->lenHeader = RES_FAT_ENTRY_LEN;

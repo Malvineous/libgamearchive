@@ -74,9 +74,6 @@ class PODArchive: virtual public FATArchive {
 
 		// As per Archive (see there for docs)
 
-		virtual void rename(EntryPtr& id, const std::string& strNewName)
-			throw (std::ios_base::failure);
-
 		virtual MetadataTypes getMetadataList() const
 			throw ();
 
@@ -88,22 +85,25 @@ class PODArchive: virtual public FATArchive {
 
 		// As per FATArchive (see there for docs)
 
+		virtual void updateFileName(const FATEntry *pid, const std::string& strNewName)
+			throw (std::ios::failure);
+
 		virtual void updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
 			throw (std::ios::failure);
 
 		virtual void updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
-			throw (std::ios_base::failure);
+			throw (std::ios::failure);
 
 		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-			throw (std::ios_base::failure);
+			throw (std::ios::failure);
 
 		virtual void preRemoveFile(const FATEntry *pid)
-			throw (std::ios_base::failure);
+			throw (std::ios::failure);
 
 	protected:
 		// Update the header with the number of files in the archive
 		void updateFileCount(uint32_t iNewCount)
-			throw (std::ios_base::failure);
+			throw (std::ios::failure);
 
 };
 

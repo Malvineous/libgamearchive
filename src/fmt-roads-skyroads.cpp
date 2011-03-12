@@ -145,7 +145,7 @@ MP_SUPPLIST SkyRoadsRoadsType::getRequiredSupps(const std::string& filenameArchi
 
 SkyRoadsRoadsArchive::SkyRoadsRoadsArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
-		FATArchive(psArchive, SRR_FIRST_FILE_OFFSET)
+		FATArchive(psArchive, SRR_FIRST_FILE_OFFSET, 0)
 {
 	this->psArchive->seekg(0, std::ios::end);
 	io::stream_offset lenArchive = this->psArchive->tellg();
@@ -188,8 +188,8 @@ SkyRoadsRoadsArchive::~SkyRoadsRoadsArchive()
 {
 }
 
-void SkyRoadsRoadsArchive::rename(EntryPtr& id, const std::string& strNewName)
-	throw (std::ios_base::failure)
+void SkyRoadsRoadsArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+	throw (std::ios::failure)
 {
 	throw std::ios::failure("This format does not have any filenames.");
 }

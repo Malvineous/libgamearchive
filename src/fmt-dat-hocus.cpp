@@ -24,7 +24,7 @@
 #include <camoto/iostream_helpers.hpp>
 #include "fmt-dat-hocus.hpp"
 
-#define BNK_FIRST_FILE_OFFSET     0
+#define DAT_FIRST_FILE_OFFSET     0
 
 #define DAT_FAT_FILEOFFSET_OFFSET 0
 #define DAT_FAT_FILESIZE_OFFSET   4
@@ -139,7 +139,7 @@ MP_SUPPLIST DAT_HocusType::getRequiredSupps(const std::string& filenameArchive) 
 
 DAT_HocusArchive::DAT_HocusArchive(iostream_sptr psArchive, iostream_sptr psFAT)
 	throw (std::ios::failure) :
-		FATArchive(psArchive, BNK_FIRST_FILE_OFFSET),
+		FATArchive(psArchive, DAT_FIRST_FILE_OFFSET, 0),
 		psFAT(new segmented_stream(psFAT)),
 		numFiles(0)
 {
@@ -179,12 +179,6 @@ DAT_HocusArchive::~DAT_HocusArchive()
 {
 }
 
-void DAT_HocusArchive::rename(EntryPtr& id, const std::string& strNewName)
-	throw (std::ios::failure)
-{
-	throw std::ios::failure("This archive format does not support filenames.");
-}
-
 void DAT_HocusArchive::flush()
 	throw (std::ios::failure)
 {
@@ -194,6 +188,12 @@ void DAT_HocusArchive::flush()
 	this->psFAT->commit(dummyTrunc);
 
 	return;
+}
+
+void DAT_HocusArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+	throw (std::ios::failure)
+{
+	throw std::ios::failure("This archive format does not support filenames.");
 }
 
 void DAT_HocusArchive::updateFileOffset(const FATEntry *pid, std::streamsize offDelta)

@@ -124,7 +124,7 @@ MP_SUPPLIST HOGType::getRequiredSupps(const std::string& filenameArchive) const
 
 HOGArchive::HOGArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
-		FATArchive(psArchive, HOG_FIRST_FILE_OFFSET)
+		FATArchive(psArchive, HOG_FIRST_FILE_OFFSET, HOG_MAX_FILENAME_LEN)
 {
 	this->psArchive->seekg(0, std::ios::end);
 	io::stream_offset lenArchive = this->psArchive->tellg();
@@ -174,24 +174,13 @@ HOGArchive::~HOGArchive()
 {
 }
 
-// Does not invalidate existing EntryPtrs
-void HOGArchive::rename(EntryPtr& id, const std::string& strNewName)
-	throw (std::ios_base::failure)
+void HOGArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_hog_descent_rename
-	assert(this->isValid(id));
-	FATEntry *pEntry = dynamic_cast<FATEntry *>(id.get());
-
-	if (strNewName.length() > HOG_MAX_FILENAME_LEN) {
-		throw std::ios_base::failure("new filename too long, max is "
-			TOSTRING(HOG_MAX_FILENAME_LEN) " chars");
-	}
-
-	this->psArchive->seekp(pEntry->iOffset);
+	assert(strNewName.length() <= HOG_MAX_FILENAME_LEN);
+	this->psArchive->seekp(pid->iOffset);
 	this->psArchive << nullPadded(strNewName, HOG_FILENAME_FIELD_LEN);
-
-	pEntry->strName = strNewName;
-
 	return;
 }
 
@@ -218,10 +207,8 @@ FATArchive::FATEntry *HOGArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_hog_descent_insert*
-	if (pNewEntry->strName.length() > HOG_MAX_FILENAME_LEN) {
-		throw std::ios::failure("maximum filename length is "
-			TOSTRING(HOG_MAX_FILENAME_LEN) " chars");
-	}
+	assert(pNewEntry->strName.length() <= HOG_MAX_FILENAME_LEN);
+
 	if (this->vcFAT.size() + 1 > HOG_MAX_FILECOUNT) {
 		throw std::ios::failure("too many files, maximum is "
 			TOSTRING(HOG_MAX_FILECOUNT) " files");

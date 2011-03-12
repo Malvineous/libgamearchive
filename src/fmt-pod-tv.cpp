@@ -32,9 +32,12 @@
 #define POD_FAT_OFFSET            84
 #define POD_FAT_ENTRY_LEN         40  // filename + u32le offset + u32le size
 #define POD_MAX_FILENAME_LEN      32
-#define POD_FAT_ENTRY_SIZE_POS    (POD_MAX_FILENAME_LEN)
-#define POD_FAT_ENTRY_OFFSET_POS  (POD_MAX_FILENAME_LEN + 4)
 #define POD_FIRST_FILE_OFFSET     POD_FAT_OFFSET
+
+#define POD_FATENTRY_OFFSET(e)   (POD_FAT_OFFSET + (e)->iIndex * POD_FAT_ENTRY_LEN)
+#define POD_FILENAME_OFFSET(e)    POD_FATENTRY_OFFSET(e)
+#define POD_FILESIZE_OFFSET(e)   (POD_FATENTRY_OFFSET(e) + POD_MAX_FILENAME_LEN)
+#define POD_FILEOFFSET_OFFSET(e) (POD_FILESIZE_OFFSET(e) + 4)
 
 namespace camoto {
 namespace gamearchive {
@@ -160,7 +163,7 @@ MP_SUPPLIST PODType::getRequiredSupps(const std::string& filenameArchive) const
 
 PODArchive::PODArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
-		FATArchive(psArchive, POD_FIRST_FILE_OFFSET)
+		FATArchive(psArchive, POD_FIRST_FILE_OFFSET, POD_MAX_FILENAME_LEN)
 {
 	this->psArchive->seekg(0, std::ios::beg);
 	uint32_t numFiles;
@@ -188,25 +191,6 @@ PODArchive::PODArchive(iostream_sptr psArchive)
 PODArchive::~PODArchive()
 	throw ()
 {
-}
-
-void PODArchive::rename(EntryPtr& id, const std::string& strNewName)
-	throw (std::ios_base::failure)
-{
-	// TESTED BY: fmt_pod_tv_rename
-	assert(this->isValid(id));
-	FATEntry *pEntry = dynamic_cast<FATEntry *>(id.get());
-
-	if (strNewName.length() > POD_MAX_FILENAME_LEN) {
-		throw std::ios_base::failure("new filename too long, max is "
-			TOSTRING(EPF_MAX_FILENAME_LEN) " chars");
-	}
-
-	this->psArchive->seekp(POD_FAT_OFFSET + pEntry->iIndex * POD_FAT_ENTRY_LEN);
-	this->psArchive << nullPadded(strNewName, POD_MAX_FILENAME_LEN);
-	pEntry->strName = strNewName;
-
-	return;
 }
 
 PODArchive::MetadataTypes PODArchive::getMetadataList() const
@@ -258,12 +242,22 @@ void PODArchive::setMetadata(MetadataType item, const std::string& value)
 	return;
 }
 
+void PODArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+	throw (std::ios::failure)
+{
+	// TESTED BY: fmt_pod_tv_rename
+	assert(strNewName.length() <= POD_MAX_FILENAME_LEN);
+	this->psArchive->seekp(POD_FILENAME_OFFSET(pid));
+	this->psArchive << nullPadded(strNewName, POD_MAX_FILENAME_LEN);
+	return;
+}
+
 void PODArchive::updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_pod_tv_insert*
 	// TESTED BY: fmt_pod_tv_resize*
-	this->psArchive->seekp(POD_FAT_OFFSET + pid->iIndex * POD_FAT_ENTRY_LEN + POD_FAT_ENTRY_OFFSET_POS);
+	this->psArchive->seekp(POD_FILEOFFSET_OFFSET(pid));
 	this->psArchive << u32le(pid->iOffset);
 	return;
 }
@@ -273,7 +267,7 @@ void PODArchive::updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
 {
 	// TESTED BY: fmt_pod_tv_insert*
 	// TESTED BY: fmt_pod_tv_resize*
-	this->psArchive->seekp(POD_FAT_OFFSET + pid->iIndex * POD_FAT_ENTRY_LEN + POD_FAT_ENTRY_SIZE_POS);
+	this->psArchive->seekp(POD_FILESIZE_OFFSET(pid));
 	this->psArchive << u32le(pid->iSize);
 	return;
 }
@@ -282,10 +276,7 @@ FATArchive::FATEntry *PODArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_pod_tv_insert*
-	if (pNewEntry->strName.length() > POD_MAX_FILENAME_LEN) {
-		throw std::ios::failure("maximum filename/path length is "
-			TOSTRING(POD_MAX_FILENAME_LEN) " chars");
-	}
+	assert(pNewEntry->strName.length() <= POD_MAX_FILENAME_LEN);
 
 	// Set the format-specific variables
 	pNewEntry->lenHeader = 0;
@@ -293,7 +284,7 @@ FATArchive::FATEntry *PODArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	// Because the new entry isn't in the vector yet we need to shift it manually
 	pNewEntry->iOffset += POD_FAT_ENTRY_LEN;
 
-	this->psArchive->seekp(POD_FAT_OFFSET + pNewEntry->iIndex * POD_FAT_ENTRY_LEN);
+	this->psArchive->seekp(POD_FATENTRY_OFFSET(pNewEntry));
 	this->psArchive->insert(POD_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
 
@@ -333,7 +324,7 @@ void PODArchive::preRemoveFile(const FATEntry *pid)
 	);
 
 	// Remove the FAT entry
-	this->psArchive->seekp(POD_FAT_OFFSET + pid->iIndex * POD_FAT_ENTRY_LEN);
+	this->psArchive->seekp(POD_FATENTRY_OFFSET(pid));
 	this->psArchive->remove(POD_FAT_ENTRY_LEN);
 
 	this->updateFileCount(this->vcFAT.size() - 1);
@@ -342,7 +333,7 @@ void PODArchive::preRemoveFile(const FATEntry *pid)
 }
 
 void PODArchive::updateFileCount(uint32_t iNewCount)
-	throw (std::ios_base::failure)
+	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_pod_tv_insert*
 	// TESTED BY: fmt_pod_tv_remove*

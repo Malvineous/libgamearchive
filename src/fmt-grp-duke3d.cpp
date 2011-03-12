@@ -131,7 +131,7 @@ MP_SUPPLIST GRPType::getRequiredSupps(const std::string& filenameArchive) const
 
 GRPArchive::GRPArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
-		FATArchive(psArchive, GRP_FIRST_FILE_OFFSET)
+		FATArchive(psArchive, GRP_FIRST_FILE_OFFSET, GRP_MAX_FILENAME_LEN)
 {
 	this->psArchive->seekg(12, std::ios::beg); // skip "KenSilverman" sig
 
@@ -173,24 +173,13 @@ GRPArchive::~GRPArchive()
 {
 }
 
-// Does not invalidate existing EntryPtrs
-void GRPArchive::rename(EntryPtr& id, const std::string& strNewName)
-	throw (std::ios_base::failure)
+void GRPArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_grp_duke3d_rename
-	assert(this->isValid(id));
-	FATEntry *pEntry = dynamic_cast<FATEntry *>(id.get());
-
-	if (strNewName.length() > GRP_MAX_FILENAME_LEN) {
-		throw std::ios_base::failure("new filename too long, max is "
-			TOSTRING(GRP_MAX_FILENAME_LEN) " chars");
-	}
-
-	this->psArchive->seekp(GRP_FILENAME_OFFSET(pEntry));
+	assert(strNewName.length() <= GRP_MAX_FILENAME_LEN);
+	this->psArchive->seekp(GRP_FILENAME_OFFSET(pid));
 	this->psArchive << nullPadded(strNewName, GRP_FILENAME_FIELD_LEN);
-
-	pEntry->strName = strNewName;
-
 	return;
 }
 
@@ -217,10 +206,7 @@ FATArchive::FATEntry *GRPArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_grp_duke3d_insert*
-	if (pNewEntry->strName.length() > GRP_MAX_FILENAME_LEN) {
-		throw std::ios::failure("maximum filename length is "
-			TOSTRING(GRP_MAX_FILENAME_LEN) " chars");
-	}
+	assert(pNewEntry->strName.length() <= GRP_MAX_FILENAME_LEN);
 
 	// Set the format-specific variables
 	pNewEntry->lenHeader = 0;
@@ -272,7 +258,7 @@ void GRPArchive::preRemoveFile(const FATEntry *pid)
 }
 
 void GRPArchive::updateFileCount(uint32_t iNewCount)
-	throw (std::ios_base::failure)
+	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_grp_duke3d_insert*
 	// TESTED BY: fmt_grp_duke3d_remove*

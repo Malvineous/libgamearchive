@@ -161,7 +161,7 @@ MP_SUPPLIST DAT_HugoType::getRequiredSupps(const std::string& filenameArchive) c
 
 DAT_HugoArchive::DAT_HugoArchive(iostream_sptr psArchive, iostream_sptr psFAT, FN_TRUNCATE fnTruncFAT)
 	throw (std::ios::failure) :
-		FATArchive(psArchive, DAT_FIRST_FILE_OFFSET),
+		FATArchive(psArchive, DAT_FIRST_FILE_OFFSET, 0),
 		fnTruncFAT(fnTruncFAT)
 {
 	iostream_sptr fatStream;
@@ -246,11 +246,10 @@ DAT_HugoArchive::~DAT_HugoArchive()
 {
 }
 
-void DAT_HugoArchive::rename(EntryPtr& id, const std::string& strNewName)
-	throw (std::ios_base::failure)
+void DAT_HugoArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+	throw (std::ios::failure)
 {
 	throw std::ios::failure("This archive format has no filenames to rename!");
-	return;
 }
 
 void DAT_HugoArchive::updateFileOffset(const FATEntry *pid,

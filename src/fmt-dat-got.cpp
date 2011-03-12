@@ -176,7 +176,7 @@ MP_SUPPLIST DAT_GoTType::getRequiredSupps(const std::string& filenameArchive) co
 
 DAT_GoTArchive::DAT_GoTArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
-		FATArchive(psArchive, GOT_FIRST_FILE_OFFSET),
+		FATArchive(psArchive, GOT_FIRST_FILE_OFFSET, GOT_MAX_FILENAME_LEN),
 		fatCrypt(0, 128),
 		fatFilter(new filtered_iostream())
 {
@@ -237,25 +237,6 @@ DAT_GoTArchive::~DAT_GoTArchive()
 {
 }
 
-void DAT_GoTArchive::rename(EntryPtr& id, const std::string& strNewName)
-	throw (std::ios_base::failure)
-{
-	// TESTED BY: fmt_got_dat_rename
-	assert(this->isValid(id));
-	FATEntry *pEntry = dynamic_cast<FATEntry *>(id.get());
-
-	if (strNewName.length() > GOT_MAX_FILENAME_LEN) {
-		throw std::ios_base::failure("new filename too long, max is "
-			TOSTRING(GOT_MAX_FILENAME_LEN) " chars");
-	}
-
-	this->fatStream->seekp(GOT_FILENAME_OFFSET(pEntry));
-	this->fatStream << nullPadded(strNewName, GOT_MAX_FILENAME_LEN);
-	pEntry->strName = strNewName;
-
-	return;
-}
-
 void DAT_GoTArchive::flush()
 	throw (std::ios::failure)
 {
@@ -271,6 +252,16 @@ int DAT_GoTArchive::getSupportedAttributes() const
 	throw ()
 {
 	return EA_COMPRESSED;
+}
+
+void DAT_GoTArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+	throw (std::ios::failure)
+{
+	// TESTED BY: fmt_got_dat_rename
+	assert(strNewName.length() <= GOT_MAX_FILENAME_LEN);
+	this->fatStream->seekp(GOT_FILENAME_OFFSET(pid));
+	this->fatStream << nullPadded(strNewName, GOT_FILENAME_FIELD_LEN);
+	return;
 }
 
 void DAT_GoTArchive::updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
@@ -298,10 +289,7 @@ FATArchive::FATEntry *DAT_GoTArchive::preInsertFile(const FATEntry *idBeforeThis
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_got_dat_insert*
-	if (pNewEntry->strName.length() > GOT_MAX_FILENAME_LEN) {
-		throw std::ios::failure("maximum filename length is "
-			TOSTRING(GOT_MAX_FILENAME_LEN) " chars");
-	}
+	assert(pNewEntry->strName.length() <= GOT_MAX_FILENAME_LEN);
 
 	// Set the format-specific variables
 	pNewEntry->lenHeader = 0;

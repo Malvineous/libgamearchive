@@ -144,7 +144,7 @@ MP_SUPPLIST EPFType::getRequiredSupps(const std::string& filenameArchive) const
 
 EPFArchive::EPFArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
-		FATArchive(psArchive, EPF_FIRST_FILE_OFFSET)
+		FATArchive(psArchive, EPF_FIRST_FILE_OFFSET, EPF_MAX_FILENAME_LEN)
 {
 	this->psArchive->seekg(0, std::ios::end);
 	io::stream_offset lenArchive = this->psArchive->tellg();
@@ -219,26 +219,6 @@ int EPFArchive::getSupportedAttributes() const
 	return EA_COMPRESSED;
 }
 
-// Does not invalidate existing EntryPtrs
-void EPFArchive::rename(EntryPtr& id, const std::string& strNewName)
-	throw (std::ios_base::failure)
-{
-	// TESTED BY: fmt_epf_lionking_rename
-	assert(this->isValid(id));
-	FATEntry *pEntry = dynamic_cast<FATEntry *>(id.get());
-
-	if (strNewName.length() > EPF_MAX_FILENAME_LEN) {
-		throw std::ios_base::failure("new filename too long, max is "
-			TOSTRING(EPF_MAX_FILENAME_LEN) " chars");
-	}
-
-	this->psArchive->seekp(this->offFAT + pEntry->iIndex * EPF_FAT_ENTRY_LEN);
-	this->psArchive << nullPadded(strNewName, EPF_FILENAME_FIELD_LEN);
-	pEntry->strName = strNewName;
-
-	return;
-}
-
 EPFArchive::MetadataTypes EPFArchive::getMetadataList() const
 	throw ()
 {
@@ -300,6 +280,16 @@ void EPFArchive::setMetadata(MetadataType item, const std::string& value)
 	return;
 }
 
+void EPFArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+	throw (std::ios::failure)
+{
+	// TESTED BY: fmt_epf_lionking_rename
+	assert(strNewName.length() <= EPF_MAX_FILENAME_LEN);
+	this->psArchive->seekp(this->offFAT + pid->iIndex * EPF_FAT_ENTRY_LEN);
+	this->psArchive << nullPadded(strNewName, EPF_FILENAME_FIELD_LEN);
+	return;
+}
+
 void EPFArchive::updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
 	throw (std::ios::failure)
 {
@@ -328,10 +318,7 @@ FATArchive::FATEntry *EPFArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_epf_lionking_insert*
-	if (pNewEntry->strName.length() > EPF_MAX_FILENAME_LEN) {
-		throw std::ios::failure("maximum filename length is "
-			TOSTRING(EPF_MAX_FILENAME_LEN) " chars");
-	}
+	assert(pNewEntry->strName.length() <= EPF_MAX_FILENAME_LEN);
 
 	// Set the format-specific variables
 	pNewEntry->lenHeader = 0;
@@ -392,7 +379,7 @@ void EPFArchive::updateFileCount(uint16_t iNewCount)
 }
 
 void EPFArchive::updateFATOffset()
-	throw (std::ios_base::failure)
+	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_epf_lionking_insert*
 	// TESTED BY: fmt_epf_lionking_remove*

@@ -145,6 +145,15 @@ FATArchive::EntryPtr FATArchive::insert(const EntryPtr& idBeforeThis,
 	// TESTED BY: fmt_grp_duke3d_remove_insert
 	// TESTED BY: fmt_grp_duke3d_insert_remove
 
+	// Make sure filename is within the allowed limit
+	if (
+		(this->lenMaxFilename > 0) &&
+		(strFilename.length() > this->lenMaxFilename)
+	) {
+		throw std::ios::failure(createString("maximum filename length is "
+			<< this->lenMaxFilename << " chars"));
+	}
+
 	FATEntry *pNewFile = this->createNewFATEntry();
 	EntryPtr ep(pNewFile);
 
@@ -276,6 +285,27 @@ void FATArchive::remove(EntryPtr& id)
 	return;
 }
 
+void FATArchive::rename(EntryPtr& id, const std::string& strNewName)
+	throw (std::ios::failure)
+{
+	// TESTED BY: fmt_grp_duke3d_rename
+	assert(this->isValid(id));
+	FATEntry *pFAT = dynamic_cast<FATEntry *>(id.get());
+
+	// Make sure filename is within the allowed limit
+	if (
+		(this->lenMaxFilename > 0) &&
+		(strNewName.length() > this->lenMaxFilename)
+	) {
+		throw std::ios::failure(createString("maximum filename length is "
+			<< this->lenMaxFilename << " chars"));
+	}
+
+	this->updateFileName(pFAT, strNewName);
+	pFAT->strName = strNewName;
+	return;
+}
+
 void FATArchive::resize(EntryPtr& id, size_t iNewSize,
 	offset_t iNewPrefilteredSize)
 	throw (std::ios::failure)
@@ -387,7 +417,7 @@ FATArchive::FATEntry *FATArchive::preInsertFile(const FATEntry *idBeforeThis,
 }
 
 void FATArchive::postInsertFile(FATEntry *pNewEntry)
-	throw (std::ios_base::failure)
+	throw (std::ios::failure)
 {
 	// No-op default
 }
@@ -399,7 +429,7 @@ void FATArchive::preRemoveFile(const FATEntry *pid)
 }
 
 void FATArchive::postRemoveFile(const FATEntry *pid)
-	throw (std::ios_base::failure)
+	throw (std::ios::failure)
 {
 	// No-op default
 }

@@ -156,7 +156,7 @@ MP_SUPPLIST DAT_WackyType::getRequiredSupps(const std::string& filenameArchive) 
 
 DAT_WackyArchive::DAT_WackyArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
-		FATArchive(psArchive, DAT_FIRST_FILE_OFFSET)
+		FATArchive(psArchive, DAT_FIRST_FILE_OFFSET, DAT_MAX_FILENAME_LEN)
 {
 	this->psArchive->seekg(0, std::ios::end);
 	io::stream_offset lenArchive = this->psArchive->tellg();
@@ -199,22 +199,13 @@ DAT_WackyArchive::~DAT_WackyArchive()
 {
 }
 
-void DAT_WackyArchive::rename(EntryPtr& id, const std::string& strNewName)
-	throw (std::ios_base::failure)
+void DAT_WackyArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_dat_wacky_rename
-	assert(this->isValid(id));
-	FATEntry *pEntry = dynamic_cast<FATEntry *>(id.get());
-
-	if (strNewName.length() > DAT_MAX_FILENAME_LEN) {
-		throw std::ios_base::failure("new filename too long, max is "
-			TOSTRING(DAT_MAX_FILENAME_LEN) " chars");
-	}
-
-	this->psArchive->seekp(DAT_FILENAME_OFFSET(pEntry));
+	assert(strNewName.length() <= DAT_MAX_FILENAME_LEN);
+	this->psArchive->seekp(DAT_FILENAME_OFFSET(pid));
 	this->psArchive << nullPadded(strNewName, DAT_FILENAME_FIELD_LEN);
-	pEntry->strName = strNewName;
-
 	return;
 }
 
@@ -252,10 +243,7 @@ FATArchive::FATEntry *DAT_WackyArchive::preInsertFile(
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_dat_wacky_insert*
-	if (pNewEntry->strName.length() > DAT_MAX_FILENAME_LEN) {
-		throw std::ios::failure("maximum filename length is "
-			TOSTRING(DAT_MAX_FILENAME_LEN) " chars");
-	}
+	assert(pNewEntry->strName.length() <= DAT_MAX_FILENAME_LEN);
 
 	// Set the format-specific variables
 	pNewEntry->lenHeader = 0;
@@ -312,7 +300,7 @@ void DAT_WackyArchive::preRemoveFile(const FATEntry *pid)
 }
 
 void DAT_WackyArchive::updateFileCount(uint32_t iNewCount)
-	throw (std::ios_base::failure)
+	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_dat_wacky_insert*
 	// TESTED BY: fmt_dat_wacky_remove*

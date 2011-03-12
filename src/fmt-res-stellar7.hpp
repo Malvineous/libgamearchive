@@ -74,13 +74,13 @@ class RESArchiveFolder: virtual public FATArchive {
 
 		// As per Archive (see there for docs)
 
-		virtual void rename(EntryPtr& id, const std::string& strNewName)
-			throw (std::ios::failure);
-
 		virtual ArchivePtr openFolder(const EntryPtr& id)
 			throw (std::ios::failure);
 
 		// As per FATArchive (see there for docs)
+
+		virtual void updateFileName(const FATEntry *pid, const std::string& strNewName)
+			throw (std::ios::failure);
 
 		virtual void updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
 			throw (std::ios::failure);

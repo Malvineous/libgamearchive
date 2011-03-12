@@ -72,31 +72,29 @@ class DAT_SangoArchive: virtual public FATArchive {
 		virtual ~DAT_SangoArchive()
 			throw ();
 
-		// As per Archive (see there for docs)
-
-		virtual void rename(EntryPtr& id, const std::string& strNewName)
-			throw (std::ios_base::failure);
-
 		// As per FATArchive (see there for docs)
+
+		virtual void updateFileName(const FATEntry *pid, const std::string& strNewName)
+			throw (std::ios::failure);
 
 		virtual void updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
 			throw (std::ios::failure);
 
 		virtual void updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
-			throw (std::ios_base::failure);
+			throw (std::ios::failure);
 
 		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-			throw (std::ios_base::failure);
+			throw (std::ios::failure);
 
-		void preRemoveFile(const FATEntry *pid)
-			throw (std::ios_base::failure);
+		virtual void preRemoveFile(const FATEntry *pid)
+			throw (std::ios::failure);
 
 	protected:
 		io::stream_offset lenArchive;
 
 		// Update the last FAT entry to point to EOF.
 		void updateLastEntry(int lenDelta)
-			throw (std::ios_base::failure);
+			throw (std::ios::failure);
 
 };
 

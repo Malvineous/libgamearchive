@@ -161,7 +161,7 @@ MP_SUPPLIST DAT_BashType::getRequiredSupps(const std::string& filenameArchive) c
 
 DAT_BashArchive::DAT_BashArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
-		FATArchive(psArchive, DAT_FIRST_FILE_OFFSET)
+		FATArchive(psArchive, DAT_FIRST_FILE_OFFSET, DAT_MAX_FILENAME_LEN)
 {
 	this->psArchive->seekg(0, std::ios::end);
 	io::stream_offset lenArchive = this->psArchive->tellg();
@@ -227,29 +227,20 @@ DAT_BashArchive::~DAT_BashArchive()
 {
 }
 
-void DAT_BashArchive::rename(EntryPtr& id, const std::string& strNewName)
-	throw (std::ios_base::failure)
-{
-	// TESTED BY: fmt_dat_bash_rename
-	assert(this->isValid(id));
-	FATEntry *pEntry = dynamic_cast<FATEntry *>(id.get());
-
-	if (strNewName.length() > DAT_MAX_FILENAME_LEN) {
-		throw std::ios_base::failure("new filename too long, max is "
-			TOSTRING(DAT_MAX_FILENAME_LEN) " chars");
-	}
-
-	this->psArchive->seekp(DAT_FILENAME_OFFSET(pEntry));
-	this->psArchive << nullPadded(strNewName, DAT_FILENAME_FIELD_LEN);
-	pEntry->strName = strNewName;
-
-	return;
-}
-
 int DAT_BashArchive::getSupportedAttributes() const
 	throw ()
 {
 	return EA_COMPRESSED;
+}
+
+void DAT_BashArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+	throw (std::ios::failure)
+{
+	// TESTED BY: fmt_dat_bash_rename
+	assert(strNewName.length() <= DAT_MAX_FILENAME_LEN);
+	this->psArchive->seekp(DAT_FILENAME_OFFSET(pid));
+	this->psArchive << nullPadded(strNewName, DAT_FILENAME_FIELD_LEN);
+	return;
 }
 
 void DAT_BashArchive::updateFileOffset(const FATEntry *pid,
@@ -286,6 +277,7 @@ FATArchive::FATEntry *DAT_BashArchive::preInsertFile(
 	throw (std::ios::failure)
 {
 	// TESTED BY: fmt_dat_bash_insert*
+	assert(pNewEntry->strName.length() <= DAT_MAX_FILENAME_LEN);
 
 	// Set the format-specific variables
 	pNewEntry->lenHeader = DAT_EFAT_ENTRY_LEN;

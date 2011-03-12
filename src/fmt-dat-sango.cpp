@@ -133,7 +133,7 @@ MP_SUPPLIST DAT_SangoType::getRequiredSupps(const std::string& filenameArchive) 
 
 DAT_SangoArchive::DAT_SangoArchive(iostream_sptr psArchive)
 	throw (std::ios::failure) :
-		FATArchive(psArchive, DAT_FIRST_FILE_OFFSET)
+		FATArchive(psArchive, DAT_FIRST_FILE_OFFSET, 0)
 {
 	psArchive->seekg(0, std::ios::end);
 	this->lenArchive = psArchive->tellg();
@@ -173,9 +173,8 @@ DAT_SangoArchive::~DAT_SangoArchive()
 {
 }
 
-// Does not invalidate existing EntryPtrs
-void DAT_SangoArchive::rename(EntryPtr& id, const std::string& strNewName)
-	throw (std::ios_base::failure)
+void DAT_SangoArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+	throw (std::ios::failure)
 {
 	throw std::ios::failure("This archive format does not support filenames.");
 }
@@ -253,7 +252,7 @@ void DAT_SangoArchive::preRemoveFile(const FATEntry *pid)
 }
 
 void DAT_SangoArchive::updateLastEntry(int lenDelta)
-	throw (std::ios_base::failure)
+	throw (std::ios::failure)
 {
 	this->lenArchive += lenDelta;
 	this->psArchive->seekp(this->vcFAT.size() * DAT_FAT_ENTRY_LEN);
