@@ -30,6 +30,7 @@
 
 // Local headers that will not be installed
 #include <camoto/segmented_stream.hpp>
+#include <camoto/util.hpp>
 
 using namespace camoto;
 namespace ga = camoto::gamearchive;
@@ -239,7 +240,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(open))
 	BOOST_REQUIRE_EQUAL(pfsIn->tellg(), 0);
 
 	// Apply any decryption/decompression filter
-	applyFilter(pArchive, ep, &pfsIn);
+	pfsIn = applyFilter(pArchive, ep, pfsIn);
 
 	// Copy it into the stringstream
 	boost::iostreams::copy(*pfsIn, out);
@@ -392,32 +393,14 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_end))
 		"Couldn't create new file in sample archive");
 
 	// Open it
-	{
 	iostream_sptr pfsNew(pArchive->open(ep));
-//std::cout << " substream has use count of " << pfsNew.use_count() << std::endl;
-iostream_sptr temp = pfsNew;
-//std::cout << " substream after temp copy has use count of " << pfsNew.use_count() << std::endl;
+
 	// Apply any encryption/compression filter
-	applyFilter(pArchive, ep, &pfsNew);
+	pfsNew = applyFilter(pArchive, ep, pfsNew);
 
-//std::cout << " filter-applied stream has use count of " << pfsNew.use_count() << std::endl;
-//std::cout << " original temp copy has use count of " << temp.use_count() << std::endl;
 	pfsNew->write("This is three.dat", 17);
-//std::cout << "-begin substream+filter flush" << std::endl;
-	pfsNew->flush(); // Write data to substream
-	//if (io::flush(*pfsNew, *temp)) std::cout << "filter flush ok" << std::endl;
-	//else std::cout << "filter flush failed" << std::endl;
-//std::cout << "-end substream+filter flush" << std::endl;
+	camoto::flush(pfsNew);
 
-	BOOST_CHECK_MESSAGE(
-		is_equal(makeString(TEST_RESULT(insert_end))),
-		"Error inserting file at end of archive"
-	);
-//std::cout << "@@ about to destroy" << std::endl;
-	}
-//std::cout << "@@ destroyed, clearing arch" << std::endl;
-//pArchive.reset();
-//std::cout << "@@ destroyed" << std::endl;
 	BOOST_CHECK_MESSAGE(
 		is_equal(makeString(TEST_RESULT(insert_end))),
 		"Error inserting file at end of archive"
@@ -466,10 +449,10 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_mid))
 	iostream_sptr pfsNew(pArchive->open(ep));
 
 	// Apply any encryption/compression filter
-	applyFilter(pArchive, ep, &pfsNew);
+	pfsNew = applyFilter(pArchive, ep, pfsNew);
 
 	pfsNew->write("This is three.dat", 17);
-	pfsNew->flush();
+	camoto::flush(pfsNew);
 
 	BOOST_CHECK_MESSAGE(
 		is_equal(makeString(TEST_RESULT(insert_mid))),
@@ -519,10 +502,10 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 	iostream_sptr pfsNew1(pArchive->open(ep1));
 
 	// Apply any encryption/compression filter
-	applyFilter(pArchive, ep1, &pfsNew1);
+	pfsNew1 = applyFilter(pArchive, ep1, pfsNew1);
 
 	pfsNew1->write("This is three.dat", 17);
-	pfsNew1->flush();
+	camoto::flush(pfsNew1);
 
 #if !NO_FILENAMES
 	// Find the file we're going to insert before (since the previous insert
@@ -555,10 +538,10 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 	iostream_sptr pfsNew2(pArchive->open(ep2));
 
 	// Apply any encryption/compression filter
-	applyFilter(pArchive, ep2, &pfsNew2);
+	pfsNew2 = applyFilter(pArchive, ep2, pfsNew2);
 
 	pfsNew2->write("This is four.dat", 16);
-	pfsNew2->flush();
+	camoto::flush(pfsNew2);
 
 	BOOST_CHECK_MESSAGE(
 		is_equal(makeString(TEST_RESULT(insert2))),
@@ -689,10 +672,10 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_remove))
 	iostream_sptr pfsNew(pArchive->open(ep));
 
 	// Apply any encryption/compression filter
-	applyFilter(pArchive, ep, &pfsNew);
+	pfsNew = applyFilter(pArchive, ep, pfsNew);
 
 	pfsNew->write("This is three.dat", 17);
-	pfsNew->flush();
+	camoto::flush(pfsNew);
 
 #if !NO_FILENAMES
 	// Find the file we're going to remove
@@ -780,10 +763,10 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_insert))
 	iostream_sptr pfsNew(pArchive->open(ep));
 
 	// Apply any encryption/compression filter
-	applyFilter(pArchive, ep, &pfsNew);
+	pfsNew = applyFilter(pArchive, ep, pfsNew);
 
 	pfsNew->write("This is three.dat", 17);
-	pfsNew->flush();
+	camoto::flush(pfsNew);
 
 	BOOST_CHECK_MESSAGE(
 		// This test checks against the insert_remove result instead, as the end
@@ -945,10 +928,10 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_write))
 	iostream_sptr pfsNew(pArchive->open(ep));
 
 	// Apply any encryption/compression filter
-	applyFilter(pArchive, ep, &pfsNew);
+	pfsNew = applyFilter(pArchive, ep, pfsNew);
 
 	pfsNew->write("Now resized to 23 chars", 23);
-	pfsNew->flush();
+	camoto::flush(pfsNew);
 
 	BOOST_CHECK_MESSAGE(
 		is_equal(makeString(TEST_RESULT(resize_write))),
@@ -986,7 +969,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_write))
 	out.exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
 
 	// Apply any decryption/decompression filter
-	applyFilter(pArchive, ep2, &pfsIn);
+	pfsIn = applyFilter(pArchive, ep2, pfsIn);
 
 	// Copy it into the stringstream
 	boost::iostreams::copy(*pfsIn, out);
@@ -1054,10 +1037,10 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_all_re_add))
 	iostream_sptr pfsNew(pArchive->open(idOne));
 
 	// Apply any encryption/compression filter
-	applyFilter(pArchive, idOne, &pfsNew);
+	pfsNew = applyFilter(pArchive, idOne, pfsNew);
 
 	pfsNew->write("This is one.dat", 15);
-	pfsNew->flush();
+	camoto::flush(pfsNew);
 
 #if !NO_FILENAMES
 	idTwo = pArchive->insert(ga::Archive::EntryPtr(), FILENAME2, 15, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
@@ -1070,10 +1053,10 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_all_re_add))
 	pfsNew = pArchive->open(idTwo);
 
 	// Apply any encryption/compression filter
-	applyFilter(pArchive, idTwo, &pfsNew);
+	pfsNew = applyFilter(pArchive, idTwo, pfsNew);
 
 	pfsNew->write("This is two.dat", 15);
-	pfsNew->flush();
+	camoto::flush(pfsNew);
 
 	BOOST_CHECK_MESSAGE(
 		is_equal(makeString(TEST_RESULT(initialstate))),
@@ -1109,12 +1092,12 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_zero_then_resize))
 	camoto::iostream_sptr pfsNew(pArchive->open(ep));
 
 	// Apply any encryption/compression filter
-	applyFilter(pArchive, ep, &pfsNew);
+	pfsNew = applyFilter(pArchive, ep, pfsNew);
 
 	pArchive->resize(ep, 17, 17);
 	pfsNew->seekp(0, std::ios::beg);
 	pfsNew->write("This is three.dat", 17);
-	pfsNew->flush();
+	camoto::flush(pfsNew);
 
 	BOOST_CHECK_MESSAGE(
 		is_equal(makeString(TEST_RESULT(insert_end))),

@@ -110,9 +110,9 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(new_to_initialstate))
 		"Couldn't insert new file in empty archive");
 	boost::shared_ptr<std::iostream> pfsNew(pArchive->open(idOne));
 	// Apply any encryption/compression filter
-	applyFilter(pArchive, idOne, &pfsNew);
+	pfsNew = applyFilter(pArchive, idOne, pfsNew);
 	pfsNew->write("This is one.dat", 15);
-	pfsNew->flush();
+	camoto::flush(pfsNew);
 
 #if !NO_FILENAMES
 	ga::Archive::EntryPtr idTwo = pArchive->insert(ga::Archive::EntryPtr(), FILENAME2, 15, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
@@ -123,9 +123,9 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(new_to_initialstate))
 		"Couldn't insert second new file in empty archive");
 	pfsNew = pArchive->open(idTwo);
 	// Apply any encryption/compression filter
-	applyFilter(pArchive, idTwo, &pfsNew);
+	pfsNew = applyFilter(pArchive, idTwo, pfsNew);
 	pfsNew->write("This is two.dat", 15);
-	pfsNew->flush();
+	camoto::flush(pfsNew);
 
 #ifdef testdata_get_metadata_description
 	// If this format has metadata, set it to the same value used when comparing
@@ -180,7 +180,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(manipulate_zero_length_files))
 	// Open it
 	camoto::iostream_sptr file3(pArchive->open(ep3));
 	// Apply any encryption/compression filter
-	applyFilter(pArchive, ep3, &file3);
+	file3 = applyFilter(pArchive, ep3, file3);
 
 #if !NO_FILENAMES
 	ga::Archive::EntryPtr ep1 = pArchive->insert(ep3, FILENAME1, 0, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
@@ -193,7 +193,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(manipulate_zero_length_files))
 	// Open it
 	camoto::iostream_sptr file1(pArchive->open(ep1));
 	// Apply any encryption/compression filter
-	applyFilter(pArchive, ep1, &file1);
+	file1 = applyFilter(pArchive, ep1, file1);
 
 #if !NO_FILENAMES
 	ga::Archive::EntryPtr ep2 = pArchive->insert(ep3, FILENAME2, 0, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
@@ -207,7 +207,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(manipulate_zero_length_files))
 	camoto::iostream_sptr file2(pArchive->open(ep2));
 
 	// Apply any encryption/compression filter
-	applyFilter(pArchive, ep2, &file2);
+	file2 = applyFilter(pArchive, ep2, file2);
 
 	// Get offsets of each file for later testing
 	ga::FATArchive::FATEntryPtr fat1 =
@@ -224,7 +224,8 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(manipulate_zero_length_files))
 	// increased.
 	pArchive->resize(ep2, 15, 15);
 	file2->write("This is two.dat", 15);
-	file2->flush();
+	file2->seekp(0, std::ios::cur);
+	camoto::flush(file2);
 
 	// Make sure the first file hasn't moved
 	BOOST_REQUIRE_EQUAL(fat1->iOffset, off1);
@@ -236,7 +237,8 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(manipulate_zero_length_files))
 
 	pArchive->resize(ep1, 15, 15);
 	file1->write("This is one.dat", 15);
-	file1->flush();
+	file1->seekp(0, std::ios::cur);
+	camoto::flush(file1);
 
 	// Make sure the first file hasn't moved
 	BOOST_REQUIRE_EQUAL(fat1->iOffset, off1);
@@ -246,7 +248,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(manipulate_zero_length_files))
 
 	pArchive->resize(ep3, 17, 17);
 	file3->write("This is three.dat", 17);
-	file3->flush();
+	camoto::flush(file3);
 
 	BOOST_CHECK_MESSAGE(
 		is_equal(makeString(TEST_RESULT(insert_end))),

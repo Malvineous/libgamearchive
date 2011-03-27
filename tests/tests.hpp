@@ -40,8 +40,6 @@ struct default_sample {
 
 };
 
-void stringStreamTruncate(std::stringstream *ss, int len);
-
 /// Apply the correct filter to the stream.
 /**
  * If the given entry pointer has a filter attached, apply it to the given
@@ -50,14 +48,16 @@ void stringStreamTruncate(std::stringstream *ss, int len);
  * @note This function will always apply the filter, don't call it if the user
  *   has given the -u option to bypass filtering.
  *
- * @param ppStream
- *   Pointer to the stream.  On return may point to a different stream.
+ * @param pStream
+ *   Shared pointer to the stream.
  *
  * @param id
  *   EntryPtr for the stream.
+ *
+ * @return A stream providing filtered data from pStream.
  */
-void applyFilter(camoto::gamearchive::ArchivePtr arch,
-	camoto::gamearchive::Archive::EntryPtr id, camoto::iostream_sptr *ppStream)
+camoto::iostream_sptr applyFilter(camoto::gamearchive::ArchivePtr arch,
+	camoto::gamearchive::Archive::EntryPtr id, camoto::iostream_sptr pStream)
 	throw (std::ios::failure);
 
 #endif // _CAMOTO_GAMEARCHIVE_TESTS_HPP_

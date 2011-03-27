@@ -24,6 +24,7 @@
 #include <iostream>
 #include <sstream>
 #include <camoto/filteredstream.hpp>
+#include <camoto/util.hpp>
 
 #include "tests.hpp"
 #include "../src/filter-xor-blood.hpp"
@@ -33,9 +34,9 @@ using namespace camoto::gamearchive;
 /// Allow static objects to be passed around in boost:shared_ptr objects.
 struct null_deleter
 {
-    void operator()(void const *) const
-    {
-    }
+	void operator()(void const *) const
+	{
+	}
 };
 
 struct rff_crypt_sample: public default_sample {
@@ -109,6 +110,7 @@ BOOST_AUTO_TEST_CASE(rff_crypt_write)
 {
 	BOOST_TEST_MESSAGE("Encode some data");
 
+	{
 	boost::shared_ptr<io::filtering_ostream> poutf(new io::filtering_ostream());
 	poutf->push(io::invert(rff_crypt_filter(0, 0)));
 
@@ -116,6 +118,8 @@ BOOST_AUTO_TEST_CASE(rff_crypt_write)
 
 	poutf->write("\x00\x01\x02\x03\xFF\xFF\xFF\xFF", 8);
 	poutf->flush();
+	poutf->seekp(0, std::ios::cur);
+	} // need to deallocate before it gets fully flushed
 
 	BOOST_CHECK_MESSAGE(is_equal(makeString("\x00\x01\x03\x02\xFD\xFD\xFC\xFC")),
 		"Encoding data failed");
@@ -133,9 +137,8 @@ BOOST_AUTO_TEST_CASE(rff_crypt_write_filteredstream)
 
 	camoto::iostream_sptr pout(&out, null_deleter());
 	camoto::iostream_sptr dec(new camoto::filteredstream(pout, pinf, poutf));
-
 	dec->write("\x00\x01\x02\x03\xFF\xFF\xFF\xFF", 8);
-	dec->flush();
+	camoto::flush(dec);
 
 	BOOST_CHECK_MESSAGE(is_equal(makeString("\x00\x01\x03\x02\xFD\xFD\xFC\xFC")),
 		"Encoding data through filteredstream failed");

@@ -247,6 +247,7 @@ bool insertFile(ga::Archive *pArchive, const std::string& strLocalFile,
 	// Copy all the data from the file on disk into the archive file.
 	try {
 		boost::iostreams::copy(fsIn, *psNew);
+		camoto::flush(psNew);
 	} catch (std::ios_base::failure& e) {
 		std::cout << " [failed; " << e.what() << "]";
 		//iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
@@ -980,7 +981,7 @@ finishTesting:
 								camoto::iostream_sptr psDest(destArch->open(id));
 								if (bUseFilters) applyFilter(&psDest, id);
 								boost::iostreams::copy(sSrc, *psDest);
-								psDest->flush();
+								camoto::flush(psDest);
 
 								if (!bUseFilters) {
 									// Since filters were skipped we will pretend we applied the

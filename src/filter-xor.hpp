@@ -96,7 +96,6 @@ class xor_crypt_filter: public io::multichar_filter<io::seekable> {
 		template<typename Sink>
 		bool flush(Sink& snk)
 		{
-			io::flush(snk);
 			return true; // nothing to flush
 		}
 
