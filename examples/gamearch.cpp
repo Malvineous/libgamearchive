@@ -18,6 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define BOOST_FILESYSTEM_VERSION 3
 #include <boost/algorithm/string.hpp> // for case-insensitive string compare
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -196,7 +197,7 @@ ga::Archive::EntryPtr findFile(ga::ArchivePtr& archive, const std::string& filen
 			break;
 		}
 
-		ga::Archive::EntryPtr j = archive->find(*i);
+		ga::Archive::EntryPtr j = archive->find(i->native());
 		if (!archive->isValid(j)) break;
 
 		if (j->fAttr & ga::EA_FOLDER) {
