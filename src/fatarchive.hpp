@@ -167,7 +167,7 @@ class FATArchive: virtual public Archive {
 
 		// move() uses implementation from Archive
 
-		virtual void resize(EntryPtr& id, size_t iNewSize,
+		virtual void resize(EntryPtr& id, offset_t iNewSize,
 			offset_t iNewPrefilteredSize)
 			throw (std::ios::failure);
 

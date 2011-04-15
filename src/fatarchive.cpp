@@ -306,7 +306,7 @@ void FATArchive::rename(EntryPtr& id, const std::string& strNewName)
 	return;
 }
 
-void FATArchive::resize(EntryPtr& id, size_t iNewSize,
+void FATArchive::resize(EntryPtr& id, offset_t iNewSize,
 	offset_t iNewPrefilteredSize)
 	throw (std::ios::failure)
 {

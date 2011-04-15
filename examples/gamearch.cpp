@@ -49,6 +49,19 @@ namespace ga = camoto::gamearchive;
 /// Some files failed, but not in a common way (cut off write, disk full, etc.)
 #define RET_UNCOMMON_FAILURE   5
 
+#ifdef __WIN32
+#include <windows.h>
+int truncate(const char *path, off_t length)
+{
+	HANDLE f = CreateFile(path, GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
+		FILE_ATTRIBUTE_NORMAL, NULL);
+	SetFilePointer(f, length, NULL, FILE_BEGIN);
+	BOOL b = SetEndOfFile(f);
+	CloseHandle(f);
+	return b ? -1 : 0;
+}
+
+#endif
 
 /// Return value that will be used
 int iRet = RET_OK;
@@ -96,7 +109,7 @@ void sanitisePath(std::string& strInput)
 	for (std::string::iterator i = strInput.begin(); i != strInput.end(); i++) {
 		switch (*i) {
 			case '/':
-#ifdef WIN32
+#ifdef __WIN32
 			case '\\':
 			case ':':
 #endif
@@ -197,7 +210,7 @@ ga::Archive::EntryPtr findFile(ga::ArchivePtr& archive, const std::string& filen
 			break;
 		}
 
-		ga::Archive::EntryPtr j = archive->find(i->native());
+		ga::Archive::EntryPtr j = archive->find(i->string());
 		if (!archive->isValid(j)) break;
 
 		if (j->fAttr & ga::EA_FOLDER) {
