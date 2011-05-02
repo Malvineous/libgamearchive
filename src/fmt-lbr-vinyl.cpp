@@ -21,14 +21,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
-#include <boost/progress.hpp>
-#include <boost/shared_array.hpp>
-#include <boost/algorithm/string.hpp>
-#include <iostream>
-#include <exception>
-#include <string.h>
+#include <string>
+#include <sstream>
 
 #include "fmt-lbr-vinyl.hpp"
 #include <camoto/iostream_helpers.hpp>
