@@ -21,7 +21,9 @@ tests_SOURCES += test-filter-xor.cpp
 tests_SOURCES += test-filter-xor-blood.cpp
 tests_SOURCES += test-filter-ddave-rle.cpp
 
-EXTRA_tests_SOURCES = tests.hpp test-archive.hpp
+EXTRA_tests_SOURCES = tests.hpp
+EXTRA_tests_SOURCES += test-archive.hpp
+EXTRA_tests_SOURCES += test-archive_new.hpp
 
 TESTS = tests
 
