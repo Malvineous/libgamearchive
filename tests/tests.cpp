@@ -18,7 +18,10 @@
  */
 
 #define BOOST_TEST_MODULE libgamearchive
+#ifndef __WIN32__
+// Dynamically link to the Boost library on non-Windows platforms.
 #define BOOST_TEST_DYN_LINK
+#endif
 #include <boost/test/unit_test.hpp>
 #include <boost/algorithm/string.hpp> // for case-insensitive string compare
 #include <boost/bind.hpp>
