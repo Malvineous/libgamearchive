@@ -741,8 +741,13 @@ finishTesting:
 		}
 
 		// Open the archive file
-		boost::shared_ptr<ga::Archive> pArchive(pArchType->open(psArchive, suppData));
-		assert(pArchive);
+		boost::shared_ptr<ga::Archive> pArchive;
+		try {
+			pArchive = pArchType->open(psArchive, suppData);
+			assert(pArchive);
+		} catch (std::ios::failure& e) {
+			std::cerr << "Error opening archive file: " << e.what() << std::endl;
+		}
 		pArchive->fnTruncate = boost::bind<void>(truncate, strFilename.c_str(), _1);
 
 		// File type of inserted files defaults to empty, which means 'generic file'
