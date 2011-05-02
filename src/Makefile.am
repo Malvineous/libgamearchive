@@ -62,5 +62,5 @@ EXTRA_libgamearchive_la_SOURCES += filter-ddave-rle.hpp
 AM_CPPFLAGS = $(DEBUG_CPPFLAGS) $(BOOST_CPPFLAGS) -I $(top_srcdir)/include $(libgamecommon_CFLAGS)
 AM_CXXFLAGS = $(DEBUG_CXXFLAGS)
 
-libgamearchive_la_LDFLAGS = $(AM_LDFLAGS) -release @VERSION@ -version-info 0
+libgamearchive_la_LDFLAGS = $(AM_LDFLAGS) -version-info 0:0:0
 libgamearchive_la_LIBADD = $(BOOST_SYSTEM_LIBS) $(BOOST_FILESYSTEM_LIBS) $(libgamecommon_LIBS)

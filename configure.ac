@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.63])
-AC_INIT([libgamearchive], [0.1], [camoto@lists.shikadi.net])
-AM_INIT_AUTOMAKE([libgamearchive], [0.1])
+AC_INIT([libgamearchive], [1.0], [camoto@lists.shikadi.net])
+AM_INIT_AUTOMAKE([libgamearchive], [1.0])
 AC_CONFIG_SRCDIR([src/main.cpp])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
@@ -18,7 +18,7 @@ AC_PROG_CXX
 # Checks for libraries.
 AC_PROG_LIBTOOL
 
-BOOST_REQUIRE([1.37])
+BOOST_REQUIRE([1.46])
 BOOST_FILESYSTEM
 BOOST_PROGRAM_OPTIONS
 BOOST_TEST
