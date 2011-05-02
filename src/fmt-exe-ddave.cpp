@@ -25,8 +25,8 @@ namespace gamearchive {
 
 FixedArchiveFile ddave_file_list[] = {
 	{0x0b4ff, 0x0c620 - 0x0b4ff, "first.bin",   FILTER_NONE},
-	{0x0c620, 0x120f0 - 0x0c620, "cgadave.dav", "rle-ddave"},
-	{0x120f0, 0x1c4e0 - 0x120f0, "vgadave.dav", "rle-ddave"},
+	{0x0c620+4, 0x120f0 - 0x0c620 -4, "cgadave.dav", "rle-ddave"},  // +4/-4 to ignore initial uint32le decompressed size
+	{0x120f0+4, 0x1c4e0 - 0x120f0 -4, "vgadave.dav", "rle-ddave"},  // +4/-4 to ignore initial uint32le decompressed size
 	{0x1c4e0, 0x1d780 - 0x1c4e0, "sounds.spk",  FILTER_NONE},
 	{0x1d780, 0x1ea40 - 0x1d780, "menucga.gfx", FILTER_NONE},
 	{0x1ea40, 0x20ec0 - 0x1ea40, "menuega.gfx", FILTER_NONE},
