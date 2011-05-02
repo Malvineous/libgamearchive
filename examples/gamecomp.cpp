@@ -146,10 +146,10 @@ int main(int iArgC, char *cArgV[])
 		}
 
 		// Convert std::cin into a shared pointer
-		camoto::istream_sptr stdin(&std::cin, null_deleter());
+		camoto::istream_sptr pstdin(&std::cin, null_deleter());
 
 		// Apply the filter
-		camoto::istream_sptr in(pFilterType->apply(stdin));
+		camoto::istream_sptr in(pFilterType->apply(pstdin));
 
 		// Copy filtered data to stdout
 		boost::iostreams::copy(*in, std::cout);
