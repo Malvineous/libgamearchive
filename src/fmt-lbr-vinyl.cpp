@@ -412,7 +412,7 @@ E_CERTAINTY LBRType::isInstance(iostream_sptr psArchive) const
 	return EC_DEFINITELY_YES;
 }
 
-ArchivePtr LBRType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr LBRType::newArchive(iostream_sptr psArchive, SuppData& suppData) const
 	throw (std::ios::failure)
 {
 	psArchive->seekp(0, std::ios::beg);
@@ -421,17 +421,17 @@ ArchivePtr LBRType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) c
 }
 
 // Preconditions: isInstance() has returned > EC_DEFINITELY_NO
-ArchivePtr LBRType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr LBRType::open(iostream_sptr psArchive, SuppData& suppData) const
 	throw (std::ios::failure)
 {
 	return ArchivePtr(new LBRArchive(psArchive));
 }
 
-MP_SUPPLIST LBRType::getRequiredSupps(const std::string& filenameArchive) const
+SuppFilenames LBRType::getRequiredSupps(const std::string& filenameArchive) const
 	throw ()
 {
 	// No supplemental types/empty list
-	return MP_SUPPLIST();
+	return SuppFilenames();
 }
 
 

@@ -48,7 +48,7 @@ std::string Archive::FileEntry::getContent() const
 	return ss.str();
 }
 
-ArchivePtr ArchiveType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr ArchiveType::newArchive(iostream_sptr psArchive, SuppData& suppData) const
 	throw (std::ios::failure)
 {
 	return this->open(psArchive, suppData);

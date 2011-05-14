@@ -120,18 +120,18 @@ E_CERTAINTY RESType::isInstance(iostream_sptr psArchive) const
 	return EC_DEFINITELY_YES;
 }
 
-ArchivePtr RESType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr RESType::open(iostream_sptr psArchive, SuppData& suppData) const
 	throw (std::ios::failure)
 {
 	ArchivePtr root(new RESArchiveFolder(psArchive));
 	return root;
 }
 
-MP_SUPPLIST RESType::getRequiredSupps(const std::string& filenameArchive) const
+SuppFilenames RESType::getRequiredSupps(const std::string& filenameArchive) const
 	throw ()
 {
 	// No supplemental types/empty list
-	return MP_SUPPLIST();
+	return SuppFilenames();
 }
 
 

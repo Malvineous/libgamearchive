@@ -138,7 +138,7 @@ E_CERTAINTY VOLType::isInstance(iostream_sptr psArchive) const
 	return EC_DEFINITELY_YES;
 }
 
-ArchivePtr VOLType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr VOLType::newArchive(iostream_sptr psArchive, SuppData& suppData) const
 	throw (std::ios::failure)
 {
 	char emptyFAT[VOL_FAT_LENGTH];
@@ -149,17 +149,17 @@ ArchivePtr VOLType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) c
 }
 
 // Preconditions: isInstance() has returned > EC_DEFINITELY_NO
-ArchivePtr VOLType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr VOLType::open(iostream_sptr psArchive, SuppData& suppData) const
 	throw (std::ios::failure)
 {
 	return ArchivePtr(new VOLArchive(psArchive));
 }
 
-MP_SUPPLIST VOLType::getRequiredSupps(const std::string& filenameArchive) const
+SuppFilenames VOLType::getRequiredSupps(const std::string& filenameArchive) const
 	throw ()
 {
 	// No supplemental types/empty list
-	return MP_SUPPLIST();
+	return SuppFilenames();
 }
 
 

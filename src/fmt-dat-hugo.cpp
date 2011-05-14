@@ -121,28 +121,29 @@ E_CERTAINTY DAT_HugoType::isInstance(iostream_sptr psArchive) const
 	return EC_DEFINITELY_YES;
 }
 
-ArchivePtr DAT_HugoType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr DAT_HugoType::newArchive(iostream_sptr psArchive, SuppData& suppData) const
 	throw (std::ios::failure)
 {
 	// Return an empty file
 	return ArchivePtr(new DAT_HugoArchive(psArchive, iostream_sptr(), NULL));
 }
 
-ArchivePtr DAT_HugoType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr DAT_HugoType::open(iostream_sptr psArchive, SuppData& suppData) const
 	throw (std::ios::failure)
 {
-	if (suppData.find(EST_FAT) != suppData.end()) {
-		return ArchivePtr(new DAT_HugoArchive(psArchive, suppData[EST_FAT].stream, suppData[EST_FAT].fnTruncate));
+	if (suppData.find(SuppItem::FAT) != suppData.end()) {
+		return ArchivePtr(new DAT_HugoArchive(psArchive,
+			suppData[SuppItem::FAT].stream, suppData[SuppItem::FAT].fnTruncate));
 	}
 	return ArchivePtr(new DAT_HugoArchive(psArchive, iostream_sptr(), NULL));
 }
 
-MP_SUPPLIST DAT_HugoType::getRequiredSupps(const std::string& filenameArchive) const
+SuppFilenames DAT_HugoType::getRequiredSupps(const std::string& filenameArchive) const
 	throw ()
 {
 	// If this is 'scenery1.dat' then the rest of its data is in 'scenery2.dat'
 	// so we will include it as a supp.
-	MP_SUPPLIST supps;
+	SuppFilenames supps;
 	std::string::size_type slash = filenameArchive.find_last_of('/');
 	std::string filenameBase;
 	if (slash != std::string::npos) {
@@ -153,7 +154,7 @@ MP_SUPPLIST DAT_HugoType::getRequiredSupps(const std::string& filenameArchive) c
 	if (boost::iequals(filenameBase, "scenery2.dat")) {
 		std::string firstFilename = filenameArchive;
 		firstFilename[firstFilename.length() - 5] = '1';
-		supps[EST_FAT] = firstFilename;
+		supps[SuppItem::FAT] = firstFilename;
 	}
 	return supps;
 }

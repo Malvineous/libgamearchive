@@ -17,7 +17,7 @@ int main(void)
 	// We cheat here - we should check and load any supplementary files, but
 	// for the sake of keeping this example simple we know this format doesn't
 	// need any supps.
-	MP_SUPPDATA supps;
+	camoto::SuppData supps;
 
 	// Use the archive format handler to read in the file we opened as an archive
 	ArchivePtr arch = archiveType->open(file, supps);

@@ -112,21 +112,21 @@ E_CERTAINTY BNKType::isInstance(iostream_sptr psArchive) const
 	return EC_DEFINITELY_YES;
 }
 
-ArchivePtr BNKType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr BNKType::open(iostream_sptr psArchive, SuppData& suppData) const
 	throw (std::ios::failure)
 {
-	assert(suppData.find(EST_FAT) != suppData.end());
-	SuppItem& si = suppData[EST_FAT];
+	assert(suppData.find(SuppItem::FAT) != suppData.end());
+	SuppItem& si = suppData[SuppItem::FAT];
 	return ArchivePtr(new BNKArchive(psArchive, si.stream, si.fnTruncate));
 }
 
-MP_SUPPLIST BNKType::getRequiredSupps(const std::string& filenameArchive) const
+SuppFilenames BNKType::getRequiredSupps(const std::string& filenameArchive) const
 	throw ()
 {
 	// No supplemental types/empty list
-	MP_SUPPLIST supps;
+	SuppFilenames supps;
 	std::string filenameBase = filenameArchive.substr(0, filenameArchive.find_last_of('.'));
-	supps[EST_FAT] = filenameBase + ".Fat"; // TODO: case sensitivity?
+	supps[SuppItem::FAT] = filenameBase + ".Fat"; // TODO: case sensitivity?
 	return supps;
 }
 

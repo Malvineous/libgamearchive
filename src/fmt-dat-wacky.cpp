@@ -131,7 +131,7 @@ E_CERTAINTY DAT_WackyType::isInstance(iostream_sptr psArchive) const
 	return EC_DEFINITELY_YES;
 }
 
-ArchivePtr DAT_WackyType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr DAT_WackyType::newArchive(iostream_sptr psArchive, SuppData& suppData) const
 	throw (std::ios::failure)
 {
 	psArchive->seekp(0, std::ios::beg);
@@ -140,17 +140,17 @@ ArchivePtr DAT_WackyType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppD
 }
 
 // Preconditions: isInstance() has returned > EC_DEFINITELY_NO
-ArchivePtr DAT_WackyType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr DAT_WackyType::open(iostream_sptr psArchive, SuppData& suppData) const
 	throw (std::ios::failure)
 {
 	return ArchivePtr(new DAT_WackyArchive(psArchive));
 }
 
-MP_SUPPLIST DAT_WackyType::getRequiredSupps(const std::string& filenameArchive) const
+SuppFilenames DAT_WackyType::getRequiredSupps(const std::string& filenameArchive) const
 	throw ()
 {
 	// No supplemental types/empty list
-	return MP_SUPPLIST();
+	return SuppFilenames();
 }
 
 

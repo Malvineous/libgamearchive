@@ -26,11 +26,11 @@ struct EMPTY_FIXTURE_NAME: public FIXTURE_NAME {
 			boost::shared_ptr<std::stringstream> suppSS(new std::stringstream);
 			suppSS->exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
 			camoto::iostream_sptr suppStream(suppSS);
-			ga::SuppItem si;
+			camoto::SuppItem si;
 			si.stream = suppStream;
 			si.fnTruncate = boost::bind<void>(stringStreamTruncate, suppSS.get(), _1);
-			this->suppData[ga::EST_FAT] = si;
-			this->suppBase[ga::EST_FAT] = suppSS;
+			this->suppData[camoto::SuppItem::FAT] = si;
+			this->suppBase[camoto::SuppItem::FAT] = suppSS;
 		}
 		#endif
 
@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(new_to_initialstate))
 
 #ifdef HAS_FAT
 	BOOST_CHECK_MESSAGE(
-		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_initialstate))),
+		is_supp_equal(camoto::SuppItem::FAT, makeString(TEST_RESULT(FAT_initialstate))),
 		"Error inserting files in new/empty archive"
 	);
 #endif
@@ -257,7 +257,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(manipulate_zero_length_files))
 
 #ifdef HAS_FAT
 	BOOST_CHECK_MESSAGE(
-		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_insert_end))),
+		is_supp_equal(camoto::SuppItem::FAT, makeString(TEST_RESULT(FAT_insert_end))),
 		"Error manipulating zero-length files"
 	);
 #endif

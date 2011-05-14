@@ -123,23 +123,23 @@ E_CERTAINTY SkyRoadsRoadsType::isInstance(iostream_sptr psArchive) const
 	return EC_DEFINITELY_YES;
 }
 
-ArchivePtr SkyRoadsRoadsType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr SkyRoadsRoadsType::newArchive(iostream_sptr psArchive, SuppData& suppData) const
 	throw (std::ios::failure)
 {
 	return ArchivePtr(new SkyRoadsRoadsArchive(psArchive));
 }
 
-ArchivePtr SkyRoadsRoadsType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr SkyRoadsRoadsType::open(iostream_sptr psArchive, SuppData& suppData) const
 	throw (std::ios::failure)
 {
 	return ArchivePtr(new SkyRoadsRoadsArchive(psArchive));
 }
 
-MP_SUPPLIST SkyRoadsRoadsType::getRequiredSupps(const std::string& filenameArchive) const
+SuppFilenames SkyRoadsRoadsType::getRequiredSupps(const std::string& filenameArchive) const
 	throw ()
 {
 	// No supplemental types/empty list
-	return MP_SUPPLIST();
+	return SuppFilenames();
 }
 
 

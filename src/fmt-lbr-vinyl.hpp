@@ -53,13 +53,13 @@ class LBRType: virtual public ArchiveType {
 		virtual E_CERTAINTY isInstance(iostream_sptr fsArchive) const
 			throw (std::ios::failure);
 
-		virtual ArchivePtr newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+		virtual ArchivePtr newArchive(iostream_sptr psArchive, SuppData& suppData) const
 			throw (std::ios::failure);
 
-		virtual ArchivePtr open(iostream_sptr fsArchive, MP_SUPPDATA& suppData) const
+		virtual ArchivePtr open(iostream_sptr fsArchive, SuppData& suppData) const
 			throw (std::ios::failure);
 
-		virtual MP_SUPPLIST getRequiredSupps(const std::string& filenameArchive) const
+		virtual SuppFilenames getRequiredSupps(const std::string& filenameArchive) const
 			throw ();
 
 };

@@ -26,6 +26,7 @@
 #include <map>
 
 #include <camoto/types.hpp>
+#include <camoto/suppitem.hpp>
 #include <camoto/gamearchive/archive.hpp>
 
 /// Main namespace
@@ -45,36 +46,6 @@ enum E_CERTAINTY {
 	/// This format has a signature and it matched.
 	EC_DEFINITELY_YES,
 };
-
-/// Type of supplemental file.
-enum E_SUPPTYPE {
-	/// FAT is stored externally
-	EST_FAT,
-	/// Compression dictionary is external
-	EST_DICT,
-};
-
-/// Supplementary item for an archive.
-/**
- * This class contains data about a supplementary item required to open an
- * archive file.
- *
- * @see ArchiveType::getRequiredSupps()
- */
-struct SuppItem {
-	/// The stream containing the supplemental data.
-	iostream_sptr stream;
-	/// The truncate callback (required)
-	FN_TRUNCATE fnTruncate;
-};
-
-/// A list of required supplemental files and their filenames.  The filenames
-/// may contain a path (especially if the main archive file also contains a
-/// path.)
-typedef std::map<E_SUPPTYPE, std::string> MP_SUPPLIST;
-
-/// A list of the supplemental file types mapped to open file streams.
-typedef std::map<E_SUPPTYPE, SuppItem> MP_SUPPDATA;
 
 /// Interface to a particular archive format.
 class ArchiveType {
@@ -135,7 +106,7 @@ class ArchiveType {
 		 * @return A pointer to an instance of the Archive class, just as if a
 		 *         valid empty file had been opened by open().
 		 */
-		virtual ArchivePtr newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+		virtual ArchivePtr newArchive(iostream_sptr psArchive, SuppData& suppData) const
 			throw (std::ios::failure);
 
 		/// Open an archive file.
@@ -150,7 +121,7 @@ class ArchiveType {
 		 *         anyway, to make it possible to "force" a file to be opened by a
 		 *         particular format handler.
 		 */
-		virtual ArchivePtr open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+		virtual ArchivePtr open(iostream_sptr psArchive, SuppData& suppData) const
 			throw (std::ios::failure) = 0;
 
 		/// Get a list of any required supplemental files.
@@ -167,12 +138,12 @@ class ArchiveType {
 		 * @return A (possibly empty) map associating required supplemental file
 		 *         types with their filenames.  For each returned value the file
 		 *         should be opened and placed in a SuppItem instance.  The
-		 *         SuppItem is then added to an \ref MP_SUPPDATA map where it can
+		 *         SuppItem is then added to an \ref SuppData map where it can
 		 *         be passed to newArchive() or open().  Note that the filenames
 		 *         returned can have relative paths, and may even have an absolute
 		 *         path, if one was passed in with filenameArchive.
 		 */
-		virtual MP_SUPPLIST getRequiredSupps(const std::string& filenameArchive) const
+		virtual SuppFilenames getRequiredSupps(const std::string& filenameArchive) const
 			throw () = 0;
 
 };

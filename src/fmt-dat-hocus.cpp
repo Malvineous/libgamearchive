@@ -86,11 +86,11 @@ E_CERTAINTY DAT_HocusType::isInstance(iostream_sptr psArchive) const
 	return EC_UNSURE;
 }
 
-ArchivePtr DAT_HocusType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr DAT_HocusType::open(iostream_sptr psArchive, SuppData& suppData) const
 	throw (std::ios::failure)
 {
-	assert(suppData.find(EST_FAT) != suppData.end());
-	SuppItem& si = suppData[EST_FAT];
+	assert(suppData.find(SuppItem::FAT) != suppData.end());
+	SuppItem& si = suppData[SuppItem::FAT];
 	si.stream->seekg(0, std::ios::end);
 	io::stream_offset lenEXE = si.stream->tellg();
 	io::stream_offset offFAT, lenFAT;
@@ -118,7 +118,7 @@ ArchivePtr DAT_HocusType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) c
 	return ArchivePtr(new DAT_HocusArchive(psArchive, fat));
 }
 
-ArchivePtr DAT_HocusType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr DAT_HocusType::newArchive(iostream_sptr psArchive, SuppData& suppData) const
 	throw (std::ios::failure)
 {
 	// We can't create new archives because the FAT has to go inside a
@@ -126,13 +126,13 @@ ArchivePtr DAT_HocusType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppD
 	throw std::ios::failure("Cannot create archives from scratch in this format!");
 }
 
-MP_SUPPLIST DAT_HocusType::getRequiredSupps(const std::string& filenameArchive) const
+SuppFilenames DAT_HocusType::getRequiredSupps(const std::string& filenameArchive) const
 	throw ()
 {
 	// No supplemental types/empty list
-	MP_SUPPLIST supps;
+	SuppFilenames supps;
 	std::string filenameBase = filenameArchive.substr(0, filenameArchive.find_last_of('.'));
-	supps[EST_FAT] = filenameBase + ".Exe"; // TODO: case sensitivity?
+	supps[SuppItem::FAT] = filenameBase + ".Exe"; // TODO: case sensitivity?
 	return supps;
 }
 

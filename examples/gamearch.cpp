@@ -657,12 +657,12 @@ int main(int iArgC, char *cArgV[])
 				}
 				if (cert != ga::EC_DEFINITELY_NO) {
 					// We got a possible match, see if it requires any suppdata
-					ga::MP_SUPPLIST suppList = pTestType->getRequiredSupps(strFilename);
+					camoto::SuppFilenames suppList = pTestType->getRequiredSupps(strFilename);
 					if (suppList.size() > 0) {
 						// It has suppdata, see if it's present
 						std::cout << "  * This format requires supplemental files..." << std::endl;
 						bool bSuppOK = true;
-						for (ga::MP_SUPPLIST::iterator i = suppList.begin(); i != suppList.end(); i++) {
+						for (camoto::SuppFilenames::iterator i = suppList.begin(); i != suppList.end(); i++) {
 							try {
 								boost::shared_ptr<std::fstream> suppStream(new std::fstream());
 								suppStream->exceptions(std::ios::badbit | std::ios::failbit);
@@ -717,16 +717,16 @@ finishTesting:
 		}
 
 		// See if the format requires any supplemental files
-		ga::MP_SUPPLIST suppList = pArchType->getRequiredSupps(strFilename);
-		ga::MP_SUPPDATA suppData;
+		camoto::SuppFilenames suppList = pArchType->getRequiredSupps(strFilename);
+		camoto::SuppData suppData;
 		if (suppList.size() > 0) {
-			for (ga::MP_SUPPLIST::iterator i = suppList.begin(); i != suppList.end(); i++) {
+			for (camoto::SuppFilenames::iterator i = suppList.begin(); i != suppList.end(); i++) {
 				try {
 					boost::shared_ptr<std::fstream> suppStream(new std::fstream());
 					suppStream->exceptions(std::ios::badbit | std::ios::failbit);
 					std::cout << "Opening supplemental file " << i->second << std::endl;
 					suppStream->open(i->second.c_str(), std::ios::in | std::ios::out | std::ios::binary);
-					ga::SuppItem si;
+					camoto::SuppItem si;
 					si.stream = suppStream;
 					si.fnTruncate = boost::bind<void>(truncate, i->second.c_str(), _1);
 					suppData[i->first] = si;

@@ -108,24 +108,24 @@ E_CERTAINTY EXE_CCavesType::isInstance(iostream_sptr psArchive) const
 	return EC_DEFINITELY_NO;
 }
 
-ArchivePtr EXE_CCavesType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr EXE_CCavesType::newArchive(iostream_sptr psArchive, SuppData& suppData) const
 	throw (std::ios::failure)
 {
 	// This isn't a true archive so we can't create new versions of it.
 	throw std::ios::failure("Can't create a new archive in this format.");
 }
 
-ArchivePtr EXE_CCavesType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr EXE_CCavesType::open(iostream_sptr psArchive, SuppData& suppData) const
 	throw (std::ios::failure)
 {
 	return ArchivePtr(new EXE_CCavesArchive(psArchive));
 }
 
-MP_SUPPLIST EXE_CCavesType::getRequiredSupps(const std::string& filenameArchive) const
+SuppFilenames EXE_CCavesType::getRequiredSupps(const std::string& filenameArchive) const
 	throw ()
 {
 	// No supplemental types/empty list
-	return MP_SUPPLIST();
+	return SuppFilenames();
 }
 
 

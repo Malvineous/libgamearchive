@@ -67,8 +67,8 @@ struct FIXTURE_NAME: public default_sample {
 	void *_do; // unused var, but allows a statement to run in constructor init
 	camoto::iostream_sptr baseStream;
 	boost::shared_ptr<ga::Archive> pArchive;
-	ga::MP_SUPPDATA suppData;
-	std::map<ga::E_SUPPTYPE, sstr_ptr> suppBase;
+	camoto::SuppData suppData;
+	std::map<camoto::SuppItem::Type, sstr_ptr> suppBase;
 
 	FIXTURE_NAME() :
 		baseData(new std::stringstream),
@@ -81,11 +81,11 @@ struct FIXTURE_NAME: public default_sample {
 			suppSS->exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
 			(*suppSS) << makeString(TEST_RESULT(FAT_initialstate));
 			camoto::iostream_sptr suppStream(suppSS);
-			ga::SuppItem si;
+			camoto::SuppItem si;
 			si.stream = suppStream;
 			si.fnTruncate = boost::bind<void>(stringStreamTruncate, suppSS.get(), _1);
-			this->suppData[ga::EST_FAT] = si;
-			this->suppBase[ga::EST_FAT] = suppSS;
+			this->suppData[camoto::SuppItem::FAT] = si;
+			this->suppBase[camoto::SuppItem::FAT] = suppSS;
 		}
 		#endif
 
@@ -127,7 +127,7 @@ struct FIXTURE_NAME: public default_sample {
 		return this->default_sample::is_equal(strExpected, this->baseData->str());
 	}
 
-	boost::test_tools::predicate_result is_supp_equal(ga::E_SUPPTYPE type, const std::string& strExpected)
+	boost::test_tools::predicate_result is_supp_equal(camoto::SuppItem::Type type, const std::string& strExpected)
 	{
 		// Flush out any changes to the main archive before we perform the check,
 		// in case this function was called first.
@@ -174,10 +174,10 @@ ISINSTANCE_TEST(c00, INITIALSTATE_NAME, ga::EC_DEFINITELY_YES);
 		suppSS->exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit); \
 		(*suppSS) << makeString(d); \
 		camoto::iostream_sptr suppStream(suppSS); \
-		ga::SuppItem si; \
+		camoto::SuppItem si; \
 		si.stream = suppStream; \
 		si.fnTruncate = boost::bind<void>(stringStreamTruncate, suppSS.get(), _1); \
-		suppData[ga::EST_FAT] = si; \
+		suppData[camoto::SuppItem::FAT] = si; \
 	}
 #else
 #	define INVALIDDATA_FATCODE(d)
@@ -205,7 +205,7 @@ ISINSTANCE_TEST(c00, INITIALSTATE_NAME, ga::EC_DEFINITELY_YES);
 		(*psstrBase) << makeString(d); \
 		camoto::iostream_sptr psBase(psstrBase); \
 		\
-		ga::MP_SUPPDATA suppData; \
+		camoto::SuppData suppData; \
 		INVALIDDATA_FATCODE(f) \
 		\
 		BOOST_CHECK_THROW( \
@@ -279,7 +279,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(rename))
 
 #ifdef HAS_FAT
 	BOOST_CHECK_MESSAGE(
-		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_rename))),
+		is_supp_equal(camoto::SuppItem::FAT, makeString(TEST_RESULT(FAT_rename))),
 		"Error renaming file"
 	);
 #endif
@@ -316,7 +316,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(rename_long))
 
 #ifdef HAS_FAT
 	BOOST_CHECK_MESSAGE(
-		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_initialstate))),
+		is_supp_equal(camoto::SuppItem::FAT, makeString(TEST_RESULT(FAT_initialstate))),
 		"Archive corrupted after failed insert"
 	);
 #endif
@@ -361,7 +361,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long))
 
 #ifdef HAS_FAT
 	BOOST_CHECK_MESSAGE(
-		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_initialstate))),
+		is_supp_equal(camoto::SuppItem::FAT, makeString(TEST_RESULT(FAT_initialstate))),
 		"Archive corrupted after failed insert"
 	);
 #endif
@@ -408,7 +408,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_end))
 
 #ifdef HAS_FAT
 	BOOST_CHECK_MESSAGE(
-		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_insert_end))),
+		is_supp_equal(camoto::SuppItem::FAT, makeString(TEST_RESULT(FAT_insert_end))),
 		"Error inserting file at end of archive"
 	);
 #endif
@@ -461,7 +461,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_mid))
 
 #ifdef HAS_FAT
 	BOOST_CHECK_MESSAGE(
-		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_insert_mid))),
+		is_supp_equal(camoto::SuppItem::FAT, makeString(TEST_RESULT(FAT_insert_mid))),
 		"Error inserting file in middle of archive"
 	);
 #endif
@@ -550,7 +550,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 
 #ifdef HAS_FAT
 	BOOST_CHECK_MESSAGE(
-		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_insert2))),
+		is_supp_equal(camoto::SuppItem::FAT, makeString(TEST_RESULT(FAT_insert2))),
 		"Error inserting two files"
 	);
 #endif
@@ -587,7 +587,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove))
 
 #ifdef HAS_FAT
 	BOOST_CHECK_MESSAGE(
-		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_remove))),
+		is_supp_equal(camoto::SuppItem::FAT, makeString(TEST_RESULT(FAT_remove))),
 		"Error removing file"
 	);
 #endif
@@ -631,7 +631,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove2))
 
 #ifdef HAS_FAT
 	BOOST_CHECK_MESSAGE(
-		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_remove2))),
+		is_supp_equal(camoto::SuppItem::FAT, makeString(TEST_RESULT(FAT_remove2))),
 		"Error removing multiple files"
 	);
 #endif
@@ -703,7 +703,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_remove))
 
 #ifdef HAS_FAT
 	BOOST_CHECK_MESSAGE(
-		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_insert_remove))),
+		is_supp_equal(camoto::SuppItem::FAT, makeString(TEST_RESULT(FAT_insert_remove))),
 		"Error inserting then removing file"
 	);
 #endif
@@ -778,7 +778,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_insert))
 #ifdef HAS_FAT
 	BOOST_CHECK_MESSAGE(
 		// Again, use insert_remove result instead
-		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_insert_remove))),
+		is_supp_equal(camoto::SuppItem::FAT, makeString(TEST_RESULT(FAT_insert_remove))),
 		"Error removing then inserting file"
 	);
 #endif
@@ -821,7 +821,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(move))
 
 #ifdef HAS_FAT
 	BOOST_CHECK_MESSAGE(
-		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_move))),
+		is_supp_equal(camoto::SuppItem::FAT, makeString(TEST_RESULT(FAT_move))),
 		"Error moving file"
 	);
 #endif
@@ -858,7 +858,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_larger))
 
 #ifdef HAS_FAT
 	BOOST_CHECK_MESSAGE(
-		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_resize_larger))),
+		is_supp_equal(camoto::SuppItem::FAT, makeString(TEST_RESULT(FAT_resize_larger))),
 		"Error enlarging a file"
 	);
 #endif
@@ -895,7 +895,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_smaller))
 
 #ifdef HAS_FAT
 	BOOST_CHECK_MESSAGE(
-		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_resize_smaller))),
+		is_supp_equal(camoto::SuppItem::FAT, makeString(TEST_RESULT(FAT_resize_smaller))),
 		"Error shrinking a file"
 	);
 #endif
@@ -940,7 +940,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_write))
 
 #ifdef HAS_FAT
 	BOOST_CHECK_MESSAGE(
-		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_resize_write))),
+		is_supp_equal(camoto::SuppItem::FAT, makeString(TEST_RESULT(FAT_resize_write))),
 		"Error enlarging a file then writing into new space"
 	);
 #endif
@@ -1065,7 +1065,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_all_re_add))
 
 #ifdef HAS_FAT
 	BOOST_CHECK_MESSAGE(
-		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_initialstate))),
+		is_supp_equal(camoto::SuppItem::FAT, makeString(TEST_RESULT(FAT_initialstate))),
 		"Error removing all files then reinserting them again"
 	);
 #endif
@@ -1106,7 +1106,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_zero_then_resize))
 
 #ifdef HAS_FAT
 	BOOST_CHECK_MESSAGE(
-		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_insert_end))),
+		is_supp_equal(camoto::SuppItem::FAT, makeString(TEST_RESULT(FAT_insert_end))),
 		"Error resizing newly inserted empty file"
 	);
 #endif
@@ -1168,7 +1168,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(set_metadata_description_larger))
 
 #ifdef HAS_FAT
 	BOOST_CHECK_MESSAGE(
-		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_set_metadata_description_larger))),
+		is_supp_equal(camoto::SuppItem::FAT, makeString(TEST_RESULT(FAT_set_metadata_description_larger))),
 		"Error setting 'description' metadata field"
 	);
 #endif
@@ -1191,7 +1191,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(set_metadata_description_smaller))
 
 #ifdef HAS_FAT
 	BOOST_CHECK_MESSAGE(
-		is_supp_equal(ga::EST_FAT, makeString(TEST_RESULT(FAT_set_metadata_description_smaller))),
+		is_supp_equal(camoto::SuppItem::FAT, makeString(TEST_RESULT(FAT_set_metadata_description_smaller))),
 		"Error setting 'description' metadata field"
 	);
 #endif

@@ -106,7 +106,7 @@ E_CERTAINTY GRPType::isInstance(iostream_sptr psArchive) const
 	return EC_DEFINITELY_NO;
 }
 
-ArchivePtr GRPType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr GRPType::newArchive(iostream_sptr psArchive, SuppData& suppData) const
 	throw (std::ios::failure)
 {
 	psArchive->seekp(0, std::ios::beg);
@@ -115,17 +115,17 @@ ArchivePtr GRPType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) c
 }
 
 // Preconditions: isInstance() has returned > EC_DEFINITELY_NO
-ArchivePtr GRPType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr GRPType::open(iostream_sptr psArchive, SuppData& suppData) const
 	throw (std::ios::failure)
 {
 	return ArchivePtr(new GRPArchive(psArchive));
 }
 
-MP_SUPPLIST GRPType::getRequiredSupps(const std::string& filenameArchive) const
+SuppFilenames GRPType::getRequiredSupps(const std::string& filenameArchive) const
 	throw ()
 {
 	// No supplemental types/empty list
-	return MP_SUPPLIST();
+	return SuppFilenames();
 }
 
 

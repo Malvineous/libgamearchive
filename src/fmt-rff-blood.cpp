@@ -123,7 +123,7 @@ E_CERTAINTY RFFType::isInstance(iostream_sptr psArchive) const
 	return EC_DEFINITELY_NO;
 }
 
-ArchivePtr RFFType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr RFFType::newArchive(iostream_sptr psArchive, SuppData& suppData) const
 	throw (std::ios::failure)
 {
 	psArchive->seekp(0, std::ios::beg);
@@ -140,17 +140,17 @@ ArchivePtr RFFType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) c
 }
 
 // Preconditions: isInstance() has returned > EC_DEFINITELY_NO
-ArchivePtr RFFType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr RFFType::open(iostream_sptr psArchive, SuppData& suppData) const
 	throw (std::ios::failure)
 {
 	return ArchivePtr(new RFFArchive(psArchive));
 }
 
-MP_SUPPLIST RFFType::getRequiredSupps(const std::string& filenameArchive) const
+SuppFilenames RFFType::getRequiredSupps(const std::string& filenameArchive) const
 	throw ()
 {
 	// No supplemental types/empty list
-	return MP_SUPPLIST();
+	return SuppFilenames();
 }
 
 

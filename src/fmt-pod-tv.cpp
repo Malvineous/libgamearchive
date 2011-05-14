@@ -137,7 +137,7 @@ E_CERTAINTY PODType::isInstance(iostream_sptr psArchive) const
 	return EC_DEFINITELY_YES;
 }
 
-ArchivePtr PODType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr PODType::newArchive(iostream_sptr psArchive, SuppData& suppData) const
 	throw (std::ios::failure)
 {
 	psArchive->seekp(0, std::ios::beg);
@@ -147,17 +147,17 @@ ArchivePtr PODType::newArchive(iostream_sptr psArchive, MP_SUPPDATA& suppData) c
 	return ArchivePtr(new PODArchive(psArchive));
 }
 
-ArchivePtr PODType::open(iostream_sptr psArchive, MP_SUPPDATA& suppData) const
+ArchivePtr PODType::open(iostream_sptr psArchive, SuppData& suppData) const
 	throw (std::ios::failure)
 {
 	return ArchivePtr(new PODArchive(psArchive));
 }
 
-MP_SUPPLIST PODType::getRequiredSupps(const std::string& filenameArchive) const
+SuppFilenames PODType::getRequiredSupps(const std::string& filenameArchive) const
 	throw ()
 {
 	// No supplemental types/empty list
-	return MP_SUPPLIST();
+	return SuppFilenames();
 }
 
 

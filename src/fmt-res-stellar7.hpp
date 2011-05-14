@@ -55,10 +55,10 @@ class RESType: virtual public ArchiveType {
 
 		// newArchive is not overridden as an entirely blank file is valid
 
-		virtual ArchivePtr open(iostream_sptr fsArchive, MP_SUPPDATA& suppData) const
+		virtual ArchivePtr open(iostream_sptr fsArchive, SuppData& suppData) const
 			throw (std::ios::failure);
 
-		virtual MP_SUPPLIST getRequiredSupps(const std::string& filenameArchive) const
+		virtual SuppFilenames getRequiredSupps(const std::string& filenameArchive) const
 			throw ();
 
 };
