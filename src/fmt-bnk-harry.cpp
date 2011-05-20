@@ -126,7 +126,7 @@ SuppFilenames BNKType::getRequiredSupps(const std::string& filenameArchive) cons
 	// No supplemental types/empty list
 	SuppFilenames supps;
 	std::string filenameBase = filenameArchive.substr(0, filenameArchive.find_last_of('.'));
-	supps[SuppItem::FAT] = filenameBase + ".Fat"; // TODO: case sensitivity?
+	supps[SuppItem::FAT] = filenameBase + ".fat";
 	return supps;
 }
 

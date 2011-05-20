@@ -132,7 +132,7 @@ SuppFilenames DAT_HocusType::getRequiredSupps(const std::string& filenameArchive
 	// No supplemental types/empty list
 	SuppFilenames supps;
 	std::string filenameBase = filenameArchive.substr(0, filenameArchive.find_last_of('.'));
-	supps[SuppItem::FAT] = filenameBase + ".Exe"; // TODO: case sensitivity?
+	supps[SuppItem::FAT] = filenameBase + ".exe";
 	return supps;
 }
 
