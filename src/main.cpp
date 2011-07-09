@@ -48,6 +48,7 @@
 #include "filter-stellar7.hpp"
 #include "filter-xor.hpp"
 #include "filter-xor-blood.hpp"
+#include "filter-xor-sagent.hpp"
 #include "filter-ddave-rle.hpp"
 
 namespace camoto {
@@ -91,6 +92,7 @@ Manager::Manager()
 	this->vcFilters.push_back(FilterTypePtr(new Stellar7FilterType()));
 	this->vcFilters.push_back(FilterTypePtr(new XORFilterType()));
 	this->vcFilters.push_back(FilterTypePtr(new RFFFilterType()));
+	this->vcFilters.push_back(FilterTypePtr(new SAMFilterType()));
 	this->vcFilters.push_back(FilterTypePtr(new DDaveRLEFilterType()));
 }
 

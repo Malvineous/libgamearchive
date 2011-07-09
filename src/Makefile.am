@@ -28,6 +28,7 @@ libgamearchive_la_SOURCES += filter-zone66.cpp
 libgamearchive_la_SOURCES += filter-stellar7.cpp
 libgamearchive_la_SOURCES += filter-xor.cpp
 libgamearchive_la_SOURCES += filter-xor-blood.cpp
+libgamearchive_la_SOURCES += filter-xor-sagent.cpp
 libgamearchive_la_SOURCES += filter-ddave-rle.cpp
 
 EXTRA_libgamearchive_la_SOURCES = fatarchive.hpp
@@ -52,11 +53,13 @@ EXTRA_libgamearchive_la_SOURCES += fmt-roads-skyroads.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-dat-got.hpp
 EXTRA_libgamearchive_la_SOURCES += filter-bash-rle.hpp
 EXTRA_libgamearchive_la_SOURCES += filter-bash.hpp
+EXTRA_libgamearchive_la_SOURCES += filter-bitswap.hpp
 EXTRA_libgamearchive_la_SOURCES += filter-epfs.hpp
 EXTRA_libgamearchive_la_SOURCES += filter-zone66.hpp
 EXTRA_libgamearchive_la_SOURCES += filter-stellar7.hpp
 EXTRA_libgamearchive_la_SOURCES += filter-xor.hpp
 EXTRA_libgamearchive_la_SOURCES += filter-xor-blood.hpp
+EXTRA_libgamearchive_la_SOURCES += filter-xor-sagent.hpp
 EXTRA_libgamearchive_la_SOURCES += filter-ddave-rle.hpp
 
 AM_CPPFLAGS = $(DEBUG_CPPFLAGS) $(BOOST_CPPFLAGS) -I $(top_srcdir)/include $(libgamecommon_CFLAGS)
