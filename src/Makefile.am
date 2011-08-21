@@ -1,6 +1,7 @@
 lib_LTLIBRARIES = libgamearchive.la
 
 libgamearchive_la_SOURCES = main.cpp
+libgamearchive_la_SOURCES += util.cpp
 libgamearchive_la_SOURCES += archive.cpp
 libgamearchive_la_SOURCES += fatarchive.cpp
 libgamearchive_la_SOURCES += fixedarchive.cpp

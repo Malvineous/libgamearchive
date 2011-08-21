@@ -2,7 +2,7 @@
  * @file   gamearchive.hpp
  * @brief  Main header for libgamearchive (includes everything.)
  *
- * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -92,6 +92,8 @@ homepage <http://www.shikadi.net/camoto>.
 // These are all in the camoto::gamearchive namespace
 #include <camoto/gamearchive/archive.hpp>
 #include <camoto/gamearchive/archivetype.hpp>
+#include <camoto/gamearchive/filtertype.hpp>
 #include <camoto/gamearchive/manager.hpp>
+#include <camoto/gamearchive/util.hpp>
 
 #endif // _CAMOTO_GAMEARCHIVE_HPP_

@@ -2,7 +2,7 @@
  * @file   gamearch.cpp
  * @brief  Command-line interface to libgamearchive.
  *
- * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,20 +48,6 @@ namespace ga = camoto::gamearchive;
 #define RET_NONCRITICAL_FAILURE 4
 /// Some files failed, but not in a common way (cut off write, disk full, etc.)
 #define RET_UNCOMMON_FAILURE   5
-
-#ifdef __WIN32
-#include <windows.h>
-int truncate(const char *path, off_t length)
-{
-	HANDLE f = CreateFile(path, GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
-		FILE_ATTRIBUTE_NORMAL, NULL);
-	SetFilePointer(f, length, NULL, FILE_BEGIN);
-	BOOL b = SetEndOfFile(f);
-	CloseHandle(f);
-	return b ? -1 : 0;
-}
-
-#endif
 
 /// Return value that will be used
 int iRet = RET_OK;
@@ -149,89 +135,6 @@ void applyFilter(camoto::iostream_sptr *ppStream, ga::Archive::EntryPtr id)
 		*ppStream = pFilterType->apply(*ppStream, NULL);
 	}
 	return;
-}
-
-
-/// Find the given file, or if it starts with an '@', the file at that index.
-/**
- * @param archive
- *   On input, the archive file.  On output, the archive holding the file.
- *   Normally this will be the same, unless the archive has subfolders, in
- *   which case the value on output will be the Archive instance of the
- *   subfolder itself.
- *
- * @param filename
- *   Filename to look for.
- *
- * @return EntryPtr to the file (or folder!) specified, or an empty EntryPtr if
- *   the file couldn't be found.  Note that the EntryPtr is only valid for the
- *   output archive parameter, which may be a different archive to what was
- *   passed in.
- */
-ga::Archive::EntryPtr findFile(ga::ArchivePtr& archive, const std::string& filename)
-{
-	// Save the original archive pointer in case we get half way through a
-	// subfolder tree and get a file-not-found.
-	ga::ArchivePtr orig = archive;
-
-	// See if it's an index.  This check is performed first so that regardless
-	// of what the filename is, it will always be possible to extract files
-	// by index number.
-	if ((filename[0] == '@') && (filename.length() > 1)) {
-// TODO: split at dots into subfolders
-		char *endptr;
-		// strtoul allows arbitrary whitespace at the start, so if ever there is
-		// a file called "@5" which gets extracted instead of the fifth file,
-		// giving -x "@ 5" should do the trick.
-		unsigned long index = strtoul(&(filename.c_str()[1]), &endptr, 10);
-		if (*endptr == '\0') {
-			// The number was entirely valid (no junk at end)
-			ga::Archive::VC_ENTRYPTR files = archive->getFileList();
-			if (index < files.size()) return files[index];
-			throw std::ios::failure("index too large");
-		}
-	}
-
-	// Filename isn't an index, see if it matches a name
-	ga::Archive::EntryPtr id = archive->find(filename);
-	if (archive->isValid(id)) return id;
-
-	// The file doesn't exist, it's not an index, see if it can be split up
-	// into subfolders.
-	fs::path p(filename);
-	for (fs::path::iterator i = p.begin(); i != p.end(); i++) {
-
-		if (archive->isValid(id)) {
-			// The ID is valid, which means it was set to a file in the
-			// previous loop iteration, but if we're here then it means
-			// there is another element in the path.  Since this means
-			// a file has been specified like a folder, we have to abort.
-			id = ga::Archive::EntryPtr();
-			break;
-		}
-
-		ga::Archive::EntryPtr j = archive->find(i->string());
-		if (!archive->isValid(j)) break;
-
-		if (j->fAttr & ga::EA_FOLDER) {
-			// Open the folder and continue with the next path element
-			archive = archive->openFolder(j);
-			if (!archive) {
-				archive = orig; // make sure archive is valid for below
-				break;
-			}
-		} else {
-			// This is a file, it had better be the last one!
-			id = j;
-		}
-
-	}
-	if (archive->isValid(id)) return id;
-
-	// Restore the archive pointer to what it was originally
-	archive = orig;
-
-	return ga::Archive::EntryPtr(); // file not found
 }
 
 // Insert a file at the given location.  Shared by --insert and --add.
@@ -741,7 +644,7 @@ finishTesting:
 		}
 
 		// Open the archive file
-		boost::shared_ptr<ga::Archive> pArchive;
+		ga::ArchivePtr pArchive;
 		try {
 			pArchive = pArchType->open(psArchive, suppData);
 			assert(pArchive);

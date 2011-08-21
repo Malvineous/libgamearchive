@@ -4,3 +4,4 @@ nobase_library_include_HEADERS += gamearchive/archive.hpp
 nobase_library_include_HEADERS += gamearchive/archivetype.hpp
 nobase_library_include_HEADERS += gamearchive/filtertype.hpp
 nobase_library_include_HEADERS += gamearchive/manager.hpp
+nobase_library_include_HEADERS += gamearchive/util.hpp
