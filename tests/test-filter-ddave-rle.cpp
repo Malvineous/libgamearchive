@@ -97,6 +97,9 @@ void dummyTrunc(int len)
 	"\x21\x22\x21\x22\x21\x22\x21\x22" \
 	"\x21\x22\x21\x22\x21\x22\x21\x22"
 
+// Should have no effect on the decoded data when following DATA_ENCODED
+#define DATA_BAD_TRAIL "\x00"
+
 #define DATA_DECODED \
 	"\xAA\x00\x00\x00\xBB\xCC\xDD\xDD\xDD\xDD" \
 	"\x11\x11\x11\x11\x11\x11\x11\x11" \
@@ -167,22 +170,51 @@ void dummyTrunc(int len)
 	"\x21\x22\x21\x22\x21\x22\x21\x22" \
 	"\x21\x22\x21\x22\x21\x22\x21\x22"
 
-
 BOOST_FIXTURE_TEST_SUITE(ddave_rle_suite, ddave_rle_sample)
 
 BOOST_AUTO_TEST_CASE(decode)
 {
 	BOOST_TEST_MESSAGE("Un-RLE some data");
 
-	iostream_sptr in(new std::stringstream);
+	std::stringstream *pss = new std::stringstream;
+	iostream_sptr in(pss);
 	*in << makeString(DATA_ENCODED);
 
 	istream_sptr inf = this->filt.apply(in);
+	inf = this->filt.apply(in);
 
 	boost::iostreams::copy(*inf, *out);
 
+	out->flush();
+
 	BOOST_CHECK_MESSAGE(is_equal(makeString(DATA_DECODED)),
 		"Decoding RLE data failed");
+}
+
+BOOST_AUTO_TEST_CASE(decoderw)
+{
+	BOOST_TEST_MESSAGE("Un-RLE some data to a r/w stream, with trailing garbage");
+
+	std::stringstream *pss = new std::stringstream;
+	iostream_sptr in(pss);
+	*in << makeString(DATA_ENCODED DATA_BAD_TRAIL);
+
+	{
+		DDaveRLEFilterType filt2;
+		FN_TRUNCATE fnTrunc = boost::bind<void>(stringStreamTruncate, pss, _1);
+		in = filt2.apply(in, NULL);
+
+		boost::iostreams::copy(*in, *out);
+
+		out->flush();
+	}
+
+	BOOST_CHECK_MESSAGE(is_equal(makeString(DATA_DECODED)),
+		"Decoding RLE data failed");
+
+	BOOST_CHECK_MESSAGE(this->default_sample::is_equal(makeString(DATA_ENCODED
+		DATA_BAD_TRAIL), pss->str()),
+		"Decoding RLE data corrupted the source data");
 }
 
 
@@ -200,5 +232,46 @@ BOOST_AUTO_TEST_CASE(encode)
 		"Encoding RLE data failed");
 }
 
+BOOST_AUTO_TEST_CASE(encode_repeat)
+{
+	BOOST_TEST_MESSAGE("RLE some data ending with repeated bytes");
+
+	ostream_sptr inf = this->filt.apply(out_s, dummyTrunc);
+
+	*inf << makeString(DATA_DECODED "\x45\x45");
+
+	flush(inf);
+
+	BOOST_CHECK_MESSAGE(is_equal(makeString(DATA_ENCODED "\x81\x45\x45")),
+		"Encoding RLE data failed");
+}
+
+BOOST_AUTO_TEST_CASE(encode_repeat_many)
+{
+	BOOST_TEST_MESSAGE("RLE some data ending with many repeated bytes");
+
+	ostream_sptr inf = this->filt.apply(out_s, dummyTrunc);
+
+	*inf << makeString(DATA_DECODED "\x45\x45\x45\x45\x45");
+
+	flush(inf);
+
+	BOOST_CHECK_MESSAGE(is_equal(makeString(DATA_ENCODED "\x02\x45")),
+		"Encoding RLE data failed");
+}
+
+BOOST_AUTO_TEST_CASE(encode_repeat_exact)
+{
+	BOOST_TEST_MESSAGE("RLE some data ending with three repeated bytes");
+
+	ostream_sptr inf = this->filt.apply(out_s, dummyTrunc);
+
+	*inf << makeString(DATA_DECODED "\x00\x00\x00\xFF\xFF\xFF");
+
+	flush(inf);
+
+	BOOST_CHECK_MESSAGE(is_equal(makeString(DATA_ENCODED "\x00\x00\x00\xFF")),
+		"Encoding RLE data failed");
+}
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -73,7 +73,13 @@ class ddave_unrle_filter: public io::multichar_input_filter {
 						this->copying = 1 + (c & 0x7F);
 					} else { // high bit unset
 						this->count = 3 + c;
-						this->countByte = boost::iostreams::get(src);
+						int c = boost::iostreams::get(src);
+						if (c < 0) {
+							this->count = 0;
+							if (r == 0) return c; // no bytes read, return error
+							break; // bytes read, return those
+						}
+						this->countByte = c;
 					}
 				}
 			}
