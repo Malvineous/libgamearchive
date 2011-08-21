@@ -650,6 +650,7 @@ finishTesting:
 			assert(pArchive);
 		} catch (std::ios::failure& e) {
 			std::cerr << "Error opening archive file: " << e.what() << std::endl;
+			return RET_SHOWSTOPPER;
 		}
 		pArchive->fnTruncate = boost::bind<void>(camoto::truncateFromString, strFilename, _1);
 
