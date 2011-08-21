@@ -46,6 +46,11 @@ struct null_deleter
 	void operator()(void const *) const { }
 };
 
+void dummyTrunc(int len)
+{
+	return;
+}
+
 int main(int iArgC, char *cArgV[])
 {
 	// Set a better exception handler
@@ -145,14 +150,25 @@ int main(int iArgC, char *cArgV[])
 			return RET_BADARGS;
 		}
 
-		// Convert std::cin into a shared pointer
-		camoto::istream_sptr pstdin(&std::cin, null_deleter());
+		if (bApply) {
+			// Convert std::cin into a shared pointer
+			camoto::ostream_sptr pstdout(&std::cout, null_deleter());
 
-		// Apply the filter
-		camoto::istream_sptr in(pFilterType->apply(pstdin));
+			// Apply the filter
+			camoto::ostream_sptr out(pFilterType->apply(pstdout, dummyTrunc));
 
-		// Copy filtered data to stdout
-		boost::iostreams::copy(*in, std::cout);
+			// Copy filtered data to stdout
+			boost::iostreams::copy(std::cin, *out);
+		} else {
+			// Convert std::cin into a shared pointer
+			camoto::istream_sptr pstdin(&std::cin, null_deleter());
+
+			// Apply the filter
+			camoto::istream_sptr in(pFilterType->apply(pstdin));
+
+			// Copy filtered data to stdout
+			boost::iostreams::copy(*in, std::cout);
+		}
 
 	} catch (const std::ios::failure& e) {
 		std::cerr << PROGNAME ": I/O error - " << e.what() << std::endl;
