@@ -20,7 +20,7 @@
  */
 
 #include <boost/algorithm/string.hpp>
-#include <camoto/debug.hpp>
+#include <camoto/util.hpp>
 #include "fixedarchive.hpp"
 
 namespace camoto {
@@ -133,8 +133,10 @@ void FixedArchive::resize(EntryPtr& id, offset_t iNewSize,
 	offset_t iNewPrefilteredSize)
 	throw (std::ios::failure)
 {
-	if ((id->iSize != iNewSize) || (id->iPrefilteredSize != iNewPrefilteredSize)) {
-		throw std::ios::failure("This is a fixed archive, files cannot be resized.");
+	if (id->iPrefilteredSize != iNewPrefilteredSize) {
+		throw std::ios::failure(createString("This is a fixed archive, files "
+			"cannot be resized (tried to resize to " << iNewPrefilteredSize <<
+			", must remain as " << id->iPrefilteredSize << ")"));
 	}
 	// else no change, so do nothing
 	return;
