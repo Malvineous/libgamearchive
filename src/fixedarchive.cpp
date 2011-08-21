@@ -129,13 +129,15 @@ void FixedArchive::move(const EntryPtr& idBeforeThis, EntryPtr& id)
 	throw std::ios::failure("This is a fixed archive, files cannot be moved.");
 }
 
-// Enlarge or shrink an existing file entry.
-// Postconditions: Existing EntryPtrs and open files remain valid.
 void FixedArchive::resize(EntryPtr& id, offset_t iNewSize,
 	offset_t iNewPrefilteredSize)
 	throw (std::ios::failure)
 {
-	throw std::ios::failure("This is a fixed archive, files cannot be resized.");
+	if ((id->iSize != iNewSize) || (id->iPrefilteredSize != iNewPrefilteredSize)) {
+		throw std::ios::failure("This is a fixed archive, files cannot be resized.");
+	}
+	// else no change, so do nothing
+	return;
 }
 
 void FixedArchive::flush()
