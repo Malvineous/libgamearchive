@@ -194,22 +194,47 @@ DAT_BashArchive::DAT_BashArchive(iostream_sptr psArchive)
 		}
 
 		switch (type) {
+			case 0:
+				fatEntry->strName += ".mif";
+				fatEntry->type = "map/bash-info";
+				break;
+			case 1:
+				fatEntry->strName += ".mbg";
+				fatEntry->type = "map/bash-bg";
+				break;
+			case 2:
+				fatEntry->strName += ".mfg";
+				fatEntry->type = "map/bash-fg";
+				break;
 			case 3:
+				fatEntry->strName += ".tbg";
 				fatEntry->type = "image/bash-tiles-bg";
 				break;
 			case 4:
+				fatEntry->strName += ".tfg";
 				fatEntry->type = "image/bash-tiles-fg";
 				break;
 			case 5:
-				fatEntry->type = "image/bash-tiles-bonus";
+				fatEntry->strName += ".tbn";
+				fatEntry->type = "image/bash-tiles-fg";
+				break;
+			case 7:
+				fatEntry->strName += ".msp";
+				fatEntry->type = "map/bash-sprites";
+				break;
+			case 8:
+				// Already has ".snd" extension
+				fatEntry->type = "sound/bash";
 				break;
 			case 64:
+				fatEntry->strName += ".spr";
 				fatEntry->type = "image/bash-sprite";
 				break;
 			case 32:
 				fatEntry->type = FILETYPE_GENERIC;
 				break;
 			default:
+				fatEntry->strName += createString("." << type);
 				fatEntry->type = createString("unknown/bash-" << type);
 				break;
 		}
@@ -236,10 +261,36 @@ int DAT_BashArchive::getSupportedAttributes() const
 void DAT_BashArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
 	throw (std::ios::failure)
 {
+	int typeNum;
+	int newLen = strNewName.length();
+	std::string ext = strNewName.substr(newLen - 4);
+	if (boost::iequals(ext, ".mif")) typeNum = 0;
+	else if (boost::iequals(ext, ".mbg")) typeNum = 1;
+	else if (boost::iequals(ext, ".mfg")) typeNum = 2;
+	else if (boost::iequals(ext, ".tbg")) typeNum = 3;
+	else if (boost::iequals(ext, ".tfg")) typeNum = 4;
+	else if (boost::iequals(ext, ".tbn")) typeNum = 5;
+	else if (boost::iequals(ext, ".msp")) typeNum = 7;
+	else if (boost::iequals(ext, ".spr")) typeNum = 64;
+	else typeNum = 32;
+
+	std::string strNativeName; // name to write to .dat file
+	if (typeNum != 32) {
+		// Custom file, chop off extension
+		strNativeName = strNewName.substr(0, newLen - 4);
+		newLen -= 4;
+	} else {
+		strNativeName = strNewName;
+	}
+
 	// TESTED BY: fmt_dat_bash_rename
-	assert(strNewName.length() <= DAT_MAX_FILENAME_LEN);
+	assert(newLen <= DAT_MAX_FILENAME_LEN);
+
+	this->psArchive->seekp(DAT_FILETYPE_OFFSET(pid));
+	this->psArchive << u16le(typeNum);
+
 	this->psArchive->seekp(DAT_FILENAME_OFFSET(pid));
-	this->psArchive << nullPadded(strNewName, DAT_FILENAME_FIELD_LEN);
+	this->psArchive << nullPadded(strNativeName, DAT_FILENAME_FIELD_LEN);
 	return;
 }
 
@@ -276,8 +327,24 @@ FATArchive::FATEntry *DAT_BashArchive::preInsertFile(
 )
 	throw (std::ios::failure)
 {
+	// See if file extension is known and set type appropriately
+	int newLen = pNewEntry->strName.length();
+	std::string ext = pNewEntry->strName.substr(newLen - 4);
+	if (
+		boost::iequals(ext, ".mif") ||
+		boost::iequals(ext, ".mbg") ||
+		boost::iequals(ext, ".mfg") ||
+		boost::iequals(ext, ".tbg") ||
+		boost::iequals(ext, ".tfg") ||
+		boost::iequals(ext, ".tbn") ||
+		boost::iequals(ext, ".msp") ||
+		boost::iequals(ext, ".spr")
+	) {
+		newLen -= 4; // don't count the fake extension in the length limit
+	}
+
 	// TESTED BY: fmt_dat_bash_insert*
-	assert(pNewEntry->strName.length() <= DAT_MAX_FILENAME_LEN);
+	assert(newLen <= DAT_MAX_FILENAME_LEN);
 
 	// Set the format-specific variables
 	pNewEntry->lenHeader = DAT_EFAT_ENTRY_LEN;
@@ -310,18 +377,22 @@ void DAT_BashArchive::postInsertFile(FATEntry *pNewEntry)
 	this->psArchive->seekp(pNewEntry->iOffset);
 
 	int typeNum;
-	if (pNewEntry->type.empty()) {
-		typeNum = 32;
-	} else if (pNewEntry->type.compare("image/bash-tiles-bg") == 0) {
-		typeNum = 3;
-	} else if (pNewEntry->type.compare("image/bash-tiles-fg") == 0) {
-		typeNum = 4;
-	} else if (pNewEntry->type.compare("image/bash-tiles-bonus") == 0) {
-		typeNum = 5;
-	} else if (pNewEntry->type.compare("image/bash-sprite") == 0) {
-		typeNum = 64;
-	} else if (pNewEntry->type.substr(0, 13).compare("unknown/bash-") == 0) {
-		typeNum = strtod(pNewEntry->type.substr(14).c_str(), NULL);
+
+	int newLen = pNewEntry->strName.length();
+	std::string ext = pNewEntry->strName.substr(newLen - 4);
+	if (boost::iequals(ext, ".mif")) typeNum = 0;
+	else if (boost::iequals(ext, ".mbg")) typeNum = 1;
+	else if (boost::iequals(ext, ".mfg")) typeNum = 2;
+	else if (boost::iequals(ext, ".tbg")) typeNum = 3;
+	else if (boost::iequals(ext, ".tfg")) typeNum = 4;
+	else if (boost::iequals(ext, ".tbn")) typeNum = 5;
+	else if (boost::iequals(ext, ".msp")) typeNum = 7;
+	else if (boost::iequals(ext, ".spr")) typeNum = 64;
+	else typeNum = 32;
+
+	if (typeNum != 32) {
+		// Custom file, chop off extension
+		pNewEntry->strName = pNewEntry->strName.substr(0, newLen - 4);
 	}
 
 	uint16_t expandedSize;

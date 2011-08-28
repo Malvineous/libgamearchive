@@ -1,0 +1,11 @@
+Known bugs
+----------
+
+ - Because Monster Bash .DAT files store a type ID instead of a file extension,
+   but they also support file extensions, the filename length limit always
+   includes the extension even it if is a fake one (fake extensions are used to
+   differentiate between files with the same name but different type IDs.)
+   This means using a really long filename with one of the fake extensions may
+   return a filename-too-long error when the filename would actually fit due to
+   the fake extension being removed.  However the likelihood of this seems
+   remote, so it is unlikely to be fixed.
