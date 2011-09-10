@@ -16,6 +16,7 @@ tests_SOURCES += test-fmt-dat-sango.cpp
 tests_SOURCES += test-fmt-lbr-vinyl.cpp
 tests_SOURCES += test-fmt-roads-skyroads.cpp
 tests_SOURCES += test-fmt-dat-got.cpp
+tests_SOURCES += test-fmt-pcxlib.cpp
 tests_SOURCES += test-filter-bash-rle.cpp
 tests_SOURCES += test-filter-bitswap.cpp
 tests_SOURCES += test-filter-xor.cpp

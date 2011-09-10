@@ -36,6 +36,7 @@ have been implemented:
   * Terminal Velocity (.pod)
   * Vinyl Goddess From Mars (.lbr)
   * Wacky Wheels (.dat)
+  * Word Rescue (.1)
 
 Many more formats are planned.  The library also implements the following
 compression algorithms used by these formats:
