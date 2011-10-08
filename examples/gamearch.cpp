@@ -420,6 +420,8 @@ int main(int iArgC, char *cArgV[])
 	poOptions.add_options()
 		("type,t", po::value<std::string>(),
 			"specify the archive type (default is autodetect)")
+		("list-types",
+			"list available formats that can be passed to --type")
 		("filetype,y", po::value<std::string>(),
 			"specify the file type when inserting (default is generic file)")
 		("attribute,b", po::value<std::string>(),
@@ -447,6 +449,8 @@ int main(int iArgC, char *cArgV[])
 
 	std::string strFilename;
 	std::string strType;
+
+	::pManager = ga::getManager();
 
 	bool bScript = false; // show output suitable for script parsing?
 	bool bForceOpen = false; // open anyway even if archive not in given format?
@@ -477,6 +481,19 @@ int main(int iArgC, char *cArgV[])
 					"\n"
 					"Usage: gamearch <archive> <action> [action...]\n" << poVisible << "\n"
 					<< std::endl;
+				return RET_OK;
+			} else if (
+				(i->string_key.compare("list-types") == 0)
+			) {
+				ga::ArchiveTypePtr nextType;
+				int i = 0;
+				while ((nextType = pManager->getArchiveType(i++))) {
+					std::string code = nextType->getArchiveCode();
+					std::cout << code;
+					int len = code.length();
+					if (len < 20) std::cout << std::string(20-code.length(), ' ');
+					std::cout << ' ' << nextType->getFriendlyName() << '\n';
+				}
 				return RET_OK;
 			} else if (
 				(i->string_key.compare("t") == 0) ||
@@ -526,8 +543,6 @@ int main(int iArgC, char *cArgV[])
 		}
 
 		// Get the format handler for this file format
-		::pManager = ga::getManager();
-
 		ga::ArchiveTypePtr pArchType;
 		if (strType.empty()) {
 			// Need to autodetect the file format.
