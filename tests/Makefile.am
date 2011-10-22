@@ -23,6 +23,7 @@ tests_SOURCES += test-filter-bitswap.cpp
 tests_SOURCES += test-filter-xor.cpp
 tests_SOURCES += test-filter-xor-blood.cpp
 tests_SOURCES += test-filter-ddave-rle.cpp
+tests_SOURCES += test-filter-zone66.cpp
 
 EXTRA_tests_SOURCES = tests.hpp
 EXTRA_tests_SOURCES += test-archive.hpp

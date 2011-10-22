@@ -24,10 +24,9 @@
  */
 
 #include <stack>
-#include <boost/iostreams/concepts.hpp>     // multichar_input_filter
 #include <boost/bind.hpp>
-#include <camoto/iostream_helpers.hpp>
-#include <camoto/filteredstream.hpp>
+#include <camoto/filter.hpp>
+#include <camoto/stream_filtered.hpp>
 #include <camoto/bitstream.hpp>
 
 #include "filter-zone66.hpp"
@@ -35,126 +34,115 @@
 namespace camoto {
 namespace gamearchive {
 
-/// Read the next character from the Source, and return a success/error code.
-template <typename Source>
-int nextSourceChar(Source& src, uint8_t *out) {
-	int c = boost::iostreams::get(src);
-	if (c < 0) return c;
-	*out = c;
-	return 1;
+filter_z66_decompress::filter_z66_decompress()
+	throw () :
+	data(bitstream::bigEndian),
+	state(0),
+	codeLength(9),
+	curDicIndex(0),
+	maxDicIndex(255)
+{
+	for (int i = 0; i < 8192; i++) {
+		nodes[i].code = 0;
+		nodes[i].nextCode = 0;
+	}
 }
 
-class z66_decompress_filter: public io::multichar_input_filter {
+int filter_z66_decompress::nextChar(const uint8_t **in, stream::len *lenIn, stream::len *r, uint8_t *out)
+	throw ()
+{
+	if (*lenIn) {
+		*out = **in; // "read" byte
+		(*in)++;     // increment read buffer
+		(*r)++;      // increment read count
+		return 1;    // return number of bytes read
+	}
+	return 0; // EOF
+}
 
-	protected:
-		bitstream data;
-		int state;
+void filter_z66_decompress::transform(uint8_t *out, stream::len *lenOut,
+	const uint8_t *in, stream::len *lenIn)
+	throw (filter_error)
+{
+	stream::len r = 0, w = 0;
 
-		int code, curCode;
+	fn_getnextchar cbNext = boost::bind(&filter_z66_decompress::nextChar, this, &in, lenIn, &r, _1);
 
-		std::stack<int> stack;
-		int codeLength, curDicIndex, maxDicIndex;
-
-		struct {
-			int code, nextCode;
-		} nodes[8192];
-
-	public:
-
-		z66_decompress_filter()
-			: data(bitstream::bigEndian),
-			  state(0),
-			  codeLength(9),
-			  curDicIndex(0),
-			  maxDicIndex(255)
-		{
-			for (int i = 0; i < 8192; i++) {
-				nodes[i].code = 0;
-				nodes[i].nextCode = 0;
+	while ((w < *lenOut) && ((r < *lenIn))) {// || (!this->stack.empty()))) {
+		switch (this->state) {
+			case 0: {
+				// Discard the first four bytes (decompressed size)
+				this->data.changeEndian(bitstream::littleEndian);
+				int dummy;
+				this->data.read(cbNext, 32, &dummy);
+				this->data.changeEndian(bitstream::bigEndian);
+				this->state++;
+				break;
 			}
-		}
-
-		template<typename Source>
-		std::streamsize read(Source& src, char* s, std::streamsize n)
-		{
-			fn_getnextchar cbNext = boost::bind(
-				nextSourceChar<Source>, boost::ref(src), _1
-			);
-			int r = 0;  // number of bytes "read" (written into *s)
-
-			while (r < n) {
-				switch (this->state) {
-					case 0: {
-						// Discard the first four bytes (decompressed size)
-						this->data.changeEndian(bitstream::littleEndian);
-						int dummy;
-						this->data.read(cbNext, 32, &dummy);
-						this->data.changeEndian(bitstream::bigEndian);
+			case 1: {
+				if (this->data.read(cbNext, this->codeLength, &this->code) != this->codeLength) {
+					goto done;
+				}
+				this->curCode = this->code;
+				this->state++;
+				break;
+			}
+			case 2:
+				if (this->curCode < 256) {
+					*out++ = this->curCode;
+					w++;
+					if (!stack.empty()) {
+						this->curCode = stack.top();
+						stack.pop();
+					} else {
 						this->state++;
 						break;
 					}
-					case 1: {
-						if (this->data.read(cbNext, this->codeLength, &this->code) != this->codeLength) {
-							goto done;
-						}
-						this->curCode = this->code;
-						this->state++;
-						break;
+				} else {
+					this->curCode -= 256;
+					stack.push(this->nodes[this->curCode].nextCode);
+					this->curCode = this->nodes[this->curCode].code;
+					if (stack.size() > 65534) {
+						throw filter_error("Corrupted Zone 66 data - token stack > 64k");
 					}
-					case 2:
-						if (this->curCode < 256) {
-							s[r++] = this->curCode;
-							if (!stack.empty()) {
-								this->curCode = stack.top();
-								stack.pop();
-							} else {
-								this->state++;
-								break;
-							}
-						} else {
-							this->curCode -= 256;
-							stack.push(this->nodes[this->curCode].nextCode);
-							this->curCode = this->nodes[this->curCode].code;
-							if (stack.size() > 65534) {
-								throw ECorruptedData("Corrupted Zone 66 data - token stack > 64k");
-							}
-						}
-						break;
-					case 3: {
-						int value;
-						if (this->data.read(cbNext, 8, &value) != 8) goto done;
-						s[r++] = value;
+				}
+				break;
+			case 3: {
+				int value;
+				if (this->data.read(cbNext, 8, &value) != 8) goto done;
+				*out++ = value;
+				w++;
 
-						if (this->code >= 0x100 + this->curDicIndex) {
-							// This code hasn't been put in the dictionary yet (tpal.z66)
-							this->code = 0x100;
-						}
-						nodes[curDicIndex].code = this->code;
-						nodes[curDicIndex].nextCode = value;
-						curDicIndex++;
+				if (this->code >= 0x100 + this->curDicIndex) {
+					// This code hasn't been put in the dictionary yet (tpal.z66)
+					this->code = 0x100;
+				}
+				nodes[curDicIndex].code = this->code;
+				nodes[curDicIndex].nextCode = value;
+				curDicIndex++;
 
-						if (curDicIndex >= maxDicIndex) {
-							codeLength++;
-							if (codeLength == 13) {
-								codeLength = 9;
-								curDicIndex = 64;
-								maxDicIndex = 255;
-							} else {
-								maxDicIndex = (1 << codeLength) - 257;
-							}
-						}
-						this->state = 1;
-						break;
-					} // case 4
-				} // switch(state)
-			} // while (more data to be read)
+				if (curDicIndex >= maxDicIndex) {
+					codeLength++;
+					if (codeLength == 13) {
+						codeLength = 9;
+						curDicIndex = 64;
+						maxDicIndex = 255;
+					} else {
+						maxDicIndex = (1 << codeLength) - 257;
+					}
+				}
+				this->state = 1;
+				break;
+			} // case 4
+		} // switch(state)
+	} // while (more data to be read)
 
 done:
-			if (r == 0) return EOF;
-			return r;
-		}
+	*lenIn = r;
+	*lenOut = w;
+	return;
+}
 
-};
 
 Zone66FilterType::Zone66FilterType()
 	throw ()
@@ -186,41 +174,34 @@ std::vector<std::string> Zone66FilterType::getGameList() const
 	return vcGames;
 }
 
-iostream_sptr Zone66FilterType::apply(iostream_sptr target, FN_TRUNCATE fnTruncate)
-	throw (ECorruptedData)
+stream::inout_sptr Zone66FilterType::apply(stream::inout_sptr target)
+	throw (filter_error, stream::read_error)
 {
-	filtered_istream_sptr pinf(new filtered_istream());
-
-	// Decompress the data using the Zone 66 algorithm
-	pinf->push(z66_decompress_filter());
-
-	filtered_ostream_sptr poutf(new filtered_ostream());
-	//poutf->push(z66_compress_filter());
-
-	iostream_sptr dec(new filteredstream(target, pinf, poutf));
-	return dec;
+	stream::filtered_sptr st(new stream::filtered());
+	filter_sptr de(new filter_z66_decompress());
+	/// @todo Implement Zone 66 compression
+	filter_sptr en;//(new filter_z66_compress());
+	st->open(target, de, en);
+	return st;
 }
 
-istream_sptr Zone66FilterType::apply(istream_sptr target)
-	throw (ECorruptedData)
+stream::input_sptr Zone66FilterType::apply(stream::input_sptr target)
+	throw (filter_error, stream::read_error)
 {
-	filtered_istream_sptr pinf(new filtered_istream());
-
-	// Decompress the data using the Zone 66 algorithm
-	pinf->push(z66_decompress_filter());
-
-	pinf->pushShared(target);
-	return pinf;
+	stream::input_filtered_sptr st(new stream::input_filtered());
+	filter_sptr de(new filter_z66_decompress());
+	st->open(target, de);
+	return st;
 }
 
-ostream_sptr Zone66FilterType::apply(ostream_sptr target, FN_TRUNCATE fnTruncate)
-	throw (ECorruptedData)
+stream::output_sptr Zone66FilterType::apply(stream::output_sptr target)
+	throw (filter_error)
 {
-	filtered_ostream_sptr poutf(new filtered_ostream());
-	//poutf->push(z66_compress_filter());
-
-	poutf->pushShared(target);
-	return poutf;
+	stream::output_filtered_sptr st(new stream::output_filtered());
+	/// @todo Implement Zone 66 compression
+	filter_sptr en;//(new filter_z66_compress());
+	st->open(target, en);
+	return st;
 }
 
 } // namespace gamearchive

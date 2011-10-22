@@ -21,11 +21,40 @@
 #ifndef _CAMOTO_FILTER_ZONE66_HPP_
 #define _CAMOTO_FILTER_ZONE66_HPP_
 
-#include <camoto/types.hpp>
+#include <stack>
+#include <camoto/stream.hpp>
+#include <camoto/bitstream.hpp>
 #include <camoto/gamearchive/filtertype.hpp>
 
 namespace camoto {
 namespace gamearchive {
+
+class filter_z66_decompress: public filter {
+
+	public:
+		filter_z66_decompress()
+			throw ();
+
+		int nextChar(const uint8_t **in, stream::len *lenIn, stream::len *r, uint8_t *out)
+			throw ();
+
+		void transform(uint8_t *out, stream::len *lenOut,
+			const uint8_t *in, stream::len *lenIn)
+			throw (filter_error);
+
+	protected:
+		bitstream data;
+		int state;
+
+		int code, curCode;
+
+		std::stack<int> stack;
+		int codeLength, curDicIndex, maxDicIndex;
+
+		struct {
+			int code, nextCode;
+		} nodes[8192];
+};
 
 /// Zone 66 decompression filter.
 class Zone66FilterType: virtual public FilterType {
@@ -46,14 +75,14 @@ class Zone66FilterType: virtual public FilterType {
 		virtual std::vector<std::string> getGameList() const
 			throw ();
 
-		virtual iostream_sptr apply(iostream_sptr target, FN_TRUNCATE fnTruncate)
-			throw (ECorruptedData);
+		virtual stream::inout_sptr apply(stream::inout_sptr target)
+			throw (filter_error, stream::read_error);
 
-		virtual istream_sptr apply(istream_sptr target)
-			throw (ECorruptedData);
+		virtual stream::input_sptr apply(stream::input_sptr target)
+			throw (filter_error, stream::read_error);
 
-		virtual ostream_sptr apply(ostream_sptr target, FN_TRUNCATE fnTruncate)
-			throw (ECorruptedData);
+		virtual stream::output_sptr apply(stream::output_sptr target)
+			throw (filter_error);
 
 };
 
