@@ -39,11 +39,12 @@ have been implemented:
   * Word Rescue (.1)
 
 Many more formats are planned.  The library also implements the following
-compression algorithms used by these formats:
+compression/encryption algorithms used by these formats:
 
   * Dangerous Dave
   * Lion King (decompress only)
   * Monster Bash (decompress only)
+  * Secret Agent
   * Stellar 7 (decompress only)
   * Zone 66 (decompress only)
 

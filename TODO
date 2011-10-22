@@ -9,3 +9,5 @@ Outstanding tasks
    version may leave leftover data as the file's slot cannot be resized.  Make
    sure this is padded with something harmless so that a buffer overflow does
    not occur when the game performs the expansion.
+
+ - Add tests for Secret Agent encryption/decryption

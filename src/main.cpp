@@ -94,7 +94,9 @@ Manager::Manager()
 	this->vcFilters.push_back(FilterTypePtr(new Stellar7FilterType()));
 	this->vcFilters.push_back(FilterTypePtr(new XORFilterType()));
 	this->vcFilters.push_back(FilterTypePtr(new RFFFilterType()));
-	this->vcFilters.push_back(FilterTypePtr(new SAMFilterType()));
+	this->vcFilters.push_back(FilterTypePtr(new SAMMapFilterType()));
+	this->vcFilters.push_back(FilterTypePtr(new SAM8SpriteFilterType()));
+	this->vcFilters.push_back(FilterTypePtr(new SAM16SpriteFilterType()));
 	this->vcFilters.push_back(FilterTypePtr(new DDaveRLEFilterType()));
 }
 

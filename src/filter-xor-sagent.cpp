@@ -19,7 +19,7 @@
  */
 
 #include <boost/iostreams/invert.hpp>
-#include <camoto/filteredstream.hpp>
+#include <camoto/stream_filtered.hpp>
 #include "filter-xor-sagent.hpp"
 #include "filter-bitswap.hpp"
 
@@ -31,40 +31,42 @@ namespace gamearchive {
 
 const char sam_key[] = SAM_KEY;
 
-sam_crypt_filter::sam_crypt_filter()
-	: xor_crypt_filter(0, 0)
+sam_crypt_filter::sam_crypt_filter(int resetInterval)
+	: filter_xor_crypt(0, 0),
+	  resetInterval(resetInterval)
 {
 }
 
 uint8_t sam_crypt_filter::getKey()
 {
-	return (uint8_t)(sam_key[this->offset % SAM_KEYLEN]);
+	return (uint8_t)(sam_key[(this->offset % this->resetInterval) % SAM_KEYLEN]);
 }
 
 
-SAMFilterType::SAMFilterType()
+SAMBaseFilterType::SAMBaseFilterType(int resetInterval)
+	throw ()
+	: resetInterval(resetInterval)
+{
+}
+
+SAMBaseFilterType::~SAMBaseFilterType()
 	throw ()
 {
 }
 
-SAMFilterType::~SAMFilterType()
-	throw ()
-{
-}
-
-std::string SAMFilterType::getFilterCode() const
+std::string SAMBaseFilterType::getFilterCode() const
 	throw ()
 {
 	return "xor-sagent";
 }
 
-std::string SAMFilterType::getFriendlyName() const
+std::string SAMBaseFilterType::getFriendlyName() const
 	throw ()
 {
 	return "Secret Agent XOR encryption";
 }
 
-std::vector<std::string> SAMFilterType::getGameList() const
+std::vector<std::string> SAMBaseFilterType::getGameList() const
 	throw ()
 {
 	std::vector<std::string> vcGames;
@@ -72,36 +74,123 @@ std::vector<std::string> SAMFilterType::getGameList() const
 	return vcGames;
 }
 
-iostream_sptr SAMFilterType::apply(iostream_sptr target, FN_TRUNCATE fnTruncate)
-	throw (ECorruptedData)
+stream::inout_sptr SAMBaseFilterType::apply(stream::inout_sptr target)
+	throw (filter_error, stream::read_error)
 {
-	filtered_iostream_sptr pf(new filtered_iostream());
-	pf->push(sam_crypt_filter());
-	pf->push(bitswap_filter());
-	pf->pushShared(target);
-	return pf;
+	stream::filtered_sptr st1(new stream::filtered());
+	// We need two separate filters, otherwise reading from one will
+	// affect the XOR key next used when writing to the other.
+	filter_sptr de_cr(new sam_crypt_filter(this->resetInterval));
+	filter_sptr en_cr(new sam_crypt_filter(this->resetInterval));
+	st1->open(target, de_cr, en_cr);
+
+	stream::filtered_sptr st2(new stream::filtered());
+	// Since the bitswap doesn't care how many bytes have been read or
+	// written, we can use the same filter for both reading and writing.
+	filter_sptr bs(new filter_bitswap());
+	st2->open(st1, bs, bs);
+
+	return st2;
 }
 
-istream_sptr SAMFilterType::apply(istream_sptr target)
-	throw (ECorruptedData)
+stream::input_sptr SAMBaseFilterType::apply(stream::input_sptr target)
+	throw (filter_error, stream::read_error)
 {
-	filtered_istream_sptr pinf(new filtered_istream());
-	pinf->push(sam_crypt_filter());
-	pinf->push(bitswap_filter());
+	stream::input_filtered_sptr st1(new stream::input_filtered());
+	filter_sptr cr(new sam_crypt_filter(this->resetInterval));
+	st1->open(target, cr);
 
-	pinf->pushShared(target);
-	return pinf;
+	stream::input_filtered_sptr st2(new stream::input_filtered());
+	filter_sptr bs(new filter_bitswap());
+	st2->open(st1, bs);
+
+	return st2;
 }
 
-ostream_sptr SAMFilterType::apply(ostream_sptr target, FN_TRUNCATE fnTruncate)
-	throw (ECorruptedData)
+stream::output_sptr SAMBaseFilterType::apply(stream::output_sptr target)
+	throw (filter_error)
 {
-	filtered_ostream_sptr poutf(new filtered_ostream());
-	poutf->push(io::invert(sam_crypt_filter()));
-	poutf->push(bitswap_filter());
+	stream::output_filtered_sptr st1(new stream::output_filtered());
+	filter_sptr cr(new sam_crypt_filter(this->resetInterval));
+	st1->open(target, cr);
 
-	poutf->pushShared(target);
-	return poutf;
+	stream::output_filtered_sptr st2(new stream::output_filtered());
+	filter_sptr bs(new filter_bitswap());
+	st2->open(st1, bs);
+
+	return st2;
+}
+
+
+SAMMapFilterType::SAMMapFilterType()
+	throw ()
+	: SAMBaseFilterType(42)
+{
+}
+
+SAMMapFilterType::~SAMMapFilterType()
+	throw ()
+{
+}
+
+std::string SAMMapFilterType::getFilterCode() const
+	throw ()
+{
+	return "xor-sagent-map";
+}
+
+std::string SAMMapFilterType::getFriendlyName() const
+	throw ()
+{
+	return "Secret Agent XOR encryption (map file)";
+}
+
+
+SAM8SpriteFilterType::SAM8SpriteFilterType()
+	throw ()
+	: SAMBaseFilterType(8064)
+{
+}
+
+SAM8SpriteFilterType::~SAM8SpriteFilterType()
+	throw ()
+{
+}
+
+std::string SAM8SpriteFilterType::getFilterCode() const
+	throw ()
+{
+	return "xor-sagent-8sprite";
+}
+
+std::string SAM8SpriteFilterType::getFriendlyName() const
+	throw ()
+{
+	return "Secret Agent XOR encryption (8x8 sprite file)";
+}
+
+
+SAM16SpriteFilterType::SAM16SpriteFilterType()
+	throw ()
+	: SAMBaseFilterType(2048)
+{
+}
+
+SAM16SpriteFilterType::~SAM16SpriteFilterType()
+	throw ()
+{
+}
+
+std::string SAM16SpriteFilterType::getFilterCode() const
+	throw ()
+{
+	return "xor-sagent-16sprite";
+}
+
+std::string SAM16SpriteFilterType::getFriendlyName() const
+	throw ()
+{
+	return "Secret Agent XOR encryption (16x16 sprite file)";
 }
 
 } // namespace gamearchive
