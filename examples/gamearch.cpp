@@ -24,14 +24,14 @@
 #include <boost/filesystem.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/bind.hpp>
-#include <camoto/gamearchive.hpp>
+#include <camoto/stream_file.hpp>
 #include <camoto/util.hpp>
-#include <iostream>
-#include <fstream>
+#include <camoto/gamearchive.hpp>
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 namespace ga = camoto::gamearchive;
+namespace stream = camoto::stream;
 
 #define PROGNAME "gamearch"
 
@@ -120,34 +120,33 @@ void sanitisePath(std::string& strInput)
  * @param id
  *   EntryPtr for the stream.
  */
-void applyFilter(camoto::iostream_sptr *ppStream, ga::Archive::EntryPtr id)
-	throw (std::ios::failure)
+void applyFilter(camoto::stream::inout_sptr *ppStream, ga::Archive::EntryPtr id)
+	throw (stream::error)
 {
 	if (!id->filter.empty()) {
 		// The file needs to be filtered first
 		ga::FilterTypePtr pFilterType(::pManager->getFilterTypeByCode(id->filter));
 		if (!pFilterType) {
-			throw std::ios::failure(createString(
+			throw stream::error(createString(
 				"could not find filter \"" << id->filter << "\""
 			));
 		}
-		// TODO: use boost::bind to find the arch's truncate function
-		*ppStream = pFilterType->apply(*ppStream, NULL);
+		*ppStream = pFilterType->apply(*ppStream);
 	}
 	return;
 }
 
 // Insert a file at the given location.  Shared by --insert and --add.
-bool insertFile(ga::Archive *pArchive, const std::string& strLocalFile,
-	const std::string& strArchFile, const ga::Archive::EntryPtr& idBeforeThis,
-	const std::string& type, int attr, ga::Archive::offset_t lenPrefiltered)
+bool insertFile(ga::ArchivePtr pArchive, const std::string& strLocalFile,
+	const std::string& strArchFile, const ga::Archive::EntryPtr idBeforeThis,
+	const std::string& type, int attr, stream::len lenPrefiltered)
 {
 	// Open the file
-	std::ifstream fsIn(strLocalFile.c_str(), std::ios::binary);
-	// Figure out how big it is
-	fsIn.seekg(0, std::ios::end);
-	boost::iostreams::stream_offset lenSource = fsIn.tellg();
-	fsIn.seekg(0, std::ios::beg);
+	stream::file_sptr fsIn(new stream::file());
+	fsIn->open(strLocalFile);
+	stream::len lenSource = fsIn->size();
+
+	fsIn->seekg(0, stream::start);
 
 	// Make sure either filters are active, or we've got a nonzero prefilter
 	// length (but it's ok to have a zero prefilter length if the file is empty)
@@ -158,16 +157,15 @@ bool insertFile(ga::Archive *pArchive, const std::string& strLocalFile,
 		lenSource, type, attr);
 
 	// Open the new (empty) file in the archive
-	camoto::iostream_sptr psNew(pArchive->open(id));
+	camoto::stream::inout_sptr psNew(pArchive->open(id));
 	if (bUseFilters) applyFilter(&psNew, id);
 
 	// Copy all the data from the file on disk into the archive file.
 	try {
-		boost::iostreams::copy(fsIn, *psNew);
-		camoto::flush(psNew);
+		stream::copy(psNew, fsIn);
+		psNew->flush();
 	} catch (std::ios_base::failure& e) {
 		std::cout << " [failed; " << e.what() << "]";
-		//iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
 		return false;
 	}
 
@@ -333,10 +331,9 @@ void extractAll(ga::ArchivePtr pArchive, bool bScript)
 
 			// Open on disk
 			try {
-				camoto::iostream_sptr pfsIn(pArchive->open(*i));
+				camoto::stream::inout_sptr pfsIn(pArchive->open(*i));
 				if (bUseFilters) applyFilter(&pfsIn, *i);
-				std::ofstream fsOut;
-				fsOut.exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
+				stream::output_file_sptr fsOut(new stream::output_file());
 
 				// If the file exists, add .1 .2 .3 etc. onto the end until an
 				// unused name is found.  This allows extracting files with the
@@ -357,10 +354,10 @@ void extractAll(ga::ArchivePtr pArchive, bool bScript)
 				std::cout << std::flush;
 
 				if (bScript) std::cout << ";wrote=" << strLocalFile;
-				fsOut.open(strLocalFile.c_str(), std::ios::trunc | std::ios::binary);
+				fsOut->create(strLocalFile);
 
 				// Copy the data from the in-archive stream to the on-disk stream
-				boost::iostreams::copy(*pfsIn, fsOut);
+				stream::copy(fsOut, pfsIn);
 
 				if (bScript) std::cout << ";status=ok";
 			} catch (...) {
@@ -471,7 +468,7 @@ int main(int iArgC, char *cArgV[])
 				strFilename = i->value[0];
 			} else if (i->string_key.compare("help") == 0) {
 				std::cout <<
-					"Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>\n"
+					"Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>\n"
 					"This program comes with ABSOLUTELY NO WARRANTY.  This is free software,\n"
 					"and you are welcome to change and redistribute it under certain conditions;\n"
 					"see <http://www.gnu.org/licenses/> for details.\n"
@@ -530,15 +527,12 @@ int main(int iArgC, char *cArgV[])
 		std::cout << "Opening " << strFilename << " as type "
 			<< (strType.empty() ? "<autodetect>" : strType) << std::endl;
 
-		boost::shared_ptr<std::fstream> psArchive(new std::fstream());
-		psArchive->exceptions(std::ios::badbit | std::ios::failbit);
+		stream::file_sptr psArchive(new stream::file());
 		try {
-			psArchive->open(strFilename.c_str(), std::ios::in | std::ios::out | std::ios::binary);
-		} catch (std::ios::failure& e) {
-			std::cerr << "Error opening " << strFilename << std::endl;
-			#ifdef DEBUG
-				std::cerr << "e.what(): " << e.what() << std::endl;
-			#endif
+			psArchive->open(strFilename);
+		} catch (const stream::open_error& e) {
+			std::cerr << "Error opening supplemental file " << strFilename
+				<< ": " << e.what() << std::endl;
 			return RET_SHOWSTOPPER;
 		}
 
@@ -582,10 +576,9 @@ int main(int iArgC, char *cArgV[])
 						bool bSuppOK = true;
 						for (camoto::SuppFilenames::iterator i = suppList.begin(); i != suppList.end(); i++) {
 							try {
-								boost::shared_ptr<std::fstream> suppStream(new std::fstream());
-								suppStream->exceptions(std::ios::badbit | std::ios::failbit);
-								suppStream->open(i->second.c_str(), std::ios::in | std::ios::binary);
-							} catch (std::ios::failure e) {
+								stream::file_sptr suppStream(new stream::file());
+								suppStream->open(i->second);
+							} catch (const stream::open_error& e) {
 								bSuppOK = false;
 								std::cout << "  * Could not find/open " << i->second
 									<< ", archive is probably not "
@@ -640,19 +633,13 @@ finishTesting:
 		if (suppList.size() > 0) {
 			for (camoto::SuppFilenames::iterator i = suppList.begin(); i != suppList.end(); i++) {
 				try {
-					boost::shared_ptr<std::fstream> suppStream(new std::fstream());
-					suppStream->exceptions(std::ios::badbit | std::ios::failbit);
+					stream::file_sptr suppStream(new stream::file());
 					std::cout << "Opening supplemental file " << i->second << std::endl;
-					suppStream->open(i->second.c_str(), std::ios::in | std::ios::out | std::ios::binary);
-					camoto::SuppItem si;
-					si.stream = suppStream;
-					si.fnTruncate = boost::bind<void>(camoto::truncateFromString, i->second, _1);
-					suppData[i->first] = si;
-				} catch (std::ios::failure e) {
-					std::cerr << "Error opening supplemental file " << i->second.c_str() << std::endl;
-					#ifdef DEBUG
-						std::cerr << "e.what(): " << e.what() << std::endl;
-					#endif
+					suppStream->open(i->second.c_str());
+					suppData[i->first] = suppStream;
+				} catch (const stream::open_error& e) {
+					std::cerr << "Error opening supplemental file " << i->second.c_str()
+						<< ": " << e.what() << std::endl;
 					return RET_SHOWSTOPPER;
 				}
 			}
@@ -663,11 +650,10 @@ finishTesting:
 		try {
 			pArchive = pArchType->open(psArchive, suppData);
 			assert(pArchive);
-		} catch (std::ios::failure& e) {
+		} catch (stream::error& e) {
 			std::cerr << "Error opening archive file: " << e.what() << std::endl;
 			return RET_SHOWSTOPPER;
 		}
-		pArchive->fnTruncate = boost::bind<void>(camoto::truncateFromString, strFilename, _1);
 
 		// File type of inserted files defaults to empty, which means 'generic file'
 		std::string strLastFiletype;
@@ -676,7 +662,7 @@ finishTesting:
 		int iLastAttr = 0;
 
 		// Last value set with -z
-		ga::Archive::offset_t lenPrefiltered = 0;
+		stream::len lenPrefiltered = 0;
 
 		// Run through the actions on the command line
 		for (std::vector<po::option>::iterator i = pa.options.begin(); i != pa.options.end(); i++) {
@@ -704,24 +690,23 @@ finishTesting:
 						iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
 					} else {
 						// Found it, open on disk
-						camoto::iostream_sptr pfsIn(destArch->open(id));
+						camoto::stream::inout_sptr pfsIn(destArch->open(id));
 						if (bUseFilters) applyFilter(&pfsIn, id);
-						std::ofstream fsOut;
-						fsOut.exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
+						stream::output_file_sptr fsOut(new stream::output_file());
 						try {
-							fsOut.open(strLocalFile.c_str(), std::ios::trunc | std::ios::binary);
+							fsOut->create(strLocalFile);
 							try {
-								boost::iostreams::copy(*pfsIn, fsOut);
-							} catch (const std::ios::failure& e) {
+								stream::copy(fsOut, pfsIn);
+							} catch (const stream::error& e) {
 								std::cout << " [failed; read/write error: " << e.what() << "]";
 								iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
 							}
-						} catch (const std::ios::failure& e) {
+						} catch (const stream::error& e) {
 							std::cout << " [failed; unable to create output file]";
 							iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
 						}
 					}
-				} catch (const std::ios::failure& e) {
+				} catch (const stream::error& e) {
 					std::cout << " [failed; " << e.what() << "]";
 					iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
 				}
@@ -777,9 +762,9 @@ finishTesting:
 				}
 
 				try {
-					insertFile(destArch.get(), strLocalFile, strArchFile, idBeforeThis,
+					insertFile(destArch, strLocalFile, strArchFile, idBeforeThis,
 						strLastFiletype, iLastAttr, lenPrefiltered);
-				} catch (std::ios_base::failure& e) {
+				} catch (const stream::error& e) {
 					std::cout << " [failed; " << e.what() << "]";
 					iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
 				}
@@ -858,10 +843,10 @@ finishTesting:
 					std::cout << std::endl;
 
 					try {
-						insertFile(pArchive.get(), strLocalFile, strArchFile,
+						insertFile(pArchive, strLocalFile, strArchFile,
 							ga::Archive::EntryPtr(), strLastFiletype, iLastAttr,
 							lenPrefiltered);
-					} catch (std::ios_base::failure& e) {
+					} catch (const stream::error& e) {
 						std::cout << " [failed; " << e.what() << "]";
 						iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
 					}
@@ -883,7 +868,7 @@ finishTesting:
 							} else {
 								destArch->rename(id, strLocalFile);
 							}
-						} catch (std::ios_base::failure& e) {
+						} catch (const stream::error& e) {
 							std::cout << " [failed; " << e.what() << "]";
 							iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a common way
 						}
@@ -905,43 +890,39 @@ finishTesting:
 							iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
 						} else {
 							// Found it, open replacement file
-							std::ifstream sSrc(strLocalFile.c_str(), std::ios::binary);
-							if (sSrc.is_open()) {
-								// Figure out how big our incoming file is
-								sSrc.seekg(0, std::ios::end);
-								boost::iostreams::stream_offset lenSource = sSrc.tellg();
-								sSrc.seekg(0, std::ios::beg);
-								if (lenSource != id->iSize) {
-									pArchive->resize(id, lenSource, lenSource);
-								}
-								// Now the file has been resized it's safe to open (if we opened
-								// it before the resize it'd be stuck at the old size)
-								camoto::iostream_sptr psDest(destArch->open(id));
-								if (bUseFilters) applyFilter(&psDest, id);
-								boost::iostreams::copy(sSrc, *psDest);
-								camoto::flush(psDest);
+							stream::input_file_sptr sSrc(new stream::input_file());
+							sSrc->open(strLocalFile);
+							stream::len lenSource = sSrc->size();
+							if (lenSource != id->iSize) {
+								pArchive->resize(id, lenSource, lenSource);
+							}
+							// Now the file has been resized it's safe to open (if we opened
+							// it before the resize it'd be stuck at the old size)
+							camoto::stream::inout_sptr psDest(destArch->open(id));
+							if (bUseFilters) applyFilter(&psDest, id);
+							stream::copy(psDest, sSrc);
+							psDest->flush();
 
-								if (!bUseFilters) {
-									// Since filters were skipped we will pretend we applied the
-									// filter and we got more source data than we really did, so
-									// the next check works.
-									lenSource = lenPrefiltered;
-								}
+							if (!bUseFilters) {
+								// Since filters were skipped we will pretend we applied the
+								// filter and we got more source data than we really did, so
+								// the next check works.
+								lenSource = lenPrefiltered;
+							}
 
-								// If the data that went in was a different length to what we
-								// expected it must have been compressed so update the file
-								// size (keeping the original size as the 'uncompressed length'
-								// field.)
-								boost::iostreams::stream_offset lenActual = psDest->tellp();
-								if (lenActual != lenSource) {
-									pArchive->resize(id, lenActual, lenSource);
-								}
-							} else {
-								std::cout << " [failed; unable to open replacement file]";
-								iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
+							// If the data that went in was a different length to what we
+							// expected it must have been compressed so update the file
+							// size (keeping the original size as the 'uncompressed length'
+							// field.)
+							stream::len lenActual = psDest->tellp();
+							if (lenActual != lenSource) {
+								pArchive->resize(id, lenActual, lenSource);
 							}
 						}
-					} catch (std::ios_base::failure& e) {
+					} catch (const stream::open_error& e) {
+						std::cout << " [failed; unable to open replacement file]";
+						iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
+					} catch (const stream::error& e) {
 						std::cout << " [failed; " << e.what() << "]";
 						iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a common way
 					}
@@ -951,11 +932,11 @@ finishTesting:
 			}
 		} // for (all command line elements)
 		pArchive->flush();
-	} catch (po::unknown_option& e) {
+	} catch (const po::unknown_option& e) {
 		std::cerr << PROGNAME ": " << e.what()
 			<< ".  Use --help for help." << std::endl;
 		return RET_BADARGS;
-	} catch (po::invalid_command_line_syntax& e) {
+	} catch (const po::invalid_command_line_syntax& e) {
 		std::cerr << PROGNAME ": " << e.what()
 			<< ".  Use --help for help." << std::endl;
 		return RET_BADARGS;

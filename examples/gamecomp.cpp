@@ -3,7 +3,7 @@
  * @brief  Command-line interface to the compression/encryption filters in
  *         libgamearchive.
  *
- * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,16 +22,15 @@
 #include <boost/algorithm/string.hpp> // for case-insensitive string compare
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/iostreams/copy.hpp>
 #include <boost/bind.hpp>
 #include <camoto/gamearchive.hpp>
 #include <camoto/util.hpp>
-#include <iostream>
-#include <fstream>
+#include <camoto/stream_file.hpp>
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 namespace ga = camoto::gamearchive;
+namespace stream = camoto::stream;
 
 #define PROGNAME "gamecomp"
 
@@ -39,17 +38,6 @@ namespace ga = camoto::gamearchive;
 #define RET_OK           0  ///< All is good
 #define RET_BADARGS      1  ///< Bad arguments (missing/invalid parameters)
 #define RET_SHOWSTOPPER  2  ///< I/O error
-
-/// Delete function to allow static object to be passed to a shared_ptr
-struct null_deleter
-{
-	void operator()(void const *) const { }
-};
-
-void dummyTrunc(int len)
-{
-	return;
-}
 
 int main(int iArgC, char *cArgV[])
 {
@@ -85,6 +73,8 @@ int main(int iArgC, char *cArgV[])
 
 	ga::ManagerPtr pManager(ga::getManager());
 
+	stream::output_sptr pstdout = stream::open_stdout();
+	stream::input_sptr pstdin = stream::open_stdin();
 	ga::FilterTypePtr pFilterType;
 	bool bApply = false;   // default is to reverse the algorithm (decompress)
 	try {
@@ -151,40 +141,37 @@ int main(int iArgC, char *cArgV[])
 		}
 
 		if (bApply) {
-			// Convert std::cin into a shared pointer
-			camoto::ostream_sptr pstdout(&std::cout, null_deleter());
-
 			// Apply the filter
-			camoto::ostream_sptr out(pFilterType->apply(pstdout, dummyTrunc));
+			camoto::stream::output_sptr out(pFilterType->apply(pstdout));
 
 			// Copy filtered data to stdout
-			boost::iostreams::copy(std::cin, *out);
+			stream::copy(out, pstdin);
+			out->flush();
+
 		} else {
-			// Convert std::cin into a shared pointer
-			camoto::istream_sptr pstdin(&std::cin, null_deleter());
-
 			// Apply the filter
-			camoto::istream_sptr in(pFilterType->apply(pstdin));
+			camoto::stream::input_sptr in(pFilterType->apply(pstdin));
 
 			// Copy filtered data to stdout
-			boost::iostreams::copy(*in, std::cout);
+			stream::copy(pstdout, in);
+			pstdout->flush();
 		}
 
-	} catch (const std::ios::failure& e) {
-		std::cerr << PROGNAME ": I/O error - " << e.what() << std::endl;
-		return RET_SHOWSTOPPER;
-	} catch (po::unknown_option& e) {
-		std::cerr << PROGNAME ": " << e.what()
-			<< ".  Use --help for help." << std::endl;
-		return RET_BADARGS;
-	} catch (po::invalid_command_line_syntax& e) {
-		std::cerr << PROGNAME ": " << e.what()
-			<< ".  Use --help for help." << std::endl;
-		return RET_BADARGS;
-	} catch (const camoto::ECorruptedData& e) {
-		std::cout << std::flush; // keep as much data as we could process
+	} catch (const camoto::filter_error& e) {
+		pstdout->flush(); // keep as much data as we could process
 		std::cerr << PROGNAME ": Decompression failed.  " << e.what() << std::endl;
 		return RET_SHOWSTOPPER;
+	} catch (const stream::error& e) {
+		std::cerr << PROGNAME ": I/O error - " << e.what() << std::endl;
+		return RET_SHOWSTOPPER;
+	} catch (const po::unknown_option& e) {
+		std::cerr << PROGNAME ": " << e.what()
+			<< ".  Use --help for help." << std::endl;
+		return RET_BADARGS;
+	} catch (const po::invalid_command_line_syntax& e) {
+		std::cerr << PROGNAME ": " << e.what()
+			<< ".  Use --help for help." << std::endl;
+		return RET_BADARGS;
 	}
 
 	return RET_OK;

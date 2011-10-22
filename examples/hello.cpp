@@ -1,6 +1,7 @@
-#include <fstream>
+#include <camoto/stream_file.hpp>
 #include <camoto/gamearchive.hpp>
 
+using namespace camoto;
 using namespace camoto::gamearchive;
 
 int main(void)
@@ -12,7 +13,8 @@ int main(void)
 	ArchiveTypePtr archiveType = manager->getArchiveTypeByCode("grp-duke3d");
 
 	// Open an archive file on disk
-	camoto::iostream_sptr file(new std::fstream("duke3d.grp"));
+	stream::file_sptr file(new stream::file());
+	file->open("duke3d.grp");
 
 	// We cheat here - we should check and load any supplementary files, but
 	// for the sake of keeping this example simple we know this format doesn't
@@ -30,7 +32,7 @@ int main(void)
 
 	// Run through the list of files and show the filename
 	for (Archive::VC_ENTRYPTR::const_iterator i = contents.begin(); i != contents.end(); i++) {
-		const Archive::EntryPtr& subfile = *i;
+		const Archive::EntryPtr subfile = *i;
 		std::cout << subfile->strName << "\n";
 	}
 	std::cout << "Done." << std::endl;
