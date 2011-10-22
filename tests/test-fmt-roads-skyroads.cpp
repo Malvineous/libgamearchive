@@ -2,7 +2,7 @@
  * @file  test-fmt-roads-skyroads.cpp
  * @brief Test code for SkyRoadsRoadsArchive class.
  *
- * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -103,34 +103,34 @@
 
 ISINSTANCE_TEST(c01,
 	"",
-	ga::EC_DEFINITELY_YES
+	DefinitelyYes
 );
 
 ISINSTANCE_TEST(c02,
 	"\x50\x00\x00\x00",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 ISINSTANCE_TEST(c03,
 	"\x01\x00\x00",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 ISINSTANCE_TEST(c04,
 	"\x07\x00\x00\x00" "\x07\x00\x00",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 ISINSTANCE_TEST(c05,
 	"\x08\x00\x00\x00" "\x50\x00\x00\x00"
 	"blahblah",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 ISINSTANCE_TEST(c06,
 	"\x08\x00\x00\x00" "\x04\x00\x00\x00"
 	"blahblah",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 // Not really possible to do any INVALIDDATA_TEST() tests here, because the

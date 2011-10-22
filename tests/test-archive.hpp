@@ -1,7 +1,8 @@
-/*
- * test-archive.hpp - generic test code for Archive class descendents.
+/**
+ * @file  test-archive.hpp
+ * @brief Generic test code for Archive class descendents.
  *
- * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,22 +19,13 @@
  */
 
 #include <boost/test/unit_test.hpp>
-
-#include <boost/algorithm/string.hpp> // for case-insensitive string compare
-#include <boost/iostreams/copy.hpp>
-#include <boost/bind.hpp>
+#include <boost/pointer_cast.hpp>
+#include <camoto/stream_string.hpp>
 #include <camoto/gamearchive.hpp>
-#include <iostream>
-#include <iomanip>
-
 #include "tests.hpp"
 
-// Local headers that will not be installed
-#include <camoto/segmented_stream.hpp>
-#include <camoto/util.hpp>
-
 using namespace camoto;
-namespace ga = camoto::gamearchive;
+using namespace camoto::gamearchive;
 
 // Defines to allow code reuse
 #define COMBINE_CLASSNAME_EXP(c, n)  c ## _ ## n
@@ -56,65 +48,45 @@ namespace ga = camoto::gamearchive;
 
 #ifndef INSERT_ATTRIBUTE
 /// Default attributes for newly inserted files, unless overridden
-#define INSERT_ATTRIBUTE ga::EA_NONE
+#define INSERT_ATTRIBUTE EA_NONE
 #endif
 
 struct FIXTURE_NAME: public default_sample {
 
-	typedef boost::shared_ptr<std::stringstream> sstr_ptr;
-
-	sstr_ptr baseData;
-	void *_do; // unused var, but allows a statement to run in constructor init
-	camoto::iostream_sptr baseStream;
-	boost::shared_ptr<ga::Archive> pArchive;
+	stream::string_sptr base;
+	ArchivePtr pArchive;
 	camoto::SuppData suppData;
-	std::map<camoto::SuppItem::Type, sstr_ptr> suppBase;
 
 	FIXTURE_NAME() :
-		baseData(new std::stringstream),
-		_do((*this->baseData) << makeString(INITIALSTATE_NAME)),
-		baseStream(this->baseData)
+		base(new stream::string())
 	{
+		base << makeString(INITIALSTATE_NAME);
+
 		#ifdef HAS_FAT
 		{
-			boost::shared_ptr<std::stringstream> suppSS(new std::stringstream);
-			suppSS->exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
-			(*suppSS) << makeString(TEST_RESULT(FAT_initialstate));
-			camoto::iostream_sptr suppStream(suppSS);
-			camoto::SuppItem si;
-			si.stream = suppStream;
-			si.fnTruncate = boost::bind<void>(stringStreamTruncate, suppSS.get(), _1);
-			this->suppData[camoto::SuppItem::FAT] = si;
-			this->suppBase[camoto::SuppItem::FAT] = suppSS;
+			stream::string_sptr suppSS(new stream::string());
+			suppSS << makeString(TEST_RESULT(FAT_initialstate));
+			this->suppData[camoto::SuppItem::FAT] = suppSS;
 		}
 		#endif
 
-		ga::ManagerPtr pManager;
-		ga::ArchiveTypePtr pTestType;
+		ManagerPtr pManager;
+		ArchiveTypePtr pTestType;
 		BOOST_REQUIRE_NO_THROW(
-			this->baseData->exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
-
-			pManager = ga::getManager();
+			pManager = getManager();
 			pTestType = pManager->getArchiveTypeByCode(ARCHIVE_TYPE);
 		);
 		BOOST_REQUIRE_MESSAGE(pTestType, "Could not find archive type " ARCHIVE_TYPE);
 
 		BOOST_REQUIRE_NO_THROW(
-			this->pArchive = pTestType->open(this->baseStream, this->suppData);
+			this->pArchive = pTestType->open(this->base, this->suppData);
 		);
 		BOOST_REQUIRE_MESSAGE(this->pArchive, "Could not create archive class");
-
-		BOOST_REQUIRE_NO_THROW(
-			this->pArchive->fnTruncate = boost::bind<void>(
-				stringStreamTruncate, this->baseData.get(), _1);
-		);
 	}
 
 	FIXTURE_NAME(int i) :
-		baseData(new std::stringstream),
-		baseStream(this->baseData)
+		base(new stream::string())
 	{
-		this->baseData->exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
 	}
 
 	boost::test_tools::predicate_result is_equal(const std::string& strExpected)
@@ -124,7 +96,7 @@ struct FIXTURE_NAME: public default_sample {
 			this->pArchive->flush()
 		);
 
-		return this->default_sample::is_equal(strExpected, this->baseData->str());
+		return this->default_sample::is_equal(strExpected, this->base->str());
 	}
 
 	boost::test_tools::predicate_result is_supp_equal(camoto::SuppItem::Type type, const std::string& strExpected)
@@ -134,8 +106,8 @@ struct FIXTURE_NAME: public default_sample {
 		BOOST_CHECK_NO_THROW(
 			this->pArchive->flush()
 		);
-
-		return this->default_sample::is_equal(strExpected, this->suppBase[type]->str());
+		stream::string_sptr suppBase = boost::dynamic_pointer_cast<stream::string>(this->suppData[type]);
+		return this->default_sample::is_equal(strExpected, suppBase->str());
 	}
 
 };
@@ -150,18 +122,17 @@ BOOST_FIXTURE_TEST_SUITE(SUITE_NAME, FIXTURE_NAME)
 	{ \
 		BOOST_TEST_MESSAGE("isInstance check (" ARCHIVE_TYPE "; " #c ")"); \
 		\
-		boost::shared_ptr<ga::Manager> pManager(ga::getManager()); \
-		ga::ArchiveTypePtr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE)); \
+		ManagerPtr pManager(getManager()); \
+		ArchiveTypePtr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE)); \
 		BOOST_REQUIRE_MESSAGE(pTestType, "Could not find archive type " ARCHIVE_TYPE); \
 		\
-		boost::shared_ptr<std::stringstream> psstrBase(new std::stringstream); \
-		(*psstrBase) << makeString(d); \
-		camoto::iostream_sptr psBase(psstrBase); \
+		stream::string_sptr ss(new stream::string()); \
+		ss << makeString(d); \
 		\
-		BOOST_CHECK_EQUAL(pTestType->isInstance(psBase), r); \
+		BOOST_CHECK_EQUAL(pTestType->isInstance(ss), ArchiveType::r); \
 	}
 
-ISINSTANCE_TEST(c00, INITIALSTATE_NAME, ga::EC_DEFINITELY_YES);
+ISINSTANCE_TEST(c00, INITIALSTATE_NAME, DefinitelyYes);
 
 
 // Define an INVALIDDATA_TEST macro which we use to confirm the reader correctly
@@ -170,14 +141,9 @@ ISINSTANCE_TEST(c00, INITIALSTATE_NAME, ga::EC_DEFINITELY_YES);
 #ifdef HAS_FAT
 #	define INVALIDDATA_FATCODE(d) \
 	{ \
-		boost::shared_ptr<std::stringstream> suppSS(new std::stringstream); \
-		suppSS->exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit); \
-		(*suppSS) << makeString(d); \
-		camoto::iostream_sptr suppStream(suppSS); \
-		camoto::SuppItem si; \
-		si.stream = suppStream; \
-		si.fnTruncate = boost::bind<void>(stringStreamTruncate, suppSS.get(), _1); \
-		suppData[camoto::SuppItem::FAT] = si; \
+		stream::string_sptr ss(new stream::string()); \
+		ss << makeString(d); \
+		suppDataI[SuppItem::FAT] = ss; \
 	}
 #else
 #	define INVALIDDATA_FATCODE(d)
@@ -191,26 +157,25 @@ ISINSTANCE_TEST(c00, INITIALSTATE_NAME, ga::EC_DEFINITELY_YES);
 
 #define INVALIDDATA_TEST_FULL(c, d, f) \
 	/* Run an isInstance test first to make sure the data is accepted */ \
-	ISINSTANCE_TEST(invaliddata_ ## c, d, ga::EC_DEFINITELY_YES); \
+	ISINSTANCE_TEST(invaliddata_ ## c, d, DefinitelyYes); \
 	\
 	BOOST_AUTO_TEST_CASE(TEST_NAME(invaliddata_ ## c)) \
 	{ \
 		BOOST_TEST_MESSAGE("invalidData check (" ARCHIVE_TYPE "; " #c ")"); \
 		\
-		boost::shared_ptr<ga::Manager> pManager(ga::getManager()); \
-		ga::ArchiveTypePtr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE)); \
+		ManagerPtr pManager(getManager()); \
+		ArchiveTypePtr pTestType(pManager->getArchiveTypeByCode(ARCHIVE_TYPE)); \
 		\
 		/* Prepare an invalid archive */ \
-		boost::shared_ptr<std::stringstream> psstrBase(new std::stringstream); \
-		(*psstrBase) << makeString(d); \
-		camoto::iostream_sptr psBase(psstrBase); \
+		stream::string_sptr ss(new stream::string()); \
+		ss << makeString(d); \
 		\
-		camoto::SuppData suppData; \
+		SuppData suppDataI; \
 		INVALIDDATA_FATCODE(f) \
 		\
 		BOOST_CHECK_THROW( \
-			ga::ArchivePtr pArchive(pTestType->open(psBase, suppData)), \
-			std::ios::failure \
+			ArchivePtr pArchive(pTestType->open(ss, suppDataI)), \
+			stream::error \
 		); \
 	}
 
@@ -220,21 +185,20 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(open))
 
 #if !NO_FILENAMES
 	// Find the file we're going to open
-	ga::Archive::EntryPtr ep = pArchive->find(FILENAME1);
+	Archive::EntryPtr ep = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
 		"Couldn't find " FILENAME1 " in sample archive");
 #else
 	// No filenames in this format, do it by order
-	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
-	ga::Archive::EntryPtr ep = ga::getFileAt(files, 0);
+	const Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	Archive::EntryPtr ep = getFileAt(files, 0);
 #endif
 
 	// Open it
-	camoto::iostream_sptr pfsIn(pArchive->open(ep));
-	std::stringstream out;
-	out.exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
+	camoto::stream::inout_sptr pfsIn(pArchive->open(ep));
+	stream::string_sptr out(new stream::string());
 
 	// Make sure the file opens at the start
 	BOOST_REQUIRE_EQUAL(pfsIn->tellg(), 0);
@@ -243,17 +207,12 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(open))
 	pfsIn = applyFilter(pArchive, ep, pfsIn);
 
 	// Copy it into the stringstream
-	boost::iostreams::copy(*pfsIn, out);
-	/*char buf[1024];
-	int len;
-	while ((len = pfsIn->rdbuf()->sgetn(buf, 1024))) {
-		out.rdbuf()->sputn(buf, len);
-	}*/
+	stream::copy(out, pfsIn);
 
 	BOOST_CHECK_MESSAGE(
 		default_sample::is_equal(makeString(
 			"This is one.dat"
-		), out.str()),
+		), out->str()),
 		"Error opening file or wrong file opened"
 	);
 }
@@ -264,7 +223,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(rename))
 	BOOST_TEST_MESSAGE("Renaming file inside archive");
 
 	// Find the file we're going to rename
-	ga::Archive::EntryPtr ep = pArchive->find(FILENAME1);
+	Archive::EntryPtr ep = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
@@ -293,7 +252,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(rename_long))
 	BOOST_TEST_MESSAGE("Rename file with name too long");
 
 	// Find the file we're going to insert before
-	ga::Archive::EntryPtr ep = pArchive->find(FILENAME1);
+	Archive::EntryPtr ep = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
@@ -306,7 +265,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(rename_long))
 	// Make sure renaming fails when the filename is too long
 	BOOST_CHECK_THROW(
 		pArchive->rename(ep, name),
-		std::ios::failure
+		stream::error
 	);
 
 	BOOST_CHECK_MESSAGE(
@@ -339,7 +298,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long))
 	BOOST_TEST_MESSAGE("Inserting file with name too long");
 
 	// Find the file we're going to insert before
-	ga::Archive::EntryPtr epb = pArchive->find(FILENAME1);
+	Archive::EntryPtr epb = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(epb),
@@ -350,8 +309,8 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long))
 	name[MAX_FILENAME_LEN + 1] = 0;
 
 	BOOST_CHECK_THROW(
-		ga::Archive::EntryPtr ep = pArchive->insert(epb, name, 5, FILETYPE_GENERIC, INSERT_ATTRIBUTE),
-		std::ios::failure
+		Archive::EntryPtr ep = pArchive->insert(epb, name, 5, FILETYPE_GENERIC, INSERT_ATTRIBUTE),
+		stream::error
 	);
 
 	BOOST_CHECK_MESSAGE(
@@ -371,7 +330,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long))
 	name[MAX_FILENAME_LEN] = 0;
 
 	BOOST_CHECK_NO_THROW(
-		ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), name, 5, FILETYPE_GENERIC, INSERT_ATTRIBUTE)
+		Archive::EntryPtr ep = pArchive->insert(Archive::EntryPtr(), name, 5, FILETYPE_GENERIC, INSERT_ATTRIBUTE)
 	);
 
 }
@@ -383,9 +342,9 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_end))
 
 	// Insert the file
 #if !NO_FILENAMES
-	ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), FILENAME3, 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr ep = pArchive->insert(Archive::EntryPtr(), FILENAME3, 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #else
-	ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), "dummy", 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr ep = pArchive->insert(Archive::EntryPtr(), "dummy", 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #endif
 
 	// Make sure it went in ok
@@ -393,13 +352,13 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_end))
 		"Couldn't create new file in sample archive");
 
 	// Open it
-	iostream_sptr pfsNew(pArchive->open(ep));
+	stream::inout_sptr pfsNew(pArchive->open(ep));
 
 	// Apply any encryption/compression filter
 	pfsNew = applyFilter(pArchive, ep, pfsNew);
 
 	pfsNew->write("This is three.dat", 17);
-	camoto::flush(pfsNew);
+	pfsNew->flush();
 
 	BOOST_CHECK_MESSAGE(
 		is_equal(makeString(TEST_RESULT(insert_end))),
@@ -420,25 +379,25 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_mid))
 
 	// Find the file we're going to insert before
 #if !NO_FILENAMES
-	ga::Archive::EntryPtr idBefore = pArchive->find(FILENAME2);
+	Archive::EntryPtr idBefore = pArchive->find(FILENAME2);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idBefore),
 		"Couldn't find " FILENAME2 " in sample archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #else
 	// No filenames in this format, do it by order
-	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
-	ga::Archive::EntryPtr idBefore = ga::getFileAt(files, 1);
+	const Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	Archive::EntryPtr idBefore = getFileAt(files, 1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idBefore),
 		"Couldn't find second file in sample archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, "dummy", 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr ep = pArchive->insert(idBefore, "dummy", 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #endif
 
 	// Make sure it went in ok
@@ -446,13 +405,13 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_mid))
 		"Couldn't insert new file in sample archive");
 
 	// Open it
-	iostream_sptr pfsNew(pArchive->open(ep));
+	stream::inout_sptr pfsNew(pArchive->open(ep));
 
 	// Apply any encryption/compression filter
 	pfsNew = applyFilter(pArchive, ep, pfsNew);
 
 	pfsNew->write("This is three.dat", 17);
-	camoto::flush(pfsNew);
+	pfsNew->flush();
 
 	BOOST_CHECK_MESSAGE(
 		is_equal(makeString(TEST_RESULT(insert_mid))),
@@ -473,25 +432,25 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 
 #if !NO_FILENAMES
 	// Find the file we're going to insert before
-	ga::Archive::EntryPtr idBefore = pArchive->find(FILENAME2);
+	Archive::EntryPtr idBefore = pArchive->find(FILENAME2);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idBefore),
 		"Couldn't find " FILENAME2 " in sample archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep1 = pArchive->insert(idBefore, FILENAME3, 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr ep1 = pArchive->insert(idBefore, FILENAME3, 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #else
 	// No filenames in this format, do it by order
-	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
-	ga::Archive::EntryPtr idBefore = ga::getFileAt(files, 1); // FILENAME2 is the second file at this point
+	const Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	Archive::EntryPtr idBefore = getFileAt(files, 1); // FILENAME2 is the second file at this point
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idBefore),
 		"Couldn't find second file in sample archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep1 = pArchive->insert(idBefore, "dummy", 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr ep1 = pArchive->insert(idBefore, "dummy", 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #endif
 
 	// Make sure it went in ok
@@ -499,13 +458,13 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 		"Couldn't insert first new file in sample archive");
 
 	// Open it
-	iostream_sptr pfsNew1(pArchive->open(ep1));
+	stream::inout_sptr pfsNew1(pArchive->open(ep1));
 
 	// Apply any encryption/compression filter
 	pfsNew1 = applyFilter(pArchive, ep1, pfsNew1);
 
 	pfsNew1->write("This is three.dat", 17);
-	camoto::flush(pfsNew1);
+	pfsNew1->flush();
 
 #if !NO_FILENAMES
 	// Find the file we're going to insert before (since the previous insert
@@ -517,31 +476,31 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 		"Couldn't find " FILENAME2 " in sample archive after first insert");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep2 = pArchive->insert(idBefore, FILENAME4, 16, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr ep2 = pArchive->insert(idBefore, FILENAME4, 16, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #else
 	// No filenames in this format, do it by order
 
-	idBefore = ga::getFileAt(files, 2); // FILENAME2 is now the third file
+	idBefore = getFileAt(files, 2); // FILENAME2 is now the third file
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idBefore),
 		"Couldn't find second file in sample archive after first insert");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep2 = pArchive->insert(idBefore, "dummy", 16, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr ep2 = pArchive->insert(idBefore, "dummy", 16, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #endif
 
 	// Make sure it went in ok
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep2),
 		"Couldn't insert second new file in sample archive");
 
-	iostream_sptr pfsNew2(pArchive->open(ep2));
+	stream::inout_sptr pfsNew2(pArchive->open(ep2));
 
 	// Apply any encryption/compression filter
 	pfsNew2 = applyFilter(pArchive, ep2, pfsNew2);
 
 	pfsNew2->write("This is four.dat", 16);
-	camoto::flush(pfsNew2);
+	pfsNew2->flush();
 
 	BOOST_CHECK_MESSAGE(
 		is_equal(makeString(TEST_RESULT(insert2))),
@@ -562,15 +521,15 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove))
 
 #if !NO_FILENAMES
 	// Find the file we're going to remove
-	ga::Archive::EntryPtr ep = pArchive->find(FILENAME1);
+	Archive::EntryPtr ep = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
 		"Couldn't find " FILENAME1 " in sample archive");
 #else
 	// No filenames in this format, do it by order
-	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
-	ga::Archive::EntryPtr ep = ga::getFileAt(files, 0);
+	const Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	Archive::EntryPtr ep = getFileAt(files, 0);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
@@ -599,8 +558,8 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove2))
 
 #if !NO_FILENAMES
 	// Find the files we're going to remove
-	ga::Archive::EntryPtr ep1 = pArchive->find(FILENAME1);
-	ga::Archive::EntryPtr ep2 = pArchive->find(FILENAME2);
+	Archive::EntryPtr ep1 = pArchive->find(FILENAME1);
+	Archive::EntryPtr ep2 = pArchive->find(FILENAME2);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep1),
@@ -609,9 +568,9 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove2))
 		"Couldn't find " FILENAME2 " in sample archive");
 #else
 	// No filenames in this format, do it by order
-	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
-	ga::Archive::EntryPtr ep1 = ga::getFileAt(files, 0);
-	ga::Archive::EntryPtr ep2 = ga::getFileAt(files, 1);
+	const Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	Archive::EntryPtr ep1 = getFileAt(files, 0);
+	Archive::EntryPtr ep2 = getFileAt(files, 1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep1),
@@ -643,25 +602,25 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_remove))
 
 #if !NO_FILENAMES
 	// Find the file we're going to insert before
-	ga::Archive::EntryPtr idBefore = pArchive->find(FILENAME2);
+	Archive::EntryPtr idBefore = pArchive->find(FILENAME2);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idBefore),
 		"Couldn't find " FILENAME2 " in sample archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #else
 	// No filenames in this format, do it by order
-	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
-	ga::Archive::EntryPtr idBefore = ga::getFileAt(files, 1);
+	const Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	Archive::EntryPtr idBefore = getFileAt(files, 1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idBefore),
 		"Couldn't find second file in sample archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, "dummy", 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr ep = pArchive->insert(idBefore, "dummy", 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #endif
 
 	// Make sure it went in ok
@@ -669,24 +628,24 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_remove))
 		"Couldn't insert new file in sample archive");
 
 	// Open it
-	iostream_sptr pfsNew(pArchive->open(ep));
+	stream::inout_sptr pfsNew(pArchive->open(ep));
 
 	// Apply any encryption/compression filter
 	pfsNew = applyFilter(pArchive, ep, pfsNew);
 
 	pfsNew->write("This is three.dat", 17);
-	camoto::flush(pfsNew);
+	pfsNew->flush();
 
 #if !NO_FILENAMES
 	// Find the file we're going to remove
-	ga::Archive::EntryPtr ep2 = pArchive->find(FILENAME1);
+	Archive::EntryPtr ep2 = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep2),
 		"Couldn't find " FILENAME1 " in sample archive");
 #else
 	// No filenames in this format, do it by order
-	ga::Archive::EntryPtr ep2 = ga::getFileAt(files, 0);
+	Archive::EntryPtr ep2 = getFileAt(files, 0);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep2),
@@ -715,15 +674,15 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_insert))
 
 #if !NO_FILENAMES
 	// Find the file we're going to remove
-	ga::Archive::EntryPtr ep2 = pArchive->find(FILENAME1);
+	Archive::EntryPtr ep2 = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep2),
 		"Couldn't find " FILENAME1 " in sample archive");
 #else
 	// No filenames in this format, do it by order
-	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
-	ga::Archive::EntryPtr ep2 = ga::getFileAt(files, 0);
+	const Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	Archive::EntryPtr ep2 = getFileAt(files, 0);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep2),
@@ -735,24 +694,24 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_insert))
 
 #if !NO_FILENAMES
 	// Find the file we're going to insert before
-	ga::Archive::EntryPtr idBefore = pArchive->find(FILENAME2);
+	Archive::EntryPtr idBefore = pArchive->find(FILENAME2);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idBefore),
 		"Couldn't find " FILENAME2 " in sample archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #else
 	// No filenames in this format, do it by order
-	ga::Archive::EntryPtr idBefore = ga::getFileAt(files, 0); // FILENAME2 is the first (only) file in the archive at this point
+	Archive::EntryPtr idBefore = getFileAt(files, 0); // FILENAME2 is the first (only) file in the archive at this point
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idBefore),
 		"Couldn't find second file in sample archive");
 
 	// Insert the file
-	ga::Archive::EntryPtr ep = pArchive->insert(idBefore, "dummy", 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr ep = pArchive->insert(idBefore, "dummy", 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #endif
 
 	// Make sure it went in ok
@@ -760,13 +719,13 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_insert))
 		"Couldn't insert new file in sample archive");
 
 	// Open it
-	iostream_sptr pfsNew(pArchive->open(ep));
+	stream::inout_sptr pfsNew(pArchive->open(ep));
 
 	// Apply any encryption/compression filter
 	pfsNew = applyFilter(pArchive, ep, pfsNew);
 
 	pfsNew->write("This is three.dat", 17);
-	camoto::flush(pfsNew);
+	pfsNew->flush();
 
 	BOOST_CHECK_MESSAGE(
 		// This test checks against the insert_remove result instead, as the end
@@ -790,8 +749,8 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(move))
 
 #if !NO_FILENAMES
 	// Find the file we're going to move
-	ga::Archive::EntryPtr ep1 = pArchive->find(FILENAME1);
-	ga::Archive::EntryPtr ep2 = pArchive->find(FILENAME2);
+	Archive::EntryPtr ep1 = pArchive->find(FILENAME1);
+	Archive::EntryPtr ep2 = pArchive->find(FILENAME2);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep1),
@@ -800,9 +759,9 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(move))
 		"Couldn't find " FILENAME2 " in sample archive");
 #else
 	// No filenames in this format, do it by order
-	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
-	ga::Archive::EntryPtr ep1 = ga::getFileAt(files, 0);
-	ga::Archive::EntryPtr ep2 = ga::getFileAt(files, 1);
+	const Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	Archive::EntryPtr ep1 = getFileAt(files, 0);
+	Archive::EntryPtr ep2 = getFileAt(files, 1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep1),
@@ -833,15 +792,15 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_larger))
 
 #if !NO_FILENAMES
 	// Find the file we're going to resize
-	ga::Archive::EntryPtr ep = pArchive->find(FILENAME1);
+	Archive::EntryPtr ep = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
 		"Couldn't find " FILENAME1 " in sample archive");
 #else
 	// No filenames in this format, do it by order
-	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
-	ga::Archive::EntryPtr ep = ga::getFileAt(files, 0);
+	const Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	Archive::EntryPtr ep = getFileAt(files, 0);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
@@ -870,15 +829,15 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_smaller))
 
 #if !NO_FILENAMES
 	// Find the file we're going to resize
-	ga::Archive::EntryPtr ep = pArchive->find(FILENAME1);
+	Archive::EntryPtr ep = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
 		"Couldn't find " FILENAME1 " in sample archive");
 #else
 	// No filenames in this format, do it by order
-	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
-	ga::Archive::EntryPtr ep = ga::getFileAt(files, 0);
+	const Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	Archive::EntryPtr ep = getFileAt(files, 0);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
@@ -907,15 +866,15 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_write))
 
 #if !NO_FILENAMES
 	// Find the file we're going to resize
-	ga::Archive::EntryPtr ep = pArchive->find(FILENAME1);
+	Archive::EntryPtr ep = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
 		"Couldn't find " FILENAME1 " in sample archive");
 #else
 	// No filenames in this format, do it by order
-	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
-	ga::Archive::EntryPtr ep = ga::getFileAt(files, 0);
+	const Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	Archive::EntryPtr ep = getFileAt(files, 0);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
@@ -925,13 +884,13 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_write))
 	// Swap the file positions
 	pArchive->resize(ep, 23, 23);
 
-	iostream_sptr pfsNew(pArchive->open(ep));
+	stream::inout_sptr pfsNew(pArchive->open(ep));
 
 	// Apply any encryption/compression filter
 	pfsNew = applyFilter(pArchive, ep, pfsNew);
 
 	pfsNew->write("Now resized to 23 chars", 23);
-	camoto::flush(pfsNew);
+	pfsNew->flush();
 
 	BOOST_CHECK_MESSAGE(
 		is_equal(makeString(TEST_RESULT(resize_write))),
@@ -949,14 +908,14 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_write))
 
 #if !NO_FILENAMES
 	// Find the file we're going to open
-	ga::Archive::EntryPtr ep2 = pArchive->find(FILENAME2);
+	Archive::EntryPtr ep2 = pArchive->find(FILENAME2);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep2),
 		"Couldn't find " FILENAME2 " in sample archive");
 #else
 	// No filenames in this format, do it by order
-	ga::Archive::EntryPtr ep2 = ga::getFileAt(files, 1);
+	Archive::EntryPtr ep2 = getFileAt(files, 1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep2),
@@ -964,20 +923,19 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_write))
 #endif
 
 	// Open it
-	camoto::iostream_sptr pfsIn(pArchive->open(ep2));
-	std::stringstream out;
-	out.exceptions(std::ios::badbit | std::ios::failbit | std::ios::eofbit);
+	camoto::stream::inout_sptr pfsIn(pArchive->open(ep2));
+	stream::string_sptr out(new stream::string());
 
 	// Apply any decryption/decompression filter
 	pfsIn = applyFilter(pArchive, ep2, pfsIn);
 
 	// Copy it into the stringstream
-	boost::iostreams::copy(*pfsIn, out);
+	stream::copy(out, pfsIn);
 
 	BOOST_CHECK_MESSAGE(
 		default_sample::is_equal(makeString(
 			"This is two.dat"
-		), out.str()),
+		), out->str()),
 		"Unrelated file was corrupted after file resize operation"
 	);
 
@@ -991,13 +949,13 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_all_re_add))
 	BOOST_TEST_MESSAGE("Remove all files then add them again");
 
 #if !NO_FILENAMES
-	ga::Archive::EntryPtr idOne = pArchive->find(FILENAME1);
+	Archive::EntryPtr idOne = pArchive->find(FILENAME1);
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idOne),
 		"Couldn't find " FILENAME1 " in sample archive");
 #else
 	// No filenames in this format, do it by order
-	const ga::Archive::VC_ENTRYPTR& files = pArchive->getFileList();
-	ga::Archive::EntryPtr idOne = ga::getFileAt(files, 0);
+	const Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	Archive::EntryPtr idOne = getFileAt(files, 0);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idOne),
@@ -1007,12 +965,12 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_all_re_add))
 	pArchive->remove(idOne);
 
 #if !NO_FILENAMES
-	ga::Archive::EntryPtr idTwo = pArchive->find(FILENAME2);
+	Archive::EntryPtr idTwo = pArchive->find(FILENAME2);
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idTwo),
 		"Couldn't find " FILENAME2 " in sample archive");
 #else
 	// No filenames in this format, do it by order
-	ga::Archive::EntryPtr idTwo = ga::getFileAt(files, 0); // FILENAME2 is the first (only) file in the archive at this point
+	Archive::EntryPtr idTwo = getFileAt(files, 0); // FILENAME2 is the first (only) file in the archive at this point
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idTwo),
@@ -1021,32 +979,32 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_all_re_add))
 	pArchive->remove(idTwo);
 
 	// Make sure there are now no files in the archive
-	const ga::Archive::VC_ENTRYPTR& allfiles = pArchive->getFileList();
+	const Archive::VC_ENTRYPTR& allfiles = pArchive->getFileList();
 	BOOST_REQUIRE_EQUAL(allfiles.size(), 0);
 
 #if !NO_FILENAMES
 	// Add the files back again
-	idOne = pArchive->insert(ga::Archive::EntryPtr(), FILENAME1, 15, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	idOne = pArchive->insert(Archive::EntryPtr(), FILENAME1, 15, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #else
 	// No filenames in this format
-	idOne = pArchive->insert(ga::Archive::EntryPtr(), "dummy", 15, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	idOne = pArchive->insert(Archive::EntryPtr(), "dummy", 15, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #endif
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idOne),
 		"Couldn't insert new file after removing all files");
 
-	iostream_sptr pfsNew(pArchive->open(idOne));
+	stream::inout_sptr pfsNew(pArchive->open(idOne));
 
 	// Apply any encryption/compression filter
 	pfsNew = applyFilter(pArchive, idOne, pfsNew);
 
 	pfsNew->write("This is one.dat", 15);
-	camoto::flush(pfsNew);
+	pfsNew->flush();
 
 #if !NO_FILENAMES
-	idTwo = pArchive->insert(ga::Archive::EntryPtr(), FILENAME2, 15, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	idTwo = pArchive->insert(Archive::EntryPtr(), FILENAME2, 15, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #else
 	// No filenames in this format
-	idTwo = pArchive->insert(ga::Archive::EntryPtr(), "dummy", 15, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	idTwo = pArchive->insert(Archive::EntryPtr(), "dummy", 15, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #endif
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idTwo),
 		"Couldn't insert second new file after removing all files");
@@ -1056,7 +1014,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_all_re_add))
 	pfsNew = applyFilter(pArchive, idTwo, pfsNew);
 
 	pfsNew->write("This is two.dat", 15);
-	camoto::flush(pfsNew);
+	pfsNew->flush();
 
 	BOOST_CHECK_MESSAGE(
 		is_equal(makeString(TEST_RESULT(initialstate))),
@@ -1079,9 +1037,9 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_zero_then_resize))
 
 	// Insert the file
 #if !NO_FILENAMES
-	ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), FILENAME3, 0, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr ep = pArchive->insert(Archive::EntryPtr(), FILENAME3, 0, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #else
-	ga::Archive::EntryPtr ep = pArchive->insert(ga::Archive::EntryPtr(), "dummy", 0, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr ep = pArchive->insert(Archive::EntryPtr(), "dummy", 0, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #endif
 
 	// Make sure it went in ok
@@ -1089,15 +1047,15 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_zero_then_resize))
 		"Couldn't create new file in sample archive");
 
 	// Open it
-	camoto::iostream_sptr pfsNew(pArchive->open(ep));
+	camoto::stream::inout_sptr pfsNew(pArchive->open(ep));
 
 	// Apply any encryption/compression filter
 	pfsNew = applyFilter(pArchive, ep, pfsNew);
 
 	pArchive->resize(ep, 17, 17);
-	pfsNew->seekp(0, std::ios::beg);
+	pfsNew->seekp(0, stream::start);
 	pfsNew->write("This is three.dat", 17);
-	camoto::flush(pfsNew);
+	pfsNew->flush();
 
 	BOOST_CHECK_MESSAGE(
 		is_equal(makeString(TEST_RESULT(insert_end))),
@@ -1139,13 +1097,13 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(get_metadata_description))
 	BOOST_REQUIRE_EQUAL(value.length(), sizeof(TEST_RESULT(get_metadata_description)) - 1);
 
 	// Put it in a stringstream to allow use of the standard checking mechanism
-	std::ostringstream out;
+	stream::string_sptr out(new stream::string());
 	out << value;
 
 	BOOST_CHECK_MESSAGE(
 		default_sample::is_equal(makeString(
 			TEST_RESULT(get_metadata_description)
-		), out.str()),
+		), out->str()),
 		"Error getting 'description' metadata field"
 	);
 
@@ -1221,13 +1179,13 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(get_metadata_version))
 	BOOST_REQUIRE_EQUAL(value.length(), sizeof(TEST_RESULT(get_metadata_version)) - 1);
 
 	// Put it in a stringstream to allow use of the standard checking mechanism
-	std::ostringstream out;
+	stream::string_sptr out(new stream::string());
 	out << value;
 
 	BOOST_CHECK_MESSAGE(
 		default_sample::is_equal(makeString(
 			TEST_RESULT(get_metadata_version)
-		), out.str()),
+		), out->str()),
 		"Error getting 'version' metadata field"
 	);
 

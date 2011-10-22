@@ -1,7 +1,7 @@
 /*
  * test-fmt-rff-blood.cpp - test code for RFFArchive class.
  *
- * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -181,7 +181,7 @@
 
 #define MAX_FILENAME_LEN  12
 
-#define INSERT_ATTRIBUTE ga::EA_ENCRYPTED
+#define INSERT_ATTRIBUTE EA_ENCRYPTED
 #define METADATA_VERSION "3.1" // file format version
 #define ARCHIVE_CLASS fmt_rff_blood_encrypted
 #define ARCHIVE_TYPE  "rff-blood"

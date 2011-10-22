@@ -2,7 +2,7 @@
  * @file  test-fmt-dat-got.cpp
  * @brief Test code for DAT_GoTArchive class.
  *
- * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -591,7 +591,7 @@ ISINSTANCE_TEST(c01,
 	REMAINING_EMPTY_FILES
 	"This is one.dat"
 	"This is two.dat",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 // Too short
@@ -607,7 +607,7 @@ ISINSTANCE_TEST(c02,
 	EMPTY_FILE_4
 	"This is one.dat"
 	"This is two.dat",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 // Offset past EOF
@@ -624,7 +624,7 @@ ISINSTANCE_TEST(c03,
 	REMAINING_EMPTY_FILES
 	"This is one.dat"
 	"This is two.dat",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 // Size past EOF
@@ -641,5 +641,5 @@ ISINSTANCE_TEST(c04,
 	REMAINING_EMPTY_FILES
 	"This is one.dat"
 	"This is two.dat",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );

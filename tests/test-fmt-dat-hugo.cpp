@@ -2,7 +2,7 @@
  * @file  test-fmt-dat-hugo.cpp
  * @brief Test code for DAT_HugoArchive class.
  *
- * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -104,23 +104,23 @@
 ISINSTANCE_TEST(c01,
 	"\x50\x00\x00\x00" "\x0f\x00\x00\x00"
 	"This is one.dat",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 ISINSTANCE_TEST(c02,
 	"\x08\x00\x00\x00" "\x0f\x00\x00",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 ISINSTANCE_TEST(c03,
 	"\x08\x00\x00\x00" "\x50\x00\x00\x00"
 	"This is one.dat",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 ISINSTANCE_TEST(c04,
 	"",
-	ga::EC_POSSIBLY_YES
+	PossiblyYes
 );
 
 // Not really possible to do any INVALIDDATA_TEST() tests here, because the

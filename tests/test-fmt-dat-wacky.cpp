@@ -1,7 +1,7 @@
 /*
  * test-fmt-dat-wacky.cpp - test code for DAT_WackyArchive class.
  *
- * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -127,12 +127,12 @@ ISINSTANCE_TEST(c01,
 	"TWO.DAT\0\0\0\0\0\0\0"        "\x0f\x00\x00\x00" "\x3b\x00\x00\x00" \
 	"This is one.dat" \
 	"This is two.dat",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 ISINSTANCE_TEST(c02,
 	"\x01",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 ISINSTANCE_TEST(c03,
@@ -141,7 +141,7 @@ ISINSTANCE_TEST(c03,
 	"TWO.DAT\0\0\0\0\0\0\0"        "\x0f\x00\x00\x00" "\x3b\x00\x00\x00" \
 	"This is one.dat" \
 	"This is two.dat",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 ISINSTANCE_TEST(c04,
@@ -150,7 +150,7 @@ ISINSTANCE_TEST(c04,
 	"TWO.DAT\0\0\0\0\0\0\0"        "\x0f\x00\x00\x00" "\x3b\x00\x00\x00" \
 	"This is one.dat" \
 	"This is two.dat",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 // Not really possible to do any INVALIDDATA_TEST() tests here, because the

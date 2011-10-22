@@ -1,7 +1,7 @@
 /*
  * test-fmt-rff-blood.cpp - test code for RFFArchive class.
  *
- * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -211,7 +211,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long_base))
 	BOOST_TEST_MESSAGE("Inserting file with basename too long");
 
 	// Find the file we're going to insert before
-	ga::Archive::EntryPtr epb = pArchive->find(FILENAME1);
+	Archive::EntryPtr epb = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(epb),
@@ -220,9 +220,9 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long_base))
 	const char *name = "123456789.A";
 
 	BOOST_CHECK_THROW(
-		ga::Archive::EntryPtr ep = pArchive->insert(epb, name, 5, FILETYPE_GENERIC,
-			ga::EA_NONE),
-		std::ios::failure
+		Archive::EntryPtr ep = pArchive->insert(epb, name, 5, FILETYPE_GENERIC,
+			EA_NONE),
+		stream::error
 	);
 
 	BOOST_CHECK_MESSAGE(
@@ -236,7 +236,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long_nodot))
 	BOOST_TEST_MESSAGE("Inserting file with no dot and name too long");
 
 	// Find the file we're going to insert before
-	ga::Archive::EntryPtr epb = pArchive->find(FILENAME1);
+	Archive::EntryPtr epb = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(epb),
@@ -245,9 +245,9 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long_nodot))
 	const char *name = "123456789";
 
 	BOOST_CHECK_THROW(
-		ga::Archive::EntryPtr ep = pArchive->insert(epb, name, 5, FILETYPE_GENERIC,
-			ga::EA_NONE),
-		std::ios::failure
+		Archive::EntryPtr ep = pArchive->insert(epb, name, 5, FILETYPE_GENERIC,
+			EA_NONE),
+		stream::error
 	);
 
 	BOOST_CHECK_MESSAGE(
@@ -261,7 +261,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long_ext))
 	BOOST_TEST_MESSAGE("Inserting file with extension too long");
 
 	// Find the file we're going to insert before
-	ga::Archive::EntryPtr epb = pArchive->find(FILENAME1);
+	Archive::EntryPtr epb = pArchive->find(FILENAME1);
 
 	// Make sure we found it
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(epb),
@@ -270,9 +270,9 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long_ext))
 	const char *name = "12345.ABCD";
 
 	BOOST_CHECK_THROW(
-		ga::Archive::EntryPtr ep = pArchive->insert(epb, name, 5, FILETYPE_GENERIC,
-			ga::EA_NONE),
-		std::ios::failure
+		Archive::EntryPtr ep = pArchive->insert(epb, name, 5, FILETYPE_GENERIC,
+			EA_NONE),
+		stream::error
 	);
 
 	BOOST_CHECK_MESSAGE(
@@ -305,12 +305,12 @@ ISINSTANCE_TEST(c01,
 	"\x00\x00\x00\x00" "\x00\x00\x00\x00" "\x00\x00\x00\x00" "\x00\x00\x00\x00"
 	"\x2f\x00\x00\x00" "\x0f\x00\x00\x00" "\x00\x00\x00\x00" "\x00\x00\x00\x00"
 	"\x00" "DATTWO\0\0\0\0\0" "\x00\x00\x00\x00",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 ISINSTANCE_TEST(c02,
 	"RFF",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 // Test some valid formats but with corrupted data, to make sure nothing

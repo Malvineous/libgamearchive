@@ -1,7 +1,7 @@
 /*
  * test-fmt-epf-lionking.cpp - test code for EPFArchive class.
  *
- * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -165,12 +165,12 @@ ISINSTANCE_TEST(c01,
 	"Extra data"
 	"ONE.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00"
 	"TWO.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 ISINSTANCE_TEST(c02,
 	"EPF",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 // Test some valid formats but with corrupted data, to make sure nothing

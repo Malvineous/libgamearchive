@@ -26,13 +26,14 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/algorithm/string.hpp> // for case-insensitive string compare
 #include <boost/bind.hpp>
-#include <iostream>
 #include <iomanip>
 
 #include <camoto/gamearchive/manager.hpp>
 #include <camoto/debug.hpp> // for ANSI colours
 #include <camoto/util.hpp>  // createString
 #include "tests.hpp"
+
+using namespace camoto;
 
 void default_sample::printNice(boost::test_tools::predicate_result& res,
 	const std::string& s, const std::string& diff)
@@ -89,25 +90,22 @@ boost::test_tools::predicate_result default_sample::is_equal(
 	return true;
 }
 
-camoto::iostream_sptr applyFilter(camoto::gamearchive::ArchivePtr arch,
-	camoto::gamearchive::Archive::EntryPtr id, camoto::iostream_sptr pStream)
-	throw (std::ios::failure)
+stream::inout_sptr applyFilter(gamearchive::ArchivePtr arch,
+	gamearchive::Archive::EntryPtr id, stream::inout_sptr pStream)
+	throw (stream::error)
 {
 	if (!id->filter.empty()) {
 		// The file needs to be filtered first
-		camoto::gamearchive::ManagerPtr pManager(camoto::gamearchive::getManager());
-		camoto::gamearchive::FilterTypePtr pFilterType(
+		gamearchive::ManagerPtr pManager(gamearchive::getManager());
+		gamearchive::FilterTypePtr pFilterType(
 			pManager->getFilterTypeByCode(id->filter));
 		if (!pFilterType) {
-			throw std::ios::failure(createString(
+			throw stream::error(createString(
 				"could not find filter \"" << id->filter << "\""
 			));
 		}
 
-		// Bind the archive's resize() function to the truncate function.
-		camoto::FN_TRUNCATE fnTruncate = boost::bind<void>(
-			&camoto::gamearchive::Archive::resize, arch, id, _1, _1);
-		return pFilterType->apply(pStream, fnTruncate);
+		return pFilterType->apply(pStream);
 	}
 	return pStream; // no filters to apply
 }

@@ -2,7 +2,7 @@
  * @file   tests.hpp
  * @brief  Test code core.
  *
- * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 
 #include <boost/test/unit_test.hpp>
 #include <camoto/gamearchive/archive.hpp>
+#include <camoto/stream.hpp>
 
 /// Allow a string constant to be passed around with embedded nulls
 #define makeString(x)  std::string((x), sizeof((x)) - 1)
@@ -56,8 +57,8 @@ struct default_sample {
  *
  * @return A stream providing filtered data from pStream.
  */
-camoto::iostream_sptr applyFilter(camoto::gamearchive::ArchivePtr arch,
-	camoto::gamearchive::Archive::EntryPtr id, camoto::iostream_sptr pStream)
-	throw (std::ios::failure);
+camoto::stream::inout_sptr applyFilter(camoto::gamearchive::ArchivePtr arch,
+	camoto::gamearchive::Archive::EntryPtr id, camoto::stream::inout_sptr pStream)
+	throw (camoto::stream::error);
 
 #endif // _CAMOTO_GAMEARCHIVE_TESTS_HPP_

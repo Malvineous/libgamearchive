@@ -1,7 +1,7 @@
 /*
  * test-fmt-grp-duke3d.cpp - test code for GRPArchive class.
  *
- * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -127,19 +127,19 @@ ISINSTANCE_TEST(c01,
 	"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00"
 	"This is one.dat"
 	"This is two.dat",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 ISINSTANCE_TEST(c02,
 	"KenGoldman",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 // Test some valid formats but with corrupted data, to make sure nothing
 // strange happens.  These must be valid files (correct signature, so
 // isInstance passes them) but with invalid content.
 INVALIDDATA_TEST(c01,
-	"KenSilverman"      "\xff\xff\xff\xf0" \
-	"ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
+	"KenSilverman"      "\xff\xff\xff\xf0"
+	"ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00"
 	"This is one.dat"
 );

@@ -145,7 +145,7 @@
 
 ISINSTANCE_TEST(c01,
 	VER HEADER "\x00\x00",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 ISINSTANCE_TEST(c02,
@@ -154,13 +154,13 @@ ISINSTANCE_TEST(c02,
 	"\x00" "TWO     .DA \0" "\xe5\x00\x00\x00" "\x0f\x00\x00\x00" "\x00\x00" "\x00\x00"
 	"This is one.dat"
 	"This is two.dat",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 ISINSTANCE_TEST(c03,
 	VER HEADER "\x02\x00" TRAIL
 	"\x00" "ONE     .DAT\0" "\xd6\x00\x00\x00" "\x0f\x00\x00\x00" "\x00\x00" "\x00\x00",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 ISINSTANCE_TEST(c04,
@@ -169,7 +169,7 @@ ISINSTANCE_TEST(c04,
 	"\x00" "TWO     .DA \0" "\xe5\x00\x00\x00" "\x0f\x00\x00\x00" "\x00\x00" "\x00\x00"
 	"This is one.dat"
 	"This is two.dat",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 ISINSTANCE_TEST(c05,
@@ -178,7 +178,7 @@ ISINSTANCE_TEST(c05,
 	"\x00" "TWO      DA \0" "\xe5\x00\x00\x00" "\x0f\x00\x00\x00" "\x00\x00" "\x00\x00"
 	"This is one.dat"
 	"This is two.dat",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 ISINSTANCE_TEST(c06,
@@ -187,7 +187,7 @@ ISINSTANCE_TEST(c06,
 	"\x00" "TWO     .DA \0" "\x05\x00\x00\x00" "\x0f\x00\x00\x00" "\x00\x00" "\x00\x00"
 	"This is one.dat"
 	"This is two.dat",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 ISINSTANCE_TEST(c07,
@@ -196,7 +196,7 @@ ISINSTANCE_TEST(c07,
 	"\x00" "TWO     .DA \0" "\xe5\x00\x00\x00" "\xff\x00\x00\x00" "\x00\x00" "\x00\x00"
 	"This is one.dat"
 	"This is two.dat",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 // Not really possible to do any INVALIDDATA_TEST() tests here, because the

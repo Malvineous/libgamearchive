@@ -1,7 +1,7 @@
 /*
  * test-fmt-vol-cosmo.cpp - test code for VOLArchive class.
  *
- * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -366,19 +366,19 @@
 ISINSTANCE_TEST(c01,
 	"ONE.DAT\x05\0\0\0\0"      "\x14\x00\x00\x00" "\x0f\x00\x00\x00"
 	"This is one.dat",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 ISINSTANCE_TEST(c02,
 	"ONE.DAT\0\0\0\0\0"        "\x05\x00\x00\x00" "\x0f\x00\x00\x00"
 	"This is one.dat",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 ISINSTANCE_TEST(c03,
 	"ONE.DAT\0\0\0\0\0"        "\x14\x00\x00\x00" "\x1f\x00\x00\x00"
 	"This is one.dat",
-	ga::EC_DEFINITELY_NO
+	DefinitelyNo
 );
 
 // Not really possible to do any INVALIDDATA_TEST() tests here, because the
