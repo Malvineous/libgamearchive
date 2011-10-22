@@ -22,23 +22,12 @@
 #ifndef _CAMOTO_FILTER_BASH_RLE_HPP_
 #define _CAMOTO_FILTER_BASH_RLE_HPP_
 
-#include <vector>
-#include <deque>
-#include <iosfwd>                           // streamsize
-#include <boost/iostreams/concepts.hpp>     // multichar_input_filter
-#include <boost/iostreams/char_traits.hpp>  // EOF, WOULD_BLOCK
-#include <boost/iostreams/operations.hpp>   // get
-#include <boost/bind.hpp>
-
-#include <camoto/bitstream.hpp>
-#include <camoto/types.hpp>
+#include <camoto/filter.hpp>
 
 namespace camoto {
 namespace gamearchive {
 
-namespace io = boost::iostreams;
-
-class bash_unrle_filter: public io::multichar_input_filter {
+class filter_bash_unrle: public filter {
 
 	protected:
 		char prev; ///< Previous byte read
@@ -46,58 +35,16 @@ class bash_unrle_filter: public io::multichar_input_filter {
 
 	public:
 
-		bash_unrle_filter() :
-			count(0)
-		{
-		};
+		filter_bash_unrle()
+			throw ();
 
-		template<typename Source>
-		std::streamsize read(Source& src, char* s, std::streamsize n)
-		{
-			int r = 0;
-			while (r < n) {
-				// If there is an RLE decode in progress
-				if (this->count) {
-					*s++ = this->prev;
-					this->count--;
-					r++;
-				} else {
-					// Otherwise no RLE decode in progress, keep reading
-					int c = boost::iostreams::get(src);
-					if (c < 0) {
-						if (r == 0) return c; // no bytes read, return error
-						break; // bytes read, return those
-					} else if (c == 0x90) { // RLE trigger byte
-						// Read the next char, c now becomes the count
-						// TODO: Handle WOULD_BLOCK being returned here
-						this->count = boost::iostreams::get(src);
-						if (this->count < 0) {
-							this->count = 0; // prevent massive loop if we are called again
-							if (r == 0) return this->count; // no bytes read, return error
-							break; // bytes read, return those
-						} else if (this->count == 0) {
-							// Count of zero means a single 0x90 char
-							this->prev = 0x90;
-							// We could set count to 1 here and let the loop
-							// take care of it, but this is quicker and we
-							// wouldn't be here unless there was at least one
-							// more byte of space in the output buffer.
-							*s++ = 0x90;
-							r++;
-						} else this->count--; // byte we already wrote is included in count
-					} else { // normal byte
-						*s++ = c;
-						r++;
-						this->prev = c;
-					}
-				}
-			}
-			return r;
-		}
+		void transform(uint8_t *out, stream::len *lenOut,
+			const uint8_t *in, stream::len *lenIn)
+			throw (filter_error);
 
 };
 
-class bash_rle_filter: public io::multichar_input_filter {
+class filter_bash_rle: public filter {
 
 	protected:
 		int prev;  ///< Previous byte read
@@ -113,96 +60,12 @@ class bash_rle_filter: public io::multichar_input_filter {
 
 	public:
 
-		bash_rle_filter() :
-			prev(-1),
-			count(0),
-			state(S0_NORMAL)
-		{
-		};
+		filter_bash_rle()
+			throw ();
 
-		template<typename Source>
-		std::streamsize read(Source& src, char* s, std::streamsize n)
-		{
-			if (n < 1) return 0; // just in case
-			int r = 0;
-			while (r < n) {
-				switch (this->state) {
-					case S0_NORMAL:
-						while (r < n) {
-							int c = boost::iostreams::get(src);
-							if (c < 0) { // No more source data
-								if (this->count) {
-									// But still some RLE stuff to output
-									this->state = S1_MUST_WRITE_RLE_EVENT;
-									break;
-								} else if (r == 0) return c; // no data read and none to write
-								else return r; // some data read
-							}
-							if (c == this->prev) {//&& (this->count < 255)) {
-								this->count++;
-							} else {
-								if (this->count) {
-									// Some queued up RLE data to write
-									this->state = S1_MUST_WRITE_RLE_EVENT;
-									boost::iostreams::putback(src, c);
-									break;
-								} else {
-									// No RLE data queued, write out the new byte
-									*s++ = c;
-									r++;
-									this->prev = c;
-									if (c == 0x90) {
-										// Have to escape this byte
-										this->prevState = this->state;
-										this->state = S3_ESCAPE_0x90;
-										break;
-									}
-								}
-							}
-						}
-						break;
-					case S1_MUST_WRITE_RLE_EVENT:
-						if (this->count > 2) {
-							*s++ = 0x90;
-							r++;
-							this->state = S2_WROTE_0x90;
-						} else {
-							// Didn't get enough bytes to make an RLE even worthwhile
-							this->state = S4_REPEAT_PREV;
-						}
-						break;
-					case S2_WROTE_0x90:
-						if (this->count > 254) {
-							*s++ = 255;
-							this->count -= 254+1; // take one more because one of the output chars will count as the input in the next iteration
-							this->state = S1_MUST_WRITE_RLE_EVENT; // more data to write
-						} else {
-							*s++ = (char)this->count + 1; // count includes byte already written
-							this->count = 0;
-							this->state = S0_NORMAL;
-						}
-						r++;
-						break;
-					case S3_ESCAPE_0x90:
-						*s++ = 0x00;  // zero RLE repeats escapes the control char
-						r++;
-						this->state = this->prevState;
-						break;
-					case S4_REPEAT_PREV:
-						*s++ = this->prev;
-						r++;
-						--this->count;
-						if (!this->count) this->state = S0_NORMAL; // no more to write
-						if (this->prev == 0x90) {
-							// Have to escape this byte
-							this->prevState = this->state;
-							this->state = S3_ESCAPE_0x90;
-						}
-						break;
-				}
-			}
-			return r;
-		}
+		void transform(uint8_t *out, stream::len *lenOut,
+			const uint8_t *in, stream::len *lenIn)
+			throw (filter_error);
 
 };
 

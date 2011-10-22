@@ -22,7 +22,7 @@
  */
 
 #include <camoto/iostream_helpers.hpp>
-#include <camoto/filteredstream.hpp>
+#include <camoto/stream_filtered.hpp>
 #include <camoto/lzw.hpp>
 
 #include "filter-bash-rle.hpp"
@@ -61,13 +61,11 @@ std::vector<std::string> BashFilterType::getGameList() const
 	return vcGames;
 }
 
-iostream_sptr BashFilterType::apply(iostream_sptr target, FN_TRUNCATE fnTruncate)
-	throw (ECorruptedData)
+stream::inout_sptr BashFilterType::apply(stream::inout_sptr target)
+	throw (filter_error, stream::read_error)
 {
-	// File needs to be decompressed
-	filtered_istream_sptr pinf(new filtered_istream());
-	pinf->push(bash_unrle_filter());
-	pinf->push(lzw_decompress_filter(
+	stream::filtered_sptr st1(new stream::filtered());
+	filter_sptr f_delzw(new filter_lzw_decompress(
 		9,   // initial codeword length (in bits)
 		12,  // maximum codeword length (in bits)
 		257, // first valid codeword
@@ -76,19 +74,22 @@ iostream_sptr BashFilterType::apply(iostream_sptr target, FN_TRUNCATE fnTruncate
 		LZW_LITTLE_ENDIAN    | // bits are split into bytes in little-endian order
 		LZW_EOF_PARAM_VALID    // Has codeword reserved for EOF - TODO: confirm
 	));
-	filtered_ostream_sptr poutf(new filtered_ostream());
-	//poutf->push(bash_rle_filter());
-	//poutf->push(lzw_compress_filter(12, LZW_LITTLE_ENDIAN));
-	iostream_sptr dec(new filteredstream(target, pinf, poutf));
-	return dec;
+	filter_sptr f_lzw = f_delzw; /// @todo Fix when LZW compression is implemented
+	st1->open(target, f_delzw, f_lzw);
+
+	stream::filtered_sptr st2(new stream::filtered());
+	filter_sptr f_unrle(new filter_bash_unrle());
+	filter_sptr f_rle(new filter_bash_rle());
+	st2->open(st1, f_unrle, f_rle);
+
+	return st2;
 }
 
-istream_sptr BashFilterType::apply(istream_sptr target)
-	throw (ECorruptedData)
+stream::input_sptr BashFilterType::apply(stream::input_sptr target)
+	throw (filter_error, stream::read_error)
 {
-	filtered_istream_sptr pinf(new filtered_istream());
-	pinf->push(bash_unrle_filter());
-	pinf->push(lzw_decompress_filter(
+	stream::input_filtered_sptr st1(new stream::input_filtered());
+	filter_sptr f_delzw(new filter_lzw_decompress(
 		9,   // initial codeword length (in bits)
 		12,  // maximum codeword length (in bits)
 		257, // first valid codeword
@@ -97,16 +98,27 @@ istream_sptr BashFilterType::apply(istream_sptr target)
 		LZW_LITTLE_ENDIAN    | // bits are split into bytes in little-endian order
 		LZW_EOF_PARAM_VALID    // Has codeword reserved for EOF - TODO: confirm
 	));
-	pinf->pushShared(target);
-	return pinf;
+	st1->open(target, f_delzw);
+
+	stream::input_filtered_sptr st2(new stream::input_filtered());
+	filter_sptr f_unrle(new filter_bash_unrle());
+	st2->open(st1, f_unrle);
+
+	return st2;
 }
 
-ostream_sptr BashFilterType::apply(ostream_sptr target, FN_TRUNCATE fnTruncate)
-	throw (ECorruptedData)
+stream::output_sptr BashFilterType::apply(stream::output_sptr target)
+	throw (filter_error)
 {
-	filtered_ostream_sptr poutf(new filtered_ostream());
-	poutf->pushShared(target);
-	return poutf;
+	stream::output_filtered_sptr st1(new stream::output_filtered());
+	filter_sptr f_lzw; /// @todo Fix when LZW compression is implemented
+	st1->open(target, f_lzw);
+
+	stream::output_filtered_sptr st2(new stream::output_filtered());
+	filter_sptr f_rle(new filter_bash_rle());
+	st2->open(st1, f_rle);
+
+	return st2;
 }
 
 } // namespace gamearchive

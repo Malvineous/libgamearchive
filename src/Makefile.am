@@ -24,6 +24,7 @@ libgamearchive_la_SOURCES += fmt-lbr-vinyl.cpp
 libgamearchive_la_SOURCES += fmt-roads-skyroads.cpp
 libgamearchive_la_SOURCES += fmt-dat-got.cpp
 libgamearchive_la_SOURCES += fmt-pcxlib.cpp
+libgamearchive_la_SOURCES += filter-bash-rle.cpp
 libgamearchive_la_SOURCES += filter-bash.cpp
 libgamearchive_la_SOURCES += filter-bitswap.cpp
 libgamearchive_la_SOURCES += filter-epfs.cpp

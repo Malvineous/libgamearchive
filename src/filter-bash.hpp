@@ -21,7 +21,6 @@
 #ifndef _CAMOTO_FILTER_BASH_HPP_
 #define _CAMOTO_FILTER_BASH_HPP_
 
-#include <camoto/types.hpp>
 #include <camoto/gamearchive/filtertype.hpp>
 
 namespace camoto {
@@ -46,17 +45,14 @@ class BashFilterType: virtual public FilterType {
 		virtual std::vector<std::string> getGameList() const
 			throw ();
 
-		virtual iostream_sptr apply(iostream_sptr target, FN_TRUNCATE fnTruncate)
-			throw (ECorruptedData);
+		virtual stream::inout_sptr apply(stream::inout_sptr target)
+			throw (filter_error, stream::read_error);
 
-		virtual istream_sptr apply(istream_sptr target)
-			throw (ECorruptedData);
+		virtual stream::input_sptr apply(stream::input_sptr target)
+			throw (filter_error, stream::read_error);
 
-		virtual ostream_sptr apply(ostream_sptr target, FN_TRUNCATE fnTruncate)
-			throw (ECorruptedData);
-
-		//virtual void flush()
-		//	throw (std::ios::failure);
+		virtual stream::output_sptr apply(stream::output_sptr target)
+			throw (filter_error);
 
 };
 
