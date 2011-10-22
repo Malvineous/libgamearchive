@@ -49,14 +49,14 @@ class EXE_DDaveType: virtual public ArchiveType {
 		virtual std::vector<std::string> getGameList() const
 			throw ();
 
-		virtual E_CERTAINTY isInstance(iostream_sptr fsArchive) const
-			throw (std::ios::failure);
+		virtual ArchiveType::Certainty isInstance(stream::inout_sptr fsArchive) const
+			throw (stream::error);
 
-		virtual ArchivePtr newArchive(iostream_sptr psArchive, SuppData& suppData) const
-			throw (std::ios::failure);
+		virtual ArchivePtr newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+			throw (stream::error);
 
-		virtual ArchivePtr open(iostream_sptr fsArchive, SuppData& suppData) const
-			throw (std::ios::failure);
+		virtual ArchivePtr open(stream::inout_sptr fsArchive, SuppData& suppData) const
+			throw (stream::error);
 
 		virtual SuppFilenames getRequiredSupps(const std::string& filenameArchive) const
 			throw ();
@@ -67,8 +67,8 @@ class EXE_DDaveArchive: virtual public FixedArchive {
 
 	public:
 
-		EXE_DDaveArchive(iostream_sptr psArchive)
-			throw (std::ios::failure);
+		EXE_DDaveArchive(stream::inout_sptr psArchive)
+			throw (stream::error);
 
 		virtual ~EXE_DDaveArchive()
 			throw ();

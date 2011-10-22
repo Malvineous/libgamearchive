@@ -67,7 +67,6 @@ std::string GRPType::getFriendlyName() const
 	return "Duke Nukem 3D Group File";
 }
 
-// Get a list of the known file extensions for this format.
 std::vector<std::string> GRPType::getFileExtensions() const
 	throw ()
 {
@@ -86,37 +85,35 @@ std::vector<std::string> GRPType::getGameList() const
 	return vcGames;
 }
 
-E_CERTAINTY GRPType::isInstance(iostream_sptr psArchive) const
-	throw (std::ios::failure)
+ArchiveType::Certainty GRPType::isInstance(stream::inout_sptr psArchive) const
+	throw (stream::error)
 {
-	psArchive->seekg(0, std::ios::end);
-	io::stream_offset lenArchive = psArchive->tellg();
+	stream::pos lenArchive = psArchive->size();
 
 	// TESTED BY: fmt_grp_duke3d_isinstance_c02
-	if (lenArchive < GRP_FAT_ENTRY_LEN) return EC_DEFINITELY_NO; // too short
+	if (lenArchive < GRP_FAT_ENTRY_LEN) return DefinitelyNo; // too short
 
 	char sig[12];
-	psArchive->seekg(0, std::ios::beg);
+	psArchive->seekg(0, stream::start);
 	psArchive->read(sig, 12);
 
 	// TESTED BY: fmt_grp_duke3d_isinstance_c00
-	if (strncmp(sig, "KenSilverman", 12) == 0) return EC_DEFINITELY_YES;
+	if (strncmp(sig, "KenSilverman", 12) == 0) return DefinitelyYes;
 
 	// TESTED BY: fmt_grp_duke3d_isinstance_c01
-	return EC_DEFINITELY_NO;
+	return DefinitelyNo;
 }
 
-ArchivePtr GRPType::newArchive(iostream_sptr psArchive, SuppData& suppData) const
-	throw (std::ios::failure)
+ArchivePtr GRPType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+	throw (stream::error)
 {
-	psArchive->seekp(0, std::ios::beg);
+	psArchive->seekp(0, stream::start);
 	psArchive->write("KenSilverman\0\0\0\0", 16);
 	return ArchivePtr(new GRPArchive(psArchive));
 }
 
-// Preconditions: isInstance() has returned > EC_DEFINITELY_NO
-ArchivePtr GRPType::open(iostream_sptr psArchive, SuppData& suppData) const
-	throw (std::ios::failure)
+ArchivePtr GRPType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+	throw (stream::error)
 {
 	return ArchivePtr(new GRPArchive(psArchive));
 }
@@ -129,24 +126,24 @@ SuppFilenames GRPType::getRequiredSupps(const std::string& filenameArchive) cons
 }
 
 
-GRPArchive::GRPArchive(iostream_sptr psArchive)
-	throw (std::ios::failure) :
+GRPArchive::GRPArchive(stream::inout_sptr psArchive)
+	throw (stream::error) :
 		FATArchive(psArchive, GRP_FIRST_FILE_OFFSET, GRP_MAX_FILENAME_LEN)
 {
-	this->psArchive->seekg(12, std::ios::beg); // skip "KenSilverman" sig
+	this->psArchive->seekg(12, stream::start); // skip "KenSilverman" sig
 
 	// We still have to perform sanity checks in case the user forced an archive
 	// to open even though it failed the signature check.
-	if (this->psArchive->tellg() != 12) throw std::ios::failure("file too short");
+	if (this->psArchive->tellg() != 12) throw stream::error("file too short");
 
 	uint32_t numFiles;
 	this->psArchive >> u32le(numFiles);
 
 	if (numFiles >= GRP_SAFETY_MAX_FILECOUNT) {
-		throw std::ios::failure("too many files or corrupted archive");
+		throw stream::error("too many files or corrupted archive");
 	}
 
-	io::stream_offset offNext = GRP_HEADER_LEN + (numFiles * GRP_FAT_ENTRY_LEN);
+	stream::pos offNext = GRP_HEADER_LEN + (numFiles * GRP_FAT_ENTRY_LEN);
 	for (int i = 0; i < numFiles; i++) {
 		FATEntry *fatEntry = new FATEntry();
 		EntryPtr ep(fatEntry);
@@ -174,17 +171,17 @@ GRPArchive::~GRPArchive()
 }
 
 void GRPArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_grp_duke3d_rename
 	assert(strNewName.length() <= GRP_MAX_FILENAME_LEN);
-	this->psArchive->seekp(GRP_FILENAME_OFFSET(pid));
+	this->psArchive->seekp(GRP_FILENAME_OFFSET(pid), stream::start);
 	this->psArchive << nullPadded(strNewName, GRP_FILENAME_FIELD_LEN);
 	return;
 }
 
-void GRPArchive::updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
-	throw (std::ios::failure)
+void GRPArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+	throw (stream::error)
 {
 	// This format doesn't have any offsets that need updating.  As this function
 	// is only called when removing a file, the "offsets" will be sorted out
@@ -192,18 +189,18 @@ void GRPArchive::updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
 	return;
 }
 
-void GRPArchive::updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
-	throw (std::ios::failure)
+void GRPArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_grp_duke3d_insert*
 	// TESTED BY: fmt_grp_duke3d_resize*
-	this->psArchive->seekp(GRP_FILESIZE_OFFSET(pid));
+	this->psArchive->seekp(GRP_FILESIZE_OFFSET(pid), stream::start);
 	this->psArchive << u32le(pid->iSize);
 	return;
 }
 
 FATArchive::FATEntry *GRPArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_grp_duke3d_insert*
 	assert(pNewEntry->strName.length() <= GRP_MAX_FILENAME_LEN);
@@ -214,7 +211,7 @@ FATArchive::FATEntry *GRPArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	// Because the new entry isn't in the vector yet we need to shift it manually
 	pNewEntry->iOffset += GRP_FAT_ENTRY_LEN;
 
-	this->psArchive->seekp(GRP_FATENTRY_OFFSET(pNewEntry));
+	this->psArchive->seekp(GRP_FATENTRY_OFFSET(pNewEntry), stream::start);
 	this->psArchive->insert(GRP_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
 
@@ -235,7 +232,7 @@ FATArchive::FATEntry *GRPArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 }
 
 void GRPArchive::preRemoveFile(const FATEntry *pid)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_grp_duke3d_remove*
 
@@ -250,7 +247,7 @@ void GRPArchive::preRemoveFile(const FATEntry *pid)
 		0
 	);
 
-	this->psArchive->seekp(GRP_FATENTRY_OFFSET(pid));
+	this->psArchive->seekp(GRP_FATENTRY_OFFSET(pid), stream::start);
 	this->psArchive->remove(GRP_FAT_ENTRY_LEN);
 
 	this->updateFileCount(this->vcFAT.size() - 1);
@@ -258,11 +255,11 @@ void GRPArchive::preRemoveFile(const FATEntry *pid)
 }
 
 void GRPArchive::updateFileCount(uint32_t iNewCount)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_grp_duke3d_insert*
 	// TESTED BY: fmt_grp_duke3d_remove*
-	this->psArchive->seekp(GRP_FILECOUNT_OFFSET);
+	this->psArchive->seekp(GRP_FILECOUNT_OFFSET, stream::start);
 	this->psArchive << u32le(iNewCount);
 	return;
 }

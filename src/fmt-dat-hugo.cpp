@@ -60,7 +60,6 @@ std::string DAT_HugoType::getFriendlyName() const
 	return "Hugo DAT File";
 }
 
-// Get a list of the known file extensions for this format.
 std::vector<std::string> DAT_HugoType::getFileExtensions() const
 	throw ()
 {
@@ -78,27 +77,26 @@ std::vector<std::string> DAT_HugoType::getGameList() const
 	return vcGames;
 }
 
-E_CERTAINTY DAT_HugoType::isInstance(iostream_sptr psArchive) const
-	throw (std::ios::failure)
+ArchiveType::Certainty DAT_HugoType::isInstance(stream::inout_sptr psArchive) const
+	throw (stream::error)
 {
-	psArchive->seekg(0, std::ios::end);
-	io::stream_offset lenArchive = psArchive->tellg();
+	stream::pos lenArchive = psArchive->size();
 
 	// Because there's no header, an empty file could be in this format.
 	// TESTED BY: fmt_dat_hugo_isinstance_c04
-	if (lenArchive == 0) return EC_POSSIBLY_YES;
+	if (lenArchive == 0) return PossiblyYes;
 
 	// TESTED BY: fmt_dat_hugo_isinstance_c02
-	if (lenArchive < DAT_FAT_ENTRY_LEN) return EC_DEFINITELY_NO; // too short
+	if (lenArchive < DAT_FAT_ENTRY_LEN) return DefinitelyNo; // too short
 
-	psArchive->seekg(0, std::ios::beg);
+	psArchive->seekg(0, stream::start);
 
 	uint32_t fatEnd, firstLen;
 	psArchive >> u32le(fatEnd) >> u32le(firstLen);
 
 	// TESTED BY: fmt_dat_hugo_isinstance_c03
 	if (fatEnd + firstLen > lenArchive)
-		return EC_DEFINITELY_NO; // first file finishes after EOF
+		return DefinitelyNo; // first file finishes after EOF
 
 	uint32_t numFiles = fatEnd / DAT_FAT_ENTRY_LEN;
 
@@ -112,30 +110,29 @@ E_CERTAINTY DAT_HugoType::isInstance(iostream_sptr psArchive) const
 		// If a file entry points past the end of the archive then it's an invalid
 		// format.
 		// TESTED BY: fmt_dat_hugo_isinstance_c01
-		if (offEntry + lenEntry > lenArchive) return EC_DEFINITELY_NO;
+		if (offEntry + lenEntry > lenArchive) return DefinitelyNo;
 	}
 
 	// If we've made it this far, this is almost certainly a DAT file.
 
 	// TESTED BY: fmt_dat_hugo_isinstance_c00
-	return EC_DEFINITELY_YES;
+	return DefinitelyYes;
 }
 
-ArchivePtr DAT_HugoType::newArchive(iostream_sptr psArchive, SuppData& suppData) const
-	throw (std::ios::failure)
+ArchivePtr DAT_HugoType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+	throw (stream::error)
 {
 	// Return an empty file
-	return ArchivePtr(new DAT_HugoArchive(psArchive, iostream_sptr(), NULL));
+	return ArchivePtr(new DAT_HugoArchive(psArchive, stream::inout_sptr()));
 }
 
-ArchivePtr DAT_HugoType::open(iostream_sptr psArchive, SuppData& suppData) const
-	throw (std::ios::failure)
+ArchivePtr DAT_HugoType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+	throw (stream::error)
 {
 	if (suppData.find(SuppItem::FAT) != suppData.end()) {
-		return ArchivePtr(new DAT_HugoArchive(psArchive,
-			suppData[SuppItem::FAT].stream, suppData[SuppItem::FAT].fnTruncate));
+		return ArchivePtr(new DAT_HugoArchive(psArchive, suppData[SuppItem::FAT]));
 	}
-	return ArchivePtr(new DAT_HugoArchive(psArchive, iostream_sptr(), NULL));
+	return ArchivePtr(new DAT_HugoArchive(psArchive, stream::inout_sptr()));
 }
 
 SuppFilenames DAT_HugoType::getRequiredSupps(const std::string& filenameArchive) const
@@ -160,44 +157,42 @@ SuppFilenames DAT_HugoType::getRequiredSupps(const std::string& filenameArchive)
 }
 
 
-DAT_HugoArchive::DAT_HugoArchive(iostream_sptr psArchive, iostream_sptr psFAT, FN_TRUNCATE fnTruncFAT)
-	throw (std::ios::failure) :
-		FATArchive(psArchive, DAT_FIRST_FILE_OFFSET, 0),
-		fnTruncFAT(fnTruncFAT)
+DAT_HugoArchive::DAT_HugoArchive(stream::inout_sptr psArchive, stream::inout_sptr psFAT)
+	throw (stream::error) :
+		FATArchive(psArchive, DAT_FIRST_FILE_OFFSET, 0)
 {
-	iostream_sptr fatStream;
+	stream::inout_sptr fatStream;
 	if (psFAT) {
-		this->psFAT.reset(new segmented_stream(psFAT));
+		this->psFAT.reset(new stream::seg());
+		this->psFAT->open(psFAT);
 		fatStream = this->psFAT;
 	} else fatStream = this->psArchive;
 
-	fatStream->seekg(0, std::ios::end);
-	io::stream_offset lenFAT = fatStream->tellg();
+	stream::pos lenFAT = fatStream->size();
 
-	this->psArchive->seekg(0, std::ios::end);
-	io::stream_offset lenArchive = this->psArchive->tellg();
+	stream::pos lenArchive = this->psArchive->size();
 
 	// Empty files could be empty archives, so only attempt to read if the file
 	// is non-empty.
 	if ((lenFAT != 0) || (lenArchive != 0)) {
 
 		if (lenFAT < DAT_FAT_ENTRY_LEN) {
-			throw std::ios::failure("Archive too short - no FAT terminator!");
+			throw stream::error("Archive too short - no FAT terminator!");
 		}
 
 		uint32_t fatEnd;
-		fatStream->seekg(0, std::ios::beg);
+		fatStream->seekg(0, stream::start);
 		fatStream >> u32le(fatEnd);
 		if (fatEnd >= lenFAT) {
-			throw std::ios::failure("Archive corrupt - FAT truncated!");
+			throw stream::error("Archive corrupt - FAT truncated!");
 		}
 		uint32_t numFiles = fatEnd / DAT_FAT_ENTRY_LEN;
 		this->vcFAT.reserve(numFiles);
 
-		io::stream_offset lastOffset = 0;
+		stream::pos lastOffset = 0;
 		int curFile = 1;
 		int firstIndexInSecondArch = 0;
-		fatStream->seekg(0, std::ios::beg);
+		fatStream->seekg(0, stream::start);
 		for (int i = 0; i < numFiles; i++) {
 			DAT_HugoEntry *fatEntry = new DAT_HugoEntry();
 			EntryPtr ep(fatEntry);
@@ -248,32 +243,32 @@ DAT_HugoArchive::~DAT_HugoArchive()
 }
 
 void DAT_HugoArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
-	throw std::ios::failure("This archive format has no filenames to rename!");
+	throw stream::error("This archive format has no filenames to rename!");
 }
 
 void DAT_HugoArchive::updateFileOffset(const FATEntry *pid,
-	std::streamsize offDelta
+	stream::delta offDelta
 )
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_dat_hugo_insert*
 	// TESTED BY: fmt_dat_hugo_resize*
 
-	this->psArchive->seekp(DAT_FILEOFFSET_OFFSET(pid));
+	this->psArchive->seekp(DAT_FILEOFFSET_OFFSET(pid), stream::start);
 	this->psArchive << u32le(pid->iOffset);
 	return;
 }
 
 void DAT_HugoArchive::updateFileSize(const FATEntry *pid,
-	std::streamsize sizeDelta
+	stream::delta sizeDelta
 )
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_dat_hugo_insert*
 	// TESTED BY: fmt_dat_hugo_resize*
-	this->psArchive->seekp(DAT_FILESIZE_OFFSET(pid));
+	this->psArchive->seekp(DAT_FILESIZE_OFFSET(pid), stream::start);
 	this->psArchive << u32le(pid->iSize);
 	return;
 }
@@ -281,7 +276,7 @@ void DAT_HugoArchive::updateFileSize(const FATEntry *pid,
 FATArchive::FATEntry *DAT_HugoArchive::preInsertFile(
 	const FATEntry *idBeforeThis, FATEntry *pNewEntry
 )
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// Set the format-specific variables
 	pNewEntry->lenHeader = 0;
@@ -289,7 +284,7 @@ FATArchive::FATEntry *DAT_HugoArchive::preInsertFile(
 	// Because the new entry isn't in the vector yet we need to shift it manually
 	pNewEntry->iOffset += DAT_FAT_ENTRY_LEN;
 
-	this->psArchive->seekp(DAT_FATENTRY_OFFSET(pNewEntry));
+	this->psArchive->seekp(DAT_FATENTRY_OFFSET(pNewEntry), stream::start);
 	this->psArchive->insert(DAT_FAT_ENTRY_LEN);
 
 	// Write out the entry
@@ -310,7 +305,7 @@ FATArchive::FATEntry *DAT_HugoArchive::preInsertFile(
 }
 
 void DAT_HugoArchive::preRemoveFile(const FATEntry *pid)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_dat_hugo_remove*
 
@@ -325,7 +320,7 @@ void DAT_HugoArchive::preRemoveFile(const FATEntry *pid)
 		0
 	);
 
-	this->psArchive->seekp(DAT_FATENTRY_OFFSET(pid));
+	this->psArchive->seekp(DAT_FATENTRY_OFFSET(pid), stream::start);
 	this->psArchive->remove(DAT_FAT_ENTRY_LEN);
 
 	return;

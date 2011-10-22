@@ -366,7 +366,6 @@ std::string LBRType::getFriendlyName() const
 	return "Vinyl Goddess From Mars Library";
 }
 
-// Get a list of the known file extensions for this format.
 std::vector<std::string> LBRType::getFileExtensions() const
 	throw ()
 {
@@ -383,16 +382,15 @@ std::vector<std::string> LBRType::getGameList() const
 	return vcGames;
 }
 
-E_CERTAINTY LBRType::isInstance(iostream_sptr psArchive) const
-	throw (std::ios::failure)
+ArchiveType::Certainty LBRType::isInstance(stream::inout_sptr psArchive) const
+	throw (stream::error)
 {
-	psArchive->seekg(0, std::ios::end);
-	io::stream_offset lenArchive = psArchive->tellg();
+	stream::pos lenArchive = psArchive->size();
 
 	// TESTED BY: fmt_lbr_vinyl_isinstance_c01
-	if (lenArchive < LBR_HEADER_LEN) return EC_DEFINITELY_NO; // too short
+	if (lenArchive < LBR_HEADER_LEN) return DefinitelyNo; // too short
 
-	psArchive->seekg(0, std::ios::beg);
+	psArchive->seekg(0, stream::start);
 
 	uint32_t numFiles;
 	psArchive >> u16le(numFiles);
@@ -405,24 +403,23 @@ E_CERTAINTY LBRType::isInstance(iostream_sptr psArchive) const
 			>> u32le(offset)
 		;
 		// TESTED BY: fmt_lbr_vinyl_isinstance_c02
-		if (offset > lenArchive) return EC_DEFINITELY_NO;
+		if (offset > lenArchive) return DefinitelyNo;
 	}
 
 	// TESTED BY: fmt_lbr_vinyl_isinstance_c00
-	return EC_DEFINITELY_YES;
+	return DefinitelyYes;
 }
 
-ArchivePtr LBRType::newArchive(iostream_sptr psArchive, SuppData& suppData) const
-	throw (std::ios::failure)
+ArchivePtr LBRType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+	throw (stream::error)
 {
-	psArchive->seekp(0, std::ios::beg);
+	psArchive->seekp(0, stream::start);
 	psArchive->write("\x00\x00", 2);
 	return ArchivePtr(new LBRArchive(psArchive));
 }
 
-// Preconditions: isInstance() has returned > EC_DEFINITELY_NO
-ArchivePtr LBRType::open(iostream_sptr psArchive, SuppData& suppData) const
-	throw (std::ios::failure)
+ArchivePtr LBRType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+	throw (stream::error)
 {
 	return ArchivePtr(new LBRArchive(psArchive));
 }
@@ -435,16 +432,15 @@ SuppFilenames LBRType::getRequiredSupps(const std::string& filenameArchive) cons
 }
 
 
-LBRArchive::LBRArchive(iostream_sptr psArchive)
-	throw (std::ios::failure) :
+LBRArchive::LBRArchive(stream::inout_sptr psArchive)
+	throw (stream::error) :
 		FATArchive(psArchive, LBR_FIRST_FILE_OFFSET, 0 /* no max filename len */)
 {
-	psArchive->seekg(0, std::ios::end);
-	io::stream_offset lenArchive = psArchive->tellg();
+	stream::pos lenArchive = psArchive->size();
 
-	if (lenArchive < LBR_HEADER_LEN) throw std::ios::failure("file too short");
+	if (lenArchive < LBR_HEADER_LEN) throw stream::error("file too short");
 
-	this->psArchive->seekg(0, std::ios::beg);
+	this->psArchive->seekg(0, stream::start);
 
 	uint32_t numFiles;
 	this->psArchive >> u16le(numFiles);
@@ -508,30 +504,30 @@ LBRArchive::~LBRArchive()
 }
 
 void LBRArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_lbr_vinyl_rename
-	this->psArchive->seekp(LBR_HASH_OFFSET(pid));
+	this->psArchive->seekp(LBR_HASH_OFFSET(pid), stream::start);
 	this->psArchive << u16le(calcHash(strNewName));
 	return;
 }
 
-void LBRArchive::updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
-	throw (std::ios::failure)
+void LBRArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+	throw (stream::error)
 {
-	this->psArchive->seekp(LBR_FILEOFFSET_OFFSET(pid));
+	this->psArchive->seekp(LBR_FILEOFFSET_OFFSET(pid), stream::start);
 	this->psArchive << u32le(pid->iOffset);
 	return;
 }
 
-void LBRArchive::updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
-	throw (std::ios::failure)
+void LBRArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+	throw (stream::error)
 {
 	return;
 }
 
 FATArchive::FATEntry *LBRArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_lbr_vinyl_insert*
 
@@ -541,7 +537,7 @@ FATArchive::FATEntry *LBRArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	// Because the new entry isn't in the vector yet we need to shift it manually
 	pNewEntry->iOffset += LBR_FAT_ENTRY_LEN;
 
-	this->psArchive->seekp(LBR_FATENTRY_OFFSET(pNewEntry));
+	this->psArchive->seekp(LBR_FATENTRY_OFFSET(pNewEntry), stream::start);
 	this->psArchive->insert(LBR_FAT_ENTRY_LEN);
 
 	this->psArchive
@@ -562,7 +558,7 @@ FATArchive::FATEntry *LBRArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 }
 
 void LBRArchive::preRemoveFile(const FATEntry *pid)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_lbr_vinyl_remove*
 
@@ -577,7 +573,7 @@ void LBRArchive::preRemoveFile(const FATEntry *pid)
 		0
 	);
 
-	this->psArchive->seekp(LBR_FATENTRY_OFFSET(pid));
+	this->psArchive->seekp(LBR_FATENTRY_OFFSET(pid), stream::start);
 	this->psArchive->remove(LBR_FAT_ENTRY_LEN);
 
 	this->updateFileCount(this->vcFAT.size() - 1);
@@ -585,11 +581,11 @@ void LBRArchive::preRemoveFile(const FATEntry *pid)
 }
 
 void LBRArchive::updateFileCount(uint32_t iNewCount)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_lbr_vinyl_insert*
 	// TESTED BY: fmt_lbr_vinyl_remove*
-	this->psArchive->seekp(LBR_FILECOUNT_OFFSET);
+	this->psArchive->seekp(LBR_FILECOUNT_OFFSET, stream::start);
 	this->psArchive << u16le(iNewCount);
 	return;
 }

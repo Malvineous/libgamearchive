@@ -65,7 +65,6 @@ std::string DAT_WackyType::getFriendlyName() const
 	return "Wacky Wheels DAT File";
 }
 
-// Get a list of the known file extensions for this format.
 std::vector<std::string> DAT_WackyType::getFileExtensions() const
 	throw ()
 {
@@ -82,26 +81,25 @@ std::vector<std::string> DAT_WackyType::getGameList() const
 	return vcGames;
 }
 
-E_CERTAINTY DAT_WackyType::isInstance(iostream_sptr psArchive) const
-	throw (std::ios::failure)
+ArchiveType::Certainty DAT_WackyType::isInstance(stream::inout_sptr psArchive) const
+	throw (stream::error)
 {
-	psArchive->seekg(0, std::ios::end);
-	io::stream_offset lenArchive = psArchive->tellg();
+	stream::pos lenArchive = psArchive->size();
 	// TESTED BY: fmt_dat_wacky_isinstance_c02
-	if (lenArchive < DAT_FAT_OFFSET) return EC_DEFINITELY_NO; // too short
+	if (lenArchive < DAT_FAT_OFFSET) return DefinitelyNo; // too short
 
-	psArchive->seekg(0, std::ios::beg);
+	psArchive->seekg(0, stream::start);
 	uint16_t numFiles;
 	psArchive >> u16le(numFiles);
 
 	// If the archive has no files, it'd better be tiny
 	// TESTED BY: fmt_dat_wacky_isinstance_c04
-	if ((numFiles == 0) && (lenArchive > DAT_FAT_OFFSET)) return EC_DEFINITELY_NO;
+	if ((numFiles == 0) && (lenArchive > DAT_FAT_OFFSET)) return DefinitelyNo;
 
 	uint32_t lenFAT = numFiles * DAT_FAT_ENTRY_LEN;
 
 	// If the FAT is larger than the entire archive then it's not a DAT file
-	if (lenFAT + DAT_FAT_OFFSET > lenArchive) return EC_DEFINITELY_NO;
+	if (lenFAT + DAT_FAT_OFFSET > lenArchive) return DefinitelyNo;
 
 	// Check each FAT entry
 	char fn[DAT_FILENAME_FIELD_LEN];
@@ -112,7 +110,7 @@ E_CERTAINTY DAT_WackyType::isInstance(iostream_sptr psArchive) const
 			if (!fn[j]) break; // stop on terminating null
 
 			// Fail on control characters in the filename
-			if (fn[j] < 32) return EC_DEFINITELY_NO; // TESTED BY: fmt_dat_wacky_isinstance_c01
+			if (fn[j] < 32) return DefinitelyNo; // TESTED BY: fmt_dat_wacky_isinstance_c01
 		}
 
 		uint32_t offEntry, lenEntry;
@@ -122,26 +120,25 @@ E_CERTAINTY DAT_WackyType::isInstance(iostream_sptr psArchive) const
 		// If a file entry points past the end of the archive then it's an invalid
 		// format.
 		// TESTED BY: fmt_dat_wacky_isinstance_c03
-		if (offEntry + lenEntry > lenArchive) return EC_DEFINITELY_NO;
+		if (offEntry + lenEntry > lenArchive) return DefinitelyNo;
 	}
 
 	// If we've made it this far, this is almost certainly a DAT file.
 
 	// TESTED BY: fmt_dat_wacky_isinstance_c00
-	return EC_DEFINITELY_YES;
+	return DefinitelyYes;
 }
 
-ArchivePtr DAT_WackyType::newArchive(iostream_sptr psArchive, SuppData& suppData) const
-	throw (std::ios::failure)
+ArchivePtr DAT_WackyType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+	throw (stream::error)
 {
-	psArchive->seekp(0, std::ios::beg);
+	psArchive->seekp(0, stream::start);
 	psArchive << u16le(0); // file count
 	return ArchivePtr(new DAT_WackyArchive(psArchive));
 }
 
-// Preconditions: isInstance() has returned > EC_DEFINITELY_NO
-ArchivePtr DAT_WackyType::open(iostream_sptr psArchive, SuppData& suppData) const
-	throw (std::ios::failure)
+ArchivePtr DAT_WackyType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+	throw (stream::error)
 {
 	return ArchivePtr(new DAT_WackyArchive(psArchive));
 }
@@ -154,17 +151,16 @@ SuppFilenames DAT_WackyType::getRequiredSupps(const std::string& filenameArchive
 }
 
 
-DAT_WackyArchive::DAT_WackyArchive(iostream_sptr psArchive)
-	throw (std::ios::failure) :
+DAT_WackyArchive::DAT_WackyArchive(stream::inout_sptr psArchive)
+	throw (stream::error) :
 		FATArchive(psArchive, DAT_FIRST_FILE_OFFSET, DAT_MAX_FILENAME_LEN)
 {
-	this->psArchive->seekg(0, std::ios::end);
-	io::stream_offset lenArchive = this->psArchive->tellg();
+	stream::pos lenArchive = this->psArchive->size();
 	if (lenArchive < DAT_FAT_OFFSET) {
-		throw std::ios::failure("Archive too short - missing file count!");
+		throw stream::error("Archive too short - missing file count!");
 	}
 
-	this->psArchive->seekg(0, std::ios::beg);
+	this->psArchive->seekg(0, stream::start);
 
 	uint16_t numFiles;
 	this->psArchive >> u16le(numFiles);
@@ -200,19 +196,19 @@ DAT_WackyArchive::~DAT_WackyArchive()
 }
 
 void DAT_WackyArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_dat_wacky_rename
 	assert(strNewName.length() <= DAT_MAX_FILENAME_LEN);
-	this->psArchive->seekp(DAT_FILENAME_OFFSET(pid));
+	this->psArchive->seekp(DAT_FILENAME_OFFSET(pid), stream::start);
 	this->psArchive << nullPadded(strNewName, DAT_FILENAME_FIELD_LEN);
 	return;
 }
 
 void DAT_WackyArchive::updateFileOffset(const FATEntry *pid,
-	std::streamsize offDelta
+	stream::delta offDelta
 )
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_dat_wacky_insert*
 	// TESTED BY: fmt_dat_wacky_resize*
@@ -220,19 +216,19 @@ void DAT_WackyArchive::updateFileOffset(const FATEntry *pid,
 	// Offsets don't start from the beginning of the archive
 	uint32_t deltaOffset = pid->iOffset - DAT_FAT_OFFSET;
 
-	this->psArchive->seekp(DAT_FILEOFFSET_OFFSET(pid));
+	this->psArchive->seekp(DAT_FILEOFFSET_OFFSET(pid), stream::start);
 	this->psArchive << u32le(deltaOffset);
 	return;
 }
 
 void DAT_WackyArchive::updateFileSize(const FATEntry *pid,
-	std::streamsize sizeDelta
+	stream::delta sizeDelta
 )
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_dat_wacky_insert*
 	// TESTED BY: fmt_dat_wacky_resize*
-	this->psArchive->seekp(DAT_FILESIZE_OFFSET(pid));
+	this->psArchive->seekp(DAT_FILESIZE_OFFSET(pid), stream::start);
 	this->psArchive << u32le(pid->iSize);
 	return;
 }
@@ -240,7 +236,7 @@ void DAT_WackyArchive::updateFileSize(const FATEntry *pid,
 FATArchive::FATEntry *DAT_WackyArchive::preInsertFile(
 	const FATEntry *idBeforeThis, FATEntry *pNewEntry
 )
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_dat_wacky_insert*
 	assert(pNewEntry->strName.length() <= DAT_MAX_FILENAME_LEN);
@@ -251,7 +247,7 @@ FATArchive::FATEntry *DAT_WackyArchive::preInsertFile(
 	// Because the new entry isn't in the vector yet we need to shift it manually
 	pNewEntry->iOffset += DAT_FAT_ENTRY_LEN;
 
-	this->psArchive->seekp(DAT_FATENTRY_OFFSET(pNewEntry));
+	this->psArchive->seekp(DAT_FATENTRY_OFFSET(pNewEntry), stream::start);
 	this->psArchive->insert(DAT_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
 
@@ -277,7 +273,7 @@ FATArchive::FATEntry *DAT_WackyArchive::preInsertFile(
 }
 
 void DAT_WackyArchive::preRemoveFile(const FATEntry *pid)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_dat_wacky_remove*
 
@@ -292,7 +288,7 @@ void DAT_WackyArchive::preRemoveFile(const FATEntry *pid)
 		0
 	);
 
-	this->psArchive->seekp(DAT_FATENTRY_OFFSET(pid));
+	this->psArchive->seekp(DAT_FATENTRY_OFFSET(pid), stream::start);
 	this->psArchive->remove(DAT_FAT_ENTRY_LEN);
 
 	this->updateFileCount(this->vcFAT.size() - 1);
@@ -300,11 +296,11 @@ void DAT_WackyArchive::preRemoveFile(const FATEntry *pid)
 }
 
 void DAT_WackyArchive::updateFileCount(uint32_t iNewCount)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_dat_wacky_insert*
 	// TESTED BY: fmt_dat_wacky_remove*
-	this->psArchive->seekp(DAT_FILECOUNT_OFFSET);
+	this->psArchive->seekp(DAT_FILECOUNT_OFFSET, stream::start);
 	this->psArchive << u16le(iNewCount);
 	return;
 }

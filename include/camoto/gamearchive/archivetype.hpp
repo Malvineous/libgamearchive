@@ -3,7 +3,7 @@
  * @brief  ArchiveType class, used to identify and open an instance of a
  *         particular archive format.
  *
- * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 #include <vector>
 #include <map>
 
-#include <camoto/types.hpp>
+#include <camoto/stream.hpp>
 #include <camoto/suppitem.hpp>
 #include <camoto/gamearchive/archive.hpp>
 
@@ -34,23 +34,18 @@ namespace camoto {
 /// Namespace for this library
 namespace gamearchive {
 
-/// Confidence level when guessing an archive format.
-enum E_CERTAINTY {
-	/// Certain this file is not of the archive format.
-	EC_DEFINITELY_NO,
-	/// The checks were inconclusive, it could go either way.
-	EC_UNSURE,
-	/// Everything checked out OK, but this format has no signature or other
-	/// test to be completely certain.
-	EC_POSSIBLY_YES,
-	/// This format has a signature and it matched.
-	EC_DEFINITELY_YES,
-};
-
 /// Interface to a particular archive format.
 class ArchiveType {
 
 	public:
+
+		/// Confidence level when guessing a file format.
+		enum Certainty {
+			DefinitelyNo,  ///< Definitely not in this format
+			Unsure,        ///< The checks were inconclusive, it could go either way
+			PossiblyYes,   ///< Everything checked out OK, but there's no signature
+			DefinitelyYes, ///< This format has a signature and it matched.
+		};
 
 		/// Get a short code to identify this file format, e.g. "grp-duke3d"
 		/**
@@ -86,10 +81,10 @@ class ArchiveType {
 		/// Check a stream to see if it's in this archive format.
 		/**
 		 * @param  psArchive A C++ iostream of the file to test.
-		 * @return A single confidence value from \ref E_CERTAINTY.
+		 * @return A single confidence value from \ref ArchiveType::Certainty.
 		 */
-		virtual E_CERTAINTY isInstance(iostream_sptr psArchive) const
-			throw (std::ios::failure) = 0;
+		virtual ArchiveType::Certainty isInstance(stream::inout_sptr psArchive) const
+			throw (stream::error) = 0;
 
 		/// Create a blank archive in this format.
 		/**
@@ -106,23 +101,23 @@ class ArchiveType {
 		 * @return A pointer to an instance of the Archive class, just as if a
 		 *         valid empty file had been opened by open().
 		 */
-		virtual ArchivePtr newArchive(iostream_sptr psArchive, SuppData& suppData) const
-			throw (std::ios::failure);
+		virtual ArchivePtr newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+			throw (stream::error);
 
 		/// Open an archive file.
 		/**
-		 * @pre    Recommended that isInstance() has returned > EC_DEFINITELY_NO.
+		 * @pre    Recommended that isInstance() has returned > DefinitelyNo.
 		 * @param  psArchive The archive file.
 		 * @param  suppData Any supplemental data required by this format (see
 		 *         getRequiredSupps()).
 		 * @return A pointer to an instance of the Archive class.  Will throw an
 		 *         exception if the data is invalid (i.e. if isInstance() returned
-		 *         EC_DEFINITELY_NO) however it will try its best to read the data
+		 *         DefinitelyNo) however it will try its best to read the data
 		 *         anyway, to make it possible to "force" a file to be opened by a
 		 *         particular format handler.
 		 */
-		virtual ArchivePtr open(iostream_sptr psArchive, SuppData& suppData) const
-			throw (std::ios::failure) = 0;
+		virtual ArchivePtr open(stream::inout_sptr psArchive, SuppData& suppData) const
+			throw (stream::error) = 0;
 
 		/// Get a list of any required supplemental files.
 		/**

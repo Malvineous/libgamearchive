@@ -24,7 +24,8 @@
 #include <boost/shared_ptr.hpp>
 #include <vector>
 
-#include <camoto/types.hpp>
+#include <camoto/stream.hpp>
+#include <stdint.h>
 #include <camoto/gamearchive/archivetype.hpp>
 #include <camoto/gamearchive/filtertype.hpp>
 
@@ -49,7 +50,7 @@ namespace gamearchive {
  */
 Archive::EntryPtr findFile(ArchivePtr& archive,
 	const std::string& filename)
-	throw (std::ios::failure);
+	throw (stream::error);
 
 } // namespace gamearchive
 } // namespace camoto

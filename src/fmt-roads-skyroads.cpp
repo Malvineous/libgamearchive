@@ -53,7 +53,6 @@ std::string SkyRoadsRoadsType::getFriendlyName() const
 	return "SkyRoads Roads File";
 }
 
-// Get a list of the known file extensions for this format.
 std::vector<std::string> SkyRoadsRoadsType::getFileExtensions() const
 	throw ()
 {
@@ -70,34 +69,33 @@ std::vector<std::string> SkyRoadsRoadsType::getGameList() const
 	return vcGames;
 }
 
-E_CERTAINTY SkyRoadsRoadsType::isInstance(iostream_sptr psArchive) const
-	throw (std::ios::failure)
+ArchiveType::Certainty SkyRoadsRoadsType::isInstance(stream::inout_sptr psArchive) const
+	throw (stream::error)
 {
-	psArchive->seekg(0, std::ios::end);
-	io::stream_offset lenArchive = psArchive->tellg();
+	stream::pos lenArchive = psArchive->size();
 	// An empty file is valid as an archive with no files (since this format
 	// lacks a header.)
 	// TESTED BY: fmt_skyroads_roads_isinstance_c01
-	if (lenArchive == 0) return EC_DEFINITELY_YES;
+	if (lenArchive == 0) return DefinitelyYes;
 
-	psArchive->seekg(0, std::ios::beg);
+	psArchive->seekg(0, stream::start);
 	uint16_t lenFAT;
 	psArchive >> u16le(lenFAT);
 
 	// If the FAT is larger than the entire archive then it's not a SkyRoads roads file
 	// TESTED BY: fmt_skyroads_roads_isinstance_c02
-	if (lenFAT > lenArchive) return EC_DEFINITELY_NO;
+	if (lenFAT > lenArchive) return DefinitelyNo;
 
 	// If the FAT is smaller than a single entry then it's not a SkyRoads roads file
 	// TESTED BY: fmt_skyroads_roads_isinstance_c03
-	if (lenFAT < SRR_FAT_ENTRY_LEN) return EC_DEFINITELY_NO;
+	if (lenFAT < SRR_FAT_ENTRY_LEN) return DefinitelyNo;
 
 	// The FAT is not an even multiple of FAT entries.
 	// TESTED BY: fmt_skyroads_roads_isinstance_c04
-	if (lenFAT % SRR_FAT_ENTRY_LEN) return EC_DEFINITELY_NO;
+	if (lenFAT % SRR_FAT_ENTRY_LEN) return DefinitelyNo;
 
 	// Check each FAT entry
-	psArchive->seekg(0, std::ios::beg);
+	psArchive->seekg(0, stream::start);
 	uint16_t offPrev = 0;
 	for (int i = 0; i < lenFAT / SRR_FAT_ENTRY_LEN; i++) {
 
@@ -107,11 +105,11 @@ E_CERTAINTY SkyRoadsRoadsType::isInstance(iostream_sptr psArchive) const
 		// If a file entry points past the end of the archive then it's an invalid
 		// format.
 		// TESTED BY: fmt_skyroads_roads_isinstance_c05
-		if (offEntry > lenArchive) return EC_DEFINITELY_NO;
+		if (offEntry > lenArchive) return DefinitelyNo;
 
 		// Offsets must increase or we'll get a negative file size.
 		// TESTED BY: fmt_skyroads_roads_isinstance_c06
-		if (offEntry < offPrev) return EC_DEFINITELY_NO;
+		if (offEntry < offPrev) return DefinitelyNo;
 
 		offPrev = offEntry;
 	}
@@ -120,17 +118,17 @@ E_CERTAINTY SkyRoadsRoadsType::isInstance(iostream_sptr psArchive) const
 	// TODO: What about data in between files?
 
 	// TESTED BY: fmt_skyroads_roads_isinstance_c00
-	return EC_DEFINITELY_YES;
+	return DefinitelyYes;
 }
 
-ArchivePtr SkyRoadsRoadsType::newArchive(iostream_sptr psArchive, SuppData& suppData) const
-	throw (std::ios::failure)
+ArchivePtr SkyRoadsRoadsType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+	throw (stream::error)
 {
 	return ArchivePtr(new SkyRoadsRoadsArchive(psArchive));
 }
 
-ArchivePtr SkyRoadsRoadsType::open(iostream_sptr psArchive, SuppData& suppData) const
-	throw (std::ios::failure)
+ArchivePtr SkyRoadsRoadsType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+	throw (stream::error)
 {
 	return ArchivePtr(new SkyRoadsRoadsArchive(psArchive));
 }
@@ -143,14 +141,13 @@ SuppFilenames SkyRoadsRoadsType::getRequiredSupps(const std::string& filenameArc
 }
 
 
-SkyRoadsRoadsArchive::SkyRoadsRoadsArchive(iostream_sptr psArchive)
-	throw (std::ios::failure) :
+SkyRoadsRoadsArchive::SkyRoadsRoadsArchive(stream::inout_sptr psArchive)
+	throw (stream::error) :
 		FATArchive(psArchive, SRR_FIRST_FILE_OFFSET, 0)
 {
-	this->psArchive->seekg(0, std::ios::end);
-	io::stream_offset lenArchive = this->psArchive->tellg();
+	stream::pos lenArchive = this->psArchive->size();
 	if (lenArchive > 0) {
-		this->psArchive->seekg(0, std::ios::beg);
+		this->psArchive->seekg(0, stream::start);
 		uint16_t offCur;
 		this->psArchive >> u16le(offCur);
 
@@ -189,33 +186,33 @@ SkyRoadsRoadsArchive::~SkyRoadsRoadsArchive()
 }
 
 void SkyRoadsRoadsArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
-	throw std::ios::failure("This format does not have any filenames.");
+	throw stream::error("This format does not have any filenames.");
 }
 
-void SkyRoadsRoadsArchive::updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
-	throw (std::ios::failure)
+void SkyRoadsRoadsArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_skyroads_roads_insert*
 	// TESTED BY: fmt_skyroads_roads_resize*
-	this->psArchive->seekp(pid->iIndex * SRR_FAT_ENTRY_LEN);
+	this->psArchive->seekp(pid->iIndex * SRR_FAT_ENTRY_LEN, stream::start);
 	this->psArchive << u16le(pid->iOffset);
 	return;
 }
 
-void SkyRoadsRoadsArchive::updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
-	throw (std::ios::failure)
+void SkyRoadsRoadsArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_skyroads_roads_insert*
 	// TESTED BY: fmt_skyroads_roads_resize*
-	this->psArchive->seekp(pid->iIndex * SRR_FAT_ENTRY_LEN + 2);
+	this->psArchive->seekp(pid->iIndex * SRR_FAT_ENTRY_LEN + 2, stream::start);
 	this->psArchive << u16le(pid->iSize);
 	return;
 }
 
 FATArchive::FATEntry *SkyRoadsRoadsArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_skyroads_roads_insert*
 
@@ -225,7 +222,7 @@ FATArchive::FATEntry *SkyRoadsRoadsArchive::preInsertFile(const FATEntry *idBefo
 	// Because the new entry isn't in the vector yet we need to shift it manually
 	pNewEntry->iOffset += SRR_FAT_ENTRY_LEN;
 
-	this->psArchive->seekp(pNewEntry->iIndex * SRR_FAT_ENTRY_LEN);
+	this->psArchive->seekp(pNewEntry->iIndex * SRR_FAT_ENTRY_LEN, stream::start);
 	this->psArchive->insert(SRR_FAT_ENTRY_LEN);
 
 	// Write out the entry
@@ -246,7 +243,7 @@ FATArchive::FATEntry *SkyRoadsRoadsArchive::preInsertFile(const FATEntry *idBefo
 }
 
 void SkyRoadsRoadsArchive::preRemoveFile(const FATEntry *pid)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_skyroads_roads_remove*
 
@@ -261,7 +258,7 @@ void SkyRoadsRoadsArchive::preRemoveFile(const FATEntry *pid)
 		0
 	);
 
-	this->psArchive->seekp(pid->iIndex * SRR_FAT_ENTRY_LEN);
+	this->psArchive->seekp(pid->iIndex * SRR_FAT_ENTRY_LEN, stream::start);
 	this->psArchive->remove(SRR_FAT_ENTRY_LEN);
 	return;
 }

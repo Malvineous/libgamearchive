@@ -3,7 +3,7 @@
  * @brief  Declaration of top-level Archive class, for accessing file
  *         archives storing game data.
  *
- * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,11 +24,11 @@
 
 #include <boost/shared_ptr.hpp>
 #include <exception>
-#include <iostream>
 #include <sstream>
 #include <vector>
 
-#include <camoto/types.hpp>
+#include <camoto/stream.hpp>
+#include <stdint.h>
 #include <camoto/metadata.hpp>
 
 namespace camoto {
@@ -75,9 +75,6 @@ typedef boost::shared_ptr<Archive> ArchivePtr;
 class Archive: virtual public Metadata {
 
 	public:
-		/// Offset type used by FileEntry
-		typedef unsigned long offset_t;
-
 		/// Base class to represent entries in the file.
 		/**
 		 * Will be extended by descendent classes to hold format-specific data.
@@ -93,7 +90,7 @@ class Archive: virtual public Metadata {
 			bool bValid;
 
 			/// Size of the file in the archive.
-			offset_t iSize;
+			stream::len iSize;
 
 			/// Size before filtering/compression (uncompressed size)
 			/**
@@ -101,7 +98,7 @@ class Archive: virtual public Metadata {
 			 * decompression.  If the file is not compressed or filtered it will be
 			 * ignored but by convention should be set to the same value as iSize.
 			 */
-			offset_t iPrefilteredSize;
+			stream::len iPrefilteredSize;
 
 			/// Filename (may be empty for some archives)
 			std::string strName;
@@ -161,34 +158,6 @@ class Archive: virtual public Metadata {
 		/// Vector of shared FileEntry pointers
 		typedef std::vector<EntryPtr> VC_ENTRYPTR;
 
-		/// Truncate callback
-		/**
-		 * This function is called with a single unsigned long parameter when
-		 * the underlying archive file needs to be shrunk or enlarged to the given
-		 * size.  It must be set to a valid function before flush() is called.
-		 *
-		 * The function signature is:
-		 * @code
-		 * void fnTruncate(unsigned long newLength);
-		 * @endcode
-		 *
-		 * This example uses boost::bind to package up a call to the Linux
-		 * truncate() function (which requires both a filename and size) such that
-		 * the filename is supplied in advance and not required when flush() makes
-		 * the call.
-		 *
-		 * @code
-		 * Archive *pArchive = ...
-		 * pArchive->fnTruncate = boost::bind<void>(truncate, "archive.dat", _1);
-		 * pArchive->flush();  // calls truncate("archive.dat", 123)
-		 * @endcode
-		 *
-		 * Unfortunately since there is no cross-platform method for changing a
-		 * file's size from an open file handle, this is a necessary evil to avoid
-		 * passing the archive filename around all over the place.
-		 */
-		FN_TRUNCATE fnTruncate;
-
 		Archive()
 			throw ();
 
@@ -235,7 +204,7 @@ class Archive: virtual public Metadata {
 		 *
 		 * @return true if the EntryPtr is valid.
 		 */
-		virtual bool isValid(const EntryPtr& id) const
+		virtual bool isValid(const EntryPtr id) const
 			throw () = 0;
 
 		/// Open a file in the archive.
@@ -248,7 +217,7 @@ class Archive: virtual public Metadata {
 		 *   is not permitted - use resize() if the file needs to change size (grow
 		 *   or shrink.)
 		 */
-		virtual iostream_sptr open(const EntryPtr& id)
+		virtual stream::inout_sptr open(const EntryPtr id)
 			throw () = 0;
 
 		/// Open a folder in the archive.
@@ -269,8 +238,8 @@ class Archive: virtual public Metadata {
 		 *
 		 * @return Another Archive instance representing the files in the folder.
 		 */
-		virtual ArchivePtr openFolder(const EntryPtr& id)
-			throw (std::ios::failure);
+		virtual ArchivePtr openFolder(const EntryPtr id)
+			throw (stream::error);
 
 		/// Insert a new file into the archive.
 		/**
@@ -314,10 +283,10 @@ class Archive: virtual public Metadata {
 		 *   file.  The file may also need to be resized if the filtered data ends
 		 *   up being a different size to the unfiltered data.
 		 */
-		virtual EntryPtr insert(const EntryPtr& idBeforeThis,
-			const std::string& strFilename, offset_t iSize, std::string type,
+		virtual EntryPtr insert(const EntryPtr idBeforeThis,
+			const std::string& strFilename, stream::pos iSize, std::string type,
 			int attr)
-			throw (std::ios::failure) = 0;
+			throw (stream::error) = 0;
 
 		/// Delete the given entry from the archive.
 		/**
@@ -332,8 +301,8 @@ class Archive: virtual public Metadata {
 		 *
 		 * @post Existing EntryPtrs become invalid.  Any open files remain valid.
 		 */
-		virtual void remove(EntryPtr& id)
-			throw (std::ios::failure) = 0;
+		virtual void remove(EntryPtr id)
+			throw (stream::error) = 0;
 
 		/// Rename a file.
 		/**
@@ -347,8 +316,8 @@ class Archive: virtual public Metadata {
 		 *
 		 * @post Existing EntryPtrs remain valid.
 		 */
-		virtual void rename(EntryPtr& id, const std::string& strNewName)
-			throw (std::ios::failure) = 0;
+		virtual void rename(EntryPtr id, const std::string& strNewName)
+			throw (stream::error) = 0;
 
 		/// Move an entry to a different position within the archive.
 		/**
@@ -364,8 +333,8 @@ class Archive: virtual public Metadata {
 		 *
 		 * @post Existing EntryPtrs become invalid.  Any open files remain valid.
 		 */
-		virtual void move(const EntryPtr& idBeforeThis, EntryPtr& id)
-			throw (std::ios::failure);
+		virtual void move(const EntryPtr idBeforeThis, EntryPtr id)
+			throw (stream::error);
 
 		/// Enlarge or shrink an existing file.
 		/**
@@ -399,9 +368,9 @@ class Archive: virtual public Metadata {
 		 *   does not exist if the resize is done while none of the archive's files
 		 *   are open.
 		 */
-		virtual void resize(EntryPtr& id, offset_t iNewSize,
-			offset_t iNewPrefilteredSize)
-			throw (std::ios::failure) = 0;
+		virtual void resize(EntryPtr id, stream::pos iNewSize,
+			stream::pos iNewPrefilteredSize)
+			throw (stream::error) = 0;
 
 		/// Write out any cached changes to the underlying stream.
 		/**
@@ -420,7 +389,7 @@ class Archive: virtual public Metadata {
 		 * @pre The \ref fnTruncate member must be valid before this call.
 		 */
 		virtual void flush()
-			throw (std::ios::failure) = 0;
+			throw (stream::error) = 0;
 
 		/// Find out which attributes can be set on files in this archive.
 		/**
@@ -440,6 +409,10 @@ class Archive: virtual public Metadata {
 
 /// Vector of Archive shared pointers.
 typedef std::vector<ArchivePtr> VC_ARCHIVE;
+
+/// Truncate callback for substreams that are a fixed size.
+void preventResize(stream::len len)
+	throw (stream::write_error);
 
 } // namespace gamearchive
 } // namespace camoto

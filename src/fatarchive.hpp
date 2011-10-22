@@ -21,19 +21,15 @@
 #ifndef _CAMOTO_FATARCHIVE_HPP_
 #define _CAMOTO_FATARCHIVE_HPP_
 
-#include <iostream>
 #include <map>
-#include <boost/iostreams/stream.hpp>
 #include <boost/weak_ptr.hpp>
 
-#include <camoto/substream.hpp>
-#include <camoto/segmented_stream.hpp>
+#include <camoto/stream_sub.hpp>
+#include <camoto/stream_seg.hpp>
 #include <camoto/gamearchive/archive.hpp>
 
 namespace camoto {
 namespace gamearchive {
-
-namespace io = boost::iostreams;
 
 /// Common value for lenMaxFilename in FATArchive::FATArchive()
 #define ARCH_STD_DOS_FILENAMES  12     // 8.3 + dot
@@ -55,8 +51,8 @@ class FATArchive: virtual public Archive {
 			 */
 			int iIndex;
 
-			offset_t iOffset;    ///< Offset of file in archive
-			offset_t lenHeader;  ///< Size of embedded FAT entry at start of file data
+			stream::pos iOffset;    ///< Offset of file in archive
+			stream::len lenHeader;  ///< Size of embedded FAT entry at start of file data
 
 			/// Empty constructor
 			FATEntry()
@@ -81,10 +77,10 @@ class FATArchive: virtual public Archive {
 		/// The archive stream must be mutable, because we need to change it by
 		/// seeking and reading data in our get() functions, which don't logically
 		/// change the archive's state.
-		mutable segstream_sptr psArchive;
+		mutable stream::seg_sptr psArchive;
 
 		/// Offset of the first file in an empty archive.
-		io::stream_offset offFirstFile;
+		stream::pos offFirstFile;
 
 		/// Vector of all files in the archive.
 		/**
@@ -104,10 +100,10 @@ class FATArchive: virtual public Archive {
 		 * we're keeping track of it.  We need to keep track of it so that open
 		 * files can be moved around as other files are inserted, resized, etc.
 		 */
-		typedef std::multimap< FATEntryPtr, boost::weak_ptr<substream> > OPEN_FILES;
+		typedef std::multimap< FATEntryPtr, boost::weak_ptr<stream::sub> > OPEN_FILES;
 
 		/// Helper type when inserting elements into openFiles.
-		typedef std::pair< FATEntryPtr, boost::weak_ptr<substream> > OPEN_FILE;
+		typedef std::pair< FATEntryPtr, boost::weak_ptr<stream::sub> > OPEN_FILE;
 
 		/// List of substreams currently open.
 		OPEN_FILES openFiles;
@@ -131,11 +127,11 @@ class FATArchive: virtual public Archive {
 		 *   filename is valid before being passed to insert().  The predefined
 		 *   constant %ARCH_STD_DOS_FILENAMES can be used for 8.3 files.
 		 *
-		 * @throws std::ios::failure on I/O error.
+		 * @throws stream::error on I/O error.
 		 */
-		FATArchive(iostream_sptr psArchive, io::stream_offset offFirstFile,
+		FATArchive(stream::inout_sptr psArchive, stream::pos offFirstFile,
 			int lenMaxFilename)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 	public:
 
@@ -148,31 +144,31 @@ class FATArchive: virtual public Archive {
 		virtual const VC_ENTRYPTR& getFileList(void) const
 			throw ();
 
-		virtual bool isValid(const EntryPtr& id) const
+		virtual bool isValid(const EntryPtr id) const
 			throw ();
 
-		virtual iostream_sptr open(const EntryPtr& id)
+		virtual stream::inout_sptr open(const EntryPtr id)
 			throw ();
 
-		virtual EntryPtr insert(const EntryPtr& idBeforeThis,
-			const std::string& strFilename, offset_t iSize, std::string type,
+		virtual EntryPtr insert(const EntryPtr idBeforeThis,
+			const std::string& strFilename, stream::pos iSize, std::string type,
 			int attr)
-			throw (std::ios::failure);
+			throw (stream::error);
 
-		virtual void remove(EntryPtr& id)
-			throw (std::ios::failure);
+		virtual void remove(EntryPtr id)
+			throw (stream::error);
 
-		virtual void rename(EntryPtr& id, const std::string& strNewName)
-			throw (std::ios::failure);
+		virtual void rename(EntryPtr id, const std::string& strNewName)
+			throw (stream::error);
 
 		// move() uses implementation from Archive
 
-		virtual void resize(EntryPtr& id, offset_t iNewSize,
-			offset_t iNewPrefilteredSize)
-			throw (std::ios::failure);
+		virtual void resize(EntryPtr id, stream::pos iNewSize,
+			stream::pos iNewPrefilteredSize)
+			throw (stream::error);
 
 		virtual void flush()
-			throw (std::ios::failure);
+			throw (stream::error);
 
 	protected:
 		/// Shift any files *starting* at or after offStart by delta bytes.
@@ -183,11 +179,11 @@ class FATArchive: virtual public Archive {
 		 * following it.  This function must notify any open files that their offset
 		 * has moved.
 		 *
-		 * @throws std::ios::failure on I/O error.
+		 * @throws stream::error on I/O error.
 		 */
-		virtual void shiftFiles(const FATEntry *fatSkip, io::stream_offset offStart,
-			std::streamsize deltaOffset, int deltaIndex)
-			throw (std::ios::failure);
+		virtual void shiftFiles(const FATEntry *fatSkip, stream::pos offStart,
+			stream::len deltaOffset, int deltaIndex)
+			throw (stream::error);
 
 		// Methods to be filled out by descendent classes
 
@@ -201,7 +197,7 @@ class FATArchive: virtual public Archive {
 		 *   constructor, so this function does not need to check that the filename
 		 *   length is within range.
 		 *
-		 * @throws std::ios::failure on I/O error.
+		 * @throws stream::error on I/O error.
 		 *
 		 * @return If this function returns (as opposed to throwing an exception)
 		 *   then the filename in pid will be updated.  If an exception is thrown
@@ -213,7 +209,7 @@ class FATArchive: virtual public Archive {
 		 *   one).
 		 */
 		virtual void updateFileName(const FATEntry *pid, const std::string& name)
-			throw (std::ios::failure) = 0;
+			throw (stream::error) = 0;
 
 		/// Adjust the offset of the given file in the on-disk FAT.
 		/**
@@ -223,13 +219,13 @@ class FATArchive: virtual public Archive {
 		 * @param offDelta
 		 *   Amount the offset has changed, in case this value is needed.
 		 *
-		 * @throws std::ios::failure on I/O error.
+		 * @throws stream::error on I/O error.
 		 *
 		 * @note pid->offset is already set to the new offset, do not add offDelta
 		 *   to this or you will get the wrong offset!
 		 */
-		virtual void updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
-			throw (std::ios::failure) = 0;
+		virtual void updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+			throw (stream::error) = 0;
 
 		/// Adjust the size of the given file in the on-disk FAT.
 		/**
@@ -239,13 +235,13 @@ class FATArchive: virtual public Archive {
 		 * @param sizeDelta
 		 *   Amount the size has changed, in case this value is needed.
 		 *
-		 * @throws std::ios::failure on I/O error.
+		 * @throws stream::error on I/O error.
 		 *
 		 * @note pid->size is already set to the new size, do not add sizeDelta
 		 *   to this or you will get the wrong size!
 		 */
-		virtual void updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
-			throw (std::ios::failure) = 0;
+		virtual void updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+			throw (stream::error) = 0;
 
 		/// Insert a new entry in the on-disk FAT.
 		/**
@@ -276,11 +272,11 @@ class FATArchive: virtual public Archive {
 		 * @return Real entry to use.  Will usually (but not always) be the same as
 		 *   pNewEntry.
 		 *
-		 * @throws std::ios::failure on I/O error.
+		 * @throws stream::error on I/O error.
 		 */
 		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis,
 			FATEntry *pNewEntry)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 		/// Called after the file data has been inserted.
 		/**
@@ -291,14 +287,14 @@ class FATArchive: virtual public Archive {
 		 * @param pNewEntry
 		 *   New file that was just inserted.  May be modified.
 		 *
-		 * @throws std::ios::failure on I/O error.
+		 * @throws stream::error on I/O error.
 		 *
 		 * @note preInsertFile() and all subsequent FAT updates and file shifting
 		 * is done without the new file, then the new file data is inserted last,
 		 * and postInsertFile() immediately called.
 		 */
 		virtual void postInsertFile(FATEntry *pNewEntry)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 		/// Remove the entry from the FAT.
 		/**
@@ -312,10 +308,10 @@ class FATArchive: virtual public Archive {
 		 *
 		 * Invalidates existing EntryPtrs.
 		 *
-		 * @throws std::ios::failure on I/O error.
+		 * @throws stream::error on I/O error.
 		 */
 		virtual void preRemoveFile(const FATEntry *pid)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 		/// Called after the file data has been removed and the FAT has been
 		/// updated.
@@ -325,10 +321,10 @@ class FATArchive: virtual public Archive {
 		 * parameters are still correct, although no longer used (e.g. the offset
 		 * it was at, its size, etc.)
 		 *
-		 * @throws std::ios::failure on I/O error.
+		 * @throws stream::error on I/O error.
 		 */
 		virtual void postRemoveFile(const FATEntry *pid)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 		/// Allocate a new, empty FAT entry.
 		/**
@@ -352,9 +348,13 @@ class FATArchive: virtual public Archive {
 			throw ();
 
 		/// Should the given entry be moved during an insert/resize operation?
-		bool entryInRange(const FATEntry *fat, io::stream_offset offStart,
+		bool entryInRange(const FATEntry *fat, stream::pos offStart,
 			const FATEntry *fatSkip)
 			throw ();
+
+		/// Substream truncate callback to resize the substream.
+		void resizeSubstream(FATEntryPtr id, stream::len newSize)
+			throw (stream::write_error);
 };
 
 /// Function for test code only, do not use.  Searches for files based on the

@@ -68,7 +68,6 @@ std::string EXE_DDaveType::getFriendlyName() const
 	return "Dangerous Dave Executable";
 }
 
-// Get a list of the known file extensions for this format.
 std::vector<std::string> EXE_DDaveType::getFileExtensions() const
 	throw ()
 {
@@ -85,37 +84,36 @@ std::vector<std::string> EXE_DDaveType::getGameList() const
 	return vcGames;
 }
 
-E_CERTAINTY EXE_DDaveType::isInstance(iostream_sptr psArchive) const
-	throw (std::ios::failure)
+ArchiveType::Certainty EXE_DDaveType::isInstance(stream::inout_sptr psArchive) const
+	throw (stream::error)
 {
-	psArchive->seekg(0, std::ios::end);
-	io::stream_offset lenArchive = psArchive->tellg();
+	stream::pos lenArchive = psArchive->size();
 
 	if (lenArchive == 172848) {
 		// TESTED BY: TODO fixed_exe_ddave_isinstance_c00
-		psArchive->seekg(0x26A80);
+		psArchive->seekg(0x26A80, stream::start);
 		char buffer[25];
 		psArchive->read(buffer, 25);
 		// No version strings, so check some data unlikely to be modded
 		if (strncmp(buffer, "Trouble loading tileset!$", 25) != 0)
-			return EC_DEFINITELY_NO;
+			return DefinitelyNo;
 
-		return EC_DEFINITELY_YES;
+		return DefinitelyYes;
 	}
 
 	// TESTED BY: TODO (generic)
-	return EC_DEFINITELY_NO;
+	return DefinitelyNo;
 }
 
-ArchivePtr EXE_DDaveType::newArchive(iostream_sptr psArchive, SuppData& suppData) const
-	throw (std::ios::failure)
+ArchivePtr EXE_DDaveType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+	throw (stream::error)
 {
 	// This isn't a true archive so we can't create new versions of it.
-	throw std::ios::failure("Can't create a new archive in this format.");
+	throw stream::error("Can't create a new archive in this format.");
 }
 
-ArchivePtr EXE_DDaveType::open(iostream_sptr psArchive, SuppData& suppData) const
-	throw (std::ios::failure)
+ArchivePtr EXE_DDaveType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+	throw (stream::error)
 {
 	return ArchivePtr(new EXE_DDaveArchive(psArchive));
 }
@@ -128,8 +126,8 @@ SuppFilenames EXE_DDaveType::getRequiredSupps(const std::string& filenameArchive
 }
 
 
-EXE_DDaveArchive::EXE_DDaveArchive(iostream_sptr psArchive)
-	throw (std::ios::failure) :
+EXE_DDaveArchive::EXE_DDaveArchive(stream::inout_sptr psArchive)
+	throw (stream::error) :
 		FixedArchive(psArchive, ddave_file_list, sizeof(ddave_file_list) / sizeof(FixedArchiveFile))
 {
 }

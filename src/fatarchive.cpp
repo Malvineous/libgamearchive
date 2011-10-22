@@ -18,6 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <boost/bind.hpp>
 #include <boost/algorithm/string.hpp>
 #include <camoto/util.hpp> // createString
 
@@ -55,19 +56,20 @@ Archive::EntryPtr getFileAt(const Archive::VC_ENTRYPTR& files, int index)
 	return Archive::EntryPtr();
 }
 
-FATArchive::FATArchive(iostream_sptr psArchive, io::stream_offset offFirstFile,
+FATArchive::FATArchive(stream::inout_sptr psArchive, stream::pos offFirstFile,
 	int lenMaxFilename)
-	throw (std::ios::failure) :
-		psArchive(new segmented_stream(psArchive)),
+	throw (stream::error) :
+		psArchive(new stream::seg()),
 		offFirstFile(offFirstFile),
 		lenMaxFilename(lenMaxFilename)
 {
+	this->psArchive->open(psArchive);
 }
 
 FATArchive::~FATArchive()
 	throw ()
 {
-	// Can't flush here as it could throw std::ios::failure and we have no way
+	// Can't flush here as it could throw stream::error and we have no way
 	// of handling it.
 	//this->flush(); // make sure it saves on close just in case
 }
@@ -94,14 +96,14 @@ FATArchive::EntryPtr FATArchive::find(const std::string& strFilename) const
 	return EntryPtr();
 }
 
-bool FATArchive::isValid(const EntryPtr& id) const
+bool FATArchive::isValid(const EntryPtr id) const
 	throw ()
 {
 	const FATEntry *id2 = dynamic_cast<const FATEntry *>(id.get());
 	return ((id2) && (id2->bValid));
 }
 
-iostream_sptr FATArchive::open(const EntryPtr& id)
+stream::inout_sptr FATArchive::open(const EntryPtr id)
 	throw ()
 {
 	// TESTED BY: fmt_grp_duke3d_open
@@ -119,12 +121,13 @@ iostream_sptr FATArchive::open(const EntryPtr& id)
 	// be visible externally.)
 	FATEntryPtr pFAT = boost::dynamic_pointer_cast<FATEntry>(id);
 
-	substream_sptr psSub(
-		new substream(
-			this->psArchive,
-			pFAT->iOffset + pFAT->lenHeader,
-			pFAT->iSize
-		)
+	stream::sub_sptr psSub(new stream::sub());
+	stream::fn_truncate fnTrunc = boost::bind(&FATArchive::resizeSubstream, this, pFAT, _1);
+	psSub->open(
+		this->psArchive,
+		pFAT->iOffset + pFAT->lenHeader,
+		pFAT->iSize,
+		fnTrunc
 	);
 
 	// Add it to the list of open files, in case we need to shift the substream
@@ -136,10 +139,10 @@ iostream_sptr FATArchive::open(const EntryPtr& id)
 	return psSub;
 }
 
-FATArchive::EntryPtr FATArchive::insert(const EntryPtr& idBeforeThis,
-	const std::string& strFilename, offset_t iSize, std::string type, int attr
+FATArchive::EntryPtr FATArchive::insert(const EntryPtr idBeforeThis,
+	const std::string& strFilename, stream::pos iSize, std::string type, int attr
 )
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_grp_duke3d_insert2
 	// TESTED BY: fmt_grp_duke3d_remove_insert
@@ -150,7 +153,7 @@ FATArchive::EntryPtr FATArchive::insert(const EntryPtr& idBeforeThis,
 		(this->lenMaxFilename > 0) &&
 		(strFilename.length() > this->lenMaxFilename)
 	) {
-		throw std::ios::failure(createString("maximum filename length is "
+		throw stream::error(createString("maximum filename length is "
 			<< this->lenMaxFilename << " chars"));
 	}
 
@@ -234,7 +237,7 @@ FATArchive::EntryPtr FATArchive::insert(const EntryPtr& idBeforeThis,
 	// (e.g. embedded FAT) then preInsertFile() will have inserted space for
 	// this and written the data, so our insert should start just after the
 	// header.
-	this->psArchive->seekp(pNewFile->iOffset + pNewFile->lenHeader);
+	this->psArchive->seekp(pNewFile->iOffset + pNewFile->lenHeader, stream::start);
 	this->psArchive->insert(pNewFile->iSize);
 
 	this->postInsertFile(pNewFile);
@@ -242,8 +245,8 @@ FATArchive::EntryPtr FATArchive::insert(const EntryPtr& idBeforeThis,
 	return ep;
 }
 
-void FATArchive::remove(EntryPtr& id)
-	throw (std::ios::failure)
+void FATArchive::remove(EntryPtr id)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_grp_duke3d_remove
 	// TESTED BY: fmt_grp_duke3d_remove2
@@ -274,7 +277,7 @@ void FATArchive::remove(EntryPtr& id)
 	);
 
 	// Remove the file's data from the archive
-	this->psArchive->seekp(pFATDel->iOffset);
+	this->psArchive->seekp(pFATDel->iOffset, stream::start);
 	this->psArchive->remove(pFATDel->iSize + pFATDel->lenHeader);
 
 	// Mark it as invalid in case some other code is still holding on to it.
@@ -285,8 +288,8 @@ void FATArchive::remove(EntryPtr& id)
 	return;
 }
 
-void FATArchive::rename(EntryPtr& id, const std::string& strNewName)
-	throw (std::ios::failure)
+void FATArchive::rename(EntryPtr id, const std::string& strNewName)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_grp_duke3d_rename
 	assert(this->isValid(id));
@@ -297,7 +300,7 @@ void FATArchive::rename(EntryPtr& id, const std::string& strNewName)
 		(this->lenMaxFilename > 0) &&
 		(strNewName.length() > this->lenMaxFilename)
 	) {
-		throw std::ios::failure(createString("maximum filename length is "
+		throw stream::error(createString("maximum filename length is "
 			<< this->lenMaxFilename << " chars"));
 	}
 
@@ -306,25 +309,25 @@ void FATArchive::rename(EntryPtr& id, const std::string& strNewName)
 	return;
 }
 
-void FATArchive::resize(EntryPtr& id, offset_t iNewSize,
-	offset_t iNewPrefilteredSize)
-	throw (std::ios::failure)
+void FATArchive::resize(EntryPtr id, stream::len iNewSize,
+	stream::len iNewPrefilteredSize)
+	throw (stream::error)
 {
 	assert(this->isValid(id));
-	std::streamsize iDelta = iNewSize - id->iSize;
+	stream::delta iDelta = iNewSize - id->iSize;
 	FATEntry *pFAT = dynamic_cast<FATEntry *>(id.get());
 
 	// Add or remove the data in the underlying stream
-	io::stream_offset iStart;
+	stream::pos iStart;
 	if (iDelta > 0) { // inserting data
 		// TESTED BY: fmt_grp_duke3d_resize_larger
 		iStart = pFAT->iOffset + pFAT->lenHeader + pFAT->iSize;
-		this->psArchive->seekp(iStart);
+		this->psArchive->seekp(iStart, stream::start);
 		this->psArchive->insert(iDelta);
 	} else if (iDelta < 0) { // removing data
 		// TESTED BY: fmt_grp_duke3d_resize_smaller
 		iStart = pFAT->iOffset + pFAT->lenHeader + iNewSize;
-		this->psArchive->seekp(iStart);
+		this->psArchive->seekp(iStart, stream::start);
 		this->psArchive->remove(-iDelta);
 	} else if (pFAT->iPrefilteredSize == iNewPrefilteredSize) {
 		return; // no change
@@ -347,8 +350,8 @@ void FATArchive::resize(EntryPtr& id, offset_t iNewSize,
 			i++
 		) {
 			if (i->first.get() == pFAT) {
-				if (substream_sptr sub = i->second.lock()) {
-					sub->setSize(iNewSize);
+				if (stream::sub_sptr sub = i->second.lock()) {
+					sub->resize(iNewSize);
 					// no break, could be multiple opens for same entry
 				}
 			}
@@ -359,18 +362,16 @@ void FATArchive::resize(EntryPtr& id, offset_t iNewSize,
 }
 
 void FATArchive::flush()
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// Write out to the underlying stream
-	assert(this->fnTruncate);
-	this->psArchive->commit(this->fnTruncate);
-
+	this->psArchive->flush();
 	return;
 }
 
-void FATArchive::shiftFiles(const FATEntry *fatSkip, io::stream_offset offStart,
-	std::streamsize deltaOffset, int deltaIndex)
-	throw (std::ios::failure)
+void FATArchive::shiftFiles(const FATEntry *fatSkip, stream::pos offStart,
+	stream::len deltaOffset, int deltaIndex)
+	throw (stream::error)
 {
 	for (VC_ENTRYPTR::iterator i = this->vcFAT.begin(); i != this->vcFAT.end(); i++) {
 		FATEntry *pFAT = dynamic_cast<FATEntry *>(i->get());
@@ -396,7 +397,7 @@ void FATArchive::shiftFiles(const FATEntry *fatSkip, io::stream_offset offStart,
 	) {
 		if (i->first->bValid) {
 			if (this->entryInRange(i->first.get(), offStart, fatSkip)) {
-				if (substream_sptr sub = i->second.lock()) {
+				if (stream::sub_sptr sub = i->second.lock()) {
 					sub->relocate(deltaOffset);
 				}
 			}
@@ -411,25 +412,25 @@ void FATArchive::shiftFiles(const FATEntry *fatSkip, io::stream_offset offStart,
 
 FATArchive::FATEntry *FATArchive::preInsertFile(const FATEntry *idBeforeThis,
 	FATEntry *pNewEntry)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// No-op default
 }
 
 void FATArchive::postInsertFile(FATEntry *pNewEntry)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// No-op default
 }
 
 void FATArchive::preRemoveFile(const FATEntry *pid)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// No-op default
 }
 
 void FATArchive::postRemoveFile(const FATEntry *pid)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// No-op default
 }
@@ -464,7 +465,7 @@ void FATArchive::cleanOpenSubstreams()
 	return;
 }
 
-bool FATArchive::entryInRange(const FATEntry *fat, io::stream_offset offStart,
+bool FATArchive::entryInRange(const FATEntry *fat, stream::pos offStart,
 	const FATEntry *fatSkip)
 	throw ()
 {
@@ -496,6 +497,13 @@ bool FATArchive::entryInRange(const FATEntry *fat, io::stream_offset offStart,
 	}
 
 	return true;
+}
+
+void FATArchive::resizeSubstream(FATEntryPtr id, stream::len newSize)
+	throw (stream::write_error)
+{
+	this->resize(id, id->iSize, newSize);
+	return;
 }
 
 } // namespace gamearchive

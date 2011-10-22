@@ -42,10 +42,6 @@
 
 #ifdef DEBUG
 
-#include <iostream>
-//#include <sstream>
-//#include <vector>
-
 #define refcount_declclass(x) \
 	int g_iRefCount_##x = 0; \
 	int g_iRefCountMax_##x = 0;

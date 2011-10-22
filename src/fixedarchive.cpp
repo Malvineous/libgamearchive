@@ -26,10 +26,10 @@
 namespace camoto {
 namespace gamearchive {
 
-FixedArchive::FixedArchive(iostream_sptr psArchive, FixedArchiveFile *files,
+FixedArchive::FixedArchive(stream::inout_sptr psArchive, FixedArchiveFile *files,
 	int numFiles
 )
-	throw (std::ios::failure) :
+	throw (stream::error) :
 		psArchive(psArchive),
 		files(files),
 		numFiles(numFiles)
@@ -78,63 +78,64 @@ FixedArchive::EntryPtr FixedArchive::find(const std::string& strFilename) const
 	return EntryPtr();
 }
 
-bool FixedArchive::isValid(const EntryPtr& id) const
+bool FixedArchive::isValid(const EntryPtr id) const
 	throw ()
 {
 	const FixedEntry *id2 = dynamic_cast<const FixedEntry *>(id.get());
 	return ((id2) && (id2->index < this->numFiles));
 }
 
-iostream_sptr FixedArchive::open(const EntryPtr& id)
+stream::inout_sptr FixedArchive::open(const EntryPtr id)
 	throw ()
 {
 	// TESTED BY: TODO
 	const FixedEntry *entry = dynamic_cast<const FixedEntry *>(id.get());
 	const FixedArchiveFile *file = &this->files[entry->index];
-	substream_sptr psSub(
-		new substream(
-			this->psArchive,
-			file->offset,
-			file->size
-		)
+	stream::fn_truncate fnTrunc = preventResize;
+	stream::sub_sptr psSub(new stream::sub());
+	psSub->open(
+		this->psArchive,
+		file->offset,
+		file->size,
+		fnTrunc
 	);
 	this->vcSubStream.push_back(psSub);
 	return psSub;
 }
 
-FixedArchive::EntryPtr FixedArchive::insert(const EntryPtr& idBeforeThis,
-	const std::string& strFilename, offset_t iSize, std::string type,
+FixedArchive::EntryPtr FixedArchive::insert(const EntryPtr idBeforeThis,
+	const std::string& strFilename, stream::pos iSize, std::string type,
 	int attr
 )
-	throw (std::ios::failure)
+	throw (stream::error)
 {
-	throw std::ios::failure("This is a fixed archive, files cannot be inserted.");
+	throw stream::error("This is a fixed archive, files cannot be inserted.");
 }
 
-void FixedArchive::remove(EntryPtr& id)
-	throw (std::ios::failure)
+void FixedArchive::remove(EntryPtr id)
+	throw (stream::error)
 {
-	throw std::ios::failure("This is a fixed archive, files cannot be removed.");
+	throw stream::error("This is a fixed archive, files cannot be removed.");
 }
 
-void FixedArchive::rename(EntryPtr& id, const std::string& strNewName)
-	throw (std::ios::failure)
+void FixedArchive::rename(EntryPtr id, const std::string& strNewName)
+	throw (stream::error)
 {
-	throw std::ios::failure("This is a fixed archive, files cannot be renamed.");
+	throw stream::error("This is a fixed archive, files cannot be renamed.");
 }
 
-void FixedArchive::move(const EntryPtr& idBeforeThis, EntryPtr& id)
-	throw (std::ios::failure)
+void FixedArchive::move(const EntryPtr idBeforeThis, EntryPtr id)
+	throw (stream::error)
 {
-	throw std::ios::failure("This is a fixed archive, files cannot be moved.");
+	throw stream::error("This is a fixed archive, files cannot be moved.");
 }
 
-void FixedArchive::resize(EntryPtr& id, offset_t iNewSize,
-	offset_t iNewPrefilteredSize)
-	throw (std::ios::failure)
+void FixedArchive::resize(EntryPtr id, stream::pos iNewSize,
+	stream::pos iNewPrefilteredSize)
+	throw (stream::error)
 {
 	if (id->iPrefilteredSize != iNewPrefilteredSize) {
-		throw std::ios::failure(createString("This is a fixed archive, files "
+		throw stream::error(createString("This is a fixed archive, files "
 			"cannot be resized (tried to resize to " << iNewPrefilteredSize <<
 			", must remain as " << id->iPrefilteredSize << ")"));
 	}
@@ -143,7 +144,7 @@ void FixedArchive::resize(EntryPtr& id, offset_t iNewSize,
 }
 
 void FixedArchive::flush()
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// no-op (nothing to flush)
 	return;

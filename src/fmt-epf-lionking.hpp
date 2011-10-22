@@ -51,14 +51,14 @@ class EPFType: virtual public ArchiveType {
 		virtual std::vector<std::string> getGameList() const
 			throw ();
 
-		virtual E_CERTAINTY isInstance(iostream_sptr fsArchive) const
-			throw (std::ios::failure);
+		virtual ArchiveType::Certainty isInstance(stream::inout_sptr fsArchive) const
+			throw (stream::error);
 
-		virtual ArchivePtr newArchive(iostream_sptr psArchive, SuppData& suppData) const
-			throw (std::ios::failure);
+		virtual ArchivePtr newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+			throw (stream::error);
 
-		virtual ArchivePtr open(iostream_sptr fsArchive, SuppData& suppData) const
-			throw (std::ios::failure);
+		virtual ArchivePtr open(stream::inout_sptr fsArchive, SuppData& suppData) const
+			throw (stream::error);
 
 		virtual SuppFilenames getRequiredSupps(const std::string& filenameArchive) const
 			throw ();
@@ -69,12 +69,12 @@ class EPFArchive: virtual public FATArchive {
 
 	protected:
 
-		io::stream_offset offFAT;  // offset of the FAT from the start of the file
+		stream::pos offFAT;  // offset of the FAT from the start of the file
 
 	public:
 
-		EPFArchive(iostream_sptr psArchive)
-			throw (std::ios::failure);
+		EPFArchive(stream::inout_sptr psArchive)
+			throw (stream::error);
 
 		virtual ~EPFArchive()
 			throw ();
@@ -88,42 +88,42 @@ class EPFArchive: virtual public FATArchive {
 			throw ();
 
 		virtual std::string getMetadata(MetadataType item) const
-			throw (std::ios::failure);
+			throw (stream::error);
 
 		virtual void setMetadata(MetadataType item, const std::string& value)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 		// As per FATArchive (see there for docs)
 
 		virtual void updateFileName(const FATEntry *pid, const std::string& strNewName)
-			throw (std::ios::failure);
+			throw (stream::error);
 
-		virtual void updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
-			throw (std::ios::failure);
+		virtual void updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+			throw (stream::error);
 
-		virtual void updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
-			throw (std::ios::failure);
+		virtual void updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+			throw (stream::error);
 
 		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 		virtual void postInsertFile(FATEntry *pNewEntry)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 		virtual void preRemoveFile(const FATEntry *pid)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 	protected:
 		void updateFileCount(uint16_t iNewCount)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 		// Update the header with the offset of the FAT (which sits at the end of
 		// the archive, after the file data.)
 		void updateFATOffset()
-			throw (std::ios::failure);
+			throw (stream::error);
 
-		io::stream_offset getDescOffset() const
-			throw (std::ios::failure);
+		stream::pos getDescOffset() const
+			throw (stream::error);
 
 };
 

@@ -50,13 +50,13 @@ class RESType: virtual public ArchiveType {
 		virtual std::vector<std::string> getGameList() const
 			throw ();
 
-		virtual E_CERTAINTY isInstance(iostream_sptr fsArchive) const
-			throw (std::ios::failure);
+		virtual ArchiveType::Certainty isInstance(stream::inout_sptr fsArchive) const
+			throw (stream::error);
 
 		// newArchive is not overridden as an entirely blank file is valid
 
-		virtual ArchivePtr open(iostream_sptr fsArchive, SuppData& suppData) const
-			throw (std::ios::failure);
+		virtual ArchivePtr open(stream::inout_sptr fsArchive, SuppData& suppData) const
+			throw (stream::error);
 
 		virtual SuppFilenames getRequiredSupps(const std::string& filenameArchive) const
 			throw ();
@@ -66,30 +66,30 @@ class RESType: virtual public ArchiveType {
 class RESArchiveFolder: virtual public FATArchive {
 
 	public:
-		RESArchiveFolder(iostream_sptr psArchive)
-			throw (std::ios::failure);
+		RESArchiveFolder(stream::inout_sptr psArchive)
+			throw (stream::error);
 
 		virtual ~RESArchiveFolder()
 			throw ();
 
 		// As per Archive (see there for docs)
 
-		virtual ArchivePtr openFolder(const EntryPtr& id)
-			throw (std::ios::failure);
+		virtual ArchivePtr openFolder(const EntryPtr id)
+			throw (stream::error);
 
 		// As per FATArchive (see there for docs)
 
 		virtual void updateFileName(const FATEntry *pid, const std::string& strNewName)
-			throw (std::ios::failure);
+			throw (stream::error);
 
-		virtual void updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
-			throw (std::ios::failure);
+		virtual void updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+			throw (stream::error);
 
-		virtual void updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
-			throw (std::ios::failure);
+		virtual void updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+			throw (stream::error);
 
 		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 };
 

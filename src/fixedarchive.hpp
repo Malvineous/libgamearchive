@@ -22,12 +22,10 @@
 #ifndef _CAMOTO_FIXEDARCHIVE_HPP_
 #define _CAMOTO_FIXEDARCHIVE_HPP_
 
-#include <iostream>
 #include <vector>
-#include <boost/iostreams/stream.hpp>
 
 #include <camoto/gamearchive/archive.hpp>
-#include <camoto/substream.hpp>
+#include <camoto/stream_sub.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -53,7 +51,7 @@ class FixedArchive: virtual public Archive {
 		// The archive stream must be mutable, because we need to change it by
 		// seeking and reading data in our get() functions, which don't logically
 		// change the archive's state.
-		mutable iostream_sptr psArchive;
+		mutable stream::inout_sptr psArchive;
 
 		struct FixedEntry: virtual public FileEntry {
 			int index;  ///< Index into FixedArchiveFile array
@@ -76,13 +74,13 @@ class FixedArchive: virtual public Archive {
 		// order on-disk.  Use the iIndex member for that.)
 		VC_ENTRYPTR vcFixedEntries;
 
-		typedef std::vector<substream_sptr> substream_vc;
+		typedef std::vector<stream::sub_sptr> substream_vc;
 		substream_vc vcSubStream; // List of substreams currently open
 
 	public:
 
-		FixedArchive(iostream_sptr psArchive, FixedArchiveFile *files, int numFiles)
-			throw (std::ios::failure);
+		FixedArchive(stream::inout_sptr psArchive, FixedArchiveFile *files, int numFiles)
+			throw (stream::error);
 
 		virtual ~FixedArchive()
 			throw ();
@@ -93,51 +91,51 @@ class FixedArchive: virtual public Archive {
 		virtual const VC_ENTRYPTR& getFileList(void) const
 			throw ();
 
-		virtual bool isValid(const EntryPtr& id) const
+		virtual bool isValid(const EntryPtr id) const
 			throw ();
 
-		virtual iostream_sptr open(const EntryPtr& id)
+		virtual stream::inout_sptr open(const EntryPtr id)
 			throw ();
 
 		/**
 		 * @note Will always throw an exception as the files are fixed and
 		 *       thus can't be added to.
 		 */
-		virtual EntryPtr insert(const EntryPtr& idBeforeThis,
-			const std::string& strFilename, offset_t iSize, std::string type,
+		virtual EntryPtr insert(const EntryPtr idBeforeThis,
+			const std::string& strFilename, stream::pos iSize, std::string type,
 			int attr
 		)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 		/**
 		 * @note Will always throw an exception as the files are fixed and
 		 *       thus can't be removed.
 		 */
-		virtual void remove(EntryPtr& id)
-			throw (std::ios::failure);
+		virtual void remove(EntryPtr id)
+			throw (stream::error);
 
 		/**
 		 * @note Will always throw an exception as it makes no sense to rename
 		 *       the made up filenames in this archive format.
 		 */
-		virtual void rename(EntryPtr& id, const std::string& strNewName)
-			throw (std::ios::failure);
+		virtual void rename(EntryPtr id, const std::string& strNewName)
+			throw (stream::error);
 
 		/**
 		 * @note Will always throw an exception as fixed files can't be moved.
 		 */
-		virtual void move(const EntryPtr& idBeforeThis, EntryPtr& id)
-			throw (std::ios::failure);
+		virtual void move(const EntryPtr idBeforeThis, EntryPtr id)
+			throw (stream::error);
 
 		/**
 		 * @note Will always throw an exception as fixed files can't be resized.
 		 */
-		virtual void resize(EntryPtr& id, offset_t iNewSize,
-			offset_t iNewPrefilteredSize)
-			throw (std::ios::failure);
+		virtual void resize(EntryPtr id, stream::pos iNewSize,
+			stream::pos iNewPrefilteredSize)
+			throw (stream::error);
 
 		virtual void flush()
-			throw (std::ios::failure);
+			throw (stream::error);
 
 };
 

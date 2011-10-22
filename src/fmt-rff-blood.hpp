@@ -22,8 +22,8 @@
 #define _CAMOTO_FMT_RFF_BLOOD_HPP_
 
 #include <camoto/gamearchive.hpp>
-#include <camoto/segmented_stream.hpp>
-#include <camoto/filteredstream.hpp>
+#include <camoto/stream_seg.hpp>
+#include <camoto/stream_filtered.hpp>
 #include "fatarchive.hpp"
 #include "filter-xor-blood.hpp"
 
@@ -52,14 +52,14 @@ class RFFType: virtual public ArchiveType {
 		virtual std::vector<std::string> getGameList() const
 			throw ();
 
-		virtual E_CERTAINTY isInstance(iostream_sptr fsArchive) const
-			throw (std::ios::failure);
+		virtual ArchiveType::Certainty isInstance(stream::inout_sptr fsArchive) const
+			throw (stream::error);
 
-		virtual ArchivePtr newArchive(iostream_sptr psArchive, SuppData& suppData) const
-			throw (std::ios::failure);
+		virtual ArchivePtr newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+			throw (stream::error);
 
-		virtual ArchivePtr open(iostream_sptr fsArchive, SuppData& suppData) const
-			throw (std::ios::failure);
+		virtual ArchivePtr open(stream::inout_sptr fsArchive, SuppData& suppData) const
+			throw (stream::error);
 
 		virtual SuppFilenames getRequiredSupps(const std::string& filenameArchive) const
 			throw ();
@@ -70,8 +70,8 @@ class RFFArchive: virtual public FATArchive {
 
 	public:
 
-		RFFArchive(iostream_sptr psArchive)
-			throw (std::ios::failure);
+		RFFArchive(stream::inout_sptr psArchive)
+			throw (stream::error);
 
 		virtual ~RFFArchive()
 			throw ();
@@ -82,53 +82,52 @@ class RFFArchive: virtual public FATArchive {
 			throw ();
 
 		virtual std::string getMetadata(MetadataType item) const
-			throw (std::ios::failure);
+			throw (stream::error);
 
 		virtual void setMetadata(MetadataType item, const std::string& value)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 		/// Write out the FAT with the updated encryption key.
 		virtual void flush()
-			throw (std::ios::failure);
+			throw (stream::error);
 
 		// As per FATArchive (see there for docs)
 
 		virtual void updateFileName(const FATEntry *pid, const std::string& strNewName)
-			throw (std::ios::failure);
+			throw (stream::error);
 
-		virtual void updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
-			throw (std::ios::failure);
+		virtual void updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+			throw (stream::error);
 
-		virtual void updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
-			throw (std::ios::failure);
+		virtual void updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+			throw (stream::error);
 
 		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 		virtual void postInsertFile(FATEntry *pNewEntry)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 		virtual void preRemoveFile(const FATEntry *pid)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 		virtual void postRemoveFile(const FATEntry *pid)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 	protected:
 
-		segstream_sptr fatStream;    ///< In-memory stream storing the cleartext FAT
+		stream::seg_sptr fatStream;    ///< In-memory stream storing the cleartext FAT
 		uint32_t version;            ///< File format version
 		bool modifiedFAT;            ///< Has the FAT been changed?
 
 		void updateFileCount(uint32_t newCount)
-			throw (std::ios::failure);
+			throw (stream::error);
 
-		io::stream_offset getDescOffset() const
-			throw (std::ios::failure);
+		stream::pos getDescOffset() const
+			throw (stream::error);
 
 		void splitFilename(const std::string& full, std::string *base, std::string *ext)
-			throw (std::ios::failure);
-
+			throw (stream::error);
 };
 
 } // namespace gamearchive

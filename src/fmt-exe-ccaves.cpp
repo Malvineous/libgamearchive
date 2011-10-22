@@ -115,7 +115,6 @@ std::string EXE_CCavesType::getFriendlyName() const
 	return "Crystal Caves Executable";
 }
 
-// Get a list of the known file extensions for this format.
 std::vector<std::string> EXE_CCavesType::getFileExtensions() const
 	throw ()
 {
@@ -132,38 +131,37 @@ std::vector<std::string> EXE_CCavesType::getGameList() const
 	return vcGames;
 }
 
-E_CERTAINTY EXE_CCavesType::isInstance(iostream_sptr psArchive) const
-	throw (std::ios::failure)
+ArchiveType::Certainty EXE_CCavesType::isInstance(stream::inout_sptr psArchive) const
+	throw (stream::error)
 {
-	psArchive->seekg(0, std::ios::end);
-	io::stream_offset lenArchive = psArchive->tellg();
+	stream::pos lenArchive = psArchive->size();
 
 	if (lenArchive == 191984) {
 		// TESTED BY: TODO fixed_exe_ccaves_isinstance_c00
-		psArchive->seekg(0x1E00);
+		psArchive->seekg(0x1E00, stream::start);
 		char buffer[8];
 		psArchive->read(buffer, 8);
 		// Unfortunately no version strings, so check some data I
 		// selected at random...
 		if (strncmp(buffer, "\x55\x89\xE5\x8B\x46\x06\xBA\xA0", 8) != 0)
-			return EC_DEFINITELY_NO;
+			return DefinitelyNo;
 
-		return EC_DEFINITELY_YES;
+		return DefinitelyYes;
 	}
 
 	// TESTED BY: TODO (generic)
-	return EC_DEFINITELY_NO;
+	return DefinitelyNo;
 }
 
-ArchivePtr EXE_CCavesType::newArchive(iostream_sptr psArchive, SuppData& suppData) const
-	throw (std::ios::failure)
+ArchivePtr EXE_CCavesType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+	throw (stream::error)
 {
 	// This isn't a true archive so we can't create new versions of it.
-	throw std::ios::failure("Can't create a new archive in this format.");
+	throw stream::error("Can't create a new archive in this format.");
 }
 
-ArchivePtr EXE_CCavesType::open(iostream_sptr psArchive, SuppData& suppData) const
-	throw (std::ios::failure)
+ArchivePtr EXE_CCavesType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+	throw (stream::error)
 {
 	return ArchivePtr(new EXE_CCavesArchive(psArchive));
 }
@@ -176,8 +174,8 @@ SuppFilenames EXE_CCavesType::getRequiredSupps(const std::string& filenameArchiv
 }
 
 
-EXE_CCavesArchive::EXE_CCavesArchive(iostream_sptr psArchive)
-	throw (std::ios::failure) :
+EXE_CCavesArchive::EXE_CCavesArchive(stream::inout_sptr psArchive)
+	throw (stream::error) :
 		FixedArchive(psArchive, ccaves_file_list, sizeof(ccaves_file_list) / sizeof(FixedArchiveFile))
 {
 }

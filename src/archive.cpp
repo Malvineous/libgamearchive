@@ -48,15 +48,14 @@ std::string Archive::FileEntry::getContent() const
 	return ss.str();
 }
 
-ArchivePtr ArchiveType::newArchive(iostream_sptr psArchive, SuppData& suppData) const
-	throw (std::ios::failure)
+ArchivePtr ArchiveType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+	throw (stream::error)
 {
 	return this->open(psArchive, suppData);
 }
 
 Archive::Archive()
-	throw () :
-		fnTruncate(NULL)
+	throw ()
 {
 }
 
@@ -65,8 +64,8 @@ Archive::~Archive()
 {
 }
 
-ArchivePtr Archive::openFolder(const Archive::EntryPtr& id)
-	throw (std::ios::failure)
+ArchivePtr Archive::openFolder(const Archive::EntryPtr id)
+	throw (stream::error)
 {
 	// This function should only be called for folders (not files)
 	assert(id->fAttr & EA_FOLDER);
@@ -76,14 +75,14 @@ ArchivePtr Archive::openFolder(const Archive::EntryPtr& id)
 	assert(false);
 
 	// Throw an exception if assertions have been disabled.
-	throw std::ios::failure("BUG: Archive format doesn't implement openFolder()");
+	throw stream::error("BUG: Archive format doesn't implement openFolder()");
 }
 
-void Archive::move(const EntryPtr& idBeforeThis, EntryPtr& id)
-	throw (std::ios::failure)
+void Archive::move(const EntryPtr idBeforeThis, EntryPtr id)
+	throw (stream::error)
 {
 	// Open the file we want to move
-	iostream_sptr src(this->open(id));
+	stream::inout_sptr src(this->open(id));
 	assert(src);
 
 	// Insert a new file at the destination index
@@ -93,15 +92,15 @@ void Archive::move(const EntryPtr& idBeforeThis, EntryPtr& id)
 
 	if (n->filter.compare(id->filter) != 0) {
 		this->remove(n);
-		throw std::ios::failure("Cannot move file to this position (filter change)"
+		throw stream::error("Cannot move file to this position (filter change)"
 			" - try removing and then adding it instead");
 	}
 
-	iostream_sptr dst(this->open(n));
+	stream::inout_sptr dst(this->open(n));
 	assert(dst);
 
 	// Copy the data into the new file's position
-	boost::iostreams::copy(*src, *dst);
+	stream::copy(dst, src);
 	dst->flush();
 
 	// If there's a filter set then bring the unfiltered size across too.
@@ -118,6 +117,12 @@ int Archive::getSupportedAttributes() const
 	throw ()
 {
 	return 0;
+}
+
+void preventResize(stream::len len)
+	throw (stream::write_error)
+{
+	throw stream::write_error("This file is a fixed size, it cannot be made smaller or larger.");
 }
 
 } // namespace gamearchive

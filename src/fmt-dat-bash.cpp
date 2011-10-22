@@ -65,7 +65,6 @@ std::string DAT_BashType::getFriendlyName() const
 	return "Monster Bash DAT File";
 }
 
-// Get a list of the known file extensions for this format.
 std::vector<std::string> DAT_BashType::getFileExtensions() const
 	throw ()
 {
@@ -82,19 +81,18 @@ std::vector<std::string> DAT_BashType::getGameList() const
 	return vcGames;
 }
 
-E_CERTAINTY DAT_BashType::isInstance(iostream_sptr psArchive) const
-	throw (std::ios::failure)
+ArchiveType::Certainty DAT_BashType::isInstance(stream::inout_sptr psArchive) const
+	throw (stream::error)
 {
-	psArchive->seekg(0, std::ios::end);
-	io::stream_offset lenArchive = psArchive->tellg();
+	stream::pos lenArchive = psArchive->size();
 	// TESTED BY: fmt_dat_bash_isinstance_c02
-	//if (lenArchive < DAT_FAT_OFFSET) return EC_DEFINITELY_NO; // too short
+	//if (lenArchive < DAT_FAT_OFFSET) return DefinitelyNo; // too short
 
-	psArchive->seekg(0, std::ios::beg);
+	psArchive->seekg(0, stream::start);
 
 	// Check each FAT entry
 	char fn[DAT_FILENAME_FIELD_LEN];
-	io::stream_offset pos = 0;
+	stream::pos pos = 0;
 	uint16_t type, lenEntry;
 	while (pos < lenArchive) {
 		psArchive
@@ -111,7 +109,7 @@ E_CERTAINTY DAT_BashType::isInstance(iostream_sptr psArchive) const
 				break;
 			default:
 				std::cout << "Unknown filetype number " << type << std::endl;
-				return EC_DEFINITELY_NO;
+				return DefinitelyNo;
 		}*/
 		psArchive->read(fn, DAT_FILENAME_FIELD_LEN);
 		// Make sure there aren't any invalid characters in the filename
@@ -119,7 +117,7 @@ E_CERTAINTY DAT_BashType::isInstance(iostream_sptr psArchive) const
 			if (!fn[j]) break; // stop on terminating null
 
 			// Fail on control characters in the filename
-			if (fn[j] < 32) return EC_DEFINITELY_NO; // TESTED BY: fmt_dat_bash_isinstance_c01
+			if (fn[j] < 32) return DefinitelyNo; // TESTED BY: fmt_dat_bash_isinstance_c01
 		}
 
 		pos += lenEntry + DAT_EFAT_ENTRY_LEN;
@@ -127,26 +125,25 @@ E_CERTAINTY DAT_BashType::isInstance(iostream_sptr psArchive) const
 		// If a file entry points past the end of the archive then it's an invalid
 		// format.
 		// TESTED BY: fmt_dat_bash_isinstance_c03
-		if (pos > lenArchive) return EC_DEFINITELY_NO;
+		if (pos > lenArchive) return DefinitelyNo;
 
-		psArchive->seekg(pos, std::ios::beg);
+		psArchive->seekg(pos, stream::start);
 	}
 
 	// If we've made it this far, this is almost certainly a DAT file.
 
 	// TESTED BY: fmt_dat_bash_isinstance_c00, c02
-	return EC_DEFINITELY_YES;
+	return DefinitelyYes;
 }
 
-ArchivePtr DAT_BashType::newArchive(iostream_sptr psArchive, SuppData& suppData) const
-	throw (std::ios::failure)
+ArchivePtr DAT_BashType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+	throw (stream::error)
 {
 	return ArchivePtr(new DAT_BashArchive(psArchive));
 }
 
-// Preconditions: isInstance() has returned > EC_DEFINITELY_NO
-ArchivePtr DAT_BashType::open(iostream_sptr psArchive, SuppData& suppData) const
-	throw (std::ios::failure)
+ArchivePtr DAT_BashType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+	throw (stream::error)
 {
 	return ArchivePtr(new DAT_BashArchive(psArchive));
 }
@@ -159,16 +156,15 @@ SuppFilenames DAT_BashType::getRequiredSupps(const std::string& filenameArchive)
 }
 
 
-DAT_BashArchive::DAT_BashArchive(iostream_sptr psArchive)
-	throw (std::ios::failure) :
+DAT_BashArchive::DAT_BashArchive(stream::inout_sptr psArchive)
+	throw (stream::error) :
 		FATArchive(psArchive, DAT_FIRST_FILE_OFFSET, DAT_MAX_FILENAME_LEN)
 {
-	this->psArchive->seekg(0, std::ios::end);
-	io::stream_offset lenArchive = this->psArchive->tellg();
+	stream::pos lenArchive = this->psArchive->size();
 
-	this->psArchive->seekg(0, std::ios::beg);
+	this->psArchive->seekg(0, stream::start);
 
-	io::stream_offset pos = 0;
+	stream::pos pos = 0;
 	uint16_t type;
 	int numFiles = 0;
 	while (pos < lenArchive) {
@@ -240,7 +236,7 @@ DAT_BashArchive::DAT_BashArchive(iostream_sptr psArchive)
 		}
 		this->vcFAT.push_back(ep);
 
-		this->psArchive->seekg(fatEntry->iSize, std::ios::cur);
+		this->psArchive->seekg(fatEntry->iSize, stream::cur);
 		pos += DAT_EFAT_ENTRY_LEN + fatEntry->iSize;
 		numFiles++;
 	}
@@ -259,7 +255,7 @@ int DAT_BashArchive::getSupportedAttributes() const
 }
 
 void DAT_BashArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	int typeNum;
 	int newLen = strNewName.length();
@@ -286,34 +282,34 @@ void DAT_BashArchive::updateFileName(const FATEntry *pid, const std::string& str
 	// TESTED BY: fmt_dat_bash_rename
 	assert(newLen <= DAT_MAX_FILENAME_LEN);
 
-	this->psArchive->seekp(DAT_FILETYPE_OFFSET(pid));
+	this->psArchive->seekp(DAT_FILETYPE_OFFSET(pid), stream::start);
 	this->psArchive << u16le(typeNum);
 
-	this->psArchive->seekp(DAT_FILENAME_OFFSET(pid));
+	this->psArchive->seekp(DAT_FILENAME_OFFSET(pid), stream::start);
 	this->psArchive << nullPadded(strNativeName, DAT_FILENAME_FIELD_LEN);
 	return;
 }
 
 void DAT_BashArchive::updateFileOffset(const FATEntry *pid,
-	std::streamsize offDelta
+	stream::delta offDelta
 )
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	return;
 }
 
 void DAT_BashArchive::updateFileSize(const FATEntry *pid,
-	std::streamsize sizeDelta
+	stream::delta sizeDelta
 )
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_dat_bash_insert*
 	// TESTED BY: fmt_dat_bash_resize*
-	this->psArchive->seekp(DAT_FILESIZE_OFFSET(pid));
+	this->psArchive->seekp(DAT_FILESIZE_OFFSET(pid), stream::start);
 	this->psArchive << u16le(pid->iSize);
 
 	// Write out the decompressed size too
-	this->psArchive->seekp(DAT_FILENAME_FIELD_LEN, std::ios::cur);
+	this->psArchive->seekp(DAT_FILENAME_FIELD_LEN, stream::cur);
 	if (pid->fAttr & EA_COMPRESSED) {
 		this->psArchive << u16le(pid->iPrefilteredSize);
 	} else {
@@ -325,7 +321,7 @@ void DAT_BashArchive::updateFileSize(const FATEntry *pid,
 FATArchive::FATEntry *DAT_BashArchive::preInsertFile(
 	const FATEntry *idBeforeThis, FATEntry *pNewEntry
 )
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// See if file extension is known and set type appropriately
 	int newLen = pNewEntry->strName.length();
@@ -352,7 +348,7 @@ FATArchive::FATEntry *DAT_BashArchive::preInsertFile(
 	// Because the new entry isn't in the vector yet we need to shift it manually
 	//pNewEntry->iOffset += DAT_EFAT_ENTRY_LEN;
 
-	this->psArchive->seekp(pNewEntry->iOffset);
+	this->psArchive->seekp(pNewEntry->iOffset, stream::start);
 	this->psArchive->insert(DAT_EFAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
 
@@ -372,9 +368,9 @@ FATArchive::FATEntry *DAT_BashArchive::preInsertFile(
 }
 
 void DAT_BashArchive::postInsertFile(FATEntry *pNewEntry)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
-	this->psArchive->seekp(pNewEntry->iOffset);
+	this->psArchive->seekp(pNewEntry->iOffset, stream::start);
 
 	int typeNum;
 

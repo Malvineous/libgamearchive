@@ -543,31 +543,31 @@ int main(int iArgC, char *cArgV[])
 			ga::ArchiveTypePtr pTestType;
 			int i = 0;
 			while ((pTestType = pManager->getArchiveType(i++))) {
-				ga::E_CERTAINTY cert = pTestType->isInstance(psArchive);
+				ga::ArchiveType::Certainty cert = pTestType->isInstance(psArchive);
 				switch (cert) {
-					case ga::EC_DEFINITELY_NO:
+					case ga::ArchiveType::DefinitelyNo:
 						// Don't print anything (TODO: Maybe unless verbose?)
 						break;
-					case ga::EC_UNSURE:
+					case ga::ArchiveType::Unsure:
 						std::cout << "File could be a " << pTestType->getFriendlyName()
 							<< " [" << pTestType->getArchiveCode() << "]" << std::endl;
 						// If we haven't found a match already, use this one
 						if (!pArchType) pArchType = pTestType;
 						break;
-					case ga::EC_POSSIBLY_YES:
+					case ga::ArchiveType::PossiblyYes:
 						std::cout << "File is likely to be a " << pTestType->getFriendlyName()
 							<< " [" << pTestType->getArchiveCode() << "]" << std::endl;
 						// Take this one as it's better than an uncertain match
 						pArchType = pTestType;
 						break;
-					case ga::EC_DEFINITELY_YES:
+					case ga::ArchiveType::DefinitelyYes:
 						std::cout << "File is definitely a " << pTestType->getFriendlyName()
 							<< " [" << pTestType->getArchiveCode() << "]" << std::endl;
 						pArchType = pTestType;
 						// Don't bother checking any other formats if we got a 100% match
 						goto finishTesting;
 				}
-				if (cert != ga::EC_DEFINITELY_NO) {
+				if (cert != ga::ArchiveType::DefinitelyNo) {
 					// We got a possible match, see if it requires any suppdata
 					camoto::SuppFilenames suppList = pTestType->getRequiredSupps(strFilename);
 					if (suppList.size() > 0) {

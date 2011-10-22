@@ -80,34 +80,33 @@ std::vector<std::string> PCXLibType::getGameList() const
 	return vcGames;
 }
 
-E_CERTAINTY PCXLibType::isInstance(iostream_sptr psArchive) const
-	throw (std::ios::failure)
+ArchiveType::Certainty PCXLibType::isInstance(stream::inout_sptr psArchive) const
+	throw (stream::error)
 {
-	psArchive->seekg(0, std::ios::end);
-	io::stream_offset lenArchive = psArchive->tellg();
+	stream::pos lenArchive = psArchive->size();
 	// File too short to hold header
 	// TESTED BY: fmt_pcxlib_isinstance_c01
-	if (lenArchive < PCX_FAT_OFFSET) return EC_DEFINITELY_NO;
+	if (lenArchive < PCX_FAT_OFFSET) return DefinitelyNo;
 
-	psArchive->seekg(0, std::ios::beg);
+	psArchive->seekg(0, stream::start);
 	uint32_t version;
 	psArchive >> u16le(version);
 
 	// Only accept known versions
 	// TESTED BY: fmt_pcxlib_isinstance_c02
-	if (version != 0xCA01) return EC_DEFINITELY_NO;
+	if (version != 0xCA01) return DefinitelyNo;
 
-	psArchive->seekg(PCX_FILECOUNT_OFFSET, std::ios::beg);
+	psArchive->seekg(PCX_FILECOUNT_OFFSET, stream::start);
 	uint32_t numFiles;
 	psArchive >> u16le(numFiles);
 
 	// File too short to hold FAT
 	// TESTED BY: fmt_pcxlib_isinstance_c03
 	if (lenArchive < PCX_FAT_OFFSET + numFiles * PCX_FAT_ENTRY_LEN) {
-		return EC_DEFINITELY_NO;
+		return DefinitelyNo;
 	}
 
-	psArchive->seekg(PCX_FAT_OFFSET, std::ios::beg);
+	psArchive->seekg(PCX_FAT_OFFSET, stream::start);
 	for (int i = 0; i < numFiles; i++) {
 		uint8_t sync;
 		std::string name, ext;
@@ -125,29 +124,29 @@ E_CERTAINTY PCXLibType::isInstance(iostream_sptr psArchive) const
 
 		// No/invalid sync byte
 		// TESTED BY: fmt_pcxlib_isinstance_c04
-		if (sync != 0x00) return EC_DEFINITELY_NO;
+		if (sync != 0x00) return DefinitelyNo;
 
 		// Bad filename
 		// TESTED BY: fmt_pcxlib_isinstance_c05
-		if (ext[0] != '.') return EC_DEFINITELY_NO;
+		if (ext[0] != '.') return DefinitelyNo;
 
 		// File inside FAT
 		// TESTED BY: fmt_pcxlib_isinstance_c06
-		if (offset <= PCX_FAT_OFFSET + PCX_FAT_ENTRY_LEN) return EC_DEFINITELY_NO;
+		if (offset <= PCX_FAT_OFFSET + PCX_FAT_ENTRY_LEN) return DefinitelyNo;
 
 		// Truncated file
 		// TESTED BY: fmt_pcxlib_isinstance_c07
-		if (offset + size > lenArchive) return EC_DEFINITELY_NO;
+		if (offset + size > lenArchive) return DefinitelyNo;
 	}
 
 	// TESTED BY: fmt_pcxlib_isinstance_c00
-	return EC_DEFINITELY_YES;
+	return DefinitelyYes;
 }
 
-ArchivePtr PCXLibType::newArchive(iostream_sptr psArchive, SuppData& suppData) const
-	throw (std::ios::failure)
+ArchivePtr PCXLibType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+	throw (stream::error)
 {
-	psArchive->seekp(0, std::ios::beg);
+	psArchive->seekp(0, stream::start);
 	psArchive->write(
 		"\x01\xCA" "Copyright (c) Genus Microprogramming, Inc. 1988-90"
 		"\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -166,8 +165,8 @@ ArchivePtr PCXLibType::newArchive(iostream_sptr psArchive, SuppData& suppData) c
 	return ArchivePtr(new PCXLibArchive(psArchive));
 }
 
-ArchivePtr PCXLibType::open(iostream_sptr psArchive, SuppData& suppData) const
-	throw (std::ios::failure)
+ArchivePtr PCXLibType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+	throw (stream::error)
 {
 	return ArchivePtr(new PCXLibArchive(psArchive));
 }
@@ -180,24 +179,23 @@ SuppFilenames PCXLibType::getRequiredSupps(const std::string& filenameArchive) c
 }
 
 
-PCXLibArchive::PCXLibArchive(iostream_sptr psArchive)
-	throw (std::ios::failure) :
+PCXLibArchive::PCXLibArchive(stream::inout_sptr psArchive)
+	throw (stream::error) :
 		FATArchive(psArchive, PCX_FIRST_FILE_OFFSET, PCX_MAX_FILENAME_LEN)
 {
-	this->psArchive->seekg(0, std::ios::end);
-	io::stream_offset lenArchive = this->psArchive->tellg();
+	stream::pos lenArchive = this->psArchive->size();
 
 	if (lenArchive < PCX_FAT_OFFSET) {
-		throw std::ios::failure("Truncated file");
+		throw stream::error("Truncated file");
 	}
 
-	this->psArchive->seekg(PCX_FILECOUNT_OFFSET, std::ios::beg);
+	this->psArchive->seekg(PCX_FILECOUNT_OFFSET, stream::start);
 	uint16_t numFiles;
 	this->psArchive >> u16le(numFiles);
 	this->vcFAT.reserve(numFiles);
 
 	// Skip over remaining header
-	this->psArchive->seekg(32, std::ios::cur);
+	this->psArchive->seekg(32, stream::cur);
 
 	for (int i = 0; i < numFiles; i++) {
 		FATEntry *fatEntry = new FATEntry();
@@ -232,17 +230,17 @@ PCXLibArchive::~PCXLibArchive()
 }
 
 void PCXLibArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_pcxlib_rename
 	assert(strNewName.length() <= PCX_MAX_FILENAME_LEN);
-	this->psArchive->seekp(PCX_FILENAME_OFFSET(pid));
+	this->psArchive->seekp(PCX_FILENAME_OFFSET(pid), stream::start);
 	int pos = strNewName.find_last_of('.');
 	std::string name = strNewName.substr(0, pos);
 	while (name.length() < 8) name += ' ';
 	std::string ext = strNewName.substr(pos);
 	if (ext.length() > 4) {
-		throw std::ios::failure("Filename extension too long - three letters max.");
+		throw stream::error("Filename extension too long - three letters max.");
 	}
 	while (ext.length() < 4) ext += ' ';
 	this->psArchive
@@ -252,29 +250,29 @@ void PCXLibArchive::updateFileName(const FATEntry *pid, const std::string& strNe
 	return;
 }
 
-void PCXLibArchive::updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
-	throw (std::ios::failure)
+void PCXLibArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_pcxlib_insert*
 	// TESTED BY: fmt_pcxlib_resize*
-	this->psArchive->seekp(PCX_FILEOFFSET_OFFSET(pid));
+	this->psArchive->seekp(PCX_FILEOFFSET_OFFSET(pid), stream::start);
 	this->psArchive << u32le(pid->iOffset);
 	return;
 }
 
-void PCXLibArchive::updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
-	throw (std::ios::failure)
+void PCXLibArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_pcxlib_insert*
 	// TESTED BY: fmt_pcxlib_resize*
-	this->psArchive->seekp(PCX_FILESIZE_OFFSET(pid));
+	this->psArchive->seekp(PCX_FILESIZE_OFFSET(pid), stream::start);
 	this->psArchive << u32le(pid->iSize);
 	return;
 }
 
 FATArchive::FATEntry *PCXLibArchive::preInsertFile(const FATEntry *idBeforeThis,
 	FATEntry *pNewEntry)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_pcxlib_insert*
 	assert(pNewEntry->strName.length() <= PCX_MAX_FILENAME_LEN);
@@ -286,9 +284,9 @@ FATArchive::FATEntry *PCXLibArchive::preInsertFile(const FATEntry *idBeforeThis,
 	pNewEntry->iOffset += PCX_FAT_ENTRY_LEN;
 
 	if (this->vcFAT.size() >= PCX_MAX_FILES) {
-		throw std::ios::failure("too many files, maximum is " TOSTRING(PCX_MAX_FILES));
+		throw stream::error("too many files, maximum is " TOSTRING(PCX_MAX_FILES));
 	}
-	this->psArchive->seekp(PCX_FATENTRY_OFFSET(pNewEntry));
+	this->psArchive->seekp(PCX_FATENTRY_OFFSET(pNewEntry), stream::start);
 	this->psArchive->insert(PCX_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
 
@@ -297,7 +295,7 @@ FATArchive::FATEntry *PCXLibArchive::preInsertFile(const FATEntry *idBeforeThis,
 	while (name.length() < 8) name += ' ';
 	std::string ext = pNewEntry->strName.substr(pos);
 	if (ext.length() > 4) {
-		throw std::ios::failure("Filename extension too long - three letters max.");
+		throw stream::error("Filename extension too long - three letters max.");
 	}
 	while (ext.length() < 4) ext += ' ';
 
@@ -328,7 +326,7 @@ FATArchive::FATEntry *PCXLibArchive::preInsertFile(const FATEntry *idBeforeThis,
 }
 
 void PCXLibArchive::preRemoveFile(const FATEntry *pid)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_pcxlib_remove*
 
@@ -344,7 +342,7 @@ void PCXLibArchive::preRemoveFile(const FATEntry *pid)
 	);
 
 	// Remove the FAT entry
-	this->psArchive->seekp(PCX_FATENTRY_OFFSET(pid));
+	this->psArchive->seekp(PCX_FATENTRY_OFFSET(pid), stream::start);
 	this->psArchive->remove(PCX_FAT_ENTRY_LEN);
 
 	this->updateFileCount(this->vcFAT.size() - 1);
@@ -353,11 +351,11 @@ void PCXLibArchive::preRemoveFile(const FATEntry *pid)
 }
 
 void PCXLibArchive::updateFileCount(uint32_t iNewCount)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_pcxlib_insert*
 	// TESTED BY: fmt_pcxlib_remove*
-	this->psArchive->seekp(PCX_FILECOUNT_OFFSET);
+	this->psArchive->seekp(PCX_FILECOUNT_OFFSET, stream::start);
 	this->psArchive << u32le(iNewCount);
 	return;
 }

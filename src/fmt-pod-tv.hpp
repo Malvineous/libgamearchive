@@ -50,14 +50,14 @@ class PODType: virtual public ArchiveType {
 		virtual std::vector<std::string> getGameList() const
 			throw ();
 
-		virtual E_CERTAINTY isInstance(iostream_sptr fsArchive) const
-			throw (std::ios::failure);
+		virtual ArchiveType::Certainty isInstance(stream::inout_sptr fsArchive) const
+			throw (stream::error);
 
-		virtual ArchivePtr newArchive(iostream_sptr psArchive, SuppData& suppData) const
-			throw (std::ios::failure);
+		virtual ArchivePtr newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+			throw (stream::error);
 
-		virtual ArchivePtr open(iostream_sptr psArchive, SuppData& suppData) const
-			throw (std::ios::failure);
+		virtual ArchivePtr open(stream::inout_sptr psArchive, SuppData& suppData) const
+			throw (stream::error);
 
 		virtual SuppFilenames getRequiredSupps(const std::string& filenameArchive) const
 			throw ();
@@ -66,8 +66,8 @@ class PODType: virtual public ArchiveType {
 
 class PODArchive: virtual public FATArchive {
 	public:
-		PODArchive(iostream_sptr psArchive)
-			throw (std::ios::failure);
+		PODArchive(stream::inout_sptr psArchive)
+			throw (stream::error);
 
 		virtual ~PODArchive()
 			throw ();
@@ -78,32 +78,32 @@ class PODArchive: virtual public FATArchive {
 			throw ();
 
 		virtual std::string getMetadata(MetadataType item) const
-			throw (std::ios::failure);
+			throw (stream::error);
 
 		virtual void setMetadata(MetadataType item, const std::string& value)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 		// As per FATArchive (see there for docs)
 
 		virtual void updateFileName(const FATEntry *pid, const std::string& strNewName)
-			throw (std::ios::failure);
+			throw (stream::error);
 
-		virtual void updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
-			throw (std::ios::failure);
+		virtual void updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+			throw (stream::error);
 
-		virtual void updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
-			throw (std::ios::failure);
+		virtual void updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+			throw (stream::error);
 
 		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 		virtual void preRemoveFile(const FATEntry *pid)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 	protected:
 		// Update the header with the number of files in the archive
 		void updateFileCount(uint32_t iNewCount)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 };
 

@@ -50,14 +50,14 @@ class DAT_HocusType: virtual public ArchiveType {
 		virtual std::vector<std::string> getGameList() const
 			throw ();
 
-		virtual E_CERTAINTY isInstance(iostream_sptr fsArchive) const
-			throw (std::ios::failure);
+		virtual ArchiveType::Certainty isInstance(stream::inout_sptr fsArchive) const
+			throw (stream::error);
 
-		virtual ArchivePtr open(iostream_sptr psArchive, SuppData& suppData) const
-			throw (std::ios::failure);
+		virtual ArchivePtr open(stream::inout_sptr psArchive, SuppData& suppData) const
+			throw (stream::error);
 
-		virtual ArchivePtr newArchive(iostream_sptr psArchive, SuppData& suppData) const
-			throw (std::ios::failure);
+		virtual ArchivePtr newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+			throw (stream::error);
 
 		virtual SuppFilenames getRequiredSupps(const std::string& filenameArchive) const
 			throw ();
@@ -66,13 +66,13 @@ class DAT_HocusType: virtual public ArchiveType {
 
 class DAT_HocusArchive: virtual public FATArchive {
 	protected:
-		segstream_sptr psFAT; ///< FAT stream (hocus.exe)
+		stream::seg_sptr psFAT; ///< FAT stream (hocus.exe)
 		uint32_t maxFiles;    ///< Maximum number of files in FAT
 		uint32_t numFiles;    ///< Current number of files in FAT
 
 	public:
-		DAT_HocusArchive(iostream_sptr psArchive, iostream_sptr psFAT)
-			throw (std::ios::failure);
+		DAT_HocusArchive(stream::inout_sptr psArchive, stream::inout_sptr psFAT)
+			throw (stream::error);
 
 		virtual ~DAT_HocusArchive()
 			throw ();
@@ -80,29 +80,29 @@ class DAT_HocusArchive: virtual public FATArchive {
 		// As per Archive (see there for docs)
 
 		virtual void flush()
-			throw (std::ios::failure);
+			throw (stream::error);
 
 		// As per FATArchive (see there for docs)
 
 		virtual void updateFileName(const FATEntry *pid, const std::string& strNewName)
-			throw (std::ios::failure);
+			throw (stream::error);
 
-		virtual void updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
-			throw (std::ios::failure);
+		virtual void updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+			throw (stream::error);
 
-		virtual void updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
-			throw (std::ios::failure);
+		virtual void updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+			throw (stream::error);
 
 		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 		virtual void preRemoveFile(const FATEntry *pid)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 	protected:
 		// Update the header with the number of files in the archive
 		void updateFileCount(uint32_t iNewCount)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 };
 

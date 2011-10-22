@@ -4,7 +4,7 @@
  *         processing operations on data streams (compression/decompression,
  *         encryption, etc.)
  *
- * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,15 +23,8 @@
 #ifndef _CAMOTO_GAMEARCHIVE_FILTERTYPE_HPP_
 #define _CAMOTO_GAMEARCHIVE_FILTERTYPE_HPP_
 
-#include <boost/shared_ptr.hpp>
-#include <exception>
-#include <iostream>
-#include <sstream>
 #include <vector>
-
-#include <camoto/types.hpp>
-#include <camoto/exceptions.hpp>
-#include <camoto/gamearchive/archivetype.hpp> // for supp types
+#include <camoto/filter.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -83,28 +76,25 @@ class FilterType {
 		 * @param target
 		 *   Target stream where the filtered data exists or is to end up.
 		 *
-		 * @param fnTruncate
-		 *   Callback to set the size of the target stream on flush().
-		 *
 		 * @return Clear/plaintext stream providing data from target after
 		 *   processing.
 		 */
-		virtual iostream_sptr apply(iostream_sptr target, FN_TRUNCATE fnTruncate)
-			throw (ECorruptedData) = 0;
+		virtual stream::inout_sptr apply(stream::inout_sptr target)
+			throw (filter_error, stream::read_error) = 0;
 
-		/// Apply the algorithm to an istream.
+		/// Apply the algorithm to an input stream.
 		/**
-		 * @sa apply(iostream_sptr, FN_TRUNCATE)
+		 * @sa apply(stream::inout_sptr)
 		 */
-		virtual istream_sptr apply(istream_sptr target)
-			throw (ECorruptedData) = 0;
+		virtual stream::input_sptr apply(stream::input_sptr target)
+			throw (filter_error, stream::read_error) = 0;
 
-		/// Apply the algorithm to an ostream.
+		/// Apply the algorithm to an output stream.
 		/**
-		 * @sa apply(iostream_sptr, FN_TRUNCATE)
+		 * @sa apply(stream::inout_sptr)
 		 */
-		virtual ostream_sptr apply(ostream_sptr target, FN_TRUNCATE fnTruncate)
-			throw (ECorruptedData) = 0;
+		virtual stream::output_sptr apply(stream::output_sptr target)
+			throw (filter_error) = 0;
 
 };
 

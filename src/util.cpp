@@ -30,7 +30,7 @@ namespace gamearchive {
 
 Archive::EntryPtr findFile(ArchivePtr& archive,
 	const std::string& filename)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// Save the original archive pointer in case we get half way through a
 	// subfolder tree and get a file-not-found.
@@ -50,7 +50,7 @@ Archive::EntryPtr findFile(ArchivePtr& archive,
 			// The number was entirely valid (no junk at end)
 			Archive::VC_ENTRYPTR files = archive->getFileList();
 			if (index < files.size()) return files[index];
-			throw std::ios::failure("index too large");
+			throw stream::error("index too large");
 		}
 	}
 

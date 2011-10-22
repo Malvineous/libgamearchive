@@ -61,7 +61,6 @@ std::string DAT_HocusType::getFriendlyName() const
 	return "Hocus Pocus DAT File";
 }
 
-// Get a list of the known file extensions for this format.
 std::vector<std::string> DAT_HocusType::getFileExtensions() const
 	throw ()
 {
@@ -78,22 +77,20 @@ std::vector<std::string> DAT_HocusType::getGameList() const
 	return vcGames;
 }
 
-E_CERTAINTY DAT_HocusType::isInstance(iostream_sptr psArchive) const
-	throw (std::ios::failure)
+ArchiveType::Certainty DAT_HocusType::isInstance(stream::inout_sptr psArchive) const
+	throw (stream::error)
 {
 	// There is literally no identifying information in this archive format!
 	// TESTED BY: fmt_dat_hocus_isinstance_c00
-	return EC_UNSURE;
+	return Unsure;
 }
 
-ArchivePtr DAT_HocusType::open(iostream_sptr psArchive, SuppData& suppData) const
-	throw (std::ios::failure)
+ArchivePtr DAT_HocusType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+	throw (stream::error)
 {
 	assert(suppData.find(SuppItem::FAT) != suppData.end());
-	SuppItem& si = suppData[SuppItem::FAT];
-	si.stream->seekg(0, std::ios::end);
-	io::stream_offset lenEXE = si.stream->tellg();
-	io::stream_offset offFAT, lenFAT;
+	stream::pos lenEXE = suppData[SuppItem::FAT]->size();
+	stream::pos offFAT, lenFAT;
 	switch (lenEXE) {
 		case 178592: // shareware v1.0
 			offFAT = 0x01EE04;
@@ -112,18 +109,19 @@ ArchivePtr DAT_HocusType::open(iostream_sptr psArchive, SuppData& suppData) cons
 			lenFAT = 8 * 652;
 			break;
 		default:
-			throw std::ios::failure("Unknown file version");
+			throw stream::error("Unknown file version");
 	}
-	substream_sptr fat(new substream(si.stream, offFAT, lenFAT));
+	stream::sub_sptr fat(new stream::sub());
+	fat->open(suppData[SuppItem::FAT], offFAT, lenFAT, preventResize);
 	return ArchivePtr(new DAT_HocusArchive(psArchive, fat));
 }
 
-ArchivePtr DAT_HocusType::newArchive(iostream_sptr psArchive, SuppData& suppData) const
-	throw (std::ios::failure)
+ArchivePtr DAT_HocusType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+	throw (stream::error)
 {
 	// We can't create new archives because the FAT has to go inside a
 	// specific version of an .EXE file, and we wouldn't know where that is!
-	throw std::ios::failure("Cannot create archives from scratch in this format!");
+	throw stream::error("Cannot create archives from scratch in this format!");
 }
 
 SuppFilenames DAT_HocusType::getRequiredSupps(const std::string& filenameArchive) const
@@ -137,18 +135,18 @@ SuppFilenames DAT_HocusType::getRequiredSupps(const std::string& filenameArchive
 }
 
 
-DAT_HocusArchive::DAT_HocusArchive(iostream_sptr psArchive, iostream_sptr psFAT)
-	throw (std::ios::failure) :
+DAT_HocusArchive::DAT_HocusArchive(stream::inout_sptr psArchive, stream::inout_sptr psFAT)
+	throw (stream::error) :
 		FATArchive(psArchive, DAT_FIRST_FILE_OFFSET, 0),
-		psFAT(new segmented_stream(psFAT)),
 		numFiles(0)
 {
-	this->psArchive->seekg(0, std::ios::end);
-	io::stream_offset lenArchive = this->psArchive->tellg();
+	this->psFAT->open(psFAT);
 
-	this->psFAT->seekg(0, std::ios::end);
+	stream::pos lenArchive = this->psArchive->size();
+
+	this->psFAT->seekg(0, stream::end);
 	this->maxFiles = this->psFAT->tellg() / DAT_FAT_ENTRY_LEN;
-	this->psFAT->seekg(0, std::ios::beg);
+	this->psFAT->seekg(0, stream::start);
 
 	for (int i = 0; i < this->maxFiles; i++) {
 		FATEntry *pEntry = new FATEntry();
@@ -168,7 +166,7 @@ DAT_HocusArchive::DAT_HocusArchive(iostream_sptr psArchive, iostream_sptr psFAT)
 				<< " ends at offset " << pEntry->iOffset + pEntry->iSize
 				<< " but the DAT file is only " << lenArchive
 				<< " bytes long." << std::endl;
-			throw std::ios::failure("archive has been truncated or FAT is corrupt");
+			throw stream::error("archive has been truncated or FAT is corrupt");
 		}
 		this->numFiles++;
 	}
@@ -180,58 +178,58 @@ DAT_HocusArchive::~DAT_HocusArchive()
 }
 
 void DAT_HocusArchive::flush()
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	this->FATArchive::flush();
 
 	// Write out to the underlying stream for the supplemental files
-	this->psFAT->commit(dummyTrunc);
+	this->psFAT->flush();
 
 	return;
 }
 
 void DAT_HocusArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
-	throw std::ios::failure("This archive format does not support filenames.");
+	throw stream::error("This archive format does not support filenames.");
 }
 
-void DAT_HocusArchive::updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
-	throw (std::ios::failure)
+void DAT_HocusArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+	throw (stream::error)
 {
 	// Only the external FAT file has offsets, not the embedded FAT
-	this->psFAT->seekp(pid->iIndex * DAT_FAT_ENTRY_LEN + DAT_FAT_FILEOFFSET_OFFSET);
+	this->psFAT->seekp(pid->iIndex * DAT_FAT_ENTRY_LEN + DAT_FAT_FILEOFFSET_OFFSET, stream::start);
 	this->psFAT << u32le(pid->iOffset);
 	return;
 }
 
-void DAT_HocusArchive::updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
-	throw (std::ios::failure)
+void DAT_HocusArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+	throw (stream::error)
 {
 	// Update external FAT
-	this->psFAT->seekp(pid->iIndex * DAT_FAT_ENTRY_LEN + DAT_FAT_FILESIZE_OFFSET);
+	this->psFAT->seekp(pid->iIndex * DAT_FAT_ENTRY_LEN + DAT_FAT_FILESIZE_OFFSET, stream::start);
 	this->psFAT << u32le(pid->iSize);
 
 	return;
 }
 
 FATArchive::FATEntry *DAT_HocusArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// Make sure FAT hasn't reached maximum size
 	if (this->numFiles + 1 >= this->maxFiles) {
-		throw std::ios::failure("Maximum number of files reached in this archive format.");
+		throw stream::error("Maximum number of files reached in this archive format.");
 	}
 
 	// Set the format-specific variables
 	pNewEntry->lenHeader = 0;
 
 	// Remove the last (empty) entry in the FAT to keep the size fixed
-	this->psFAT->seekp(DAT_FAT_ENTRY_LEN, std::ios::end);
+	this->psFAT->seekp(DAT_FAT_ENTRY_LEN, stream::end);
 	this->psFAT->remove(DAT_FAT_ENTRY_LEN);
 
 	// Insert the new FAT entry
-	this->psFAT->seekp(pNewEntry->iIndex * DAT_FAT_ENTRY_LEN);
+	this->psFAT->seekp(pNewEntry->iIndex * DAT_FAT_ENTRY_LEN, stream::start);
 	this->psFAT->insert(DAT_FAT_ENTRY_LEN);
 
 	// Write out the file size
@@ -244,14 +242,14 @@ FATArchive::FATEntry *DAT_HocusArchive::preInsertFile(const FATEntry *idBeforeTh
 }
 
 void DAT_HocusArchive::preRemoveFile(const FATEntry *pid)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// Remove the FAT entry
-	this->psFAT->seekp(pid->iIndex * DAT_FAT_ENTRY_LEN);
+	this->psFAT->seekp(pid->iIndex * DAT_FAT_ENTRY_LEN, stream::start);
 	this->psFAT->remove(DAT_FAT_ENTRY_LEN);
 
 	// And add space at the end to keep the FAT length fixed
-	this->psFAT->seekp(0, std::ios::end);
+	this->psFAT->seekp(0, stream::end);
 	this->psFAT->insert(DAT_FAT_ENTRY_LEN);
 
 	this->numFiles--;

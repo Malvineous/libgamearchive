@@ -60,7 +60,6 @@ std::string RESType::getFriendlyName() const
 	return "Stellar 7 Resource File";
 }
 
-// Get a list of the known file extensions for this format.
 std::vector<std::string> RESType::getFileExtensions() const
 	throw ()
 {
@@ -77,15 +76,14 @@ std::vector<std::string> RESType::getGameList() const
 	return vcGames;
 }
 
-E_CERTAINTY RESType::isInstance(iostream_sptr psArchive) const
-	throw (std::ios::failure)
+ArchiveType::Certainty RESType::isInstance(stream::inout_sptr psArchive) const
+	throw (stream::error)
 {
-	psArchive->seekg(0, std::ios::end);
-	io::stream_offset lenArchive = psArchive->tellg();
+	stream::pos lenArchive = psArchive->size();
 
-	psArchive->seekg(0, std::ios::beg);
+	psArchive->seekg(0, stream::start);
 
-	io::stream_offset offNext = 0; // offset of first file (+1 for KenSilverman sig)
+	stream::pos offNext = 0; // offset of first file (+1 for KenSilverman sig)
 	int i;
 	for (i = 0; (
 		(i < RES_SAFETY_MAX_FILECOUNT) &&
@@ -100,7 +98,7 @@ E_CERTAINTY RESType::isInstance(iostream_sptr psArchive) const
 
 			// Fail on control characters in the filename
 			// TESTED BY: fmt_res_stellar7_isinstance_c01
-			if (fn[j] < 32) return EC_DEFINITELY_NO;
+			if (fn[j] < 32) return DefinitelyNo;
 		}
 		uint32_t isfolder_length;
 		psArchive >> u32le(isfolder_length);
@@ -109,19 +107,19 @@ E_CERTAINTY RESType::isInstance(iostream_sptr psArchive) const
 
 		// Make sure the files don't run past the end of the archive
 		// TESTED BY: fmt_res_stellar7_isinstance_c02
-		if (offNext > lenArchive) return EC_DEFINITELY_NO;
+		if (offNext > lenArchive) return DefinitelyNo;
 
-		psArchive->seekg(iSize, std::ios::cur);
+		psArchive->seekg(iSize, stream::cur);
 	}
 
-	if (i == RES_SAFETY_MAX_FILECOUNT) return EC_POSSIBLY_YES;
+	if (i == RES_SAFETY_MAX_FILECOUNT) return PossiblyYes;
 
 	// TESTED BY: fmt_res_stellar7_isinstance_c00
-	return EC_DEFINITELY_YES;
+	return DefinitelyYes;
 }
 
-ArchivePtr RESType::open(iostream_sptr psArchive, SuppData& suppData) const
-	throw (std::ios::failure)
+ArchivePtr RESType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+	throw (stream::error)
 {
 	ArchivePtr root(new RESArchiveFolder(psArchive));
 	return root;
@@ -135,16 +133,15 @@ SuppFilenames RESType::getRequiredSupps(const std::string& filenameArchive) cons
 }
 
 
-RESArchiveFolder::RESArchiveFolder(iostream_sptr psArchive)
-	throw (std::ios::failure) :
+RESArchiveFolder::RESArchiveFolder(stream::inout_sptr psArchive)
+	throw (stream::error) :
 		FATArchive(psArchive, RES_FIRST_FILE_OFFSET, RES_MAX_FILENAME_LEN)
 {
-	this->psArchive->seekg(0, std::ios::end);
-	io::stream_offset lenArchive = this->psArchive->tellg();
+	stream::pos lenArchive = this->psArchive->size();
 
-	this->psArchive->seekg(0, std::ios::beg);
+	this->psArchive->seekg(0, stream::start);
 
-	io::stream_offset offNext = 0;
+	stream::pos offNext = 0;
 	for (int i = 0; (
 		(i < RES_SAFETY_MAX_FILECOUNT) &&
 		(offNext + RES_FAT_ENTRY_LEN <= lenArchive)
@@ -178,7 +175,7 @@ RESArchiveFolder::RESArchiveFolder(iostream_sptr psArchive)
 				"file list may be incomplete or complete garbage..." << std::endl;
 			break;
 		}
-		this->psArchive->seekg(fatEntry->iSize, std::ios::cur);
+		this->psArchive->seekg(fatEntry->iSize, stream::cur);
 	}
 }
 
@@ -187,28 +184,28 @@ RESArchiveFolder::~RESArchiveFolder()
 {
 }
 
-ArchivePtr RESArchiveFolder::openFolder(const EntryPtr& id)
-	throw (std::ios::failure)
+ArchivePtr RESArchiveFolder::openFolder(const EntryPtr id)
+	throw (stream::error)
 {
 	// Make sure we're opening a folder
 	assert(id->fAttr & EA_FOLDER);
 
-	iostream_sptr folderContents = this->open(id);
+	stream::inout_sptr folderContents = this->open(id);
 	return ArchivePtr(new RESArchiveFolder(folderContents));
 }
 
 void RESArchiveFolder::updateFileName(const FATEntry *pid, const std::string& strNewName)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_res_stellar7_rename
 	assert(strNewName.length() <= RES_MAX_FILENAME_LEN);
-	this->psArchive->seekp(pid->iOffset + RES_FAT_FILENAME_OFFSET);
+	this->psArchive->seekp(pid->iOffset + RES_FAT_FILENAME_OFFSET, stream::start);
 	this->psArchive << nullPadded(strNewName, RES_MAX_FILENAME_LEN);
 	return;
 }
 
-void RESArchiveFolder::updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
-	throw (std::ios::failure)
+void RESArchiveFolder::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+	throw (stream::error)
 {
 	// This format doesn't have any offsets that need updating.  As this function
 	// is only called when removing a file, the "offsets" will be sorted out
@@ -216,18 +213,18 @@ void RESArchiveFolder::updateFileOffset(const FATEntry *pid, std::streamsize off
 	return;
 }
 
-void RESArchiveFolder::updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
-	throw (std::ios::failure)
+void RESArchiveFolder::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_res_stellar7_insert*
 	// TESTED BY: fmt_res_stellar7_resize*
-	this->psArchive->seekp(pid->iOffset + RES_FAT_FILESIZE_OFFSET);
+	this->psArchive->seekp(pid->iOffset + RES_FAT_FILESIZE_OFFSET, stream::start);
 	this->psArchive << u32le(pid->iSize);
 	return;
 }
 
 FATArchive::FATEntry *RESArchiveFolder::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_res_stellar7_insert*
 	assert(pNewEntry->strName.length() <= RES_MAX_FILENAME_LEN);
@@ -235,7 +232,7 @@ FATArchive::FATEntry *RESArchiveFolder::preInsertFile(const FATEntry *idBeforeTh
 	// Set the format-specific variables
 	pNewEntry->lenHeader = RES_FAT_ENTRY_LEN;
 
-	this->psArchive->seekp(pNewEntry->iOffset);
+	this->psArchive->seekp(pNewEntry->iOffset, stream::start);
 	this->psArchive->insert(RES_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
 	this->psArchive << nullPadded(pNewEntry->strName, RES_MAX_FILENAME_LEN);

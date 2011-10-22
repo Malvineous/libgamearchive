@@ -50,14 +50,14 @@ class DAT_HugoType: virtual public ArchiveType {
 		virtual std::vector<std::string> getGameList() const
 			throw ();
 
-		virtual E_CERTAINTY isInstance(iostream_sptr fsArchive) const
-			throw (std::ios::failure);
+		virtual ArchiveType::Certainty isInstance(stream::inout_sptr fsArchive) const
+			throw (stream::error);
 
-		virtual ArchivePtr newArchive(iostream_sptr psArchive, SuppData& suppData) const
-			throw (std::ios::failure);
+		virtual ArchivePtr newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+			throw (stream::error);
 
-		virtual ArchivePtr open(iostream_sptr fsArchive, SuppData& suppData) const
-			throw (std::ios::failure);
+		virtual ArchivePtr open(stream::inout_sptr fsArchive, SuppData& suppData) const
+			throw (stream::error);
 
 		virtual SuppFilenames getRequiredSupps(const std::string& filenameArchive) const
 			throw ();
@@ -67,15 +67,14 @@ class DAT_HugoType: virtual public ArchiveType {
 class DAT_HugoArchive: virtual public FATArchive {
 	protected:
 
-		segstream_sptr psFAT;
-		FN_TRUNCATE fnTruncFAT;
+		stream::seg_sptr psFAT;
 		struct DAT_HugoEntry: virtual public FATEntry {
 			int file;
 		};
 
 	public:
-		DAT_HugoArchive(iostream_sptr psArchive, iostream_sptr psFAT, FN_TRUNCATE fnTruncFAT)
-			throw (std::ios::failure);
+		DAT_HugoArchive(stream::inout_sptr psArchive, stream::inout_sptr psFAT)
+			throw (stream::error);
 
 		virtual ~DAT_HugoArchive()
 			throw ();
@@ -83,19 +82,19 @@ class DAT_HugoArchive: virtual public FATArchive {
 		// As per FATArchive (see there for docs)
 
 		virtual void updateFileName(const FATEntry *pid, const std::string& strNewName)
-			throw (std::ios::failure);
+			throw (stream::error);
 
-		virtual void updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
-			throw (std::ios::failure);
+		virtual void updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+			throw (stream::error);
 
-		virtual void updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
-			throw (std::ios::failure);
+		virtual void updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+			throw (stream::error);
 
 		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 		virtual void preRemoveFile(const FATEntry *pid)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 		virtual FATEntry *createNewFATEntry()
 			throw ();

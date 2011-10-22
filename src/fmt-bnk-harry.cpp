@@ -74,7 +74,6 @@ std::string BNKType::getFriendlyName() const
 	return "Halloween Harry BNK File";
 }
 
-// Get a list of the known file extensions for this format.
 std::vector<std::string> BNKType::getFileExtensions() const
 	throw ()
 {
@@ -92,32 +91,30 @@ std::vector<std::string> BNKType::getGameList() const
 	return vcGames;
 }
 
-E_CERTAINTY BNKType::isInstance(iostream_sptr psArchive) const
-	throw (std::ios::failure)
+ArchiveType::Certainty BNKType::isInstance(stream::inout_sptr psArchive) const
+	throw (stream::error)
 {
-	psArchive->seekg(0, std::ios::end);
-	io::stream_offset lenArchive = psArchive->tellg();
-	if (lenArchive == 0) return EC_DEFINITELY_YES; // empty archive
-	if (lenArchive < BNK_HH_EFAT_ENTRY_LEN) return EC_DEFINITELY_NO; // too short
+	stream::pos lenArchive = psArchive->size();
+	if (lenArchive == 0) return DefinitelyYes; // empty archive
+	if (lenArchive < BNK_HH_EFAT_ENTRY_LEN) return DefinitelyNo; // too short
 
 	char sig[5];
-	psArchive->seekg(0, std::ios::beg);
+	psArchive->seekg(0, stream::start);
 	psArchive->read(sig, 5);
 
 	// TESTED BY: fmt_bnk_harry_isinstance_c01
-	if (strncmp(sig, "\x04-ID-", 5)) return EC_DEFINITELY_NO;
+	if (strncmp(sig, "\x04-ID-", 5)) return DefinitelyNo;
 
 	// If we've made it this far, this is almost certainly a BNK file.
 	// TESTED BY: fmt_bnk_harry_isinstance_c00
-	return EC_DEFINITELY_YES;
+	return DefinitelyYes;
 }
 
-ArchivePtr BNKType::open(iostream_sptr psArchive, SuppData& suppData) const
-	throw (std::ios::failure)
+ArchivePtr BNKType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+	throw (stream::error)
 {
 	assert(suppData.find(SuppItem::FAT) != suppData.end());
-	SuppItem& si = suppData[SuppItem::FAT];
-	return ArchivePtr(new BNKArchive(psArchive, si.stream, si.fnTruncate));
+	return ArchivePtr(new BNKArchive(psArchive, suppData[SuppItem::FAT]));
 }
 
 SuppFilenames BNKType::getRequiredSupps(const std::string& filenameArchive) const
@@ -131,19 +128,19 @@ SuppFilenames BNKType::getRequiredSupps(const std::string& filenameArchive) cons
 }
 
 
-BNKArchive::BNKArchive(iostream_sptr psArchive, iostream_sptr psFAT, FN_TRUNCATE fnTruncFAT)
-	throw (std::ios::failure) :
+BNKArchive::BNKArchive(stream::inout_sptr psArchive, stream::inout_sptr psFAT)
+	throw (stream::error) :
 		FATArchive(psArchive, BNK_FIRST_FILE_OFFSET, BNK_MAX_FILENAME_LEN),
-		psFAT(new segmented_stream(psFAT)),
-		fnTruncFAT(fnTruncFAT),
+		psFAT(new stream::seg()),
 		isAC(false) // TODO: detect and set this
 {
-	this->psFAT->seekg(0, std::ios::end);
-	io::stream_offset lenFAT = this->psFAT->tellg();
+	this->psFAT->open(psFAT);
+
+	stream::pos lenFAT = this->psFAT->size();
 	unsigned long numFiles = lenFAT / BNK_FAT_ENTRY_LEN;
 	this->vcFAT.reserve(numFiles);
 
-	this->psFAT->seekg(0, std::ios::beg);
+	this->psFAT->seekg(0, stream::start);
 
 	for (int i = 0; i < numFiles; i++) {
 		FATEntry *fatEntry = new FATEntry();
@@ -181,65 +178,65 @@ BNKArchive::~BNKArchive()
 }
 
 void BNKArchive::flush()
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	this->FATArchive::flush();
 
 	// Write out to the underlying stream for the supplemental files
-	this->psFAT->commit(this->fnTruncFAT);
+	this->psFAT->flush();
 
 	return;
 }
 
 void BNKArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_bnk_harry_rename
 	assert(strNewName.length() <= BNK_MAX_FILENAME_LEN);
 
 	uint8_t lenByte = strNewName.length();
-	this->psFAT->seekp(pid->iIndex * BNK_FAT_ENTRY_LEN + BNK_FAT_FILENAME_OFFSET);
-	this->psFAT->rdbuf()->sputn((char *)&lenByte, 1);
+	this->psFAT->seekp(pid->iIndex * BNK_FAT_ENTRY_LEN + BNK_FAT_FILENAME_OFFSET, stream::start);
+	this->psFAT->write(&lenByte, 1);
 	this->psFAT << nullPadded(strNewName, BNK_MAX_FILENAME_LEN);
 
-	this->psArchive->seekp(pid->iOffset + BNK_EFAT_FILENAME_OFFSET);
-	this->psArchive->rdbuf()->sputn((char *)&lenByte, 1);
+	this->psArchive->seekp(pid->iOffset + BNK_EFAT_FILENAME_OFFSET, stream::start);
+	this->psArchive->write(&lenByte, 1);
 	this->psArchive << nullPadded(strNewName, BNK_MAX_FILENAME_LEN);
 
 	return;
 }
 
-void BNKArchive::updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
-	throw (std::ios::failure)
+void BNKArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_bnk_harry_insert*
 	// TESTED BY: fmt_bnk_harry_resize*
 
 	// Only the external FAT file has offsets, not the embedded FAT
-	this->psFAT->seekp(pid->iIndex * BNK_FAT_ENTRY_LEN + BNK_FAT_FILEOFFSET_OFFSET);
+	this->psFAT->seekp(pid->iIndex * BNK_FAT_ENTRY_LEN + BNK_FAT_FILEOFFSET_OFFSET, stream::start);
 	this->psFAT << u32le(pid->iOffset + BNK_EFAT_ENTRY_LEN);
 	return;
 }
 
-void BNKArchive::updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
-	throw (std::ios::failure)
+void BNKArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_bnk_harry_insert*
 	// TESTED BY: fmt_bnk_harry_resize*
 
 	// Update external FAT
-	this->psFAT->seekp(pid->iIndex * BNK_FAT_ENTRY_LEN + BNK_FAT_FILESIZE_OFFSET);
+	this->psFAT->seekp(pid->iIndex * BNK_FAT_ENTRY_LEN + BNK_FAT_FILESIZE_OFFSET, stream::start);
 	this->psFAT << u32le(pid->iSize);
 
 	// Update embedded FAT
-	this->psArchive->seekp(pid->iOffset + BNK_EFAT_FILESIZE_OFFSET);
+	this->psArchive->seekp(pid->iOffset + BNK_EFAT_FILESIZE_OFFSET, stream::start);
 	this->psArchive << u32le(pid->iSize);
 
 	return;
 }
 
 FATArchive::FATEntry *BNKArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_bnk_harry_insert*
 	int len = pNewEntry->strName.length();
@@ -252,14 +249,16 @@ FATArchive::FATEntry *BNKArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	boost::to_upper(pNewEntry->strName);
 
 	// Write out the new embedded FAT entry
-	this->psArchive->seekp(pNewEntry->iOffset);
+	this->psArchive->seekp(pNewEntry->iOffset, stream::start);
 	this->psArchive->insert(BNK_EFAT_ENTRY_LEN);
 
 	// Write the header
-	this->psArchive->rdbuf()->sputn("\x04-ID-", 5);
-	this->psArchive->rdbuf()->sputn((char *)&lenByte, 1);
-	this->psArchive << nullPadded(pNewEntry->strName, BNK_MAX_FILENAME_LEN);
-	this->psArchive << u32le(pNewEntry->iSize);
+	this->psArchive->write("\x04-ID-", 5);
+	this->psArchive
+		<< u8(lenByte)
+		<< nullPadded(pNewEntry->strName, BNK_MAX_FILENAME_LEN)
+		<< u32le(pNewEntry->iSize)
+	;
 
 	// Since we've inserted some data for the embedded header, we need to update
 	// the other file offsets accordingly.  This call updates the offset of the
@@ -270,25 +269,25 @@ FATArchive::FATEntry *BNKArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	this->shiftFiles(NULL, pNewEntry->iOffset, pNewEntry->lenHeader, 0);
 
 	// Write out same again but into the BNK file's external FAT
-	this->psFAT->seekp(pNewEntry->iIndex * BNK_FAT_ENTRY_LEN);
+	this->psFAT->seekp(pNewEntry->iIndex * BNK_FAT_ENTRY_LEN, stream::start);
 	this->psFAT->insert(BNK_FAT_ENTRY_LEN);
-	this->psFAT->rdbuf()->sputn((char *)&lenByte, 1);
-	this->psFAT << nullPadded(pNewEntry->strName, BNK_MAX_FILENAME_LEN);
-
-	// Write out the file size
-	this->psFAT << u32le(pNewEntry->iOffset + BNK_EFAT_ENTRY_LEN);
-	this->psFAT << u32le(pNewEntry->iSize);
+	this->psFAT
+		<< u8(lenByte)
+		<< nullPadded(pNewEntry->strName, BNK_MAX_FILENAME_LEN)
+		<< u32le(pNewEntry->iOffset + BNK_EFAT_ENTRY_LEN)
+		<< u32le(pNewEntry->iSize)
+	;
 
 	return pNewEntry;
 }
 
 void BNKArchive::preRemoveFile(const FATEntry *pid)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_bnk_harry_remove*
 
 	// Remove the FAT entry
-	this->psFAT->seekp(pid->iIndex * BNK_FAT_ENTRY_LEN);
+	this->psFAT->seekp(pid->iIndex * BNK_FAT_ENTRY_LEN, stream::start);
 	this->psFAT->remove(BNK_FAT_ENTRY_LEN);
 
 	return;

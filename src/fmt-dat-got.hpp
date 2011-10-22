@@ -21,7 +21,7 @@
 #ifndef _CAMOTO_FMT_DAT_GOT_HPP_
 #define _CAMOTO_FMT_DAT_GOT_HPP_
 
-#include <camoto/filteredstream.hpp>
+#include <camoto/stream_filtered.hpp>
 #include <camoto/gamearchive.hpp>
 
 #include "fatarchive.hpp"
@@ -52,14 +52,14 @@ class DAT_GoTType: virtual public ArchiveType {
 		virtual std::vector<std::string> getGameList() const
 			throw ();
 
-		virtual E_CERTAINTY isInstance(iostream_sptr fsArchive) const
-			throw (std::ios::failure);
+		virtual ArchiveType::Certainty isInstance(stream::inout_sptr fsArchive) const
+			throw (stream::error);
 
-		virtual ArchivePtr newArchive(iostream_sptr psArchive, SuppData& suppData) const
-			throw (std::ios::failure);
+		virtual ArchivePtr newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+			throw (stream::error);
 
-		virtual ArchivePtr open(iostream_sptr fsArchive, SuppData& suppData) const
-			throw (std::ios::failure);
+		virtual ArchivePtr open(stream::inout_sptr fsArchive, SuppData& suppData) const
+			throw (stream::error);
 
 		virtual SuppFilenames getRequiredSupps(const std::string& filenameArchive) const
 			throw ();
@@ -68,8 +68,8 @@ class DAT_GoTType: virtual public ArchiveType {
 
 class DAT_GoTArchive: virtual public FATArchive {
 	public:
-		DAT_GoTArchive(iostream_sptr psArchive)
-			throw (std::ios::failure);
+		DAT_GoTArchive(stream::inout_sptr psArchive)
+			throw (stream::error);
 
 		virtual ~DAT_GoTArchive()
 			throw ();
@@ -77,7 +77,7 @@ class DAT_GoTArchive: virtual public FATArchive {
 		// As per Archive (see there for docs)
 
 		virtual void flush()
-			throw (std::ios::failure);
+			throw (stream::error);
 
 		virtual int getSupportedAttributes() const
 			throw ();
@@ -85,36 +85,34 @@ class DAT_GoTArchive: virtual public FATArchive {
 		// As per FATArchive (see there for docs)
 
 		virtual void updateFileName(const FATEntry *pid, const std::string& strNewName)
-			throw (std::ios::failure);
+			throw (stream::error);
 
-		virtual void updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
-			throw (std::ios::failure);
+		virtual void updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+			throw (stream::error);
 
-		virtual void updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
-			throw (std::ios::failure);
+		virtual void updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+			throw (stream::error);
 
 		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 		virtual void postInsertFile(FATEntry *pNewEntry)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 		virtual void preRemoveFile(const FATEntry *pid)
-			throw (std::ios::failure);
+			throw (stream::error);
 
 	protected:
-		substream_sptr fatSubStream;   ///< On-disk stream storing the possibly encrypted FAT
-		segstream_sptr fatStream;      ///< Segstream wrapper around decrypted fatSubStream
-		xor_crypt_filter fatCrypt;     ///< Encryption/decryption to use on the FAT
-		filtered_iostream_sptr fatFilter; ///< Decrypted FAT stream
+		stream::sub_sptr fatSubStream;   ///< On-disk stream storing the possibly encrypted FAT
+		stream::seg_sptr fatStream;      ///< Segstream wrapper around decrypted fatSubStream
 
 		/// Dummy function - does nothing
 		/**
 		 * Since this format's FAT is a constant size it will never be changed,
 		 * but fatStream requires a truncate callback when commit() is called.
 		 */
-		void truncateFAT(io::stream_offset newSize)
-			throw (std::ios::failure);
+		void truncateFAT(stream::pos newSize)
+			throw (stream::error);
 
 };
 

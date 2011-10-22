@@ -57,7 +57,6 @@ std::string DAT_SangoType::getFriendlyName() const
 	return "Sango Archive File";
 }
 
-// Get a list of the known file extensions for this format.
 std::vector<std::string> DAT_SangoType::getFileExtensions() const
 	throw ()
 {
@@ -78,47 +77,45 @@ std::vector<std::string> DAT_SangoType::getGameList() const
 	return vcGames;
 }
 
-E_CERTAINTY DAT_SangoType::isInstance(iostream_sptr psArchive) const
-	throw (std::ios::failure)
+ArchiveType::Certainty DAT_SangoType::isInstance(stream::inout_sptr psArchive) const
+	throw (stream::error)
 {
-	psArchive->seekg(0, std::ios::end);
-	io::stream_offset lenArchive = psArchive->tellg();
+	stream::pos lenArchive = psArchive->size();
 
 	// TESTED BY: fmt_dat_sango_isinstance_c01
-	if (lenArchive < DAT_FAT_ENTRY_LEN) return EC_DEFINITELY_NO; // too short
+	if (lenArchive < DAT_FAT_ENTRY_LEN) return DefinitelyNo; // too short
 
 	uint32_t offEndFAT;
-	psArchive->seekg(0, std::ios::beg);
+	psArchive->seekg(0, stream::start);
 	psArchive >> u32le(offEndFAT);
 	// TESTED BY: fmt_dat_sango_isinstance_c02
-	if (offEndFAT > lenArchive) return EC_DEFINITELY_NO;
+	if (offEndFAT > lenArchive) return DefinitelyNo;
 
 	uint32_t offNext = 4; // in case of no files
 	for (int offset = 4; offset < offEndFAT; offset += 4) {
 		psArchive >> u32le(offNext);
 		// TESTED BY: fmt_dat_sango_isinstance_c03
-		if (offNext > lenArchive) return EC_DEFINITELY_NO;
+		if (offNext > lenArchive) return DefinitelyNo;
 	}
 
 	// Last offset must equal file size
 	// TESTED BY: fmt_dat_sango_isinstance_c04
-	if (offNext != lenArchive) return EC_DEFINITELY_NO;
+	if (offNext != lenArchive) return DefinitelyNo;
 
 	// TESTED BY: fmt_dat_sango_isinstance_c00
-	return EC_DEFINITELY_YES;
+	return DefinitelyYes;
 }
 
-ArchivePtr DAT_SangoType::newArchive(iostream_sptr psArchive, SuppData& suppData) const
-	throw (std::ios::failure)
+ArchivePtr DAT_SangoType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+	throw (stream::error)
 {
-	psArchive->seekp(0, std::ios::beg);
+	psArchive->seekp(0, stream::start);
 	psArchive->write("\x04\0\0\0", 4);
 	return ArchivePtr(new DAT_SangoArchive(psArchive));
 }
 
-// Preconditions: isInstance() has returned > EC_DEFINITELY_NO
-ArchivePtr DAT_SangoType::open(iostream_sptr psArchive, SuppData& suppData) const
-	throw (std::ios::failure)
+ArchivePtr DAT_SangoType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+	throw (stream::error)
 {
 	return ArchivePtr(new DAT_SangoArchive(psArchive));
 }
@@ -131,17 +128,17 @@ SuppFilenames DAT_SangoType::getRequiredSupps(const std::string& filenameArchive
 }
 
 
-DAT_SangoArchive::DAT_SangoArchive(iostream_sptr psArchive)
-	throw (std::ios::failure) :
+DAT_SangoArchive::DAT_SangoArchive(stream::inout_sptr psArchive)
+	throw (stream::error) :
 		FATArchive(psArchive, DAT_FIRST_FILE_OFFSET, 0)
 {
-	psArchive->seekg(0, std::ios::end);
+	psArchive->seekg(0, stream::end);
 	this->lenArchive = psArchive->tellg();
 
-	if (this->lenArchive < DAT_FAT_ENTRY_LEN) throw std::ios::failure("file too short");
+	if (this->lenArchive < DAT_FAT_ENTRY_LEN) throw stream::error("file too short");
 
 	uint32_t offEndFAT;
-	psArchive->seekg(0, std::ios::beg);
+	psArchive->seekg(0, stream::start);
 	psArchive >> u32le(offEndFAT);
 
 	uint32_t offCur = offEndFAT, offNext;
@@ -161,7 +158,7 @@ DAT_SangoArchive::DAT_SangoArchive(iostream_sptr psArchive)
 
 		this->vcFAT.push_back(ep);
 		if (i >= DAT_SAFETY_MAX_FILECOUNT) {
-			throw std::ios::failure("too many files or corrupted archive");
+			throw stream::error("too many files or corrupted archive");
 		}
 
 		offCur = offNext;
@@ -174,21 +171,21 @@ DAT_SangoArchive::~DAT_SangoArchive()
 }
 
 void DAT_SangoArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
-	throw std::ios::failure("This archive format does not support filenames.");
+	throw stream::error("This archive format does not support filenames.");
 }
 
-void DAT_SangoArchive::updateFileOffset(const FATEntry *pid, std::streamsize offDelta)
-	throw (std::ios::failure)
+void DAT_SangoArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+	throw (stream::error)
 {
-	this->psArchive->seekp(DAT_FATENTRY_OFFSET(pid));
+	this->psArchive->seekp(DAT_FATENTRY_OFFSET(pid), stream::start);
 	this->psArchive << u32le(pid->iOffset);
 	return;
 }
 
-void DAT_SangoArchive::updateFileSize(const FATEntry *pid, std::streamsize sizeDelta)
-	throw (std::ios::failure)
+void DAT_SangoArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+	throw (stream::error)
 {
 	// Update the last FAT entry (the one that points to EOF.)
 	this->updateLastEntry(sizeDelta);
@@ -196,7 +193,7 @@ void DAT_SangoArchive::updateFileSize(const FATEntry *pid, std::streamsize sizeD
 }
 
 FATArchive::FATEntry *DAT_SangoArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_dat_sango_insert*
 
@@ -209,7 +206,7 @@ FATArchive::FATEntry *DAT_SangoArchive::preInsertFile(const FATEntry *idBeforeTh
 	// Update the last FAT entry (the one that points to EOF.)
 	this->updateLastEntry(pNewEntry->iSize + DAT_FAT_ENTRY_LEN);
 
-	this->psArchive->seekp(DAT_FATENTRY_OFFSET(pNewEntry));
+	this->psArchive->seekp(DAT_FATENTRY_OFFSET(pNewEntry), stream::start);
 	this->psArchive->insert(DAT_FAT_ENTRY_LEN);
 
 	this->psArchive
@@ -227,7 +224,7 @@ FATArchive::FATEntry *DAT_SangoArchive::preInsertFile(const FATEntry *idBeforeTh
 }
 
 void DAT_SangoArchive::preRemoveFile(const FATEntry *pid)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	// TESTED BY: fmt_dat_sango_remove*
 
@@ -245,17 +242,17 @@ void DAT_SangoArchive::preRemoveFile(const FATEntry *pid)
 	// Update the last FAT entry (the one that points to EOF.)
 	this->updateLastEntry(-(pid->iSize + DAT_FAT_ENTRY_LEN));
 
-	this->psArchive->seekp(DAT_FATENTRY_OFFSET(pid));
+	this->psArchive->seekp(DAT_FATENTRY_OFFSET(pid), stream::start);
 	this->psArchive->remove(DAT_FAT_ENTRY_LEN);
 
 	return;
 }
 
 void DAT_SangoArchive::updateLastEntry(int lenDelta)
-	throw (std::ios::failure)
+	throw (stream::error)
 {
 	this->lenArchive += lenDelta;
-	this->psArchive->seekp(this->vcFAT.size() * DAT_FAT_ENTRY_LEN);
+	this->psArchive->seekp(this->vcFAT.size() * DAT_FAT_ENTRY_LEN, stream::start);
 	this->psArchive
 		<< u32le(this->lenArchive);
 	return;
