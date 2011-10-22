@@ -21,29 +21,19 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/iostreams/copy.hpp>
-#include <iostream>
 #include <sstream>
 
 #include "tests.hpp"
+#include "test-filter.hpp"
 #include "../src/filter-bitswap.hpp"
 
 using namespace camoto::gamearchive;
 
-struct bitswap_sample: public default_sample {
-
-	std::stringstream in;
-	std::stringstream out;
-
+struct bitswap_sample: public filter_sample {
 	bitswap_sample()
 	{
+		this->filter.reset(new filter_bitswap());
 	}
-
-	boost::test_tools::predicate_result is_equal(const std::string& strExpected)
-	{
-		// See if the stringstream now matches what we expected
-		return this->default_sample::is_equal(strExpected, out.str());
-	}
-
 };
 
 BOOST_FIXTURE_TEST_SUITE(bitswap_suite, bitswap_sample)
@@ -53,12 +43,6 @@ BOOST_AUTO_TEST_CASE(bitswap_read)
 	BOOST_TEST_MESSAGE("Decode some bitswapped data");
 
 	in << makeString("\x00\x01\x03\x0F\x1E\x55\xAA\xFF");
-
-	io::filtering_istream inf;
-	inf.push(bitswap_filter());
-	inf.push(in);
-
-	boost::iostreams::copy(inf, out);
 
 	BOOST_CHECK_MESSAGE(is_equal(makeString("\x00\x80\xC0\xF0\x78\xAA\x55\xFF")),
 		"Decoding bitswapped data failed");

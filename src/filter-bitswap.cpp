@@ -1,5 +1,5 @@
 /**
- * @file   filter-bitswap.hpp
+ * @file   filter-bitswap.cpp
  * @brief  Filter implementation for swapping the bits in each byte.
  *
  * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
@@ -18,25 +18,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _CAMOTO_FILTER_BITSWAP_HPP_
-#define _CAMOTO_FILTER_BITSWAP_HPP_
-
-#include <camoto/filter.hpp>
+#include "filter-bitswap.hpp"
 
 namespace camoto {
 namespace gamearchive {
 
-/// Encrypt a stream by swapping all the bits in each byte.
-class filter_bitswap: public filter {
+void filter_bitswap::transform(uint8_t *out, stream::len *lenOut,
+	const uint8_t *in, stream::len *lenIn)
+	throw (filter_error)
+{
+	stream::len w; /// number of bytes copied
 
-	public:
-		void transform(uint8_t *out, stream::len *lenOut,
-			const uint8_t *in, stream::len *lenIn)
-			throw (filter_error);
+	for (w = 0; (w < *lenOut) && (w < *lenIn); w++) {
+		*out++ =
+			((*in >> 7) & 1) |
+			((*in >> 5) & 2) |
+			((*in >> 3) & 4) |
+			((*in >> 1) & 8) |
+			((*in << 1) & 16) |
+			((*in << 3) & 32) |
+			((*in << 5) & 64) |
+			((*in << 7) & 128)
+		;
+		in++;
+	}
 
-};
+	*lenOut = w;
+	*lenIn = w;
+
+	return;
+}
 
 } // namespace gamearchive
 } // namespace camoto
-
-#endif // _CAMOTO_FILTER_BITSWAP_HPP_

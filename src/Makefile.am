@@ -25,6 +25,7 @@ libgamearchive_la_SOURCES += fmt-roads-skyroads.cpp
 libgamearchive_la_SOURCES += fmt-dat-got.cpp
 libgamearchive_la_SOURCES += fmt-pcxlib.cpp
 libgamearchive_la_SOURCES += filter-bash.cpp
+libgamearchive_la_SOURCES += filter-bitswap.cpp
 libgamearchive_la_SOURCES += filter-epfs.cpp
 libgamearchive_la_SOURCES += filter-zone66.cpp
 libgamearchive_la_SOURCES += filter-stellar7.cpp
