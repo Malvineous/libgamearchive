@@ -21,173 +21,204 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/iostreams/concepts.hpp>     // multichar_outputput_filter
-#include <boost/iostreams/invert.hpp>
-#include <boost/bind.hpp>
-#include <camoto/iostream_helpers.hpp>
-#include <camoto/filteredstream.hpp>
-
+#include <camoto/filter.hpp>
+#include <camoto/stream_filtered.hpp>
+#include <camoto/gamearchive/filtertype.hpp>
 #include "filter-ddave-rle.hpp"
 
 namespace camoto {
 namespace gamearchive {
 
-/// Dangerous Dave RLE expansion filter.
-class ddave_unrle_filter: public io::multichar_input_filter {
+filter_ddave_unrle::filter_ddave_unrle()
+	throw () :
+		count(0),
+		copying(0)
+{
+}
 
-	protected:
-		int count;         ///< How many times to repeat prev
-		uint8_t countByte; ///< Byte being repeated count times
-		int copying;       ///< Number of bytes left to copy unchanged
-
-	public:
-		ddave_unrle_filter() :
-			count(0),
-			copying(0)
-		{
-		};
-
-		template<typename Source>
-		std::streamsize read(Source& src, char* s, std::streamsize n)
-		{
-			int r = 0;
-			while (r < n) {
-				// If there is an RLE decode in progress
-				if (this->count) {
-					*s++ = this->countByte;
-					this->count--;
-					r++;
-				} else {
-					// Otherwise no RLE decode in progress, keep reading
-					int c = boost::iostreams::get(src);
-					if (c < 0) {
-						if (r == 0) return c; // no bytes read, return error
-						break; // bytes read, return those
+void filter_ddave_unrle::transform(uint8_t *out, stream::len *lenOut,
+	const uint8_t *in, stream::len *lenIn)
+	throw (filter_error)
+{
+	stream::len r = 0, w = 0;
+	// While there's more space to write, and either more data to read or
+	// more data to write
+	while (              // while there is...
+		(w < *lenOut)      // more space to write into, and
+		&& (
+			(r < *lenIn)     // more data to read, or
+			|| (this->count) // more data to write
+		)
+	) {
+		// If there is an RLE decode in progress
+		if (this->count) {
+			*out++ = this->countByte;
+			this->count--;
+			w++;
+		} else {
+			// Otherwise no RLE decode in progress, keep reading
+			if (this->copying) {
+				*out++ = *in++;
+				w++;
+				r++;
+				this->copying--;
+			} else if (*in & 0x80) { // high bit set
+				this->copying = 1 + (*in & 0x7F);
+				in++;
+				r++;
+			} else { // high bit unset
+				if (r + 2 > *lenIn) {
+					// Not enough for this process, try again next time
+					if (r == 0) {
+						// But we haven't read any data yet!
+						throw filter_error("Dangerous Dave RLE data terminates mid-sequence!");
 					}
-
-					if (this->copying) {
-						*s++ = c;
-						r++;
-						this->copying--;
-					} else if (c & 0x80) { // high bit set
-						this->copying = 1 + (c & 0x7F);
-					} else { // high bit unset
-						this->count = 3 + c;
-						int c = boost::iostreams::get(src);
-						if (c < 0) {
-							this->count = 0;
-							if (r == 0) return c; // no bytes read, return error
-							break; // bytes read, return those
-						}
-						this->countByte = c;
-					}
+					break;
 				}
+				this->count = 3 + *in++;
+				this->countByte = *in++;
+				r += 2;
 			}
-			return r;
 		}
+	}
 
-};
+	*lenIn = r;
+	*lenOut = w;
+	return;
+}
 
-/// Dangerous Dave RLE compression filter.
-class ddave_rle_filter: public io::multichar_output_filter {
 
-	protected:
-		char buf[129];  ///< Chars to output as-is
-		int buflen;     ///< Number of valid chars in buf
+filter_ddave_rle::filter_ddave_rle()
+	throw () :
+		buflen(0),
+		prev(-1),
+		count(0),
+		step(0)
+{
+}
 
-		int prev;       ///< Previous byte read
-		int count;      ///< How many prev has been seen so far
+void filter_ddave_rle::transform(uint8_t *out, stream::len *lenOut,
+	const uint8_t *in, stream::len *lenIn)
+	throw (filter_error)
+{
+	stream::len r = 0, w = 0;
 
-	public:
-
-		struct category: io::multichar_output_filter_tag, io::flushable_tag { };
-
-		ddave_rle_filter() :
-			buflen(0),
-			prev(-1),
-			count(0)
-		{
-		};
-
-		template<typename Sink>
-		void charChanged(Sink& dst)
-		{
-			if (this->count >= 3) {
-				// Got some repeated bytes to write
-				assert(this->count <= 130);
-				boost::iostreams::put(dst, (char)(this->count - 3));
-				boost::iostreams::put(dst, this->prev);
-				this->count = 0;
-			}
-			// May have some repeated bytes, but they're too short for an RLE code
-			while (this->count) {
-				assert(this->buflen < 128);
-				this->buf[this->buflen++] = this->prev;
-				if (this->buflen == 128) {
-					// Buffer is full, write out a code
-					this->flushBuffer(dst);
-				}
-				this->count--;
-			}
-			assert(this->buflen < 128);
-			return;
+	// While there's more space to write, and either more data to read or
+	// more data to write
+	while (              // while there is...
+		(w < *lenOut)      // more space to write into, and
+		&& (
+			(r < *lenIn)     // more data to read, or
+			|| (this->count) // more data to write
+			|| (this->buflen)
+		)
+	) {
+		if ((r >= *lenIn) && (step < 20)) {
+			// No more read data, just flush
+			if ((this->buflen) && (this->count == 0)) step = 50;
+			else step = 11;
 		}
-
-		template<typename Sink>
-		void flushBuffer(Sink& dst)
-		{
-			if (this->buflen > 0) {
-				boost::iostreams::put(dst, (char)(0x80 + this->buflen - 1));
-				boost::iostreams::write(dst, this->buf, this->buflen);
-				this->buflen = 0;
-			}
-			return;
-		}
-
-		template<typename Sink>
-		std::streamsize write(Sink& dst, const char* s, std::streamsize n)
-		{
-			if (n < 1) return 0; // just in case
-			const char *start = s;
-			const char *end = s + n;
-			while (s < end) {
-				if (*s == this->prev) {
+		switch (step) {
+			case 0:
+				this->prev = *in++;
+				r++;
+				this->count = 1;
+				step = 10;
+				break;
+			case 10:
+				if (*in == this->prev) {
 					this->count++;
-					if (count == 130) {
+					in++;
+					r++;
+					if (this->count == 130) {
 						// If we've reached the maximum repeat amount, write out a code
-						boost::iostreams::put(dst, '\x7F');
-						boost::iostreams::put(dst, this->prev);
-						this->count = 0;
-					} else if (count == 3) {
+						*out++ = '\x7F';
+						w++;
+						step = 21;
+					} else if ((count == 3) && (this->buflen)) {
 						// If we've reached the point where it is worth writing out the
 						// repeat code (eventually), flush the buffer now
-						this->flushBuffer(dst);
+						//*out++ = (uint8_t)(0x80 + this->buflen - 1);
+						//w++;
+						step = 50;
 					}
-				} else {
-					this->charChanged(dst);
-					assert(this->count == 0);
-					this->prev = *s;
-					this->count = 1;
+					break;
+				} // else drop through
+			case 11:
+				// Character has changed, write out any cache
+				if (this->count >= 3) {
+					if (this->buflen) {
+						// Need to flush buffer
+						step = 50;
+						break;
+					}
+
+					// Got some repeated bytes to write
+					step = 25;
+					break;
 				}
-				s++;
+
+				if (count > 0) {
+					// May have some repeated bytes, but they're too short for an RLE code
+					assert(this->buflen < 128);
+					this->buf[this->buflen++] = this->prev;
+					this->count--;
+				}
+				if (this->buflen == 128) {
+					// Buffer is full, write out a code
+					step = 50;
+					break;
+				}
+				step = 0;
+				break;
+			case 21:
+				*out++ = this->prev;
+				w++;
+				this->count = 0;
+				step = 0;
+				break;
+			case 25:
+				assert(this->count <= 130);
+				*out++ = (uint8_t)(this->count - 3);
+				w++;
+				step = 26;
+				break;
+			case 26:
+				*out++ = this->prev;
+				w++;
+				this->count = 0;
+				step = 10;
+				break;
+			case 50: { // flush buffer
+				assert(this->buflen > 0);
+				assert(this->buflen < 129);
+				*out++ = (uint8_t)(0x80 + this->buflen - 1);
+				w++;
+				step = 51;
+				break;
 			}
-			return s - start;
+			case 51:
+				assert(this->buflen > 0);
+				stream::len maxCopy = *lenOut - w;
+				if (this->buflen < maxCopy) maxCopy = this->buflen;
+				memcpy(out, this->buf, maxCopy);
+				out += maxCopy;
+				w += maxCopy;
+				this->buflen -= maxCopy;
+				if (maxCopy < this->buflen) {
+					memmove(this->buf, this->buf + maxCopy, this->buflen);
+				} else {
+					step = 10;
+				}
+				break;
 		}
+	}
 
-		template<typename Sink>
-		bool flush(Sink& dst)
-		{
-			// The character hasn't changed, but by calling the char-changed code it
-			// will write out any repeated chars to the stream or the buffer.
-			this->charChanged(dst);
+	*lenIn = r;
+	*lenOut = w;
+	return;
+}
 
-			// Now flush the buffer if needed.
-			this->flushBuffer(dst);
-
-			return true;
-		}
-
-};
 
 DDaveRLEFilterType::DDaveRLEFilterType()
 	throw ()
@@ -219,37 +250,32 @@ std::vector<std::string> DDaveRLEFilterType::getGameList() const
 	return vcGames;
 }
 
-iostream_sptr DDaveRLEFilterType::apply(iostream_sptr target, FN_TRUNCATE fnTruncate)
-	throw (ECorruptedData)
+stream::inout_sptr DDaveRLEFilterType::apply(stream::inout_sptr target)
+	throw (filter_error, stream::read_error)
 {
-	filtered_istream_sptr pinf(new filtered_istream());
-	pinf->push(ddave_unrle_filter());
-
-	filtered_ostream_sptr poutf(new filtered_ostream());
-	poutf->push(ddave_rle_filter());
-
-	iostream_sptr dec(new filteredstream(target, pinf, poutf));
-	return dec;
+	stream::filtered_sptr st(new stream::filtered());
+	filter_sptr de(new filter_ddave_unrle());
+	filter_sptr en(new filter_ddave_rle());
+	st->open(target, de, en);
+	return st;
 }
 
-istream_sptr DDaveRLEFilterType::apply(istream_sptr target)
-	throw (ECorruptedData)
+stream::input_sptr DDaveRLEFilterType::apply(stream::input_sptr target)
+	throw (filter_error, stream::read_error)
 {
-	filtered_istream_sptr pinf(new filtered_istream());
-	pinf->push(ddave_unrle_filter());
-
-	pinf->pushShared(target);
-	return pinf;
+	stream::input_filtered_sptr st(new stream::input_filtered());
+	filter_sptr de(new filter_ddave_unrle());
+	st->open(target, de);
+	return st;
 }
 
-ostream_sptr DDaveRLEFilterType::apply(ostream_sptr target, FN_TRUNCATE fnTruncate)
-	throw (ECorruptedData)
+stream::output_sptr DDaveRLEFilterType::apply(stream::output_sptr target)
+	throw (filter_error)
 {
-	filtered_ostream_sptr poutf(new filtered_ostream());
-	poutf->push(ddave_rle_filter());
-
-	poutf->pushShared(target);
-	return poutf;
+	stream::output_filtered_sptr st(new stream::output_filtered());
+	filter_sptr en(new filter_ddave_rle());
+	st->open(target, en);
+	return st;
 }
 
 } // namespace gamearchive

@@ -17,6 +17,7 @@ tests_SOURCES += test-fmt-lbr-vinyl.cpp
 tests_SOURCES += test-fmt-roads-skyroads.cpp
 tests_SOURCES += test-fmt-dat-got.cpp
 tests_SOURCES += test-fmt-pcxlib.cpp
+tests_SOURCES += test-filter.cpp
 tests_SOURCES += test-filter-bash-rle.cpp
 tests_SOURCES += test-filter-bitswap.cpp
 tests_SOURCES += test-filter-xor.cpp
@@ -26,6 +27,7 @@ tests_SOURCES += test-filter-ddave-rle.cpp
 EXTRA_tests_SOURCES = tests.hpp
 EXTRA_tests_SOURCES += test-archive.hpp
 EXTRA_tests_SOURCES += test-archive_new.hpp
+EXTRA_tests_SOURCES += test-filter.hpp
 
 TESTS = tests
 
