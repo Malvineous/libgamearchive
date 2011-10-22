@@ -21,22 +21,18 @@
 #ifndef _CAMOTO_FILTER_XOR_HPP_
 #define _CAMOTO_FILTER_XOR_HPP_
 
-#include <boost/iostreams/concepts.hpp>     // multichar_dual_use_filter
-#include <boost/iostreams/operations.hpp>   // read
-#include <camoto/types.hpp>
+#include <camoto/filter.hpp>
 #include <camoto/gamearchive/filtertype.hpp>
 
 namespace camoto {
 namespace gamearchive {
-
-namespace io = boost::iostreams;
 
 /// Encrypt a stream using XOR encryption.
 /**
  * This starts by encrypting the first byte with the given seed value, then
  * the seed is incremented by one for the following byte.
  */
-class xor_crypt_filter: public io::multichar_filter<io::seekable> {
+class filter_xor_crypt: public filter {
 
 	protected:
 		/// Number of bytes to crypt, after this data is left as plaintext.
@@ -51,53 +47,20 @@ class xor_crypt_filter: public io::multichar_filter<io::seekable> {
 
 	public:
 
-		struct category: io::multichar_seekable_filter_tag, io::flushable_tag { };
+		/// Create a new encryption filter with the given options.
+		/**
+		 * @param lenCrypt
+		 *   @copybrief lenCrypt
+		 *
+		 * @param seed
+		 *   @copybrief seed
+		 */
+		filter_xor_crypt(int lenCrypt, int seed)
+			throw ();
 
-		xor_crypt_filter(int lenCrypt, int seed);
-
-		template<typename Source>
-		std::streamsize read(Source& src, char *s, std::streamsize n)
-		{
-			std::streamsize r = io::read(src, s, n);
-			if (r == 0) return EOF;
-			if (r < 0) return r;
-			for (int i = 0; (i < r) && (
-				(this->lenCrypt == 0) || (this->offset < this->lenCrypt)
-			); i++) {
-				*s++ ^= this->getKey();
-				// We have to alter the offset here as its value is used by getKey()
-				this->offset++;
-			}
-			return r;
-		}
-
-		template<typename Sink>
-		std::streamsize write(Sink& dst, const char *s, std::streamsize n)
-		{
-			int r = 0;
-			while (n--) {
-				if (!io::put(dst, *s++ ^ this->getKey())) break;
-				// We have to alter the offset here as its value is used by getKey()
-				this->offset++;
-				r++;
-			}
-			return r;
-		}
-
-		template<typename Source>
-		io::stream_offset seek(Source& src, io::stream_offset off, std::ios::seekdir way)
-		{
-			io::stream_offset target = io::seek(src, off, way);
-			if (target < 0) return target;
-			this->offset = target;
-			return this->offset;
-		}
-
-		template<typename Sink>
-		bool flush(Sink& snk)
-		{
-			return true; // nothing to flush
-		}
+		void transform(uint8_t *out, stream::len *lenOut,
+			const uint8_t *in, stream::len *lenIn)
+			throw (filter_error);
 
 		/// Change the next XOR value
 		void setSeed(int val);
@@ -133,14 +96,14 @@ class XORFilterType: virtual public FilterType {
 		virtual std::vector<std::string> getGameList() const
 			throw ();
 
-		virtual iostream_sptr apply(iostream_sptr target, FN_TRUNCATE fnTruncate)
-			throw (ECorruptedData);
+		virtual stream::inout_sptr apply(stream::inout_sptr target)
+			throw (filter_error, stream::read_error);
 
-		virtual istream_sptr apply(istream_sptr target)
-			throw (ECorruptedData);
+		virtual stream::input_sptr apply(stream::input_sptr target)
+			throw (filter_error, stream::read_error);
 
-		virtual ostream_sptr apply(ostream_sptr target, FN_TRUNCATE fnTruncate)
-			throw (ECorruptedData);
+		virtual stream::output_sptr apply(stream::output_sptr target)
+			throw (filter_error);
 
 };
 

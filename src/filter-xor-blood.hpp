@@ -21,7 +21,8 @@
 #ifndef _CAMOTO_FILTER_XOR_BLOOD_HPP_
 #define _CAMOTO_FILTER_XOR_BLOOD_HPP_
 
-#include <camoto/types.hpp>
+#include <camoto/stream.hpp>
+#include <stdint.h>
 #include <camoto/gamearchive/filtertype.hpp>
 
 #include "filter-xor.hpp"
@@ -31,10 +32,10 @@ namespace gamearchive {
 
 /// Encrypt a stream using XOR encryption, incrementing the key only every
 /// second byte.
-class rff_crypt_filter: public xor_crypt_filter {
+class filter_rff_crypt: public filter_xor_crypt {
 
 	public:
-		rff_crypt_filter(int lenCrypt, int seed);
+		filter_rff_crypt(int lenCrypt, int seed);
 
 		virtual uint8_t getKey();
 };
@@ -57,14 +58,14 @@ class RFFFilterType: virtual public FilterType {
 		virtual std::vector<std::string> getGameList() const
 			throw ();
 
-		virtual iostream_sptr apply(iostream_sptr target, FN_TRUNCATE fnTruncate)
-			throw (ECorruptedData);
+		virtual stream::inout_sptr apply(stream::inout_sptr target)
+			throw (filter_error, stream::read_error);
 
-		virtual istream_sptr apply(istream_sptr target)
-			throw (ECorruptedData);
+		virtual stream::input_sptr apply(stream::input_sptr target)
+			throw (filter_error, stream::read_error);
 
-		virtual ostream_sptr apply(ostream_sptr target, FN_TRUNCATE fnTruncate)
-			throw (ECorruptedData);
+		virtual stream::output_sptr apply(stream::output_sptr target)
+			throw (filter_error);
 
 };
 

@@ -2,7 +2,7 @@
  * @file   test-filter-xor.cpp
  * @brief  Test code for generic XOR encryption algorithm.
  *
- * Copyright (C) 2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,32 +21,15 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/iostreams/copy.hpp>
-#include <iostream>
 #include <sstream>
 
 #include "tests.hpp"
+#include "test-filter.hpp"
 #include "../src/filter-xor.hpp"
 
 using namespace camoto::gamearchive;
 
-struct xor_crypt_sample: public default_sample {
-
-	std::stringstream in;
-	std::stringstream out;
-
-	xor_crypt_sample()
-	{
-	}
-
-	boost::test_tools::predicate_result is_equal(const std::string& strExpected)
-	{
-		// See if the stringstream now matches what we expected
-		return this->default_sample::is_equal(strExpected, out.str());
-	}
-
-};
-
-BOOST_FIXTURE_TEST_SUITE(xor_suite, xor_crypt_sample)
+BOOST_FIXTURE_TEST_SUITE(xor_suite, filter_sample)
 
 BOOST_AUTO_TEST_CASE(xor_read)
 {
@@ -54,11 +37,7 @@ BOOST_AUTO_TEST_CASE(xor_read)
 
 	in << makeString("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
 
-	io::filtering_istream inf;
-	inf.push(xor_crypt_filter(0, 0));
-	inf.push(in);
-
-	boost::iostreams::copy(inf, out);
+	this->filter.reset(new filter_xor_crypt(0, 0));
 
 	BOOST_CHECK_MESSAGE(is_equal(makeString("\x00\x00\x00\x00\xFB\xFA\xF9\xF8")),
 		"Decoding XOR-encoded data failed");
@@ -70,11 +49,7 @@ BOOST_AUTO_TEST_CASE(xor_partial_read)
 
 	in << makeString("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
 
-	io::filtering_istream inf;
-	inf.push(xor_crypt_filter(4, 0));
-	inf.push(in);
-
-	boost::iostreams::copy(inf, out);
+	this->filter.reset(new filter_xor_crypt(4, 0));
 
 	BOOST_CHECK_MESSAGE(is_equal(makeString("\x00\x00\x00\x00\xFF\xFF\xFF\xFF")),
 		"Decoding partially XOR-encoded data failed");
@@ -86,11 +61,7 @@ BOOST_AUTO_TEST_CASE(xor_altseed_read)
 
 	in << makeString("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
 
-	io::filtering_istream inf;
-	inf.push(xor_crypt_filter(0, 0xFE));
-	inf.push(in);
-
-	boost::iostreams::copy(inf, out);
+	this->filter.reset(new filter_xor_crypt(0, 0xFE));
 
 	BOOST_CHECK_MESSAGE(is_equal(makeString("\xFE\xFE\x02\x02\xFD\xFC\xFB\xFA")),
 		"Decoding XOR-encoded data with alternate seed failed");

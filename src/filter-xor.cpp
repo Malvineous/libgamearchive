@@ -22,7 +22,7 @@
 #include <boost/iostreams/concepts.hpp>     // multichar_input_filter
 #include <boost/bind.hpp>
 #include <camoto/iostream_helpers.hpp>
-#include <camoto/filteredstream.hpp>
+#include <camoto/stream_filtered.hpp>
 #include <camoto/bitstream.hpp>
 
 #include "filter-xor.hpp"
@@ -30,20 +30,55 @@
 namespace camoto {
 namespace gamearchive {
 
-xor_crypt_filter::xor_crypt_filter(int lenCrypt, int seed)
-	: lenCrypt(lenCrypt),
-	  seed(seed),
-	  offset(0)
+filter_xor_crypt::filter_xor_crypt(int lenCrypt, int seed)
+	throw () :
+		lenCrypt(lenCrypt),
+		seed(seed),
+		offset(0)
 {
 }
 
-void xor_crypt_filter::setSeed(int val)
+void filter_xor_crypt::transform(uint8_t *out, stream::len *lenOut,
+	const uint8_t *in, stream::len *lenIn)
+	throw (filter_error)
+{
+	stream::len w = 0;
+
+	// Copy the crypted portion
+	while (
+		(w < *lenOut)
+		&& (w < *lenIn)
+		&& (
+			(this->lenCrypt == 0)
+			|| (this->offset < this->lenCrypt)
+		)
+	) {
+		*out++ = *in++ ^ this->getKey();
+		// We have to alter the offset here as its value is used by getKey()
+		this->offset++;
+		w++;
+	}
+
+	// Copy any plaintext portion
+	stream::len rem = *lenIn - w;
+	stream::len remOut = *lenOut - w;
+	if (remOut < rem) rem = remOut;
+
+	memcpy(out, in, rem);
+	w += rem;
+	*lenOut = w;
+	*lenIn = w;
+
+	return;
+}
+
+void filter_xor_crypt::setSeed(int val)
 {
 	this->seed = val;
 	return;
 }
 
-uint8_t xor_crypt_filter::getKey()
+uint8_t filter_xor_crypt::getKey()
 {
 	return (uint8_t)(this->seed + this->offset);
 }
@@ -77,33 +112,34 @@ std::vector<std::string> XORFilterType::getGameList() const
 	return std::vector<std::string>();
 }
 
-iostream_sptr XORFilterType::apply(iostream_sptr target, FN_TRUNCATE fnTruncate)
-	throw (ECorruptedData)
+stream::inout_sptr XORFilterType::apply(stream::inout_sptr target)
+	throw (filter_error, stream::read_error)
 {
-	filtered_iostream_sptr pf(new filtered_iostream());
-	pf->push(xor_crypt_filter(0, 0));
-	pf->pushShared(target);
-	return pf;
+	stream::filtered_sptr st(new stream::filtered());
+	// We need two separate filters, otherwise reading from one will
+	// affect the XOR key next used when writing to the other.
+	filter_sptr de(new filter_xor_crypt(0, 0));
+	filter_sptr en(new filter_xor_crypt(0, 0));
+	st->open(target, de, en);
+	return st;
 }
 
-istream_sptr XORFilterType::apply(istream_sptr target)
-	throw (ECorruptedData)
+stream::input_sptr XORFilterType::apply(stream::input_sptr target)
+	throw (filter_error, stream::read_error)
 {
-	filtered_istream_sptr pinf(new filtered_istream());
-	pinf->push(xor_crypt_filter(0, 0));
-
-	pinf->push(*target);
-	return pinf;
+	stream::input_filtered_sptr st(new stream::input_filtered());
+	filter_sptr de(new filter_xor_crypt(0, 0));
+	st->open(target, de);
+	return st;
 }
 
-ostream_sptr XORFilterType::apply(ostream_sptr target, FN_TRUNCATE fnTruncate)
-	throw (ECorruptedData)
+stream::output_sptr XORFilterType::apply(stream::output_sptr target)
+	throw (filter_error)
 {
-	filtered_ostream_sptr poutf(new filtered_ostream());
-	poutf->push(xor_crypt_filter(0, 0));
-
-	poutf->push(*target);
-	return poutf;
+	stream::output_filtered_sptr st(new stream::output_filtered());
+	filter_sptr en(new filter_xor_crypt(0, 0));
+	st->open(target, en);
+	return st;
 }
 
 } // namespace gamearchive

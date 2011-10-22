@@ -19,7 +19,7 @@
  */
 
 #include <boost/iostreams/invert.hpp>
-#include <camoto/filteredstream.hpp>
+#include <camoto/stream_filtered.hpp>
 #include "filter-xor-blood.hpp"
 
 namespace camoto {
@@ -27,12 +27,12 @@ namespace gamearchive {
 
 #define RFF_FILE_CRYPT_LEN 256  // number of bytes encrypted from start of file
 
-rff_crypt_filter::rff_crypt_filter(int lenCrypt, int seed)
-	: xor_crypt_filter(lenCrypt, seed)
+filter_rff_crypt::filter_rff_crypt(int lenCrypt, int seed)
+	: filter_xor_crypt(lenCrypt, seed)
 {
 }
 
-uint8_t rff_crypt_filter::getKey()
+uint8_t filter_rff_crypt::getKey()
 {
 	return (uint8_t)(this->seed + (this->offset >> 1));
 }
@@ -68,33 +68,34 @@ std::vector<std::string> RFFFilterType::getGameList() const
 	return vcGames;
 }
 
-iostream_sptr RFFFilterType::apply(iostream_sptr target, FN_TRUNCATE fnTruncate)
-	throw (ECorruptedData)
+stream::inout_sptr RFFFilterType::apply(stream::inout_sptr target)
+	throw (filter_error, stream::read_error)
 {
-	filtered_iostream_sptr pf(new filtered_iostream());
-	pf->push(rff_crypt_filter(RFF_FILE_CRYPT_LEN, 0));
-	pf->pushShared(target);
-	return pf;
+	stream::filtered_sptr st(new stream::filtered());
+	// We need two separate filters, otherwise reading from one will
+	// affect the XOR key next used when writing to the other.
+	filter_sptr de(new filter_rff_crypt(RFF_FILE_CRYPT_LEN, 0));
+	filter_sptr en(new filter_rff_crypt(RFF_FILE_CRYPT_LEN, 0));
+	st->open(target, de, en);
+	return st;
 }
 
-istream_sptr RFFFilterType::apply(istream_sptr target)
-	throw (ECorruptedData)
+stream::input_sptr RFFFilterType::apply(stream::input_sptr target)
+	throw (filter_error, stream::read_error)
 {
-	filtered_istream_sptr pinf(new filtered_istream());
-	pinf->push(rff_crypt_filter(RFF_FILE_CRYPT_LEN, 0));
-
-	pinf->pushShared(target);
-	return pinf;
+	stream::input_filtered_sptr st(new stream::input_filtered());
+	filter_sptr de(new filter_rff_crypt(RFF_FILE_CRYPT_LEN, 0));
+	st->open(target, de);
+	return st;
 }
 
-ostream_sptr RFFFilterType::apply(ostream_sptr target, FN_TRUNCATE fnTruncate)
-	throw (ECorruptedData)
+stream::output_sptr RFFFilterType::apply(stream::output_sptr target)
+	throw (filter_error)
 {
-	filtered_ostream_sptr poutf(new filtered_ostream());
-	poutf->push(io::invert(rff_crypt_filter(RFF_FILE_CRYPT_LEN, 0)));
-
-	poutf->pushShared(target);
-	return poutf;
+	stream::output_filtered_sptr st(new stream::output_filtered());
+	filter_sptr en(new filter_rff_crypt(RFF_FILE_CRYPT_LEN, 0));
+	st->open(target, en);
+	return st;
 }
 
 } // namespace gamearchive
