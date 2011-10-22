@@ -3,7 +3,7 @@
  * @brief  FilterType for EPFS compression algorithm.
  *
  * This algorithm is fully documented on the ModdingWiki:
- *   http://www.shikadi.net/moddingwiki/RES_Format_(Stellar_7)
+ *   http://www.shikadi.net/moddingwiki/EPF_Format
  *
  * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -21,10 +21,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//#include <camoto/iostream_helpers.hpp>
-#include <camoto/filteredstream.hpp>
+#include <camoto/stream_filtered.hpp>
 #include <camoto/lzw.hpp>
-//#include <camoto/debug.hpp>
 
 #include "filter-epfs.hpp"
 
@@ -71,12 +69,11 @@ std::vector<std::string> EPFSFilterType::getGameList() const
 	return vcGames;
 }
 
-iostream_sptr EPFSFilterType::apply(iostream_sptr target, FN_TRUNCATE fnTruncate)
-	throw (ECorruptedData)
+stream::inout_sptr EPFSFilterType::apply(stream::inout_sptr target)
+	throw (filter_error, stream::read_error)
 {
-	// File needs to be decompressed
-	filtered_istream_sptr pinf(new filtered_istream());
-	pinf->push(lzw_decompress_filter(
+	stream::filtered_sptr st(new stream::filtered());
+	filter_sptr de(new filter_lzw_decompress(
 		9,   // initial codeword length (in bits)
 		14,  // maximum codeword length (in bits)
 		256, // first valid codeword
@@ -87,18 +84,16 @@ iostream_sptr EPFSFilterType::apply(iostream_sptr target, FN_TRUNCATE fnTruncate
 		LZW_EOF_PARAM_VALID   | // Has codeword reserved for EOF
 		LZW_RESET_PARAM_VALID   // Has codeword reserved for dict reset
 	));
-	filtered_ostream_sptr poutf(new filtered_ostream());
-	//poutf->push(bash_rle_filter());
-	//poutf->push(lzw_compress_filter(12, LZW_LITTLE_ENDIAN));
-	iostream_sptr dec(new filteredstream(target, pinf, poutf));
-	return dec;
+	filter_sptr en = de; /// @todo Fix when LZW compression has been implemented
+	st->open(target, de, en);
+	return st;
 }
 
-istream_sptr EPFSFilterType::apply(istream_sptr target)
-	throw (ECorruptedData)
+stream::input_sptr EPFSFilterType::apply(stream::input_sptr target)
+	throw (filter_error, stream::read_error)
 {
-	filtered_istream_sptr pinf(new filtered_istream());
-	pinf->push(lzw_decompress_filter(
+	stream::input_filtered_sptr st(new stream::input_filtered());
+	filter_sptr de(new filter_lzw_decompress(
 		9,   // initial codeword length (in bits)
 		14,  // maximum codeword length (in bits)
 		256, // first valid codeword
@@ -109,16 +104,29 @@ istream_sptr EPFSFilterType::apply(istream_sptr target)
 		LZW_EOF_PARAM_VALID   | // Has codeword reserved for EOF
 		LZW_RESET_PARAM_VALID   // Has codeword reserved for dict reset
 	));
-	pinf->pushShared(target);
-	return pinf;
+	st->open(target, de);
+	return st;
 }
 
-ostream_sptr EPFSFilterType::apply(ostream_sptr target, FN_TRUNCATE fnTruncate)
-	throw (ECorruptedData)
+stream::output_sptr EPFSFilterType::apply(stream::output_sptr target)
+	throw (filter_error)
 {
-	filtered_ostream_sptr poutf(new filtered_ostream());
-	poutf->pushShared(target);
-	return poutf;
+	return target; /// @todo Fix when LZW compression has been implemented
+	stream::output_filtered_sptr st(new stream::output_filtered());
+	filter_sptr de(new filter_lzw_decompress(
+		9,   // initial codeword length (in bits)
+		14,  // maximum codeword length (in bits)
+		256, // first valid codeword
+		0,   // EOF codeword is max codeword
+		-1,  // reset codeword is max-1
+		LZW_BIG_ENDIAN        | // bits are split into bytes in big-endian order
+		LZW_NO_BITSIZE_RESET  | // bitsize doesn't go back to 9 after dict reset
+		LZW_EOF_PARAM_VALID   | // Has codeword reserved for EOF
+		LZW_RESET_PARAM_VALID   // Has codeword reserved for dict reset
+	));
+	//filter_sptr en = ...
+	//st->open(target, en);
+	return st;
 }
 
 } // namespace gamearchive
