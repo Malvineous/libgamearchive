@@ -174,14 +174,15 @@ std::vector<std::string> Zone66FilterType::getGameList() const
 	return vcGames;
 }
 
-stream::inout_sptr Zone66FilterType::apply(stream::inout_sptr target)
+stream::inout_sptr Zone66FilterType::apply(stream::inout_sptr target,
+	stream::fn_truncate resize)
 	throw (filter_error, stream::read_error)
 {
 	stream::filtered_sptr st(new stream::filtered());
 	filter_sptr de(new filter_z66_decompress());
 	/// @todo Implement Zone 66 compression
 	filter_sptr en;//(new filter_z66_compress());
-	st->open(target, de, en);
+	st->open(target, de, en, resize);
 	return st;
 }
 
@@ -194,13 +195,14 @@ stream::input_sptr Zone66FilterType::apply(stream::input_sptr target)
 	return st;
 }
 
-stream::output_sptr Zone66FilterType::apply(stream::output_sptr target)
+stream::output_sptr Zone66FilterType::apply(stream::output_sptr target,
+	stream::fn_truncate resize)
 	throw (filter_error)
 {
 	stream::output_filtered_sptr st(new stream::output_filtered());
 	/// @todo Implement Zone 66 compression
 	filter_sptr en;//(new filter_z66_compress());
-	st->open(target, en);
+	st->open(target, en, resize);
 	return st;
 }
 

@@ -63,6 +63,8 @@ FATArchive::FATArchive(stream::inout_sptr psArchive, stream::pos offFirstFile,
 		offFirstFile(offFirstFile),
 		lenMaxFilename(lenMaxFilename)
 {
+	assert(psArchive);
+
 	this->psArchive->open(psArchive);
 }
 
@@ -502,7 +504,9 @@ bool FATArchive::entryInRange(const FATEntry *fat, stream::pos offStart,
 void FATArchive::resizeSubstream(FATEntryPtr id, stream::len newSize)
 	throw (stream::write_error)
 {
-	this->resize(id, id->iSize, newSize);
+	// Resize the file in the archive.  This function will also tell the
+	// substream it can now write to a larger area.
+	this->resize(id, newSize, id->iPrefilteredSize);
 	return;
 }
 

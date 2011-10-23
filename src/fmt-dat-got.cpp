@@ -200,7 +200,7 @@ DAT_GoTArchive::DAT_GoTArchive(stream::inout_sptr psArchive)
 	filter_sptr fatCryptW(new filter_xor_crypt(0, 128));
 #ifdef USE_XOR
 	stream::filtered_sptr fatFilter(new stream::filtered());
-	fatFilter->open(fatSubStream, fatCryptR, fatCryptW);
+	fatFilter->open(fatSubStream, fatCryptR, fatCryptW, NULL);
 #else
 	stream::inout_sptr fatFilter = fatSubStream;
 #endif

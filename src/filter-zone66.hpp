@@ -75,13 +75,15 @@ class Zone66FilterType: virtual public FilterType {
 		virtual std::vector<std::string> getGameList() const
 			throw ();
 
-		virtual stream::inout_sptr apply(stream::inout_sptr target)
+		virtual stream::inout_sptr apply(stream::inout_sptr target,
+			stream::fn_truncate resize)
 			throw (filter_error, stream::read_error);
 
 		virtual stream::input_sptr apply(stream::input_sptr target)
 			throw (filter_error, stream::read_error);
 
-		virtual stream::output_sptr apply(stream::output_sptr target)
+		virtual stream::output_sptr apply(stream::output_sptr target,
+			stream::fn_truncate resize)
 			throw (filter_error);
 
 };

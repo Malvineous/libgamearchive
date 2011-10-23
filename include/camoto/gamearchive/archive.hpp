@@ -348,9 +348,10 @@ class Archive: virtual public Metadata {
 		 *   File to resize.
 		 *
 		 * @param iNewSize
-		 *   File's new size.  If this is smaller than the current size the excess
-		 *   data is lost, if it is larger than the current size the new data is
-		 *   random (whatever was there from before.)
+		 *   File's new size.  This is the actual amount of space to allocate
+		 *   within the archive file.  If this is smaller than the current size the
+		 *   excess data is lost, if it is larger than the current size the new data
+		 *   is undefined/random (whatever was there from before.)
 		 *
 		 * @param iNewPrefilteredSize
 		 *   File's new size before filtering (if any.)  Should be set to the same

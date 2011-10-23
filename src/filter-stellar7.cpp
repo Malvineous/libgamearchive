@@ -59,7 +59,8 @@ std::vector<std::string> Stellar7FilterType::getGameList() const
 	return vcGames;
 }
 
-stream::inout_sptr Stellar7FilterType::apply(stream::inout_sptr target)
+stream::inout_sptr Stellar7FilterType::apply(stream::inout_sptr target,
+	stream::fn_truncate resize)
 	throw (filter_error, stream::read_error)
 {
 	stream::filtered_sptr st(new stream::filtered());
@@ -74,7 +75,7 @@ stream::inout_sptr Stellar7FilterType::apply(stream::inout_sptr target)
 		LZW_FLUSH_ON_RESET      // Jump to next word boundary on dict reset
 	));
 	filter_sptr en = de; /// @todo Fix when LZW compression has been implemented
-	st->open(target, de, en);
+	st->open(target, de, en, resize);
 	return st;
 }
 
@@ -96,12 +97,13 @@ stream::input_sptr Stellar7FilterType::apply(stream::input_sptr target)
 	return st;
 }
 
-stream::output_sptr Stellar7FilterType::apply(stream::output_sptr target)
+stream::output_sptr Stellar7FilterType::apply(stream::output_sptr target,
+	stream::fn_truncate resize)
 	throw (filter_error)
 {
 	stream::output_filtered_sptr st(new stream::output_filtered());
 	filter_sptr en; /// @todo Fix when LZW compression has been implemented
-	st->open(target, en);
+	st->open(target, en, resize);
 	return st;
 }
 

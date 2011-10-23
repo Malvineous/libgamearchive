@@ -250,13 +250,14 @@ std::vector<std::string> DDaveRLEFilterType::getGameList() const
 	return vcGames;
 }
 
-stream::inout_sptr DDaveRLEFilterType::apply(stream::inout_sptr target)
+stream::inout_sptr DDaveRLEFilterType::apply(stream::inout_sptr target,
+	stream::fn_truncate resize)
 	throw (filter_error, stream::read_error)
 {
 	stream::filtered_sptr st(new stream::filtered());
 	filter_sptr de(new filter_ddave_unrle());
 	filter_sptr en(new filter_ddave_rle());
-	st->open(target, de, en);
+	st->open(target, de, en, resize);
 	return st;
 }
 
@@ -269,12 +270,13 @@ stream::input_sptr DDaveRLEFilterType::apply(stream::input_sptr target)
 	return st;
 }
 
-stream::output_sptr DDaveRLEFilterType::apply(stream::output_sptr target)
+stream::output_sptr DDaveRLEFilterType::apply(stream::output_sptr target,
+	stream::fn_truncate resize)
 	throw (filter_error)
 {
 	stream::output_filtered_sptr st(new stream::output_filtered());
 	filter_sptr en(new filter_ddave_rle());
-	st->open(target, en);
+	st->open(target, en, resize);
 	return st;
 }
 

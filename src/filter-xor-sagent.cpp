@@ -74,7 +74,8 @@ std::vector<std::string> SAMBaseFilterType::getGameList() const
 	return vcGames;
 }
 
-stream::inout_sptr SAMBaseFilterType::apply(stream::inout_sptr target)
+stream::inout_sptr SAMBaseFilterType::apply(stream::inout_sptr target,
+	stream::fn_truncate resize)
 	throw (filter_error, stream::read_error)
 {
 	stream::filtered_sptr st1(new stream::filtered());
@@ -82,13 +83,13 @@ stream::inout_sptr SAMBaseFilterType::apply(stream::inout_sptr target)
 	// affect the XOR key next used when writing to the other.
 	filter_sptr de_cr(new sam_crypt_filter(this->resetInterval));
 	filter_sptr en_cr(new sam_crypt_filter(this->resetInterval));
-	st1->open(target, de_cr, en_cr);
+	st1->open(target, de_cr, en_cr, NULL);
 
 	stream::filtered_sptr st2(new stream::filtered());
 	// Since the bitswap doesn't care how many bytes have been read or
 	// written, we can use the same filter for both reading and writing.
 	filter_sptr bs(new filter_bitswap());
-	st2->open(st1, bs, bs);
+	st2->open(st1, bs, bs, resize);
 
 	return st2;
 }
@@ -107,16 +108,17 @@ stream::input_sptr SAMBaseFilterType::apply(stream::input_sptr target)
 	return st2;
 }
 
-stream::output_sptr SAMBaseFilterType::apply(stream::output_sptr target)
+stream::output_sptr SAMBaseFilterType::apply(stream::output_sptr target,
+	stream::fn_truncate resize)
 	throw (filter_error)
 {
 	stream::output_filtered_sptr st1(new stream::output_filtered());
 	filter_sptr cr(new sam_crypt_filter(this->resetInterval));
-	st1->open(target, cr);
+	st1->open(target, cr, NULL);
 
 	stream::output_filtered_sptr st2(new stream::output_filtered());
 	filter_sptr bs(new filter_bitswap());
-	st2->open(st1, bs);
+	st2->open(st1, bs, resize);
 
 	return st2;
 }

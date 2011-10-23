@@ -68,7 +68,8 @@ std::vector<std::string> RFFFilterType::getGameList() const
 	return vcGames;
 }
 
-stream::inout_sptr RFFFilterType::apply(stream::inout_sptr target)
+stream::inout_sptr RFFFilterType::apply(stream::inout_sptr target,
+	stream::fn_truncate resize)
 	throw (filter_error, stream::read_error)
 {
 	stream::filtered_sptr st(new stream::filtered());
@@ -76,7 +77,7 @@ stream::inout_sptr RFFFilterType::apply(stream::inout_sptr target)
 	// affect the XOR key next used when writing to the other.
 	filter_sptr de(new filter_rff_crypt(RFF_FILE_CRYPT_LEN, 0));
 	filter_sptr en(new filter_rff_crypt(RFF_FILE_CRYPT_LEN, 0));
-	st->open(target, de, en);
+	st->open(target, de, en, resize);
 	return st;
 }
 
@@ -89,12 +90,13 @@ stream::input_sptr RFFFilterType::apply(stream::input_sptr target)
 	return st;
 }
 
-stream::output_sptr RFFFilterType::apply(stream::output_sptr target)
+stream::output_sptr RFFFilterType::apply(stream::output_sptr target,
+	stream::fn_truncate resize)
 	throw (filter_error)
 {
 	stream::output_filtered_sptr st(new stream::output_filtered());
 	filter_sptr en(new filter_rff_crypt(RFF_FILE_CRYPT_LEN, 0));
-	st->open(target, en);
+	st->open(target, en, resize);
 	return st;
 }
 

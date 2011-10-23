@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(rff_crypt_write_filteredstream)
 	filter_sptr out_filt(new filter_rff_crypt(0, 0));
 
 	stream::filtered_sptr f(new stream::filtered());
-	f->open(out, in_filt, out_filt);
+	f->open(out, in_filt, out_filt, NULL);
 
 	f->write("\x00\x01\x02\x03\xFF\xFF\xFF\xFF", 8);
 	f->flush();

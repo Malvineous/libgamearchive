@@ -61,7 +61,8 @@ std::vector<std::string> BashFilterType::getGameList() const
 	return vcGames;
 }
 
-stream::inout_sptr BashFilterType::apply(stream::inout_sptr target)
+stream::inout_sptr BashFilterType::apply(stream::inout_sptr target,
+	stream::fn_truncate resize)
 	throw (filter_error, stream::read_error)
 {
 	stream::filtered_sptr st1(new stream::filtered());
@@ -75,12 +76,12 @@ stream::inout_sptr BashFilterType::apply(stream::inout_sptr target)
 		LZW_EOF_PARAM_VALID    // Has codeword reserved for EOF - TODO: confirm
 	));
 	filter_sptr f_lzw = f_delzw; /// @todo Fix when LZW compression is implemented
-	st1->open(target, f_delzw, f_lzw);
+	st1->open(target, f_delzw, f_lzw, NULL);
 
 	stream::filtered_sptr st2(new stream::filtered());
 	filter_sptr f_unrle(new filter_bash_unrle());
 	filter_sptr f_rle(new filter_bash_rle());
-	st2->open(st1, f_unrle, f_rle);
+	st2->open(st1, f_unrle, f_rle, resize);
 
 	return st2;
 }
@@ -107,16 +108,17 @@ stream::input_sptr BashFilterType::apply(stream::input_sptr target)
 	return st2;
 }
 
-stream::output_sptr BashFilterType::apply(stream::output_sptr target)
+stream::output_sptr BashFilterType::apply(stream::output_sptr target,
+	stream::fn_truncate resize)
 	throw (filter_error)
 {
 	stream::output_filtered_sptr st1(new stream::output_filtered());
 	filter_sptr f_lzw; /// @todo Fix when LZW compression is implemented
-	st1->open(target, f_lzw);
+	st1->open(target, f_lzw, NULL);
 
 	stream::output_filtered_sptr st2(new stream::output_filtered());
 	filter_sptr f_rle(new filter_bash_rle());
-	st2->open(st1, f_rle);
+	st2->open(st1, f_rle, resize);
 
 	return st2;
 }

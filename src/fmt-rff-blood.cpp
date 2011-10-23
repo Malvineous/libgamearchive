@@ -356,7 +356,7 @@ void RFFArchive::flush()
 			// The FAT is encrypted in this version
 			filter_sptr fatCrypt(new filter_rff_crypt(0, offFAT & 0xFF));
 			stream::output_filtered_sptr filt(new stream::output_filtered());
-			filt->open(fatSubStream, fatCrypt);
+			filt->open(fatSubStream, fatCrypt, NULL);
 			fatPlaintext = filt;
 		} else {
 			fatPlaintext = fatSubStream;

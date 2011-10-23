@@ -90,6 +90,15 @@ boost::test_tools::predicate_result default_sample::is_equal(
 	return true;
 }
 
+/// Callback function to set expanded/native file size.
+void setNativeSize(camoto::gamearchive::ArchivePtr arch,
+	camoto::gamearchive::Archive::EntryPtr id, stream::len newSize)
+	throw (std::ios::failure)
+{
+	arch->resize(id, newSize, id->iPrefilteredSize);
+	return;
+}
+
 stream::inout_sptr applyFilter(gamearchive::ArchivePtr arch,
 	gamearchive::Archive::EntryPtr id, stream::inout_sptr pStream)
 	throw (stream::error)
@@ -105,7 +114,8 @@ stream::inout_sptr applyFilter(gamearchive::ArchivePtr arch,
 			));
 		}
 
-		return pFilterType->apply(pStream);
+		stream::fn_truncate fn_resize = boost::bind<void>(setNativeSize, arch, id, _1);
+		return pFilterType->apply(pStream, fn_resize);
 	}
 	return pStream; // no filters to apply
 }

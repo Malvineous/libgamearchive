@@ -142,7 +142,7 @@ int main(int iArgC, char *cArgV[])
 
 		if (bApply) {
 			// Apply the filter
-			camoto::stream::output_sptr out(pFilterType->apply(pstdout));
+			camoto::stream::output_sptr out(pFilterType->apply(pstdout, NULL));
 
 			// Copy filtered data to stdout
 			stream::copy(out, pstdin);

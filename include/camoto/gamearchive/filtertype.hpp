@@ -25,6 +25,7 @@
 
 #include <vector>
 #include <camoto/filter.hpp>
+#include <camoto/stream.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -76,10 +77,18 @@ class FilterType {
 		 * @param target
 		 *   Target stream where the filtered data exists or is to end up.
 		 *
+		 * @param resize
+		 *   Notification function called when the stream is resized.  This function
+		 *   doesn't have to do anything (and can be NULL) but it is used in cases
+		 *   where a game archive stores both a file's compressed and decompressed
+		 *   size.  Here the callback will be notified of the decompressed size
+		 *   during the flush() call.
+		 *
 		 * @return Clear/plaintext stream providing data from target after
 		 *   processing.
 		 */
-		virtual stream::inout_sptr apply(stream::inout_sptr target)
+		virtual stream::inout_sptr apply(stream::inout_sptr target,
+			stream::fn_truncate resize)
 			throw (filter_error, stream::read_error) = 0;
 
 		/// Apply the algorithm to an input stream.
@@ -93,7 +102,8 @@ class FilterType {
 		/**
 		 * @sa apply(stream::inout_sptr)
 		 */
-		virtual stream::output_sptr apply(stream::output_sptr target)
+		virtual stream::output_sptr apply(stream::output_sptr target,
+			stream::fn_truncate resize)
 			throw (filter_error) = 0;
 
 };

@@ -106,6 +106,15 @@ void sanitisePath(std::string& strInput)
 	return;
 }
 
+/// Callback function to set expanded/native file size.
+void setNativeSize(camoto::gamearchive::ArchivePtr arch,
+	camoto::gamearchive::Archive::EntryPtr id, stream::len newSize)
+	throw (std::ios::failure)
+{
+	arch->resize(id, newSize, id->iPrefilteredSize);
+	return;
+}
+
 /// Apply the correct filter to the stream.
 /**
  * If the given entry pointer has a filter attached, apply it to the given
@@ -120,7 +129,8 @@ void sanitisePath(std::string& strInput)
  * @param id
  *   EntryPtr for the stream.
  */
-void applyFilter(camoto::stream::inout_sptr *ppStream, ga::Archive::EntryPtr id)
+void applyFilter(camoto::stream::inout_sptr *ppStream, ga::ArchivePtr arch,
+	ga::Archive::EntryPtr id)
 	throw (stream::error)
 {
 	if (!id->filter.empty()) {
@@ -131,7 +141,8 @@ void applyFilter(camoto::stream::inout_sptr *ppStream, ga::Archive::EntryPtr id)
 				"could not find filter \"" << id->filter << "\""
 			));
 		}
-		*ppStream = pFilterType->apply(*ppStream);
+		stream::fn_truncate fn_resize = boost::bind<void>(setNativeSize, arch, id, _1);
+		*ppStream = pFilterType->apply(*ppStream, fn_resize);
 	}
 	return;
 }
@@ -158,7 +169,7 @@ bool insertFile(ga::ArchivePtr pArchive, const std::string& strLocalFile,
 
 	// Open the new (empty) file in the archive
 	camoto::stream::inout_sptr psNew(pArchive->open(id));
-	if (bUseFilters) applyFilter(&psNew, id);
+	if (bUseFilters) applyFilter(&psNew, pArchive, id);
 
 	// Copy all the data from the file on disk into the archive file.
 	try {
@@ -332,7 +343,7 @@ void extractAll(ga::ArchivePtr pArchive, bool bScript)
 			// Open on disk
 			try {
 				camoto::stream::inout_sptr pfsIn(pArchive->open(*i));
-				if (bUseFilters) applyFilter(&pfsIn, *i);
+				if (bUseFilters) applyFilter(&pfsIn, pArchive, *i);
 				stream::output_file_sptr fsOut(new stream::output_file());
 
 				// If the file exists, add .1 .2 .3 etc. onto the end until an
@@ -691,7 +702,7 @@ finishTesting:
 					} else {
 						// Found it, open on disk
 						camoto::stream::inout_sptr pfsIn(destArch->open(id));
-						if (bUseFilters) applyFilter(&pfsIn, id);
+						if (bUseFilters) applyFilter(&pfsIn, destArch, id);
 						stream::output_file_sptr fsOut(new stream::output_file());
 						try {
 							fsOut->create(strLocalFile);
@@ -899,7 +910,7 @@ finishTesting:
 							// Now the file has been resized it's safe to open (if we opened
 							// it before the resize it'd be stuck at the old size)
 							camoto::stream::inout_sptr psDest(destArch->open(id));
-							if (bUseFilters) applyFilter(&psDest, id);
+							if (bUseFilters) applyFilter(&psDest, destArch, id);
 							stream::copy(psDest, sSrc);
 							psDest->flush();
 
