@@ -172,7 +172,8 @@ ArchivePtr DAT_GoTType::open(stream::inout_sptr psArchive, SuppData& suppData) c
 	return ArchivePtr(new DAT_GoTArchive(psArchive));
 }
 
-SuppFilenames DAT_GoTType::getRequiredSupps(const std::string& filenameArchive) const
+SuppFilenames DAT_GoTType::getRequiredSupps(stream::input_sptr data,
+	const std::string& filenameArchive) const
 	throw ()
 {
 	// No supplemental types/empty list

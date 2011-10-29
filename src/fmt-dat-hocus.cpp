@@ -124,7 +124,8 @@ ArchivePtr DAT_HocusType::newArchive(stream::inout_sptr psArchive, SuppData& sup
 	throw stream::error("Cannot create archives from scratch in this format!");
 }
 
-SuppFilenames DAT_HocusType::getRequiredSupps(const std::string& filenameArchive) const
+SuppFilenames DAT_HocusType::getRequiredSupps(stream::input_sptr data,
+	const std::string& filenameArchive) const
 	throw ()
 {
 	// No supplemental types/empty list

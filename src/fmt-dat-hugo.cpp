@@ -135,7 +135,8 @@ ArchivePtr DAT_HugoType::open(stream::inout_sptr psArchive, SuppData& suppData) 
 	return ArchivePtr(new DAT_HugoArchive(psArchive, stream::inout_sptr()));
 }
 
-SuppFilenames DAT_HugoType::getRequiredSupps(const std::string& filenameArchive) const
+SuppFilenames DAT_HugoType::getRequiredSupps(stream::input_sptr data,
+	const std::string& filenameArchive) const
 	throw ()
 {
 	// If this is 'scenery1.dat' then the rest of its data is in 'scenery2.dat'

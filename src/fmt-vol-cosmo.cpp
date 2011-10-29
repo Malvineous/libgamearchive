@@ -152,7 +152,8 @@ ArchivePtr VOLType::open(stream::inout_sptr psArchive, SuppData& suppData) const
 	return ArchivePtr(new VOLArchive(psArchive));
 }
 
-SuppFilenames VOLType::getRequiredSupps(const std::string& filenameArchive) const
+SuppFilenames VOLType::getRequiredSupps(stream::input_sptr data,
+	const std::string& filenameArchive) const
 	throw ()
 {
 	// No supplemental types/empty list

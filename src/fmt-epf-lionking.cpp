@@ -131,7 +131,8 @@ ArchivePtr EPFType::open(stream::inout_sptr psArchive, SuppData& suppData) const
 	return ArchivePtr(new EPFArchive(psArchive));
 }
 
-SuppFilenames EPFType::getRequiredSupps(const std::string& filenameArchive) const
+SuppFilenames EPFType::getRequiredSupps(stream::input_sptr data,
+	const std::string& filenameArchive) const
 	throw ()
 {
 	// No supplemental types/empty list

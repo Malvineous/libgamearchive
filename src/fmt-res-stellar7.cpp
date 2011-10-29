@@ -125,7 +125,8 @@ ArchivePtr RESType::open(stream::inout_sptr psArchive, SuppData& suppData) const
 	return root;
 }
 
-SuppFilenames RESType::getRequiredSupps(const std::string& filenameArchive) const
+SuppFilenames RESType::getRequiredSupps(stream::input_sptr data,
+	const std::string& filenameArchive) const
 	throw ()
 {
 	// No supplemental types/empty list

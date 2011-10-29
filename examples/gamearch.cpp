@@ -580,7 +580,7 @@ int main(int iArgC, char *cArgV[])
 				}
 				if (cert != ga::ArchiveType::DefinitelyNo) {
 					// We got a possible match, see if it requires any suppdata
-					camoto::SuppFilenames suppList = pTestType->getRequiredSupps(strFilename);
+					camoto::SuppFilenames suppList = pTestType->getRequiredSupps(psArchive, strFilename);
 					if (suppList.size() > 0) {
 						// It has suppdata, see if it's present
 						std::cout << "  * This format requires supplemental files..." << std::endl;
@@ -639,7 +639,7 @@ finishTesting:
 		}
 
 		// See if the format requires any supplemental files
-		camoto::SuppFilenames suppList = pArchType->getRequiredSupps(strFilename);
+		camoto::SuppFilenames suppList = pArchType->getRequiredSupps(psArchive, strFilename);
 		camoto::SuppData suppData;
 		if (suppList.size() > 0) {
 			for (camoto::SuppFilenames::iterator i = suppList.begin(); i != suppList.end(); i++) {

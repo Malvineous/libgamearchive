@@ -171,7 +171,8 @@ ArchivePtr PCXLibType::open(stream::inout_sptr psArchive, SuppData& suppData) co
 	return ArchivePtr(new PCXLibArchive(psArchive));
 }
 
-SuppFilenames PCXLibType::getRequiredSupps(const std::string& filenameArchive) const
+SuppFilenames PCXLibType::getRequiredSupps(stream::input_sptr data,
+	const std::string& filenameArchive) const
 	throw ()
 {
 	// No supplemental types/empty list

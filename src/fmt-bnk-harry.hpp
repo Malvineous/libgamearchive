@@ -56,7 +56,8 @@ class BNKType: virtual public ArchiveType {
 		virtual ArchivePtr open(stream::inout_sptr psArchive, SuppData& suppData) const
 			throw (stream::error);
 
-		virtual SuppFilenames getRequiredSupps(const std::string& filenameArchive) const
+		virtual SuppFilenames getRequiredSupps(stream::input_sptr data,
+			const std::string& filenameArchive) const
 			throw ();
 
 };

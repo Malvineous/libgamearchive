@@ -143,7 +143,8 @@ ArchivePtr DAT_WackyType::open(stream::inout_sptr psArchive, SuppData& suppData)
 	return ArchivePtr(new DAT_WackyArchive(psArchive));
 }
 
-SuppFilenames DAT_WackyType::getRequiredSupps(const std::string& filenameArchive) const
+SuppFilenames DAT_WackyType::getRequiredSupps(stream::input_sptr data,
+	const std::string& filenameArchive) const
 	throw ()
 {
 	// No supplemental types/empty list

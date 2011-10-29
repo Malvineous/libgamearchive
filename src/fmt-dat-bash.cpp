@@ -148,7 +148,8 @@ ArchivePtr DAT_BashType::open(stream::inout_sptr psArchive, SuppData& suppData) 
 	return ArchivePtr(new DAT_BashArchive(psArchive));
 }
 
-SuppFilenames DAT_BashType::getRequiredSupps(const std::string& filenameArchive) const
+SuppFilenames DAT_BashType::getRequiredSupps(stream::input_sptr data,
+	const std::string& filenameArchive) const
 	throw ()
 {
 	// No supplemental types/empty list

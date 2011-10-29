@@ -138,7 +138,8 @@ class ArchiveType {
 		 *         returned can have relative paths, and may even have an absolute
 		 *         path, if one was passed in with filenameArchive.
 		 */
-		virtual SuppFilenames getRequiredSupps(const std::string& filenameArchive) const
+		virtual SuppFilenames getRequiredSupps(stream::input_sptr data,
+			const std::string& filenameArchive) const
 			throw () = 0;
 
 };

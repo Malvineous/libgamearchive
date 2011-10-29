@@ -133,7 +133,8 @@ ArchivePtr SkyRoadsRoadsType::open(stream::inout_sptr psArchive, SuppData& suppD
 	return ArchivePtr(new SkyRoadsRoadsArchive(psArchive));
 }
 
-SuppFilenames SkyRoadsRoadsType::getRequiredSupps(const std::string& filenameArchive) const
+SuppFilenames SkyRoadsRoadsType::getRequiredSupps(stream::input_sptr data,
+	const std::string& filenameArchive) const
 	throw ()
 {
 	// No supplemental types/empty list

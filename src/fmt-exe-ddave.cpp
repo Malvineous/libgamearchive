@@ -118,7 +118,8 @@ ArchivePtr EXE_DDaveType::open(stream::inout_sptr psArchive, SuppData& suppData)
 	return ArchivePtr(new EXE_DDaveArchive(psArchive));
 }
 
-SuppFilenames EXE_DDaveType::getRequiredSupps(const std::string& filenameArchive) const
+SuppFilenames EXE_DDaveType::getRequiredSupps(stream::input_sptr data,
+	const std::string& filenameArchive) const
 	throw ()
 {
 	// No supplemental types/empty list

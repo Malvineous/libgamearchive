@@ -166,7 +166,8 @@ ArchivePtr EXE_CCavesType::open(stream::inout_sptr psArchive, SuppData& suppData
 	return ArchivePtr(new EXE_CCavesArchive(psArchive));
 }
 
-SuppFilenames EXE_CCavesType::getRequiredSupps(const std::string& filenameArchive) const
+SuppFilenames EXE_CCavesType::getRequiredSupps(stream::input_sptr data,
+	const std::string& filenameArchive) const
 	throw ()
 {
 	// No supplemental types/empty list

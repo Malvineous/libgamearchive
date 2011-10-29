@@ -151,7 +151,8 @@ ArchivePtr PODType::open(stream::inout_sptr psArchive, SuppData& suppData) const
 	return ArchivePtr(new PODArchive(psArchive));
 }
 
-SuppFilenames PODType::getRequiredSupps(const std::string& filenameArchive) const
+SuppFilenames PODType::getRequiredSupps(stream::input_sptr data,
+	const std::string& filenameArchive) const
 	throw ()
 {
 	// No supplemental types/empty list

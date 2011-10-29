@@ -118,7 +118,8 @@ ArchivePtr GRPType::open(stream::inout_sptr psArchive, SuppData& suppData) const
 	return ArchivePtr(new GRPArchive(psArchive));
 }
 
-SuppFilenames GRPType::getRequiredSupps(const std::string& filenameArchive) const
+SuppFilenames GRPType::getRequiredSupps(stream::input_sptr data,
+	const std::string& filenameArchive) const
 	throw ()
 {
 	// No supplemental types/empty list
