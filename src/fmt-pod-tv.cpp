@@ -111,7 +111,7 @@ ArchiveType::Certainty PODType::isInstance(stream::input_sptr psArchive) const
 	// Check each FAT entry
 	char fn[POD_MAX_FILENAME_LEN];
 	psArchive->seekg(POD_FAT_OFFSET, stream::start);
-	for (int i = 0; i < numFiles; i++) {
+	for (unsigned int i = 0; i < numFiles; i++) {
 		psArchive->read(fn, POD_MAX_FILENAME_LEN);
 		// Make sure there aren't any invalid characters in the filename
 		for (int j = 0; j < POD_MAX_FILENAME_LEN; j++) {
@@ -171,7 +171,7 @@ PODArchive::PODArchive(stream::inout_sptr psArchive)
 
 	this->psArchive->seekg(POD_FAT_OFFSET, stream::start);
 
-	for (int i = 0; i < numFiles; i++) {
+	for (unsigned int i = 0; i < numFiles; i++) {
 		FATEntry *pEntry = new FATEntry();
 		pEntry->iIndex = i;
 		this->psArchive

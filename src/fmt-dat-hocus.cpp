@@ -151,7 +151,7 @@ DAT_HocusArchive::DAT_HocusArchive(stream::inout_sptr psArchive, stream::inout_s
 	this->maxFiles = this->psFAT->tellg() / DAT_FAT_ENTRY_LEN;
 	this->psFAT->seekg(0, stream::start);
 
-	for (int i = 0; i < this->maxFiles; i++) {
+	for (unsigned int i = 0; i < this->maxFiles; i++) {
 		FATEntry *pEntry = new FATEntry();
 		pEntry->iIndex = i;
 		this->psFAT

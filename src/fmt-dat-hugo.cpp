@@ -101,7 +101,7 @@ ArchiveType::Certainty DAT_HugoType::isInstance(stream::input_sptr psArchive) co
 	uint32_t numFiles = fatEnd / DAT_FAT_ENTRY_LEN;
 
 	uint32_t offEntry, lenEntry;
-	for (int i = 1; i < numFiles; i++) {
+	for (unsigned int i = 1; i < numFiles; i++) {
 		psArchive
 			>> u32le(offEntry)
 			>> u32le(lenEntry)
@@ -194,7 +194,7 @@ DAT_HugoArchive::DAT_HugoArchive(stream::inout_sptr psArchive, stream::inout_spt
 		int curFile = 1;
 		int firstIndexInSecondArch = 0;
 		fatStream->seekg(0, stream::start);
-		for (int i = 0; i < numFiles; i++) {
+		for (unsigned int i = 0; i < numFiles; i++) {
 			DAT_HugoEntry *fatEntry = new DAT_HugoEntry();
 			EntryPtr ep(fatEntry);
 

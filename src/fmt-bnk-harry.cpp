@@ -143,7 +143,7 @@ BNKArchive::BNKArchive(stream::inout_sptr psArchive, stream::inout_sptr psFAT)
 
 	this->psFAT->seekg(0, stream::start);
 
-	for (int i = 0; i < numFiles; i++) {
+	for (unsigned int i = 0; i < numFiles; i++) {
 		FATEntry *fatEntry = new FATEntry();
 		EntryPtr ep(fatEntry);
 

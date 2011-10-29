@@ -86,7 +86,7 @@ class Manager {
 		 *         an empty pointer once iIndex goes out of range.
 		 * @todo Remove this and replace it with a function that just returns the vector.
 		 */
-		ArchiveTypePtr getArchiveType(int iIndex)
+		ArchiveTypePtr getArchiveType(unsigned int iIndex)
 			throw ();
 
 		/// Get an ArchiveType instance by its code.
@@ -110,7 +110,7 @@ class Manager {
 		 *
 		 * @todo Remove this and replace it with a function that just returns the vector.
 		 */
-		FilterTypePtr getFilterType(int iIndex)
+		FilterTypePtr getFilterType(unsigned int iIndex)
 			throw ();
 
 		/// Get a FilterType instance by its code.

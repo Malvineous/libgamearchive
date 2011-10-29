@@ -145,7 +145,7 @@ GRPArchive::GRPArchive(stream::inout_sptr psArchive)
 	}
 
 	stream::pos offNext = GRP_HEADER_LEN + (numFiles * GRP_FAT_ENTRY_LEN);
-	for (int i = 0; i < numFiles; i++) {
+	for (unsigned int i = 0; i < numFiles; i++) {
 		FATEntry *fatEntry = new FATEntry();
 		EntryPtr ep(fatEntry);
 

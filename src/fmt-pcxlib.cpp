@@ -107,7 +107,7 @@ ArchiveType::Certainty PCXLibType::isInstance(stream::input_sptr psArchive) cons
 	}
 
 	psArchive->seekg(PCX_FAT_OFFSET, stream::start);
-	for (int i = 0; i < numFiles; i++) {
+	for (unsigned int i = 0; i < numFiles; i++) {
 		uint8_t sync;
 		std::string name, ext;
 		uint16_t date, time;

@@ -67,7 +67,9 @@ EXTRA_libgamearchive_la_SOURCES += filter-xor-blood.hpp
 EXTRA_libgamearchive_la_SOURCES += filter-xor-sagent.hpp
 EXTRA_libgamearchive_la_SOURCES += filter-ddave-rle.hpp
 
-AM_CPPFLAGS = $(DEBUG_CPPFLAGS) $(BOOST_CPPFLAGS) -I $(top_srcdir)/include $(libgamecommon_CFLAGS)
+WARNINGS = -Wall -Wextra -Wno-unused-parameter
+
+AM_CPPFLAGS = $(DEBUG_CPPFLAGS) $(BOOST_CPPFLAGS) -I $(top_srcdir)/include $(libgamecommon_CFLAGS) $(WARNINGS)
 AM_CXXFLAGS = $(DEBUG_CXXFLAGS)
 
 libgamearchive_la_LDFLAGS = $(AM_LDFLAGS) -version-info 0:0:0

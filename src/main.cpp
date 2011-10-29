@@ -105,7 +105,7 @@ Manager::~Manager()
 {
 }
 
-ArchiveTypePtr Manager::getArchiveType(int iIndex)
+ArchiveTypePtr Manager::getArchiveType(unsigned int iIndex)
 	throw ()
 {
 	if (iIndex >= this->vcTypes.size()) return ArchiveTypePtr();
@@ -123,7 +123,7 @@ ArchiveTypePtr Manager::getArchiveTypeByCode(const std::string& strCode)
 	return ArchiveTypePtr();
 }
 
-FilterTypePtr Manager::getFilterType(int iIndex)
+FilterTypePtr Manager::getFilterType(unsigned int iIndex)
 	throw ()
 {
 	if (iIndex >= this->vcFilters.size()) return FilterTypePtr();

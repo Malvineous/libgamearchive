@@ -186,8 +186,6 @@ DAT_GoTArchive::DAT_GoTArchive(stream::inout_sptr psArchive)
 		fatSubStream(new stream::sub()),
 		fatStream(new stream::seg())
 {
-	stream::pos lenArchive = this->psArchive->size();
-
 	// Create a substream to decrypt the FAT
 	this->fatSubStream->open(
 		psArchive,

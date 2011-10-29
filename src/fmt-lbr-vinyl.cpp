@@ -450,7 +450,7 @@ LBRArchive::LBRArchive(stream::inout_sptr psArchive)
 
 		// Pre-calculate all the hashes
 		std::map<int, const char *> fn;
-		for (int f = 0; f < sizeof(filenames) / sizeof(char *); f++) {
+		for (unsigned int f = 0; f < sizeof(filenames) / sizeof(char *); f++) {
 			fn[calcHash(filenames[f])] = filenames[f];
 		}
 
@@ -460,7 +460,7 @@ LBRArchive::LBRArchive(stream::inout_sptr psArchive)
 			>> u16le(hashCur)
 			>> u32le(offCur)
 		;
-		for (int i = 0; i < numFiles; i++) {
+		for (unsigned int i = 0; i < numFiles; i++) {
 			// Read the data in from the FAT entry in the file
 			if (i == numFiles - 1) {
 				// Last entry has no 'next' one, so fake it as if next entry is EOF

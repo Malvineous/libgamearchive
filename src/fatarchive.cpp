@@ -417,6 +417,7 @@ FATArchive::FATEntry *FATArchive::preInsertFile(const FATEntry *idBeforeThis,
 	throw (stream::error)
 {
 	// No-op default
+	return NULL;
 }
 
 void FATArchive::postInsertFile(FATEntry *pNewEntry)

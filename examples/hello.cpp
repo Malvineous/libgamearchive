@@ -1,3 +1,4 @@
+#include <iostream>
 #include <camoto/stream_file.hpp>
 #include <camoto/gamearchive.hpp>
 

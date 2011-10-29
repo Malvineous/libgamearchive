@@ -49,12 +49,12 @@ class filter_ddave_unrle: public filter {
 class filter_ddave_rle: public filter {
 
 	protected:
-		char buf[129];  ///< Chars to output as-is
-		int buflen;     ///< Number of valid chars in buf
+		uint8_t buf[129];    ///< Chars to output as-is
+		unsigned int buflen; ///< Number of valid chars in buf
 
-		int prev;       ///< Previous byte read
-		int count;      ///< How many prev has been seen so far
-		int step;       ///< Which point in the algorithm are we up to?
+		uint8_t prev;        ///< Previous byte read
+		unsigned int count;  ///< How many prev has been seen so far
+		unsigned int step;   ///< Which point in the algorithm are we up to?
 
 	public:
 

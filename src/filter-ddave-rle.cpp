@@ -91,7 +91,7 @@ void filter_ddave_unrle::transform(uint8_t *out, stream::len *lenOut,
 filter_ddave_rle::filter_ddave_rle()
 	throw () :
 		buflen(0),
-		prev(-1),
+		prev(0),
 		count(0),
 		step(0)
 {

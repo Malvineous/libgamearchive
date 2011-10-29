@@ -109,7 +109,7 @@ class FATArchive: virtual public Archive {
 		OPEN_FILES openFiles;
 
 		/// Maximum length of filenames in this archive format.
-		int lenMaxFilename;
+		unsigned int lenMaxFilename;
 
 		/// Create a new FATArchive.
 		/**

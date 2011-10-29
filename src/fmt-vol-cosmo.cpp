@@ -102,10 +102,10 @@ ArchiveType::Certainty VOLType::isInstance(stream::input_sptr psArchive) const
 	// Check each FAT entry
 	char fn[VOL_MAX_FILENAME_LEN];
 	psArchive->seekg(0, stream::start);
-	for (int i = 0; i < lenFAT / VOL_FAT_ENTRY_LEN; i++) {
+	for (unsigned int i = 0; i < lenFAT / VOL_FAT_ENTRY_LEN; i++) {
 		psArchive->read(fn, VOL_MAX_FILENAME_LEN);
 		// Make sure there aren't any invalid characters in the filename
-		for (int j = 0; j < VOL_MAX_FILENAME_LEN; j++) {
+		for (unsigned int j = 0; j < VOL_MAX_FILENAME_LEN; j++) {
 			if (!fn[j]) break; // stop on terminating null
 
 			// Fail on control characters in the filename
@@ -181,7 +181,7 @@ VOLArchive::VOLArchive(stream::inout_sptr psArchive)
 		this->vcFAT.reserve(numFiles);
 
 		this->psArchive->seekg(0, stream::start);
-		for (int i = 0; i < numFiles; i++) {
+		for (unsigned int i = 0; i < numFiles; i++) {
 			FATEntry *fatEntry = new FATEntry();
 			EntryPtr ep(fatEntry);
 

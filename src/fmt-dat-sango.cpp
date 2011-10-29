@@ -92,7 +92,7 @@ ArchiveType::Certainty DAT_SangoType::isInstance(stream::input_sptr psArchive) c
 	if (offEndFAT > lenArchive) return DefinitelyNo;
 
 	uint32_t offNext = 4; // in case of no files
-	for (int offset = 4; offset < offEndFAT; offset += 4) {
+	for (unsigned int offset = 4; offset < offEndFAT; offset += 4) {
 		psArchive >> u32le(offNext);
 		// TESTED BY: fmt_dat_sango_isinstance_c03
 		if (offNext > lenArchive) return DefinitelyNo;
