@@ -139,8 +139,10 @@ SuppFilenames DAT_HocusType::getRequiredSupps(stream::input_sptr data,
 DAT_HocusArchive::DAT_HocusArchive(stream::inout_sptr psArchive, stream::inout_sptr psFAT)
 	throw (stream::error) :
 		FATArchive(psArchive, DAT_FIRST_FILE_OFFSET, 0),
+		psFAT(new stream::seg()),
 		numFiles(0)
 {
+	assert(psFAT);
 	this->psFAT->open(psFAT);
 
 	stream::pos lenArchive = this->psArchive->size();
