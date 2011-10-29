@@ -80,7 +80,7 @@ std::vector<std::string> PCXLibType::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty PCXLibType::isInstance(stream::inout_sptr psArchive) const
+ArchiveType::Certainty PCXLibType::isInstance(stream::input_sptr psArchive) const
 	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();

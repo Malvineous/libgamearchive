@@ -69,7 +69,7 @@ std::vector<std::string> SkyRoadsRoadsType::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty SkyRoadsRoadsType::isInstance(stream::inout_sptr psArchive) const
+ArchiveType::Certainty SkyRoadsRoadsType::isInstance(stream::input_sptr psArchive) const
 	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();

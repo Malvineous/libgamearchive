@@ -50,7 +50,7 @@ class RESType: virtual public ArchiveType {
 		virtual std::vector<std::string> getGameList() const
 			throw ();
 
-		virtual ArchiveType::Certainty isInstance(stream::inout_sptr fsArchive) const
+		virtual ArchiveType::Certainty isInstance(stream::input_sptr fsArchive) const
 			throw (stream::error);
 
 		// newArchive is not overridden as an entirely blank file is valid

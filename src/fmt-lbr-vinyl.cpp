@@ -382,7 +382,7 @@ std::vector<std::string> LBRType::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty LBRType::isInstance(stream::inout_sptr psArchive) const
+ArchiveType::Certainty LBRType::isInstance(stream::input_sptr psArchive) const
 	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();

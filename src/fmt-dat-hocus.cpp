@@ -77,7 +77,7 @@ std::vector<std::string> DAT_HocusType::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty DAT_HocusType::isInstance(stream::inout_sptr psArchive) const
+ArchiveType::Certainty DAT_HocusType::isInstance(stream::input_sptr psArchive) const
 	throw (stream::error)
 {
 	// There is literally no identifying information in this archive format!

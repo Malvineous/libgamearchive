@@ -81,7 +81,7 @@ std::vector<std::string> DAT_BashType::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty DAT_BashType::isInstance(stream::inout_sptr psArchive) const
+ArchiveType::Certainty DAT_BashType::isInstance(stream::input_sptr psArchive) const
 	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();

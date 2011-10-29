@@ -50,7 +50,7 @@ class PODType: virtual public ArchiveType {
 		virtual std::vector<std::string> getGameList() const
 			throw ();
 
-		virtual ArchiveType::Certainty isInstance(stream::inout_sptr fsArchive) const
+		virtual ArchiveType::Certainty isInstance(stream::input_sptr fsArchive) const
 			throw (stream::error);
 
 		virtual ArchivePtr newArchive(stream::inout_sptr psArchive, SuppData& suppData) const

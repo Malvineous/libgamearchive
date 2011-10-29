@@ -78,7 +78,7 @@ std::vector<std::string> HOGType::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty HOGType::isInstance(stream::inout_sptr psArchive) const
+ArchiveType::Certainty HOGType::isInstance(stream::input_sptr psArchive) const
 	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();

@@ -77,7 +77,7 @@ std::vector<std::string> DAT_SangoType::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty DAT_SangoType::isInstance(stream::inout_sptr psArchive) const
+ArchiveType::Certainty DAT_SangoType::isInstance(stream::input_sptr psArchive) const
 	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();

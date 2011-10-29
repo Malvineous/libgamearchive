@@ -80,7 +80,7 @@ std::vector<std::string> PODType::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty PODType::isInstance(stream::inout_sptr psArchive) const
+ArchiveType::Certainty PODType::isInstance(stream::input_sptr psArchive) const
 	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();

@@ -131,7 +131,7 @@ std::vector<std::string> EXE_CCavesType::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty EXE_CCavesType::isInstance(stream::inout_sptr psArchive) const
+ArchiveType::Certainty EXE_CCavesType::isInstance(stream::input_sptr psArchive) const
 	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();

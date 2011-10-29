@@ -81,7 +81,7 @@ std::vector<std::string> VOLType::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty VOLType::isInstance(stream::inout_sptr psArchive) const
+ArchiveType::Certainty VOLType::isInstance(stream::input_sptr psArchive) const
 	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();

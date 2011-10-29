@@ -85,7 +85,7 @@ std::vector<std::string> GRPType::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty GRPType::isInstance(stream::inout_sptr psArchive) const
+ArchiveType::Certainty GRPType::isInstance(stream::input_sptr psArchive) const
 	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();

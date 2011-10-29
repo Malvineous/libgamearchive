@@ -86,7 +86,7 @@ std::vector<std::string> DAT_GoTType::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty DAT_GoTType::isInstance(stream::inout_sptr psArchive) const
+ArchiveType::Certainty DAT_GoTType::isInstance(stream::input_sptr psArchive) const
 	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();
@@ -96,12 +96,11 @@ ArchiveType::Certainty DAT_GoTType::isInstance(stream::inout_sptr psArchive) con
 	if (lenArchive < GOT_FAT_LENGTH) return DefinitelyNo;
 
 	// Create a substream to decrypt the FAT
-	stream::sub_sptr fatSubStream(new stream::sub());
+	stream::input_sub_sptr fatSubStream(new stream::sub());
 	fatSubStream->open(
 		psArchive,
 		0,
-		GOT_MAX_FILES * GOT_FAT_ENTRY_LEN,
-		NULL
+		GOT_MAX_FILES * GOT_FAT_ENTRY_LEN
 	);
 
 	filter_sptr fatCrypt(new filter_xor_crypt(0, 128));

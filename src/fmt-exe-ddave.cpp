@@ -84,7 +84,7 @@ std::vector<std::string> EXE_DDaveType::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty EXE_DDaveType::isInstance(stream::inout_sptr psArchive) const
+ArchiveType::Certainty EXE_DDaveType::isInstance(stream::input_sptr psArchive) const
 	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();

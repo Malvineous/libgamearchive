@@ -81,7 +81,7 @@ std::vector<std::string> DAT_WackyType::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty DAT_WackyType::isInstance(stream::inout_sptr psArchive) const
+ArchiveType::Certainty DAT_WackyType::isInstance(stream::input_sptr psArchive) const
 	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();

@@ -91,7 +91,7 @@ std::vector<std::string> BNKType::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty BNKType::isInstance(stream::inout_sptr psArchive) const
+ArchiveType::Certainty BNKType::isInstance(stream::input_sptr psArchive) const
 	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();

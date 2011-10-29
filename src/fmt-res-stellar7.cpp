@@ -76,7 +76,7 @@ std::vector<std::string> RESType::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty RESType::isInstance(stream::inout_sptr psArchive) const
+ArchiveType::Certainty RESType::isInstance(stream::input_sptr psArchive) const
 	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();

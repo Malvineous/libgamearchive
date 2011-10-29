@@ -83,7 +83,7 @@ class ArchiveType {
 		 * @param  psArchive A C++ iostream of the file to test.
 		 * @return A single confidence value from \ref ArchiveType::Certainty.
 		 */
-		virtual ArchiveType::Certainty isInstance(stream::inout_sptr psArchive) const
+		virtual ArchiveType::Certainty isInstance(stream::input_sptr psArchive) const
 			throw (stream::error) = 0;
 
 		/// Create a blank archive in this format.

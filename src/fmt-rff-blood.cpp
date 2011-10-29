@@ -85,7 +85,7 @@ std::vector<std::string> RFFType::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty RFFType::isInstance(stream::inout_sptr psArchive) const
+ArchiveType::Certainty RFFType::isInstance(stream::input_sptr psArchive) const
 	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();

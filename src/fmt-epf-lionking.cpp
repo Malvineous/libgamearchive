@@ -94,7 +94,7 @@ std::vector<std::string> EPFType::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty EPFType::isInstance(stream::inout_sptr psArchive) const
+ArchiveType::Certainty EPFType::isInstance(stream::input_sptr psArchive) const
 	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();
