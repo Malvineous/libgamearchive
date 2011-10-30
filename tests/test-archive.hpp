@@ -51,6 +51,16 @@ using namespace camoto::gamearchive;
 #define INSERT_ATTRIBUTE EA_NONE
 #endif
 
+#ifndef CONTENT1
+#define CONTENT1 "This is one.dat"
+#define CONTENT2 "This is two.dat"
+#define CONTENT3 "This is three.dat"
+#define CONTENT4 "This is four.dat"
+#define CONTENT1_LARGESIZE 20
+#define CONTENT1_SMALLSIZE 10
+#define CONTENT1_OVERWRITTEN "Now resized to 23 chars"
+#endif
+
 struct FIXTURE_NAME: public default_sample {
 
 	stream::string_sptr base;
@@ -211,7 +221,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(open))
 
 	BOOST_CHECK_MESSAGE(
 		default_sample::is_equal(makeString(
-			"This is one.dat"
+			CONTENT1
 		), out->str()),
 		"Error opening file or wrong file opened"
 	);
@@ -309,7 +319,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long))
 	name[MAX_FILENAME_LEN + 1] = 0;
 
 	BOOST_CHECK_THROW(
-		Archive::EntryPtr ep = pArchive->insert(epb, name, 5, FILETYPE_GENERIC, INSERT_ATTRIBUTE),
+		Archive::EntryPtr ep = pArchive->insert(epb, name, sizeof(CONTENT1) - 1, FILETYPE_GENERIC, INSERT_ATTRIBUTE),
 		stream::error
 	);
 
@@ -330,7 +340,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_long))
 	name[MAX_FILENAME_LEN] = 0;
 
 	BOOST_CHECK_NO_THROW(
-		Archive::EntryPtr ep = pArchive->insert(Archive::EntryPtr(), name, 5, FILETYPE_GENERIC, INSERT_ATTRIBUTE)
+		Archive::EntryPtr ep = pArchive->insert(Archive::EntryPtr(), name, sizeof(CONTENT1) - 1, FILETYPE_GENERIC, INSERT_ATTRIBUTE)
 	);
 
 }
@@ -342,9 +352,9 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_end))
 
 	// Insert the file
 #if !NO_FILENAMES
-	Archive::EntryPtr ep = pArchive->insert(Archive::EntryPtr(), FILENAME3, 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr ep = pArchive->insert(Archive::EntryPtr(), FILENAME3, sizeof(CONTENT3) - 1, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #else
-	Archive::EntryPtr ep = pArchive->insert(Archive::EntryPtr(), "dummy", 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr ep = pArchive->insert(Archive::EntryPtr(), "dummy", sizeof(CONTENT3) - 1, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #endif
 
 	// Make sure it went in ok
@@ -357,7 +367,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_end))
 	// Apply any encryption/compression filter
 	pfsNew = applyFilter(pArchive, ep, pfsNew);
 
-	pfsNew->write("This is three.dat", 17);
+	pfsNew->write(CONTENT3, sizeof(CONTENT3) - 1);
 	pfsNew->flush();
 
 	BOOST_CHECK_MESSAGE(
@@ -386,7 +396,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_mid))
 		"Couldn't find " FILENAME2 " in sample archive");
 
 	// Insert the file
-	Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, sizeof(CONTENT3) - 1, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #else
 	// No filenames in this format, do it by order
 	const Archive::VC_ENTRYPTR& files = pArchive->getFileList();
@@ -397,7 +407,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_mid))
 		"Couldn't find second file in sample archive");
 
 	// Insert the file
-	Archive::EntryPtr ep = pArchive->insert(idBefore, "dummy", 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr ep = pArchive->insert(idBefore, "dummy", sizeof(CONTENT3) - 1, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #endif
 
 	// Make sure it went in ok
@@ -410,7 +420,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_mid))
 	// Apply any encryption/compression filter
 	pfsNew = applyFilter(pArchive, ep, pfsNew);
 
-	pfsNew->write("This is three.dat", 17);
+	pfsNew->write(CONTENT3, sizeof(CONTENT3) - 1);
 	pfsNew->flush();
 
 	BOOST_CHECK_MESSAGE(
@@ -439,7 +449,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 		"Couldn't find " FILENAME2 " in sample archive");
 
 	// Insert the file
-	Archive::EntryPtr ep1 = pArchive->insert(idBefore, FILENAME3, 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr ep1 = pArchive->insert(idBefore, FILENAME3, sizeof(CONTENT3) - 1, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #else
 	// No filenames in this format, do it by order
 	const Archive::VC_ENTRYPTR& files = pArchive->getFileList();
@@ -450,7 +460,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 		"Couldn't find second file in sample archive");
 
 	// Insert the file
-	Archive::EntryPtr ep1 = pArchive->insert(idBefore, "dummy", 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr ep1 = pArchive->insert(idBefore, "dummy", sizeof(CONTENT3) - 1, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #endif
 
 	// Make sure it went in ok
@@ -463,7 +473,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 	// Apply any encryption/compression filter
 	pfsNew1 = applyFilter(pArchive, ep1, pfsNew1);
 
-	pfsNew1->write("This is three.dat", 17);
+	pfsNew1->write(CONTENT3, sizeof(CONTENT3) - 1);
 	pfsNew1->flush();
 
 #if !NO_FILENAMES
@@ -476,7 +486,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 		"Couldn't find " FILENAME2 " in sample archive after first insert");
 
 	// Insert the file
-	Archive::EntryPtr ep2 = pArchive->insert(idBefore, FILENAME4, 16, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr ep2 = pArchive->insert(idBefore, FILENAME4, sizeof(CONTENT4) - 1, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #else
 	// No filenames in this format, do it by order
 
@@ -487,7 +497,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 		"Couldn't find second file in sample archive after first insert");
 
 	// Insert the file
-	Archive::EntryPtr ep2 = pArchive->insert(idBefore, "dummy", 16, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr ep2 = pArchive->insert(idBefore, "dummy", sizeof(CONTENT4) - 1, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #endif
 
 	// Make sure it went in ok
@@ -499,7 +509,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert2))
 	// Apply any encryption/compression filter
 	pfsNew2 = applyFilter(pArchive, ep2, pfsNew2);
 
-	pfsNew2->write("This is four.dat", 16);
+	pfsNew2->write(CONTENT4, sizeof(CONTENT4) - 1);
 	pfsNew2->flush();
 
 	BOOST_CHECK_MESSAGE(
@@ -609,7 +619,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_remove))
 		"Couldn't find " FILENAME2 " in sample archive");
 
 	// Insert the file
-	Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, sizeof(CONTENT3) - 1, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #else
 	// No filenames in this format, do it by order
 	const Archive::VC_ENTRYPTR& files = pArchive->getFileList();
@@ -620,7 +630,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_remove))
 		"Couldn't find second file in sample archive");
 
 	// Insert the file
-	Archive::EntryPtr ep = pArchive->insert(idBefore, "dummy", 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr ep = pArchive->insert(idBefore, "dummy", sizeof(CONTENT3) - 1, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #endif
 
 	// Make sure it went in ok
@@ -633,7 +643,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_remove))
 	// Apply any encryption/compression filter
 	pfsNew = applyFilter(pArchive, ep, pfsNew);
 
-	pfsNew->write("This is three.dat", 17);
+	pfsNew->write(CONTENT3, sizeof(CONTENT3) - 1);
 	pfsNew->flush();
 
 #if !NO_FILENAMES
@@ -701,7 +711,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_insert))
 		"Couldn't find " FILENAME2 " in sample archive");
 
 	// Insert the file
-	Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr ep = pArchive->insert(idBefore, FILENAME3, sizeof(CONTENT3) - 1, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #else
 	// No filenames in this format, do it by order
 	Archive::EntryPtr idBefore = getFileAt(files, 0); // FILENAME2 is the first (only) file in the archive at this point
@@ -711,7 +721,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_insert))
 		"Couldn't find second file in sample archive");
 
 	// Insert the file
-	Archive::EntryPtr ep = pArchive->insert(idBefore, "dummy", 17, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr ep = pArchive->insert(idBefore, "dummy", sizeof(CONTENT3) - 1, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #endif
 
 	// Make sure it went in ok
@@ -724,7 +734,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_insert))
 	// Apply any encryption/compression filter
 	pfsNew = applyFilter(pArchive, ep, pfsNew);
 
-	pfsNew->write("This is three.dat", 17);
+	pfsNew->write(CONTENT3, sizeof(CONTENT3) - 1);
 	pfsNew->flush();
 
 	BOOST_CHECK_MESSAGE(
@@ -807,8 +817,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_larger))
 		"Couldn't find first file in sample archive");
 #endif
 
-	// Swap the file positions
-	pArchive->resize(ep, 20, 20);
+	pArchive->resize(ep, CONTENT1_LARGESIZE, CONTENT1_LARGESIZE);
 
 	BOOST_CHECK_MESSAGE(
 		is_equal(makeString(TEST_RESULT(resize_larger))),
@@ -844,8 +853,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_smaller))
 		"Couldn't find first file in sample archive");
 #endif
 
-	// Swap the file positions
-	pArchive->resize(ep, 10, 10);
+	pArchive->resize(ep, CONTENT1_SMALLSIZE, CONTENT1_SMALLSIZE);
 
 	BOOST_CHECK_MESSAGE(
 		is_equal(makeString(TEST_RESULT(resize_smaller))),
@@ -881,15 +889,14 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_write))
 		"Couldn't find first file in sample archive");
 #endif
 
-	// Swap the file positions
-	pArchive->resize(ep, 23, 23);
+	pArchive->resize(ep, sizeof(CONTENT1_OVERWRITTEN) - 1, sizeof(CONTENT1_OVERWRITTEN) - 1);
 
 	stream::inout_sptr pfsNew(pArchive->open(ep));
 
 	// Apply any encryption/compression filter
 	pfsNew = applyFilter(pArchive, ep, pfsNew);
 
-	pfsNew->write("Now resized to 23 chars", 23);
+	pfsNew->write(CONTENT1_OVERWRITTEN, sizeof(CONTENT1_OVERWRITTEN) - 1);
 	pfsNew->flush();
 
 	BOOST_CHECK_MESSAGE(
@@ -934,7 +941,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_write))
 
 	BOOST_CHECK_MESSAGE(
 		default_sample::is_equal(makeString(
-			"This is two.dat"
+			CONTENT2
 		), out->str()),
 		"Unrelated file was corrupted after file resize operation"
 	);
@@ -984,10 +991,10 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_all_re_add))
 
 #if !NO_FILENAMES
 	// Add the files back again
-	idOne = pArchive->insert(Archive::EntryPtr(), FILENAME1, 15, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	idOne = pArchive->insert(Archive::EntryPtr(), FILENAME1, sizeof(CONTENT1) - 1, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #else
 	// No filenames in this format
-	idOne = pArchive->insert(Archive::EntryPtr(), "dummy", 15, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	idOne = pArchive->insert(Archive::EntryPtr(), "dummy", sizeof(CONTENT1) - 1, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #endif
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idOne),
 		"Couldn't insert new file after removing all files");
@@ -997,14 +1004,14 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_all_re_add))
 	// Apply any encryption/compression filter
 	pfsNew = applyFilter(pArchive, idOne, pfsNew);
 
-	pfsNew->write("This is one.dat", 15);
+	pfsNew->write(CONTENT1, sizeof(CONTENT1) - 1);
 	pfsNew->flush();
 
 #if !NO_FILENAMES
-	idTwo = pArchive->insert(Archive::EntryPtr(), FILENAME2, 15, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	idTwo = pArchive->insert(Archive::EntryPtr(), FILENAME2, sizeof(CONTENT2) - 1, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #else
 	// No filenames in this format
-	idTwo = pArchive->insert(Archive::EntryPtr(), "dummy", 15, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	idTwo = pArchive->insert(Archive::EntryPtr(), "dummy", sizeof(CONTENT2) - 1, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #endif
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idTwo),
 		"Couldn't insert second new file after removing all files");
@@ -1013,7 +1020,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(remove_all_re_add))
 	// Apply any encryption/compression filter
 	pfsNew = applyFilter(pArchive, idTwo, pfsNew);
 
-	pfsNew->write("This is two.dat", 15);
+	pfsNew->write(CONTENT2, sizeof(CONTENT2) - 1);
 	pfsNew->flush();
 
 	BOOST_CHECK_MESSAGE(
@@ -1052,9 +1059,9 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_zero_then_resize))
 	// Apply any encryption/compression filter
 	pfsNew = applyFilter(pArchive, ep, pfsNew);
 
-	pArchive->resize(ep, 17, 17);
+	pArchive->resize(ep, sizeof(CONTENT3) - 1, sizeof(CONTENT3) - 1);
 	pfsNew->seekp(0, stream::start);
-	pfsNew->write("This is three.dat", 17);
+	pfsNew->write(CONTENT3, sizeof(CONTENT3) - 1);
 	pfsNew->flush();
 
 	BOOST_CHECK_MESSAGE(

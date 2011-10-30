@@ -91,9 +91,9 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(new_to_initialstate))
 
 	// Add the files to the new archive
 #if !NO_FILENAMES
-	Archive::EntryPtr idOne = pArchive->insert(Archive::EntryPtr(), FILENAME1, 15, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr idOne = pArchive->insert(Archive::EntryPtr(), FILENAME1, sizeof(CONTENT1) - 1, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #else
-	Archive::EntryPtr idOne = pArchive->insert(Archive::EntryPtr(), "dummy", 15, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr idOne = pArchive->insert(Archive::EntryPtr(), "dummy", sizeof(CONTENT1) - 1, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #endif
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idOne),
 		"Couldn't insert new file in empty archive");
@@ -104,9 +104,9 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(new_to_initialstate))
 	pfsNew->flush();
 
 #if !NO_FILENAMES
-	Archive::EntryPtr idTwo = pArchive->insert(Archive::EntryPtr(), FILENAME2, 15, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr idTwo = pArchive->insert(Archive::EntryPtr(), FILENAME2, sizeof(CONTENT2) - 1, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #else
-	Archive::EntryPtr idTwo = pArchive->insert(Archive::EntryPtr(), "dummy", 15, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
+	Archive::EntryPtr idTwo = pArchive->insert(Archive::EntryPtr(), "dummy", sizeof(CONTENT1) - 1, FILETYPE_GENERIC, INSERT_ATTRIBUTE);
 #endif
 	BOOST_REQUIRE_MESSAGE(pArchive->isValid(idTwo),
 		"Couldn't insert second new file in empty archive");
@@ -211,8 +211,8 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(manipulate_zero_length_files))
 	// they currently all share the same offset.  This should result in file1
 	// keeping its original offset (same as file2) and file3's offset being
 	// increased.
-	pArchive->resize(ep2, 15, 15);
-	file2->write("This is two.dat", 15);
+	pArchive->resize(ep2, sizeof(CONTENT2) - 1, sizeof(CONTENT2) - 1);
+	file2->write(CONTENT2, sizeof(CONTENT2) - 1);
 	file2->seekp(0, stream::cur);
 	file2->flush();
 
@@ -224,8 +224,8 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(manipulate_zero_length_files))
 	// file, but if that ever happens this test can be adjusted then.
 	BOOST_REQUIRE_GT(fat3->iOffset, off3);
 
-	pArchive->resize(ep1, 15, 15);
-	file1->write("This is one.dat", 15);
+	pArchive->resize(ep1, sizeof(CONTENT1) - 1, sizeof(CONTENT1) - 1);
+	file1->write(CONTENT1, sizeof(CONTENT1) - 1);
 	file1->seekp(0, stream::cur);
 	file1->flush();
 
@@ -235,8 +235,8 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(manipulate_zero_length_files))
 	// Make sure the third file has moved again.  Same caveat as above.
 	BOOST_REQUIRE_GT(fat3->iOffset, off3);
 
-	pArchive->resize(ep3, 17, 17);
-	file3->write("This is three.dat", 17);
+	pArchive->resize(ep3, sizeof(CONTENT3) - 1, sizeof(CONTENT3) - 1);
+	file3->write(CONTENT3, sizeof(CONTENT3) - 1);
 	file3->flush();
 
 	BOOST_CHECK_MESSAGE(
