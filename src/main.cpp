@@ -39,6 +39,8 @@
 #include "fmt-dat-hocus.hpp"
 #include "fmt-dat-sango.hpp"
 #include "fmt-lbr-vinyl.hpp"
+#include "fmt-resource-tim.hpp"
+#include "fmt-resource-tim-fat.hpp"
 #include "fmt-roads-skyroads.hpp"
 #include "fmt-dat-got.hpp"
 #include "fmt-pcxlib.hpp"
@@ -79,6 +81,8 @@ Manager::Manager()
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_SangoType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new LBRType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new SkyRoadsRoadsType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new TIMResourceType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new TIMResourceFATType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_GoTType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new PCXLibType()));
 
