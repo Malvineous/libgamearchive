@@ -38,6 +38,7 @@
 #include "fmt-dat-bash.hpp"
 #include "fmt-dat-hocus.hpp"
 #include "fmt-dat-sango.hpp"
+#include "fmt-dlt-stargunner.hpp"
 #include "fmt-lbr-vinyl.hpp"
 #include "fmt-resource-tim.hpp"
 #include "fmt-resource-tim-fat.hpp"
@@ -79,6 +80,7 @@ Manager::Manager()
 	this->vcTypes.push_back(ArchiveTypePtr(new EXE_DDaveType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_BashType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_SangoType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new DLTType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new LBRType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new SkyRoadsRoadsType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new TIMResourceType()));

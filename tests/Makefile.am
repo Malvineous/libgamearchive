@@ -13,6 +13,7 @@ tests_SOURCES += test-fmt-dat-wacky.cpp
 tests_SOURCES += test-fmt-dat-hugo.cpp
 tests_SOURCES += test-fmt-dat-bash.cpp
 tests_SOURCES += test-fmt-dat-sango.cpp
+tests_SOURCES += test-fmt-dlt-stargunner.cpp
 tests_SOURCES += test-fmt-lbr-vinyl.cpp
 tests_SOURCES += test-fmt-roads-skyroads.cpp
 tests_SOURCES += test-fmt-dat-got.cpp
