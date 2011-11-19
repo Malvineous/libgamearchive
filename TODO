@@ -14,3 +14,5 @@ Outstanding tasks
 
  - Add tests for a format that supports compression, so the prefiltered file size
    changes can be tested.
+
+ - Add tests for Stargunner decompression, and confirm files go in as uncompressed

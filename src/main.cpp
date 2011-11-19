@@ -49,6 +49,7 @@
 #include "filter-bash.hpp"
 #include "filter-epfs.hpp"
 #include "filter-zone66.hpp"
+#include "filter-stargunner.hpp"
 #include "filter-stellar7.hpp"
 #include "filter-xor.hpp"
 #include "filter-xor-blood.hpp"
@@ -97,6 +98,7 @@ Manager::Manager()
 	this->vcFilters.push_back(FilterTypePtr(new BashFilterType()));
 	this->vcFilters.push_back(FilterTypePtr(new EPFSFilterType()));
 	this->vcFilters.push_back(FilterTypePtr(new Zone66FilterType()));
+	this->vcFilters.push_back(FilterTypePtr(new StargunnerFilterType()));
 	this->vcFilters.push_back(FilterTypePtr(new Stellar7FilterType()));
 	this->vcFilters.push_back(FilterTypePtr(new XORFilterType()));
 	this->vcFilters.push_back(FilterTypePtr(new RFFFilterType()));

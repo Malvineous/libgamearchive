@@ -32,7 +32,7 @@ have been implemented:
   * Redneck Rampage (.grp)
   * Sango Fighter (.dat, .pcm, and many others)
   * Shadow Warrior (.grp)
-  * Stargunner (.dlt) [no decompression yet]
+  * Stargunner (.dlt)
   * Stellar 7 (.res)
   * Terminal Velocity (.pod)
   * The Incredible Machine (resource.*)
@@ -47,6 +47,7 @@ compression/encryption algorithms used by these formats:
   * Lion King (decompress only)
   * Monster Bash (decompress only)
   * Secret Agent
+  * Stargunner (decompress only, game works with uncompressed files)
   * Stellar 7 (decompress only)
   * Zone 66 (decompress only)
 
