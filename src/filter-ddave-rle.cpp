@@ -69,10 +69,6 @@ void filter_ddave_unrle::transform(uint8_t *out, stream::len *lenOut,
 			} else { // high bit unset
 				if (r + 2 > *lenIn) {
 					// Not enough for this process, try again next time
-					if (r == 0) {
-						// But we haven't read any data yet!
-						throw filter_error("Dangerous Dave RLE data terminates mid-sequence!");
-					}
 					break;
 				}
 				this->count = 3 + *in++;
