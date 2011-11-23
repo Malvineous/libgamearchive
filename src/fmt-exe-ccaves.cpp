@@ -163,7 +163,12 @@ ArchivePtr EXE_CCavesType::newArchive(stream::inout_sptr psArchive, SuppData& su
 ArchivePtr EXE_CCavesType::open(stream::inout_sptr psArchive, SuppData& suppData) const
 	throw (stream::error)
 {
-	return ArchivePtr(new EXE_CCavesArchive(psArchive));
+	std::vector<FixedArchiveFile> files;
+	files.reserve(sizeof(ccaves_file_list) / sizeof(FixedArchiveFile));
+	for (unsigned int i = 0; i < sizeof(ccaves_file_list) / sizeof(FixedArchiveFile); i++) {
+		files.push_back(ccaves_file_list[i]);
+	}
+	return ArchivePtr(new FixedArchive(psArchive, files));
 }
 
 SuppFilenames EXE_CCavesType::getRequiredSupps(stream::input_sptr data,
@@ -174,17 +179,6 @@ SuppFilenames EXE_CCavesType::getRequiredSupps(stream::input_sptr data,
 	return SuppFilenames();
 }
 
-
-EXE_CCavesArchive::EXE_CCavesArchive(stream::inout_sptr psArchive)
-	throw (stream::error) :
-		FixedArchive(psArchive, ccaves_file_list, sizeof(ccaves_file_list) / sizeof(FixedArchiveFile))
-{
-}
-
-EXE_CCavesArchive::~EXE_CCavesArchive()
-	throw ()
-{
-}
 
 } // namespace gamearchive
 } // namespace camoto

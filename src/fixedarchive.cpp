@@ -26,25 +26,23 @@
 namespace camoto {
 namespace gamearchive {
 
-FixedArchive::FixedArchive(stream::inout_sptr psArchive, FixedArchiveFile *files,
-	int numFiles
-)
+FixedArchive::FixedArchive(stream::inout_sptr psArchive, std::vector<FixedArchiveFile> files)
 	throw (stream::error) :
 		psArchive(psArchive),
-		files(files),
-		numFiles(numFiles)
+		files(files)
 {
-	for (int i = 0; i < numFiles; i++) {
+	int j = 0;
+	for (std::vector<FixedArchiveFile>::iterator i = files.begin(); i != files.end(); i++) {
 		FixedEntry *fe = new FixedEntry();
 		EntryPtr ep(fe);
 		fe->bValid = true;
-		fe->iSize = files[i].size;
-		fe->strName = files[i].name;
+		fe->iSize = i->size;
+		fe->strName = i->name;
 		fe->type = FILETYPE_GENERIC;
-		fe->filter = files[i].filter;
+		fe->filter = i->filter;
 		fe->fAttr = 0;
 
-		fe->index = i;
+		fe->index = j++;
 
 		this->vcFixedEntries.push_back(ep);
 	}
@@ -82,7 +80,7 @@ bool FixedArchive::isValid(const EntryPtr id) const
 	throw ()
 {
 	const FixedEntry *id2 = dynamic_cast<const FixedEntry *>(id.get());
-	return ((id2) && (id2->index < this->numFiles));
+	return ((id2) && (id2->index < this->files.size()));
 }
 
 stream::inout_sptr FixedArchive::open(const EntryPtr id)

@@ -39,7 +39,7 @@ namespace gamearchive {
 struct FixedArchiveFile {
 	unsigned long offset;  ///< Offset of the subfile in the parent
 	unsigned long size;    ///< Length of the subfile in bytes
-	const char *name;      ///< Filename of the subfile
+	std::string name;      ///< Filename of the subfile
 	std::string filter;    ///< Filter type
 };
 
@@ -59,8 +59,7 @@ class FixedArchive: virtual public Archive {
 			virtual std::string getContent() const;*/
 		};
 
-		const FixedArchiveFile *files;  ///< Array of files passed in via the constructor
-		int numFiles;             ///< Number of entries in files array
+		std::vector<FixedArchiveFile> files;  ///< Array of files passed in via the constructor
 
 		// This is a vector of file entries.  Although we have a specific FAT type
 		// for each entry we can't use a vector of them here because getFileList()
@@ -77,7 +76,7 @@ class FixedArchive: virtual public Archive {
 
 	public:
 
-		FixedArchive(stream::inout_sptr psArchive, FixedArchiveFile *files, int numFiles)
+		FixedArchive(stream::inout_sptr psArchive, std::vector<FixedArchiveFile> files)
 			throw (stream::error);
 
 		virtual ~FixedArchive()

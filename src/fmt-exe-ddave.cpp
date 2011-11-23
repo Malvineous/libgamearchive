@@ -115,7 +115,12 @@ ArchivePtr EXE_DDaveType::newArchive(stream::inout_sptr psArchive, SuppData& sup
 ArchivePtr EXE_DDaveType::open(stream::inout_sptr psArchive, SuppData& suppData) const
 	throw (stream::error)
 {
-	return ArchivePtr(new EXE_DDaveArchive(psArchive));
+	std::vector<FixedArchiveFile> files;
+	files.reserve(sizeof(ddave_file_list) / sizeof(FixedArchiveFile));
+	for (unsigned int i = 0; i < sizeof(ddave_file_list) / sizeof(FixedArchiveFile); i++) {
+		files.push_back(ddave_file_list[i]);
+	}
+	return ArchivePtr(new FixedArchive(psArchive, files));
 }
 
 SuppFilenames EXE_DDaveType::getRequiredSupps(stream::input_sptr data,
@@ -126,17 +131,6 @@ SuppFilenames EXE_DDaveType::getRequiredSupps(stream::input_sptr data,
 	return SuppFilenames();
 }
 
-
-EXE_DDaveArchive::EXE_DDaveArchive(stream::inout_sptr psArchive)
-	throw (stream::error) :
-		FixedArchive(psArchive, ddave_file_list, sizeof(ddave_file_list) / sizeof(FixedArchiveFile))
-{
-}
-
-EXE_DDaveArchive::~EXE_DDaveArchive()
-	throw ()
-{
-}
 
 } // namespace gamearchive
 } // namespace camoto

@@ -64,18 +64,6 @@ class EXE_CCavesType: virtual public ArchiveType {
 
 };
 
-class EXE_CCavesArchive: virtual public FixedArchive {
-
-	public:
-
-		EXE_CCavesArchive(stream::inout_sptr psArchive)
-			throw (stream::error);
-
-		virtual ~EXE_CCavesArchive()
-			throw ();
-
-};
-
 } // namespace gamearchive
 } // namespace camoto
 
