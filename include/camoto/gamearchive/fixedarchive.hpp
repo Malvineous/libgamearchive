@@ -30,8 +30,6 @@
 namespace camoto {
 namespace gamearchive {
 
-//namespace io = boost::iostreams;
-
 /// File declaration structure
 /**
  * This structure is used to describe a file contained within the fixed

@@ -40,7 +40,6 @@ libgamearchive_la_SOURCES += filter-xor-sagent.cpp
 libgamearchive_la_SOURCES += filter-ddave-rle.cpp
 
 EXTRA_libgamearchive_la_SOURCES = fatarchive.hpp
-EXTRA_libgamearchive_la_SOURCES += fixedarchive.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-grp-duke3d.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-vol-cosmo.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-pod-tv.hpp

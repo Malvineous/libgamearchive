@@ -20,8 +20,8 @@
  */
 
 #include <boost/algorithm/string.hpp>
+#include <camoto/gamearchive/fixedarchive.hpp>
 #include <camoto/util.hpp>
-#include "fixedarchive.hpp"
 
 namespace camoto {
 namespace gamearchive {

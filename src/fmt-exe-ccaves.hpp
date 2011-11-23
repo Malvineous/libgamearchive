@@ -22,7 +22,7 @@
 #define _CAMOTO_FMT_EXE_CCAVES_HPP_
 
 #include <camoto/gamearchive/archivetype.hpp>
-#include "fixedarchive.hpp"
+#include <camoto/gamearchive/fixedarchive.hpp>
 
 namespace camoto {
 namespace gamearchive {
