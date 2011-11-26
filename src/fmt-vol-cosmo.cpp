@@ -266,7 +266,7 @@ FATArchive::FATEntry *VOLArchive::preInsertFile(const FATEntry *idBeforeThis,
 	// Because the FAT is a fixed size we have to remove a blank entry to
 	// compensate for the entry we just added.
 	if (this->vcFAT.size() > 0) {
-		int indexLast = VOL_MAX_FILES - 1;
+		unsigned int indexLast = VOL_MAX_FILES - 1;
 		for (VC_ENTRYPTR::reverse_iterator i = this->vcFAT.rbegin(); i != this->vcFAT.rend(); i++) {
 			FATEntry *pFAT = dynamic_cast<FATEntry *>(i->get());
 			if (pFAT->iIndex != indexLast) {
@@ -282,7 +282,8 @@ FATArchive::FATEntry *VOLArchive::preInsertFile(const FATEntry *idBeforeThis,
 		// Make sure an entry was removed.  This should never fail as failure would
 		// indicate there were 200+ files, which means an exception should've been
 		// thrown at the start of this function.
-		assert(indexLast >= 0);
+		//assert(indexLast >= 0);
+		assert(indexLast < VOL_MAX_FILES); // unsigned version of previous line
 	} else {
 		// No files so just remove the following entry
 		this->psArchive->seekp(1 * VOL_FAT_ENTRY_LEN, stream::start);

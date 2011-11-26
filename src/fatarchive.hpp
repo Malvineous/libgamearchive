@@ -49,7 +49,7 @@ class FATArchive: virtual public Archive {
 			 * We can't use the index into the vector as entries are passed around
 			 * outside the vector.
 			 */
-			int iIndex;
+			unsigned int iIndex;
 
 			stream::pos iOffset;    ///< Offset of file in archive
 			stream::len lenHeader;  ///< Size of embedded FAT entry at start of file data

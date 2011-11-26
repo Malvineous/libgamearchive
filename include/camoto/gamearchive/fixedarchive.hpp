@@ -52,11 +52,7 @@ class FixedArchive: virtual public Archive {
 		mutable stream::inout_sptr psArchive;
 
 		struct FixedEntry: virtual public FileEntry {
-			int index;  ///< Index into FixedArchiveFile array
-
-			/*FATEntry();
-			virtual ~FATEntry();
-			virtual std::string getContent() const;*/
+			unsigned int index;  ///< Index into FixedArchiveFile array
 		};
 
 		std::vector<FixedArchiveFile> files;  ///< Array of files passed in via the constructor
