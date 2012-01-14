@@ -440,6 +440,8 @@ int main(int iArgC, char *cArgV[])
 			"format output suitable for script parsing")
 		("force,f",
 			"force open even if the archive is not in the given format")
+		("create,c",
+			"create a new archive file instead of opening an existing one")
 	;
 
 	po::options_description poHidden("Hidden parameters");
@@ -462,6 +464,7 @@ int main(int iArgC, char *cArgV[])
 
 	bool bScript = false; // show output suitable for script parsing?
 	bool bForceOpen = false; // open anyway even if archive not in given format?
+	bool bCreate = false; // create a new archive?
 	try {
 		po::parsed_options pa = po::parse_command_line(iArgC, cArgV, poComplete);
 
@@ -508,8 +511,8 @@ int main(int iArgC, char *cArgV[])
 				(i->string_key.compare("type") == 0)
 			) {
 				if (i->value.size() == 0) {
-					std::cerr << PROGNAME ": --type (-t) requires a parameter."
-						<< std::endl;
+					std::cerr << PROGNAME ": --type (-t) requires a parameter.  Use "
+						"--list-types to see valid values." << std::endl;
 					return RET_BADARGS;
 				}
 				strType = i->value[0];
@@ -528,6 +531,11 @@ int main(int iArgC, char *cArgV[])
 				(i->string_key.compare("unfiltered") == 0)
 			) {
 				bUseFilters = false;
+			} else if (
+				(i->string_key.compare("c") == 0) ||
+				(i->string_key.compare("create") == 0)
+			) {
+				bCreate = true;
 			}
 		}
 
@@ -535,16 +543,33 @@ int main(int iArgC, char *cArgV[])
 			std::cerr << "Error: no game archive filename given" << std::endl;
 			return RET_BADARGS;
 		}
-		std::cout << "Opening " << strFilename << " as type "
-			<< (strType.empty() ? "<autodetect>" : strType) << std::endl;
 
 		stream::file_sptr psArchive(new stream::file());
-		try {
-			psArchive->open(strFilename);
-		} catch (const stream::open_error& e) {
-			std::cerr << "Error opening supplemental file " << strFilename
-				<< ": " << e.what() << std::endl;
-			return RET_SHOWSTOPPER;
+		if (bCreate) {
+			if (strType.empty()) {
+				std::cerr << "Error: You must specify the --type of archive to create"
+					<< std::endl;
+				return RET_BADARGS;
+			}
+			std::cout << "Creating " << strFilename << " as type " << strType
+				<< std::endl;
+			try {
+				psArchive->create(strFilename);
+			} catch (const stream::open_error& e) {
+				std::cerr << "Error creating archive file " << strFilename
+					<< ": " << e.what() << std::endl;
+				return RET_SHOWSTOPPER;
+			}
+		} else {
+			std::cout << "Opening " << strFilename << " as type "
+				<< (strType.empty() ? "<autodetect>" : strType) << std::endl;
+			try {
+				psArchive->open(strFilename);
+			} catch (const stream::open_error& e) {
+				std::cerr << "Error opening archive file " << strFilename
+					<< ": " << e.what() << std::endl;
+				return RET_SHOWSTOPPER;
+			}
 		}
 
 		// Get the format handler for this file format
@@ -625,16 +650,18 @@ finishTesting:
 
 		assert(pArchType != NULL);
 
-		// Check to see if the file is actually in this format
-		if (!pArchType->isInstance(psArchive)) {
-			if (bForceOpen) {
-				std::cerr << "Warning: " << strFilename << " is not a "
-					<< pArchType->getFriendlyName() << ", open forced." << std::endl;
-			} else {
-				std::cerr << "Invalid format: " << strFilename << " is not a "
-					<< pArchType->getFriendlyName() << "\n"
-					<< "Use the -f option to try anyway." << std::endl;
-				return RET_BE_MORE_SPECIFIC;
+		if (!bCreate) {
+			// Check to see if the file is actually in this format
+			if (!pArchType->isInstance(psArchive)) {
+				if (bForceOpen) {
+					std::cerr << "Warning: " << strFilename << " is not a "
+						<< pArchType->getFriendlyName() << ", open forced." << std::endl;
+				} else {
+					std::cerr << "Invalid format: " << strFilename << " is not a "
+						<< pArchType->getFriendlyName() << "\n"
+						<< "Use the -f option to try anyway." << std::endl;
+					return RET_BE_MORE_SPECIFIC;
+				}
 			}
 		}
 
@@ -659,10 +686,15 @@ finishTesting:
 		// Open the archive file
 		ga::ArchivePtr pArchive;
 		try {
-			pArchive = pArchType->open(psArchive, suppData);
+			if (bCreate) {
+				pArchive = pArchType->newArchive(psArchive, suppData);
+			} else {
+				pArchive = pArchType->open(psArchive, suppData);
+			}
 			assert(pArchive);
 		} catch (stream::error& e) {
-			std::cerr << "Error opening archive file: " << e.what() << std::endl;
+			std::cerr << "Error " << (bCreate ? "creating" : "opening")
+				<< " archive file: " << e.what() << std::endl;
 			return RET_SHOWSTOPPER;
 		}
 
