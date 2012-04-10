@@ -2,7 +2,7 @@
  * @file   test-filter.cpp
  * @brief  Generic test code for filters.
  *
- * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,12 +41,16 @@ boost::test_tools::predicate_result filter_sample::is_equal(const std::string& s
 boost::test_tools::predicate_result filter_sample::should_fail()
 {
 	stream::string_sptr out(new stream::string());
-	BOOST_REQUIRE_THROW(
+	try {
 		this->in_filt->open(this->in, this->filter);
 		stream::copy(out, this->in_filt);
-		, filter_error
-	);
-
-	// If we made it this far all is good
-	return boost::test_tools::predicate_result(true);
+	} catch (filter_error) {
+		// If we made it this far all is good
+		return boost::test_tools::predicate_result(true);
+	} catch (...) {
+		BOOST_TEST_CHECKPOINT("Got exception but wasn't filter_error");
+		return boost::test_tools::predicate_result(false);
+	}
+	BOOST_TEST_CHECKPOINT("filter_error exception was not raised");
+	return boost::test_tools::predicate_result(false);
 }
