@@ -21,7 +21,6 @@
 #include "test-filter.hpp"
 
 using namespace camoto;
-using namespace camoto::gamearchive;
 
 filter_sample::filter_sample()
 	: in(new stream::string()),
