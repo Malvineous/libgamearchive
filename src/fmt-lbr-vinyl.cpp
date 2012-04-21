@@ -218,6 +218,7 @@ const char *filenames[] = {
 "SAVEBOXG.GRA",
 "SAVEBOXO.GRA",
 "SCORE.CMP",
+"SCROLLG.CMP",
 "SCROLLO.CMP",
 "SGREENE.CMP",
 "SHOTEXPL.CMP",
