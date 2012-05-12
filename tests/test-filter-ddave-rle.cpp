@@ -175,8 +175,8 @@ BOOST_AUTO_TEST_CASE(decoder_trail)
 
 	in << makeString(DATA_ENCODED DATA_BAD_TRAIL);
 
-	BOOST_CHECK_MESSAGE(should_fail(),
-		"Decoding RLE data with trailing garbage incorrectly succeeded");
+	BOOST_CHECK_MESSAGE(is_equal(makeString(DATA_DECODED)),
+		"Decoding RLE data with trailing incomplete code was not ignored");
 
 	BOOST_CHECK_MESSAGE(this->default_sample::is_equal(makeString(DATA_ENCODED
 		DATA_BAD_TRAIL), in->str()),
