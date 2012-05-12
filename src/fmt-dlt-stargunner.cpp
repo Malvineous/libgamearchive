@@ -197,7 +197,8 @@ void DLTArchive::updateFileName(const FATEntry *pid, const std::string& strNewNa
 	const char *clearName = strNewName.c_str();
 	encName[0] = clearName[0];
 	int i;
-	for (i = 1; i <= lenName; i++) encName[i] = clearName[i] ^ (clearName[i - 1] + i);
+	if (lenName < DLT_FILENAME_FIELD_LEN) lenName++; // write a terminating null
+	for (i = 1; i < lenName; i++) encName[i] = clearName[i] ^ (clearName[i - 1] + i);
 	for (; i < DLT_FILENAME_FIELD_LEN; i++) encName[i] = i; // decodes to '\0'
 
 	this->psArchive->seekp(DLT_FILENAME_OFFSET(pid), stream::start);
@@ -236,7 +237,8 @@ FATArchive::FATEntry *DLTArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	const char *clearName = pNewEntry->strName.c_str();
 	encName[0] = clearName[0];
 	int i;
-	for (i = 1; i <= lenName; i++) encName[i] = clearName[i] ^ (clearName[i - 1] + i);
+	if (lenName < DLT_FILENAME_FIELD_LEN) lenName++; // write a terminating null
+	for (i = 1; i < lenName; i++) encName[i] = clearName[i] ^ (clearName[i - 1] + i);
 	for (; i < DLT_FILENAME_FIELD_LEN; i++) encName[i] = i; // decodes to '\0'
 
 	// Set the format-specific variables
