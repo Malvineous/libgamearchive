@@ -189,7 +189,7 @@ bool insertFile(ga::ArchivePtr pArchive, const std::string& strLocalFile,
 	// If the data that went in was a different length to what we expected it
 	// must have been compressed so update the file size (keeping the original
 	// size as the 'uncompressed length' field.)
-	boost::iostreams::stream_offset lenActual = psNew->tellp();
+	stream::len lenActual = psNew->tellp();
 	if (lenActual != lenSource) {
 		pArchive->resize(id, lenActual, lenSource);
 	}
