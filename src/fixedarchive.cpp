@@ -37,6 +37,7 @@ FixedArchive::FixedArchive(stream::inout_sptr psArchive, std::vector<FixedArchiv
 		EntryPtr ep(fe);
 		fe->bValid = true;
 		fe->iSize = i->size;
+		fe->iPrefilteredSize = i->size;
 		fe->strName = i->name;
 		fe->type = FILETYPE_GENERIC;
 		fe->filter = i->filter;

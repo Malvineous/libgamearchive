@@ -5,7 +5,7 @@
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/RES_Format_(Stellar_7)
  *
- * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -166,7 +166,7 @@ RESArchiveFolder::RESArchiveFolder(stream::inout_sptr psArchive)
 		if (isfolder_length & 0x80000000) fatEntry->fAttr |= EA_FOLDER;
 		fatEntry->iSize = isfolder_length & 0x7FFFFFFF;
 		fatEntry->bValid = true;
-
+		fatEntry->iPrefilteredSize = fatEntry->iSize;
 		this->vcFAT.push_back(ep);
 
 		// Update the offset for the next file

@@ -3,9 +3,9 @@
  * @brief  Hocus Pocus .DAT file reader/writer.
  *
  * This file format is fully documented on the ModdingWiki:
- *   http://www.shikadi.net/moddingwiki/BNK_Format
+ *   http://www.shikadi.net/moddingwiki/DAT_Format_%28Hocus Pocus%29
  *
- * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -162,6 +162,7 @@ DAT_HocusArchive::DAT_HocusArchive(stream::inout_sptr psArchive, stream::inout_s
 		pEntry->type = FILETYPE_GENERIC;
 		pEntry->fAttr = 0;
 		pEntry->bValid = true;
+		pEntry->iPrefilteredSize = pEntry->iSize;
 		this->vcFAT.push_back(EntryPtr(pEntry));
 
 		if (pEntry->iOffset + pEntry->iSize > lenArchive) {

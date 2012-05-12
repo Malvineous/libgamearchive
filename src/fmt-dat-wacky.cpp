@@ -5,7 +5,7 @@
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/DAT_Format_%28Wacky_Wheels%29
  *
- * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -186,6 +186,7 @@ DAT_WackyArchive::DAT_WackyArchive(stream::inout_sptr psArchive)
 		// Offset doesn't include the two byte file count
 		fatEntry->iOffset += DAT_FAT_OFFSET;
 
+		fatEntry->iPrefilteredSize = fatEntry->iSize;
 		this->vcFAT.push_back(ep);
 	}
 

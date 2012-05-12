@@ -5,7 +5,7 @@
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/RFF_Format
  *
- * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -222,6 +222,8 @@ RFFArchive::RFFArchive(stream::inout_sptr psArchive)
 		while (lenExt  < 3) { if (!filename[    lenExt ]) break; lenExt++; }
 		while (lenBase < 8) { if (!filename[3 + lenBase]) break; lenBase++; }
 		fatEntry->strName = filename.substr(3, lenBase) + "." + filename.substr(0, lenExt);
+
+		fatEntry->iPrefilteredSize = fatEntry->iSize;
 		this->vcFAT.push_back(ep);
 	}
 }

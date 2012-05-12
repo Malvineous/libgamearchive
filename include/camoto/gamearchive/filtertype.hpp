@@ -82,7 +82,9 @@ class FilterType {
 		 *   doesn't have to do anything (and can be NULL) but it is used in cases
 		 *   where a game archive stores both a file's compressed and decompressed
 		 *   size.  Here the callback will be notified of the decompressed size
-		 *   during the flush() call.
+		 *   during the flush() call.  There is no notification for the compressed
+		 *   size, as this is known from the amount of data that was written to
+		 *   the stream.
 		 *
 		 * @return Clear/plaintext stream providing data from target after
 		 *   processing.

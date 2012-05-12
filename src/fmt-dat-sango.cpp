@@ -3,9 +3,9 @@
  * @brief  Implementation of Sango Fighter archive reader/writer.
  *
  * This file format is fully documented on the ModdingWiki:
- *   http://www.shikadi.net/moddingwiki/GRP_Format
+ *   http://www.shikadi.net/moddingwiki/DAT_Format_%28Sango_Fighter%29
  *
- * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -156,7 +156,7 @@ DAT_SangoArchive::DAT_SangoArchive(stream::inout_sptr psArchive)
 		fatEntry->fAttr = 0;
 		fatEntry->bValid = true;
 		fatEntry->iSize = offNext - offCur;
-
+		fatEntry->iPrefilteredSize = fatEntry->iSize;
 		this->vcFAT.push_back(ep);
 		if (i >= DAT_SAFETY_MAX_FILECOUNT) {
 			throw stream::error("too many files or corrupted archive");

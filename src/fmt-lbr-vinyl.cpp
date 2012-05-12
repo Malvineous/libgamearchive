@@ -5,7 +5,7 @@
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/LBR_Format
  *
- * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -395,7 +395,7 @@ ArchiveType::Certainty LBRType::isInstance(stream::input_sptr psArchive) const
 
 	uint32_t numFiles;
 	psArchive >> u16le(numFiles);
-	
+
 	uint16_t hash;
 	uint32_t offset;
 	while (numFiles--) {
@@ -480,6 +480,7 @@ LBRArchive::LBRArchive(stream::inout_sptr psArchive)
 			fatEntry->lenHeader = 0;
 			fatEntry->iOffset = offCur;
 			fatEntry->iSize = offNext - offCur;
+			fatEntry->iPrefilteredSize = fatEntry->iSize;
 			fatEntry->type = FILETYPE_GENERIC;
 			fatEntry->fAttr = 0;
 			fatEntry->bValid = true;

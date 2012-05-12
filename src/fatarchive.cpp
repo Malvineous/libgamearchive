@@ -2,7 +2,7 @@
  * @file   fatarchive.cpp
  * @brief  Implementation of a FAT-style archive format.
  *
- * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -332,18 +332,20 @@ void FATArchive::resize(EntryPtr id, stream::len iNewSize,
 		this->psArchive->seekp(iStart, stream::start);
 		this->psArchive->remove(-iDelta);
 	} else if (pFAT->iPrefilteredSize == iNewPrefilteredSize) {
-		return; // no change
+		// Not resizing the internal size, and the external/prefiltered size
+		// hasn't changed either, so nothing to do.
+		return;
 	}
 
 	pFAT->iSize = iNewSize;
 	pFAT->iPrefilteredSize = iNewPrefilteredSize;
 
-	// Update the FAT with the file's new size
+	// Update the FAT with the file's new sizes
 	this->updateFileSize(pFAT, iDelta);
 
 	if (iDelta != 0) {
-		// Adjust the in-memory offsets etc. of the rest of the files in the archive,
-		// including any open streams.
+		// The internal file size is changing, so adjust the offsets etc. of the
+		// rest of the files in the archive, including any open streams.
 		this->shiftFiles(pFAT, iStart, iDelta, 0);
 
 		// Resize any open substreams for this file
