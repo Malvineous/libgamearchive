@@ -2,7 +2,7 @@
  * @file   gamearch.cpp
  * @brief  Command-line interface to libgamearchive.
  *
- * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -111,7 +111,7 @@ void setNativeSize(camoto::gamearchive::ArchivePtr arch,
 	camoto::gamearchive::Archive::EntryPtr id, stream::len newSize)
 	throw (std::ios::failure)
 {
-	arch->resize(id, newSize, id->iPrefilteredSize);
+	arch->resize(id, id->iSize, newSize);
 	return;
 }
 

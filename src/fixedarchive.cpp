@@ -3,7 +3,7 @@
  * @brief  Generic archive providing access to "files" at specific offsets and
  *         lengths in a host file (e.g. game levels stored in an .exe file.)
  *
- * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -133,10 +133,10 @@ void FixedArchive::resize(EntryPtr id, stream::pos iNewSize,
 	stream::pos iNewPrefilteredSize)
 	throw (stream::error)
 {
-	if (id->iPrefilteredSize != iNewPrefilteredSize) {
+	if (id->iSize != iNewSize) {
 		throw stream::error(createString("This is a fixed archive, files "
-			"cannot be resized (tried to resize to " << iNewPrefilteredSize <<
-			", must remain as " << id->iPrefilteredSize << ")"));
+			"cannot be resized (tried to resize to " << iNewSize <<
+			", must remain as " << id->iSize << ")"));
 	}
 	// else no change, so do nothing
 	return;
