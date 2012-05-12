@@ -2,7 +2,7 @@
  * @file   filter-bash-rle.cpp
  * @brief  Filter implementation for Monster Bash RLE compression.
  *
- * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -115,7 +115,7 @@ void filter_bash_rle::transform(uint8_t *out, stream::len *lenOut,
 	) {
 		switch (this->state) {
 			case S0_NORMAL:
-				if (*lenIn == 0) { // No more source data
+				if ((*lenIn == 0) || (r >= *lenIn)) { // No more source data
 					if (this->count) {
 						// But still some RLE stuff to output
 						this->state = S1_MUST_WRITE_RLE_EVENT;
