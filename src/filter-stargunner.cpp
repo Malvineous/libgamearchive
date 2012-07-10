@@ -28,7 +28,7 @@
 #include <camoto/filter.hpp>
 #include <camoto/stream_filtered.hpp>
 #include <camoto/bitstream.hpp>
-#include "debug.hpp"
+#include <camoto/util.hpp>
 
 #include "filter-stargunner.hpp"
 

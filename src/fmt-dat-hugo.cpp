@@ -24,7 +24,6 @@
 #include <boost/algorithm/string.hpp>
 
 #include <camoto/iostream_helpers.hpp>
-#include <camoto/debug.hpp>
 #include "fmt-dat-hugo.hpp"
 
 #define DAT_FAT_ENTRY_LEN        8  // u32le offset + u32le size

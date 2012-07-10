@@ -26,7 +26,6 @@
 
 #include "fmt-lbr-vinyl.hpp"
 #include <camoto/iostream_helpers.hpp>
-#include <camoto/debug.hpp>
 
 #define LBR_FILECOUNT_OFFSET    0
 #define LBR_HEADER_LEN          2  // u16le file count
