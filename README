@@ -1,5 +1,5 @@
 Camoto: Classic-game Modding Tools
-Copyright 2010 Adam Nielsen <malvineous@shikadi.net>
+Copyright 2010-2012 Adam Nielsen <malvineous@shikadi.net>
 http://www.shikadi.net/camoto/
 
 Camoto is a collection of utilities for editing (modding) "classic games",
@@ -12,8 +12,7 @@ their data files together into one big data file, and this library provides
 access to those data files.  It currently supports full editing, so files can
 be extracted, added, removed and replaced from supported archive formats.
 
-This library is still in the preliminary stages, so only the following formats
-have been implemented:
+File formats from the following games have been implemented:
 
   * Blood (.rff)
   * Cosmo's Cosmic Adventures (.vol, .stn)
