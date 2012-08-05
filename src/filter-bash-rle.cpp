@@ -73,7 +73,7 @@ void filter_bash_unrle::transform(uint8_t *out, stream::len *lenOut,
 					// more byte of space in the output buffer.
 					*out++ = 0x90;
 					w++;
-				} else this->count--; // byte we already wrote is included in count
+				} else this->count--; // byte we already wrote before the 0x90 is included in count
 			} else { // normal byte
 				this->prev = *in;
 				*out++ = *in++;
@@ -160,7 +160,7 @@ void filter_bash_rle::transform(uint8_t *out, stream::len *lenOut,
 			case S2_WROTE_0x90:
 				if (this->count > 254) {
 					*out++ = 255;
-					this->count -= 254+1; // take one more because one of the output chars will count as the input in the next iteration
+					this->count -= 254; // take one more because one of the output chars will count as the input in the next iteration
 					this->state = S1_MUST_WRITE_RLE_EVENT; // more data to write
 				} else {
 					*out++ = (char)this->count + 1; // count includes byte already written

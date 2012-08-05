@@ -5,7 +5,7 @@
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/DAT_Format_(Monster_Bash)
  *
- * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -71,11 +71,20 @@ stream::inout_sptr BashFilterType::apply(stream::inout_sptr target,
 		12,  // maximum codeword length (in bits)
 		257, // first valid codeword
 		256, // EOF codeword is first codeword
-		0,   // reset codeword is unused
+		256, // reset codeword is unused
 		LZW_LITTLE_ENDIAN    | // bits are split into bytes in little-endian order
-		LZW_EOF_PARAM_VALID    // Has codeword reserved for EOF - TODO: confirm
+		LZW_RESET_PARAM_VALID  // Has codeword reserved for dictionary reset/EOF
 	));
-	filter_sptr f_lzw = f_delzw; /// @todo Fix when LZW compression is implemented
+	filter_sptr f_lzw(new filter_lzw_compress(
+		9,   // initial codeword length (in bits)
+		12,  // maximum codeword length (in bits)
+		257, // first valid codeword
+		256, // EOF codeword is first codeword
+		256, // reset codeword is shared with EOF
+		LZW_LITTLE_ENDIAN    | // bits are split into bytes in little-endian order
+		LZW_EOF_PARAM_VALID  | // Has codeword reserved for EOF
+		LZW_RESET_PARAM_VALID  // Has codeword reserved for dictionary reset
+	));
 	st1->open(target, f_delzw, f_lzw, NULL);
 
 	stream::filtered_sptr st2(new stream::filtered());
@@ -95,7 +104,7 @@ stream::input_sptr BashFilterType::apply(stream::input_sptr target)
 		12,  // maximum codeword length (in bits)
 		257, // first valid codeword
 		256, // EOF codeword is first codeword
-		0,   // reset codeword is unused
+		256, // reset codeword is shared with EOF
 		LZW_LITTLE_ENDIAN    | // bits are split into bytes in little-endian order
 		LZW_EOF_PARAM_VALID    // Has codeword reserved for EOF - TODO: confirm
 	));
@@ -113,7 +122,15 @@ stream::output_sptr BashFilterType::apply(stream::output_sptr target,
 	throw (filter_error)
 {
 	stream::output_filtered_sptr st1(new stream::output_filtered());
-	filter_sptr f_lzw; /// @todo Fix when LZW compression is implemented
+	filter_sptr f_lzw(new filter_lzw_compress(
+		9,   // initial codeword length (in bits)
+		12,  // maximum codeword length (in bits)
+		257, // first valid codeword
+		256, // EOF codeword is first codeword
+		0,   // reset codeword is unused
+		LZW_LITTLE_ENDIAN    | // bits are split into bytes in little-endian order
+		LZW_EOF_PARAM_VALID    // Has codeword reserved for EOF - TODO: confirm
+	));
 	st1->open(target, f_lzw, NULL);
 
 	stream::output_filtered_sptr st2(new stream::output_filtered());

@@ -22,6 +22,7 @@
 
 #include <camoto/stream_string.hpp>
 #include <camoto/stream_filtered.hpp>
+#include <camoto/util.hpp>
 #include "../src/filter-bash-rle.hpp"
 #include "tests.hpp"
 #include "test-filter.hpp"
@@ -73,6 +74,69 @@ BOOST_AUTO_TEST_CASE(bash_unrle_truncated_read)
 
 	BOOST_CHECK_MESSAGE(should_fail(),
 		"Read truncated RLE-escape in Monster Bash RLE-encoded data incorrectly succeeded");
+}
+
+BOOST_AUTO_TEST_CASE(bash_unrle_read_lots1)
+{
+	BOOST_TEST_MESSAGE("RLE decode > 256 bytes (one leftover) in Monster Bash RLE-encoded data");
+
+	this->in << "ABC\x90\xFF""C";
+
+	BOOST_CHECK_MESSAGE(is_equal(createString("AB" << std::string(1+254+1, 'C'))),
+		"RLE decode > 256 bytes (one leftover) in Monster Bash RLE-encoded data failed");
+}
+
+BOOST_AUTO_TEST_CASE(bash_unrle_read_lots2)
+{
+	BOOST_TEST_MESSAGE("RLE decode > 256 bytes (two leftovers) in Monster Bash RLE-encoded data");
+
+	this->in << "ABC\x90\xFF""CC";
+
+	BOOST_CHECK_MESSAGE(is_equal(createString("AB" << std::string(1+254+2, 'C'))),
+		"RLE decode > 256 bytes (two leftovers) in Monster Bash RLE-encoded data failed");
+}
+
+BOOST_AUTO_TEST_CASE(bash_unrle_read_lots3)
+{
+	BOOST_TEST_MESSAGE("RLE decode > 256 bytes (three leftovers) in Monster Bash RLE-encoded data");
+
+	this->in << "ABC\x90\xFF\x90\x04";
+
+	BOOST_CHECK_MESSAGE(is_equal(createString("AB" << std::string(1+254+3, 'C'))),
+		"RLE decode > 256 bytes (three leftovers) in Monster Bash RLE-encoded data failed");
+}
+
+BOOST_AUTO_TEST_CASE(bash_unrle_read_lots4)
+{
+	BOOST_TEST_MESSAGE("RLE decode > 256 bytes (four leftovers) in Monster Bash RLE-encoded data");
+
+	this->in << "ABC\x90\xFF\x90\x05";
+
+	BOOST_CHECK_MESSAGE(is_equal(createString("AB" << std::string(1+254+4, 'C'))),
+		"RLE decode > 256 bytes (four leftovers) in Monster Bash RLE-encoded data failed");
+}
+
+BOOST_AUTO_TEST_CASE(bash_unrle_read_3lots)
+{
+	BOOST_TEST_MESSAGE("RLE decode > 512 bytes in Monster Bash RLE-encoded data");
+
+	this->in << "AB\x90\x05""CB\x90\xFF\x90\xFF\x90\x92""E";
+
+	BOOST_CHECK_MESSAGE(is_equal(createString(
+		"A" << std::string(5, 'B') << "C" << std::string(1+254+254+0x91, 'B') << "E"
+		)),
+		"RLE decode > 256 bytes (four leftovers) in Monster Bash RLE-encoded data failed");
+}
+
+BOOST_AUTO_TEST_CASE(bash_unrle_long_escape)
+{
+	BOOST_TEST_MESSAGE("Unescaping many RLE event chars in Monster Bash RLE-encoded data");
+
+	// Would come out larger post-RLE, so don't bother
+	this->in << makeString("AB\x90\x00\x90\xFF\x90\x00""D");
+
+	BOOST_CHECK_MESSAGE(is_equal(createString("AB" << std::string(1+254+1, '\x90') << "D")),
+		"Unescaping doubled RLE event char in Monster Bash RLE-encoded data failed");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -134,7 +198,7 @@ BOOST_AUTO_TEST_CASE(bash_rle_read_lots1)
 {
 	BOOST_TEST_MESSAGE("RLE encode > 256 bytes (one leftover) in Monster Bash RLE-encoded data");
 
-	this->in << "AB" << std::string(256+1, 'C');
+	this->in << "AB" << std::string(1+254+1, 'C');
 
 	BOOST_CHECK_MESSAGE(is_equal("ABC\x90\xFF""C"),
 		"RLE encode > 256 bytes (one leftover) in Monster Bash RLE-encoded data failed");
@@ -144,7 +208,7 @@ BOOST_AUTO_TEST_CASE(bash_rle_read_lots2)
 {
 	BOOST_TEST_MESSAGE("RLE encode > 256 bytes (two leftovers) in Monster Bash RLE-encoded data");
 
-	this->in << "AB" << std::string(256+2, 'C');
+	this->in << "AB" << std::string(1+254+2, 'C');
 
 	BOOST_CHECK_MESSAGE(is_equal("ABC\x90\xFF""CC"),
 		"RLE encode > 256 bytes (two leftovers) in Monster Bash RLE-encoded data failed");
@@ -154,7 +218,7 @@ BOOST_AUTO_TEST_CASE(bash_rle_read_lots3)
 {
 	BOOST_TEST_MESSAGE("RLE encode > 256 bytes (three leftovers) in Monster Bash RLE-encoded data");
 
-	this->in << "AB" << std::string(256+3, 'C');
+	this->in << "AB" << std::string(1+254+3, 'C');
 
 	BOOST_CHECK_MESSAGE(is_equal("ABC\x90\xFF\x90\x04"),
 		"RLE encode > 256 bytes (three leftovers) in Monster Bash RLE-encoded data failed");
@@ -164,9 +228,20 @@ BOOST_AUTO_TEST_CASE(bash_rle_read_lots4)
 {
 	BOOST_TEST_MESSAGE("RLE encode > 256 bytes (four leftovers) in Monster Bash RLE-encoded data");
 
-	this->in << "AB" << std::string(256+4, 'C');
+	this->in << "AB" << std::string(1+254+4, 'C');
 
 	BOOST_CHECK_MESSAGE(is_equal("ABC\x90\xFF\x90\x05"),
+		"RLE encode > 256 bytes (four leftovers) in Monster Bash RLE-encoded data failed");
+}
+
+BOOST_AUTO_TEST_CASE(bash_rle_read_3lots)
+{
+	BOOST_TEST_MESSAGE("RLE encode > 512 bytes in Monster Bash RLE-encoded data");
+
+	this->in << "A" << std::string(5, 'B') << "C"
+		<< std::string(255+254+0x91, 'B') << "E";
+
+	BOOST_CHECK_MESSAGE(is_equal("AB\x90\x05""CB\x90\xFF\x90\xFF\x90\x92""E"),
 		"RLE encode > 256 bytes (four leftovers) in Monster Bash RLE-encoded data failed");
 }
 
@@ -208,7 +283,7 @@ BOOST_AUTO_TEST_CASE(bash_rle_long_escape)
 	BOOST_TEST_MESSAGE("Escaping many RLE event chars in Monster Bash RLE-encoded data");
 
 	// Would come out larger post-RLE, so don't bother
-	this->in << "AB" << std::string(257, '\x90') << "D";
+	this->in << "AB" << std::string(1+254+1, '\x90') << "D";
 
 	BOOST_CHECK_MESSAGE(is_equal(makeString("AB\x90\x00\x90\xFF\x90\x00""D")),
 		"Escaping doubled RLE event char in Monster Bash RLE-encoded data failed");
