@@ -12,6 +12,7 @@ tests_SOURCES += test-fmt-rff-blood.cpp test-fmt-rff-blood_encrypted.cpp
 tests_SOURCES += test-fmt-dat-wacky.cpp
 tests_SOURCES += test-fmt-dat-hugo.cpp
 tests_SOURCES += test-fmt-dat-bash.cpp
+tests_SOURCES += test-fmt-dat-bash-compressed.cpp
 tests_SOURCES += test-fmt-dat-sango.cpp
 tests_SOURCES += test-fmt-dlt-stargunner.cpp
 tests_SOURCES += test-fmt-lbr-vinyl.cpp
