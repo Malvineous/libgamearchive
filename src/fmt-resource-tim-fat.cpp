@@ -154,8 +154,8 @@ TIMResourceFATArchive::TIMResourceFATArchive(stream::inout_sptr psArchive)
 			>> nullPadded(fatEntry->strName, 13)
 			>> u16le(count)
 		;
-		fatEntry->iSize = count * TIM_CONTENT_ITEM_LEN;
-		fatEntry->iPrefilteredSize = fatEntry->iSize;
+		fatEntry->storedSize = count * TIM_CONTENT_ITEM_LEN;
+		fatEntry->realSize = fatEntry->storedSize;
 		fatEntry->iOffset = pos;
 		fatEntry->iIndex = i;
 		fatEntry->lenHeader = TIM_EFAT_ENTRY_LEN;
@@ -164,8 +164,8 @@ TIMResourceFATArchive::TIMResourceFATArchive(stream::inout_sptr psArchive)
 		fatEntry->bValid = true;
 		this->vcFAT.push_back(ep);
 
-		this->psArchive->seekg(fatEntry->iSize, stream::cur);
-		pos += TIM_EFAT_ENTRY_LEN + fatEntry->iSize;
+		this->psArchive->seekg(fatEntry->storedSize, stream::cur);
+		pos += TIM_EFAT_ENTRY_LEN + fatEntry->storedSize;
 	}
 }
 
@@ -199,14 +199,14 @@ void TIMResourceFATArchive::updateFileSize(const FATEntry *pid, stream::delta si
 	// TESTED BY: fmt_resource_tim_fat_insert*
 	// TESTED BY: fmt_resource_tim_fat_resize*
 
-	if (pid->iSize % TIM_CONTENT_ITEM_LEN) {
+	if (pid->storedSize % TIM_CONTENT_ITEM_LEN) {
 		throw stream::error("Files in this archive must be a multiple of "
 			TOSTRING(TIM_CONTENT_ITEM_LEN) " bytes.");
 	}
 
 	// Update embedded FAT
 	this->psArchive->seekp(pid->iOffset + TIM_EFAT_FILESIZE_OFFSET, stream::start);
-	uint16_t actualSize = pid->iSize / TIM_CONTENT_ITEM_LEN;
+	uint16_t actualSize = pid->storedSize / TIM_CONTENT_ITEM_LEN;
 	this->psArchive << u16le(actualSize);
 
 	return;
@@ -219,7 +219,7 @@ FATArchive::FATEntry *TIMResourceFATArchive::preInsertFile(const FATEntry *idBef
 	int len = pNewEntry->strName.length();
 	assert(len <= TIM_MAX_FILENAME_LEN);
 
-	if (pNewEntry->iSize % TIM_CONTENT_ITEM_LEN) {
+	if (pNewEntry->storedSize % TIM_CONTENT_ITEM_LEN) {
 		throw stream::error("Files in this archive must be a multiple of "
 			TOSTRING(TIM_CONTENT_ITEM_LEN) " bytes.");
 	}
@@ -233,7 +233,7 @@ FATArchive::FATEntry *TIMResourceFATArchive::preInsertFile(const FATEntry *idBef
 	this->psArchive->seekp(pNewEntry->iOffset, stream::start);
 	this->psArchive->insert(TIM_EFAT_ENTRY_LEN);
 
-	uint16_t actualSize = pNewEntry->iSize / TIM_CONTENT_ITEM_LEN;
+	uint16_t actualSize = pNewEntry->storedSize / TIM_CONTENT_ITEM_LEN;
 
 	// Write the header
 	this->psArchive

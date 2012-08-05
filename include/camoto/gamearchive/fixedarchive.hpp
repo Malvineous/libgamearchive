@@ -95,7 +95,7 @@ class FixedArchive: virtual public Archive {
 		 *       thus can't be added to.
 		 */
 		virtual EntryPtr insert(const EntryPtr idBeforeThis,
-			const std::string& strFilename, stream::pos iSize, std::string type,
+			const std::string& strFilename, stream::pos storedSize, std::string type,
 			int attr
 		)
 			throw (stream::error);
@@ -123,8 +123,8 @@ class FixedArchive: virtual public Archive {
 		/**
 		 * @note Will always throw an exception as fixed files can't be resized.
 		 */
-		virtual void resize(EntryPtr id, stream::pos iNewSize,
-			stream::pos iNewPrefilteredSize)
+		virtual void resize(EntryPtr id, stream::pos newStoredSize,
+			stream::pos newRealSize)
 			throw (stream::error);
 
 		virtual void flush()

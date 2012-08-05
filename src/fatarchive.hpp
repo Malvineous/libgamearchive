@@ -151,7 +151,7 @@ class FATArchive: virtual public Archive {
 			throw ();
 
 		virtual EntryPtr insert(const EntryPtr idBeforeThis,
-			const std::string& strFilename, stream::pos iSize, std::string type,
+			const std::string& strFilename, stream::pos storedSize, std::string type,
 			int attr)
 			throw (stream::error);
 
@@ -163,8 +163,8 @@ class FATArchive: virtual public Archive {
 
 		// move() uses implementation from Archive
 
-		virtual void resize(EntryPtr id, stream::pos iNewSize,
-			stream::pos iNewPrefilteredSize)
+		virtual void resize(EntryPtr id, stream::pos newStoredSize,
+			stream::pos newRealSize)
 			throw (stream::error);
 
 		virtual void flush()
@@ -178,6 +178,20 @@ class FATArchive: virtual public Archive {
 		 * (which should never happen) that file won't be affected, only those
 		 * following it.  This function must notify any open files that their offset
 		 * has moved.
+		 *
+		 * @param fatSkip
+		 *   Do not alter this entry, even if it is located in the area to be
+		 *   affected.
+		 *
+		 * @param offStart
+		 *   Files starting at or after this offset are affected.
+		 *
+		 * @param deltaOffset
+		 *   How many bytes to add or subtract from each affected file's offset
+		 *   field.
+		 *
+		 * @param deltaIndex
+		 *   Value to add or subtract from each affected file's index field.
 		 *
 		 * @throws stream::error on I/O error.
 		 */

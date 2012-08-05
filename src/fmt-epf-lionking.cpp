@@ -191,8 +191,8 @@ EPFArchive::EPFArchive(stream::inout_sptr psArchive)
 		this->psArchive
 			>> nullPadded(fatEntry->strName, EPF_FILENAME_FIELD_LEN)
 			>> u8(flags)
-			>> u32le(fatEntry->iSize)
-			>> u32le(fatEntry->iPrefilteredSize);
+			>> u32le(fatEntry->storedSize)
+			>> u32le(fatEntry->realSize);
 
 		if (flags & EPF_FAT_FLAG_COMPRESSED) {
 			fatEntry->fAttr |= EA_COMPRESSED;
@@ -200,7 +200,7 @@ EPFArchive::EPFArchive(stream::inout_sptr psArchive)
 		}
 
 		this->vcFAT.push_back(ep);
-		offNext += fatEntry->iSize;
+		offNext += fatEntry->storedSize;
 	}
 	// TODO: hidden data after FAT until EOF?
 }
@@ -303,8 +303,8 @@ void EPFArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 
 	this->psArchive->seekp(this->offFAT + pid->iIndex * EPF_FAT_ENTRY_LEN + EPF_FAT_FILESIZE_OFFSET, stream::start);
 	this->psArchive
-		<< u32le(pid->iSize)    // compressed size
-		<< u32le(pid->iPrefilteredSize);   // decompressed size
+		<< u32le(pid->storedSize)    // compressed size
+		<< u32le(pid->realSize);   // decompressed size
 
 	this->updateFATOffset();
 
@@ -331,7 +331,7 @@ FATArchive::FATEntry *EPFArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 void EPFArchive::postInsertFile(FATEntry *pNewEntry)
 	throw (stream::error)
 {
-	this->offFAT += pNewEntry->iSize;
+	this->offFAT += pNewEntry->storedSize;
 
 	this->psArchive->seekp(this->offFAT + pNewEntry->iIndex * EPF_FAT_ENTRY_LEN, stream::start);
 	this->psArchive->insert(EPF_FAT_ENTRY_LEN);
@@ -341,8 +341,8 @@ void EPFArchive::postInsertFile(FATEntry *pNewEntry)
 	this->psArchive
 		<< nullPadded(pNewEntry->strName, EPF_FILENAME_FIELD_LEN)
 		<< u8(flags)  // 0 == uncompressed, 1 == compressed
-		<< u32le(pNewEntry->iSize)  // compressed
-		<< u32le(pNewEntry->iPrefilteredSize); // decompressed
+		<< u32le(pNewEntry->storedSize)  // compressed
+		<< u32le(pNewEntry->realSize); // decompressed
 
 	this->updateFATOffset();
 	this->updateFileCount(this->vcFAT.size());
@@ -358,7 +358,7 @@ void EPFArchive::preRemoveFile(const FATEntry *pid)
 	this->psArchive->seekp(this->offFAT + pid->iIndex * EPF_FAT_ENTRY_LEN, stream::start);
 	this->psArchive->remove(EPF_FAT_ENTRY_LEN);
 
-	this->offFAT -= pid->iSize;
+	this->offFAT -= pid->storedSize;
 	this->updateFATOffset();
 	this->updateFileCount(this->vcFAT.size() - 1);
 
@@ -395,7 +395,7 @@ stream::pos EPFArchive::getDescOffset() const
 		EntryPtr lastFile = this->vcFAT.back();
 		assert(lastFile);
 		FATEntry *lastFATEntry = dynamic_cast<FATEntry *>(lastFile.get());
-		offDesc = lastFATEntry->iOffset + lastFATEntry->iSize;
+		offDesc = lastFATEntry->iOffset + lastFATEntry->storedSize;
 	} else {
 		offDesc = EPF_FIRST_FILE_OFFSET;
 	}

@@ -141,7 +141,7 @@ HOGArchive::HOGArchive(stream::inout_sptr psArchive)
 
 		this->psArchive
 			>> nullPadded(fatEntry->strName, HOG_FILENAME_FIELD_LEN)
-			>> u32le(fatEntry->iSize)
+			>> u32le(fatEntry->storedSize)
 		;
 
 		fatEntry->iIndex = i;
@@ -150,17 +150,17 @@ HOGArchive::HOGArchive(stream::inout_sptr psArchive)
 		fatEntry->type = FILETYPE_GENERIC;
 		fatEntry->fAttr = 0;
 		fatEntry->bValid = true;
-		fatEntry->iPrefilteredSize = fatEntry->iSize;
+		fatEntry->realSize = fatEntry->storedSize;
 		this->vcFAT.push_back(ep);
 
 		// Update the offset for the next file
-		offNext += HOG_FAT_ENTRY_LEN + fatEntry->iSize;
+		offNext += HOG_FAT_ENTRY_LEN + fatEntry->storedSize;
 		if (offNext > lenArchive) {
 			std::cerr << "Warning: File has been truncated or is not in HOG format, "
 				"file list may be incomplete or complete garbage..." << std::endl;
 			break;
 		}
-		this->psArchive->seekg(fatEntry->iSize, stream::cur);
+		this->psArchive->seekg(fatEntry->storedSize, stream::cur);
 		if (i >= HOG_SAFETY_MAX_FILECOUNT) {
 			throw stream::error("too many files or corrupted archive");
 		}
@@ -197,7 +197,7 @@ void HOGArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 	// TESTED BY: fmt_hog_descent_insert*
 	// TESTED BY: fmt_hog_descent_resize*
 	this->psArchive->seekp(pid->iOffset + HOG_FAT_FILESIZE_OFFSET, stream::start);
-	this->psArchive << u32le(pid->iSize);
+	this->psArchive << u32le(pid->storedSize);
 	return;
 }
 
@@ -218,7 +218,7 @@ FATArchive::FATEntry *HOGArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	this->psArchive->seekp(pNewEntry->iOffset, stream::start);
 	this->psArchive->insert(HOG_FAT_ENTRY_LEN);
 	this->psArchive << nullPadded(pNewEntry->strName, HOG_FILENAME_FIELD_LEN);
-	this->psArchive << u32le(pNewEntry->iSize);
+	this->psArchive << u32le(pNewEntry->storedSize);
 
 	// Update the offsets now the embedded FAT entry has been inserted
 	this->shiftFiles(NULL, pNewEntry->iOffset, pNewEntry->lenHeader, 0);

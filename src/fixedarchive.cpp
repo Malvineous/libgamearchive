@@ -36,8 +36,8 @@ FixedArchive::FixedArchive(stream::inout_sptr psArchive, std::vector<FixedArchiv
 		FixedEntry *fe = new FixedEntry();
 		EntryPtr ep(fe);
 		fe->bValid = true;
-		fe->iSize = i->size;
-		fe->iPrefilteredSize = i->size;
+		fe->storedSize = i->size;
+		fe->realSize = i->size;
 		fe->strName = i->name;
 		fe->type = FILETYPE_GENERIC;
 		fe->filter = i->filter;
@@ -103,7 +103,7 @@ stream::inout_sptr FixedArchive::open(const EntryPtr id)
 }
 
 FixedArchive::EntryPtr FixedArchive::insert(const EntryPtr idBeforeThis,
-	const std::string& strFilename, stream::pos iSize, std::string type,
+	const std::string& strFilename, stream::pos storedSize, std::string type,
 	int attr
 )
 	throw (stream::error)
@@ -129,14 +129,14 @@ void FixedArchive::move(const EntryPtr idBeforeThis, EntryPtr id)
 	throw stream::error("This is a fixed archive, files cannot be moved.");
 }
 
-void FixedArchive::resize(EntryPtr id, stream::pos iNewSize,
-	stream::pos iNewPrefilteredSize)
+void FixedArchive::resize(EntryPtr id, stream::pos newStoredSize,
+	stream::pos newRealSize)
 	throw (stream::error)
 {
-	if (id->iSize != iNewSize) {
+	if (id->storedSize != newStoredSize) {
 		throw stream::error(createString("This is a fixed archive, files "
-			"cannot be resized (tried to resize to " << iNewSize <<
-			", must remain as " << id->iSize << ")"));
+			"cannot be resized (tried to resize to " << newStoredSize <<
+			", must remain as " << id->storedSize << ")"));
 	}
 	// else no change, so do nothing
 	return;

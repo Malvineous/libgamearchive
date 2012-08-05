@@ -210,7 +210,7 @@ PCXLibArchive::PCXLibArchive(stream::inout_sptr psArchive)
 			>> nullPadded(name, 8)
 			>> nullPadded(ext, 5)
 			>> u32le(fatEntry->iOffset)
-			>> u32le(fatEntry->iSize)
+			>> u32le(fatEntry->storedSize)
 			>> u16le(date)
 			>> u16le(time)
 		;
@@ -221,7 +221,7 @@ PCXLibArchive::PCXLibArchive(stream::inout_sptr psArchive)
 		fatEntry->type = FILETYPE_GENERIC;
 		fatEntry->fAttr = 0;
 		fatEntry->bValid = true;
-		fatEntry->iPrefilteredSize = fatEntry->iSize;
+		fatEntry->realSize = fatEntry->storedSize;
 		this->vcFAT.push_back(ep);
 	}
 }
@@ -268,7 +268,7 @@ void PCXLibArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 	// TESTED BY: fmt_pcxlib_insert*
 	// TESTED BY: fmt_pcxlib_resize*
 	this->psArchive->seekp(PCX_FILESIZE_OFFSET(pid), stream::start);
-	this->psArchive << u32le(pid->iSize);
+	this->psArchive << u32le(pid->storedSize);
 	return;
 }
 
@@ -309,7 +309,7 @@ FATArchive::FATEntry *PCXLibArchive::preInsertFile(const FATEntry *idBeforeThis,
 		<< nullPadded(name, 8)
 		<< nullPadded(ext, 5)
 		<< u32le(pNewEntry->iOffset)
-		<< u32le(pNewEntry->iSize)
+		<< u32le(pNewEntry->storedSize)
 		<< u16le(date)
 		<< u16le(time)
 	;

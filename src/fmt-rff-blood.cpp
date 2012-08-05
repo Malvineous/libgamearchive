@@ -206,7 +206,7 @@ RFFArchive::RFFArchive(stream::inout_sptr psArchive)
 		this->fatStream
 			>> fixedLength(dummy, 16)
 			>> u32le(fatEntry->iOffset)
-			>> u32le(fatEntry->iSize)
+			>> u32le(fatEntry->storedSize)
 			>> u32le(unknown2)
 			>> u32le(lastModified)
 			>> u8(flags)
@@ -223,7 +223,7 @@ RFFArchive::RFFArchive(stream::inout_sptr psArchive)
 		while (lenBase < 8) { if (!filename[3 + lenBase]) break; lenBase++; }
 		fatEntry->strName = filename.substr(3, lenBase) + "." + filename.substr(0, lenExt);
 
-		fatEntry->iPrefilteredSize = fatEntry->iSize;
+		fatEntry->realSize = fatEntry->storedSize;
 		this->vcFAT.push_back(ep);
 	}
 }
@@ -316,7 +316,7 @@ void RFFArchive::flush()
 		} else {
 			const FATEntry *pLast = dynamic_cast<const FATEntry *>(this->vcFAT.back().get());
 			assert(pLast);
-			offFAT = pLast->iOffset + pLast->lenHeader + pLast->iSize;
+			offFAT = pLast->iOffset + pLast->lenHeader + pLast->storedSize;
 		}
 		this->psArchive->seekp(RFF_FATOFFSET_OFFSET, stream::start);
 		this->psArchive << u32le(offFAT);
@@ -419,7 +419,7 @@ void RFFArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 	// TESTED BY: fmt_rff_blood_insert*
 	// TESTED BY: fmt_rff_blood_resize*
 	this->fatStream->seekp(RFF_FILESIZE_OFFSET(pid), stream::start);
-	this->fatStream << u32le(pid->iSize);
+	this->fatStream << u32le(pid->storedSize);
 	this->modifiedFAT = true;
 	return;
 }
@@ -457,7 +457,7 @@ FATArchive::FATEntry *RFFArchive::preInsertFile(const FATEntry *idBeforeThis,
 	this->fatStream
 		<< nullPadded("", 16) // unknown
 		<< u32le(pNewEntry->iOffset)
-		<< u32le(pNewEntry->iSize)
+		<< u32le(pNewEntry->storedSize)
 		<< u32le(0) // unknown
 		<< u32le(0) // last modified time
 		<< u8(flags)
@@ -508,7 +508,7 @@ stream::pos RFFArchive::getDescOffset() const
 		EntryPtr lastFile = this->vcFAT.back();
 		assert(lastFile);
 		FATEntry *lastFATEntry = dynamic_cast<FATEntry *>(lastFile.get());
-		offDesc = lastFATEntry->iOffset + lastFATEntry->iSize;
+		offDesc = lastFATEntry->iOffset + lastFATEntry->storedSize;
 	} else {
 		offDesc = RFF_FIRST_FILE_OFFSET;
 	}

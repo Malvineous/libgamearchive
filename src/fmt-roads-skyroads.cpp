@@ -168,8 +168,8 @@ SkyRoadsRoadsArchive::SkyRoadsRoadsArchive(stream::inout_sptr psArchive)
 			}
 
 			fatEntry->iOffset = offCur;
-			fatEntry->iSize = offNext - offCur;
-			fatEntry->iPrefilteredSize = fatEntry->iSize;
+			fatEntry->storedSize = offNext - offCur;
+			fatEntry->realSize = fatEntry->storedSize;
 			fatEntry->iIndex = i;
 			fatEntry->lenHeader = 0;
 			fatEntry->type = "map/skyroads";
@@ -209,7 +209,7 @@ void SkyRoadsRoadsArchive::updateFileSize(const FATEntry *pid, stream::delta siz
 	// TESTED BY: fmt_skyroads_roads_insert*
 	// TESTED BY: fmt_skyroads_roads_resize*
 	this->psArchive->seekp(pid->iIndex * SRR_FAT_ENTRY_LEN + 2, stream::start);
-	this->psArchive << u16le(pid->iSize);
+	this->psArchive << u16le(pid->storedSize);
 	return;
 }
 
@@ -230,7 +230,7 @@ FATArchive::FATEntry *SkyRoadsRoadsArchive::preInsertFile(const FATEntry *idBefo
 	// Write out the entry
 	this->psArchive
 		<< u16le(pNewEntry->iOffset)
-		<< u16le(pNewEntry->iSize)
+		<< u16le(pNewEntry->storedSize)
 	;
 
 	// Update the offsets now there's a new FAT entry taking up space.

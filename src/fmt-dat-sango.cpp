@@ -155,8 +155,8 @@ DAT_SangoArchive::DAT_SangoArchive(stream::inout_sptr psArchive)
 		fatEntry->type = FILETYPE_GENERIC;
 		fatEntry->fAttr = 0;
 		fatEntry->bValid = true;
-		fatEntry->iSize = offNext - offCur;
-		fatEntry->iPrefilteredSize = fatEntry->iSize;
+		fatEntry->storedSize = offNext - offCur;
+		fatEntry->realSize = fatEntry->storedSize;
 		this->vcFAT.push_back(ep);
 		if (i >= DAT_SAFETY_MAX_FILECOUNT) {
 			throw stream::error("too many files or corrupted archive");
@@ -205,7 +205,7 @@ FATArchive::FATEntry *DAT_SangoArchive::preInsertFile(const FATEntry *idBeforeTh
 	pNewEntry->iOffset += DAT_FAT_ENTRY_LEN;
 
 	// Update the last FAT entry (the one that points to EOF.)
-	this->updateLastEntry(pNewEntry->iSize + DAT_FAT_ENTRY_LEN);
+	this->updateLastEntry(pNewEntry->storedSize + DAT_FAT_ENTRY_LEN);
 
 	this->psArchive->seekp(DAT_FATENTRY_OFFSET(pNewEntry), stream::start);
 	this->psArchive->insert(DAT_FAT_ENTRY_LEN);
@@ -241,7 +241,7 @@ void DAT_SangoArchive::preRemoveFile(const FATEntry *pid)
 	);
 
 	// Update the last FAT entry (the one that points to EOF.)
-	this->updateLastEntry(-(pid->iSize + DAT_FAT_ENTRY_LEN));
+	this->updateLastEntry(-(pid->storedSize + DAT_FAT_ENTRY_LEN));
 
 	this->psArchive->seekp(DAT_FATENTRY_OFFSET(pid), stream::start);
 	this->psArchive->remove(DAT_FAT_ENTRY_LEN);

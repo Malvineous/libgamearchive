@@ -166,7 +166,7 @@ DLTArchive::DLTArchive(stream::inout_sptr psArchive)
 		this->psArchive->read(name, DLT_FILENAME_FIELD_LEN);
 		this->psArchive
 			>> u32le(unk)
-			>> u32le(fatEntry->iSize)
+			>> u32le(fatEntry->storedSize)
 		;
 
 		// Decrypt the filename
@@ -174,10 +174,10 @@ DLTArchive::DLTArchive(stream::inout_sptr psArchive)
 		name[DLT_FILENAME_FIELD_LEN] = 0; // just in case
 		fatEntry->strName = (char *)name;
 
-		fatEntry->iPrefilteredSize = fatEntry->iSize;
+		fatEntry->realSize = fatEntry->storedSize;
 		this->vcFAT.push_back(ep);
-		offNext += fatEntry->iSize + DLT_EFAT_ENTRY_LEN;
-		this->psArchive->seekg(fatEntry->iSize, stream::cur);
+		offNext += fatEntry->storedSize + DLT_EFAT_ENTRY_LEN;
+		this->psArchive->seekg(fatEntry->storedSize, stream::cur);
 	}
 }
 
@@ -222,7 +222,7 @@ void DLTArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 	// TESTED BY: fmt_dlt_stargunner_insert*
 	// TESTED BY: fmt_dlt_stargunner_resize*
 	this->psArchive->seekp(DLT_FILESIZE_OFFSET(pid), stream::start);
-	this->psArchive << u32le(pid->iSize);
+	this->psArchive << u32le(pid->storedSize);
 	return;
 }
 
@@ -250,7 +250,7 @@ FATArchive::FATEntry *DLTArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	this->psArchive->write(encName, DLT_FILENAME_FIELD_LEN);
 	this->psArchive
 		<< u32le(0) // unknown
-		<< u32le(pNewEntry->iSize);
+		<< u32le(pNewEntry->storedSize);
 
 	// Since we've inserted some data for the embedded header, we need to update
 	// the other file offsets accordingly.  This call updates the offset of the

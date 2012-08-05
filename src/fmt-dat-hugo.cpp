@@ -200,12 +200,12 @@ DAT_HugoArchive::DAT_HugoArchive(stream::inout_sptr psArchive, stream::inout_spt
 			// Read the data in from the FAT entry in the file
 			fatStream
 				>> u32le(fatEntry->iOffset)
-				>> u32le(fatEntry->iSize)
+				>> u32le(fatEntry->storedSize)
 			;
 
 			// If suddenly the offsets revert back to zero, it means we've reached
 			// the second file (scenery2.dat)
-			if ((fatEntry->iOffset != 0) || (fatEntry->iSize != 0)) {
+			if ((fatEntry->iOffset != 0) || (fatEntry->storedSize != 0)) {
 				if (fatEntry->iOffset < lastOffset) {
 					curFile++;
 					firstIndexInSecondArch = i;
@@ -221,7 +221,7 @@ DAT_HugoArchive::DAT_HugoArchive(stream::inout_sptr psArchive, stream::inout_spt
 			fatEntry->fAttr = 0;
 			fatEntry->bValid = true;
 			fatEntry->strName = std::string();
-			fatEntry->iPrefilteredSize = fatEntry->iSize;
+			fatEntry->realSize = fatEntry->storedSize;
 
 			fatEntry->file = curFile;
 
@@ -270,7 +270,7 @@ void DAT_HugoArchive::updateFileSize(const FATEntry *pid,
 	// TESTED BY: fmt_dat_hugo_insert*
 	// TESTED BY: fmt_dat_hugo_resize*
 	this->psArchive->seekp(DAT_FILESIZE_OFFSET(pid), stream::start);
-	this->psArchive << u32le(pid->iSize);
+	this->psArchive << u32le(pid->storedSize);
 	return;
 }
 
@@ -291,7 +291,7 @@ FATArchive::FATEntry *DAT_HugoArchive::preInsertFile(
 	// Write out the entry
 	this->psArchive
 		<< u32le(pNewEntry->iOffset)
-		<< u32le(pNewEntry->iSize)
+		<< u32le(pNewEntry->storedSize)
 	;
 
 	// Update the offsets now there's a new FAT entry taking up space.

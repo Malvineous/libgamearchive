@@ -159,11 +159,11 @@ GRPArchive::GRPArchive(stream::inout_sptr psArchive)
 		// Read the data in from the FAT entry in the file
 		this->psArchive
 			>> nullPadded(fatEntry->strName, GRP_FILENAME_FIELD_LEN)
-			>> u32le(fatEntry->iSize);
+			>> u32le(fatEntry->storedSize);
 
-		fatEntry->iPrefilteredSize = fatEntry->iSize;
+		fatEntry->realSize = fatEntry->storedSize;
 		this->vcFAT.push_back(ep);
-		offNext += fatEntry->iSize;
+		offNext += fatEntry->storedSize;
 	}
 }
 
@@ -197,7 +197,7 @@ void GRPArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 	// TESTED BY: fmt_grp_duke3d_insert*
 	// TESTED BY: fmt_grp_duke3d_resize*
 	this->psArchive->seekp(GRP_FILESIZE_OFFSET(pid), stream::start);
-	this->psArchive << u32le(pid->iSize);
+	this->psArchive << u32le(pid->storedSize);
 	return;
 }
 
@@ -219,7 +219,7 @@ FATArchive::FATEntry *GRPArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 
 	this->psArchive
 		<< nullPadded(pNewEntry->strName, GRP_FILENAME_FIELD_LEN)
-		<< u32le(pNewEntry->iSize);
+		<< u32le(pNewEntry->storedSize);
 
 	// Update the offsets now there's a new FAT entry taking up space.
 	this->shiftFiles(

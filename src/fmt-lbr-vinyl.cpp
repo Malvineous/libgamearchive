@@ -478,8 +478,8 @@ LBRArchive::LBRArchive(stream::inout_sptr psArchive)
 			fatEntry->iIndex = i;
 			fatEntry->lenHeader = 0;
 			fatEntry->iOffset = offCur;
-			fatEntry->iSize = offNext - offCur;
-			fatEntry->iPrefilteredSize = fatEntry->iSize;
+			fatEntry->storedSize = offNext - offCur;
+			fatEntry->realSize = fatEntry->storedSize;
 			fatEntry->type = FILETYPE_GENERIC;
 			fatEntry->fAttr = 0;
 			fatEntry->bValid = true;

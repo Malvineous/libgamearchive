@@ -188,7 +188,7 @@ VOLArchive::VOLArchive(stream::inout_sptr psArchive)
 			this->psArchive
 				>> nullPadded(fatEntry->strName, VOL_MAX_FILENAME_LEN)
 				>> u32le(fatEntry->iOffset)
-				>> u32le(fatEntry->iSize)
+				>> u32le(fatEntry->storedSize)
 			;
 
 			fatEntry->iIndex = i;
@@ -196,7 +196,7 @@ VOLArchive::VOLArchive(stream::inout_sptr psArchive)
 			fatEntry->type = FILETYPE_GENERIC;
 			fatEntry->fAttr = 0;
 			fatEntry->bValid = true;
-			fatEntry->iPrefilteredSize = fatEntry->iSize;
+			fatEntry->realSize = fatEntry->storedSize;
 			// Blank FAT entries have an offset of zero
 			if (fatEntry->iOffset > 0) {
 				this->vcFAT.push_back(ep);
@@ -236,7 +236,7 @@ void VOLArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 	// TESTED BY: fmt_vol_cosmo_insert*
 	// TESTED BY: fmt_vol_cosmo_resize*
 	this->psArchive->seekp(pid->iIndex * VOL_FAT_ENTRY_LEN + 16, stream::start);
-	this->psArchive << u32le(pid->iSize);
+	this->psArchive << u32le(pid->storedSize);
 	return;
 }
 
@@ -262,7 +262,7 @@ FATArchive::FATEntry *VOLArchive::preInsertFile(const FATEntry *idBeforeThis,
 	this->psArchive
 		<< nullPadded(pNewEntry->strName, VOL_MAX_FILENAME_LEN)
 		<< u32le(pNewEntry->iOffset)
-		<< u32le(pNewEntry->iSize);
+		<< u32le(pNewEntry->storedSize);
 
 	// Because the FAT is a fixed size we have to remove a blank entry to
 	// compensate for the entry we just added.

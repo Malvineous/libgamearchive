@@ -90,15 +90,15 @@ class Archive: virtual public Metadata {
 			bool bValid;
 
 			/// Size of the file in the archive.
-			stream::len iSize;
+			stream::len storedSize;
 
 			/// Size before filtering/compression (uncompressed size)
 			/**
 			 * If fAttr has EA_COMPRESSED set then this indicates the file size after
 			 * decompression.  If the file is not compressed or filtered it will be
-			 * ignored but by convention should be set to the same value as iSize.
+			 * ignored but by convention should be set to the same value as storedSize.
 			 */
-			stream::len iPrefilteredSize;
+			stream::len realSize;
 
 			/// Filename (may be empty for some archives)
 			std::string strName;
@@ -262,7 +262,7 @@ class Archive: virtual public Metadata {
 		 * @param strFilename
 		 *   Filename of the new file.
 		 *
-		 * @param iSize
+		 * @param storedSize
 		 *   Initial size of the new file.  If the file is compressed (attr
 		 *   includes EA_COMPRESSED) then this is the compressed size of the file -
 		 *   the amount of space to allocate inside the archive.
@@ -284,7 +284,7 @@ class Archive: virtual public Metadata {
 		 *   up being a different size to the unfiltered data.
 		 */
 		virtual EntryPtr insert(const EntryPtr idBeforeThis,
-			const std::string& strFilename, stream::pos iSize, std::string type,
+			const std::string& strFilename, stream::pos storedSize, std::string type,
 			int attr)
 			throw (stream::error) = 0;
 
@@ -347,15 +347,15 @@ class Archive: virtual public Metadata {
 		 * @param id
 		 *   File to resize.
 		 *
-		 * @param iNewSize
+		 * @param newStoredSize
 		 *   File's new size.  This is the actual amount of space to allocate
 		 *   within the archive file.  If this is smaller than the current size the
 		 *   excess data is lost, if it is larger than the current size the new data
 		 *   is undefined/random (whatever was there from before.)
 		 *
-		 * @param iNewPrefilteredSize
+		 * @param newRealSize
 		 *   File's new size before filtering (if any.)  Should be set to the same
-		 *   value as iNewSize unless the file is compressed, in which case this
+		 *   value as newStoredSize unless the file is compressed, in which case this
 		 *   value will usually be larger (the decompressed size.)
 		 *
 		 * @post Existing EntryPtrs remain valid.
@@ -369,8 +369,8 @@ class Archive: virtual public Metadata {
 		 *   does not exist if the resize is done while none of the archive's files
 		 *   are open.
 		 */
-		virtual void resize(EntryPtr id, stream::pos iNewSize,
-			stream::pos iNewPrefilteredSize)
+		virtual void resize(EntryPtr id, stream::pos newStoredSize,
+			stream::pos newRealSize)
 			throw (stream::error) = 0;
 
 		/// Write out any cached changes to the underlying stream.

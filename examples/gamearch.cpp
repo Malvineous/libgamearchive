@@ -107,11 +107,11 @@ void sanitisePath(std::string& strInput)
 }
 
 /// Callback function to set expanded/native file size.
-void setNativeSize(camoto::gamearchive::ArchivePtr arch,
-	camoto::gamearchive::Archive::EntryPtr id, stream::len newSize)
+void setRealSize(camoto::gamearchive::ArchivePtr arch,
+	camoto::gamearchive::Archive::EntryPtr id, stream::len newRealSize)
 	throw (std::ios::failure)
 {
-	arch->resize(id, id->iSize, newSize);
+	arch->resize(id, id->storedSize, newRealSize);
 	return;
 }
 
@@ -141,7 +141,7 @@ void applyFilter(camoto::stream::inout_sptr *ppStream, ga::ArchivePtr arch,
 				"could not find filter \"" << id->filter << "\""
 			));
 		}
-		stream::fn_truncate fn_resize = boost::bind<void>(setNativeSize, arch, id, _1);
+		stream::fn_truncate fn_resize = boost::bind<void>(setRealSize, arch, id, _1);
 		*ppStream = pFilterType->apply(*ppStream, fn_resize);
 	}
 	return;
@@ -150,7 +150,7 @@ void applyFilter(camoto::stream::inout_sptr *ppStream, ga::ArchivePtr arch,
 // Insert a file at the given location.  Shared by --insert and --add.
 bool insertFile(ga::ArchivePtr pArchive, const std::string& strLocalFile,
 	const std::string& strArchFile, const ga::Archive::EntryPtr idBeforeThis,
-	const std::string& type, int attr, stream::len lenPrefiltered)
+	const std::string& type, int attr, stream::len lenReal)
 {
 	// Open the file
 	stream::file_sptr fsIn(new stream::file());
@@ -161,7 +161,7 @@ bool insertFile(ga::ArchivePtr pArchive, const std::string& strLocalFile,
 
 	// Make sure either filters are active, or we've got a nonzero prefilter
 	// length (but it's ok to have a zero prefilter length if the file is empty)
-	assert(bUseFilters || (lenSource == 0) || (lenPrefiltered != 0));
+	assert(bUseFilters || (lenSource == 0) || (lenReal != 0));
 
 	// Create a new entry in the archive large enough to hold the file
 	ga::Archive::EntryPtr id = pArchive->insert(idBeforeThis, strArchFile,
@@ -183,7 +183,7 @@ bool insertFile(ga::ArchivePtr pArchive, const std::string& strLocalFile,
 	if (!bUseFilters) {
 		// Since filters were skipped we will pretend we applied the filter and
 		// we got more source data than we really did, so the next check works.
-		lenSource = lenPrefiltered;
+		lenSource = lenReal;
 	}
 
 	// If the data that went in was a different length to what we expected it
@@ -257,7 +257,7 @@ void listFiles(const std::string& idPrefix, const std::string& path, ga::Archive
 				if ((*i)->fAttr & ga::EA_ENCRYPTED) std::cout << "encrypted; ";
 
 				// Display file size
-				std::cout << (*i)->iSize << " bytes]\n";
+				std::cout << (*i)->storedSize << " bytes]\n";
 			}
 		}
 	}
@@ -705,7 +705,7 @@ finishTesting:
 		int iLastAttr = 0;
 
 		// Last value set with -z
-		stream::len lenPrefiltered = 0;
+		stream::len lenReal = 0;
 
 		// Run through the actions on the command line
 		for (std::vector<po::option>::iterator i = pa.options.begin(); i != pa.options.end(); i++) {
@@ -792,7 +792,7 @@ finishTesting:
 					<< strInsertBefore;
 				if (bAltDest) std::cout << ", from " << strLocalFile;
 				std::cout << ")";
-				if (lenPrefiltered != 0) std::cout << ", with uncompressed size " << lenPrefiltered;
+				if (lenReal != 0) std::cout << ", with uncompressed size " << lenReal;
 				std::cout << std::flush;
 
 				// Try to find strInsertBefore
@@ -806,7 +806,7 @@ finishTesting:
 
 				try {
 					insertFile(destArch, strLocalFile, strArchFile, idBeforeThis,
-						strLastFiletype, iLastAttr, lenPrefiltered);
+						strLastFiletype, iLastAttr, lenReal);
 				} catch (const stream::error& e) {
 					std::cout << " [failed; " << e.what() << "]";
 					iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
@@ -858,7 +858,7 @@ finishTesting:
 						"-u/--unfiltered is in use.)" << std::endl;
 					return RET_BADARGS;
 				}
-				lenPrefiltered = strtoul(i->value[0].c_str(), NULL, 0);
+				lenReal = strtoul(i->value[0].c_str(), NULL, 0);
 
 			// Ignore --type/-t
 			} else if (i->string_key.compare("type") == 0) {
@@ -882,13 +882,13 @@ finishTesting:
 					std::cout << "     adding: " << strArchFile;
 					if (!strLastFiletype.empty()) std::cout << " as type " << strLastFiletype;
 					if (bAltDest) std::cout << " (from " << strLocalFile << ")";
-					if (lenPrefiltered != 0) std::cout << ", with uncompressed size set to " << lenPrefiltered;
+					if (lenReal != 0) std::cout << ", with uncompressed size set to " << lenReal;
 					std::cout << std::endl;
 
 					try {
 						insertFile(pArchive, strLocalFile, strArchFile,
 							ga::Archive::EntryPtr(), strLastFiletype, iLastAttr,
-							lenPrefiltered);
+							lenReal);
 					} catch (const stream::error& e) {
 						std::cout << " [failed; " << e.what() << "]";
 						iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
@@ -921,7 +921,7 @@ finishTesting:
 				} else if (i->string_key.compare("overwrite") == 0) {
 					std::cout << "overwriting: " << strArchFile;
 					if (bAltDest) std::cout << " (from " << strLocalFile << ")";
-					if (lenPrefiltered != 0) std::cout << ", with uncompressed size set to " << lenPrefiltered;
+					if (lenReal != 0) std::cout << ", with uncompressed size set to " << lenReal;
 					std::cout << std::flush;
 
 					try {
@@ -936,7 +936,7 @@ finishTesting:
 							stream::input_file_sptr sSrc(new stream::input_file());
 							sSrc->open(strLocalFile);
 							stream::len lenSource = sSrc->size();
-							if (lenSource != id->iSize) {
+							if (lenSource != id->storedSize) {
 								pArchive->resize(id, lenSource, lenSource);
 							}
 							// Now the file has been resized it's safe to open (if we opened
@@ -950,7 +950,7 @@ finishTesting:
 								// Since filters were skipped we will pretend we applied the
 								// filter and we got more source data than we really did, so
 								// the next check works.
-								lenSource = lenPrefiltered;
+								lenSource = lenReal;
 							}
 
 							// If the data that went in was a different length to what we

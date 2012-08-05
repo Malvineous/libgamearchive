@@ -152,7 +152,7 @@ BNKArchive::BNKArchive(stream::inout_sptr psArchive, stream::inout_sptr psFAT)
 			>> u8(lenName)
 			>> nullPadded(fatEntry->strName, BNK_MAX_FILENAME_LEN)
 			>> u32le(fatEntry->iOffset)
-			>> u32le(fatEntry->iSize)
+			>> u32le(fatEntry->storedSize)
 		;
 		fatEntry->strName = fatEntry->strName.substr(0, lenName);
 
@@ -166,7 +166,7 @@ BNKArchive::BNKArchive(stream::inout_sptr psArchive, stream::inout_sptr psFAT)
 		fatEntry->type = FILETYPE_GENERIC;
 		fatEntry->fAttr = 0;
 		fatEntry->bValid = true;
-		fatEntry->iPrefilteredSize = fatEntry->iSize;
+		fatEntry->realSize = fatEntry->storedSize;
 
 		if (fatEntry->strName[0] == '\0') fatEntry->fAttr = EA_EMPTY;
 
@@ -228,11 +228,11 @@ void BNKArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 
 	// Update external FAT
 	this->psFAT->seekp(pid->iIndex * BNK_FAT_ENTRY_LEN + BNK_FAT_FILESIZE_OFFSET, stream::start);
-	this->psFAT << u32le(pid->iSize);
+	this->psFAT << u32le(pid->storedSize);
 
 	// Update embedded FAT
 	this->psArchive->seekp(pid->iOffset + BNK_EFAT_FILESIZE_OFFSET, stream::start);
-	this->psArchive << u32le(pid->iSize);
+	this->psArchive << u32le(pid->storedSize);
 
 	return;
 }
@@ -259,7 +259,7 @@ FATArchive::FATEntry *BNKArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	this->psArchive
 		<< u8(lenByte)
 		<< nullPadded(pNewEntry->strName, BNK_MAX_FILENAME_LEN)
-		<< u32le(pNewEntry->iSize)
+		<< u32le(pNewEntry->storedSize)
 	;
 
 	// Since we've inserted some data for the embedded header, we need to update
@@ -277,7 +277,7 @@ FATArchive::FATEntry *BNKArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 		<< u8(lenByte)
 		<< nullPadded(pNewEntry->strName, BNK_MAX_FILENAME_LEN)
 		<< u32le(pNewEntry->iOffset + BNK_EFAT_ENTRY_LEN)
-		<< u32le(pNewEntry->iSize)
+		<< u32le(pNewEntry->storedSize)
 	;
 
 	return pNewEntry;

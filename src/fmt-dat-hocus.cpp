@@ -156,18 +156,18 @@ DAT_HocusArchive::DAT_HocusArchive(stream::inout_sptr psArchive, stream::inout_s
 		pEntry->iIndex = i;
 		this->psFAT
 			>> u32le(pEntry->iOffset)
-			>> u32le(pEntry->iSize);
+			>> u32le(pEntry->storedSize);
 		;
 		pEntry->lenHeader = 0;
 		pEntry->type = FILETYPE_GENERIC;
 		pEntry->fAttr = 0;
 		pEntry->bValid = true;
-		pEntry->iPrefilteredSize = pEntry->iSize;
+		pEntry->realSize = pEntry->storedSize;
 		this->vcFAT.push_back(EntryPtr(pEntry));
 
-		if (pEntry->iOffset + pEntry->iSize > lenArchive) {
+		if (pEntry->iOffset + pEntry->storedSize > lenArchive) {
 			std::cerr << "DAT file has been truncated, file @" << i
-				<< " ends at offset " << pEntry->iOffset + pEntry->iSize
+				<< " ends at offset " << pEntry->iOffset + pEntry->storedSize
 				<< " but the DAT file is only " << lenArchive
 				<< " bytes long." << std::endl;
 			throw stream::error("archive has been truncated or FAT is corrupt");
@@ -212,7 +212,7 @@ void DAT_HocusArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDel
 {
 	// Update external FAT
 	this->psFAT->seekp(pid->iIndex * DAT_FAT_ENTRY_LEN + DAT_FAT_FILESIZE_OFFSET, stream::start);
-	this->psFAT << u32le(pid->iSize);
+	this->psFAT << u32le(pid->storedSize);
 
 	return;
 }
@@ -238,7 +238,7 @@ FATArchive::FATEntry *DAT_HocusArchive::preInsertFile(const FATEntry *idBeforeTh
 
 	// Write out the file size
 	this->psFAT << u32le(pNewEntry->iOffset);
-	this->psFAT << u32le(pNewEntry->iSize);
+	this->psFAT << u32le(pNewEntry->storedSize);
 
 	this->numFiles++;
 

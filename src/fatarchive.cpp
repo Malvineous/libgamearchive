@@ -128,7 +128,7 @@ stream::inout_sptr FATArchive::open(const EntryPtr id)
 	psSub->open(
 		this->psArchive,
 		pFAT->iOffset + pFAT->lenHeader,
-		pFAT->iSize,
+		pFAT->storedSize,
 		fnTrunc
 	);
 
@@ -142,7 +142,7 @@ stream::inout_sptr FATArchive::open(const EntryPtr id)
 }
 
 FATArchive::EntryPtr FATArchive::insert(const EntryPtr idBeforeThis,
-	const std::string& strFilename, stream::pos iSize, std::string type, int attr
+	const std::string& strFilename, stream::pos storedSize, std::string type, int attr
 )
 	throw (stream::error)
 {
@@ -163,8 +163,8 @@ FATArchive::EntryPtr FATArchive::insert(const EntryPtr idBeforeThis,
 	EntryPtr ep(pNewFile);
 
 	pNewFile->strName = strFilename;
-	pNewFile->iSize = iSize;
-	pNewFile->iPrefilteredSize = iSize; // default to no filter
+	pNewFile->storedSize = storedSize;
+	pNewFile->realSize = storedSize; // default to no filter
 	pNewFile->type = type;
 	pNewFile->fAttr = attr;
 	pNewFile->lenHeader = 0;
@@ -186,7 +186,7 @@ FATArchive::EntryPtr FATArchive::insert(const EntryPtr idBeforeThis,
 			const FATEntry *pFATAfterThis = dynamic_cast<const FATEntry *>(this->vcFAT.back().get());
 			assert(pFATAfterThis);
 			pNewFile->iOffset = pFATAfterThis->iOffset
-				+ pFATAfterThis->lenHeader + pFATAfterThis->iSize;
+				+ pFATAfterThis->lenHeader + pFATAfterThis->storedSize;
 			pNewFile->iIndex = pFATAfterThis->iIndex + 1;
 		} else {
 			// There are no files in the archive
@@ -219,7 +219,7 @@ FATArchive::EntryPtr FATArchive::insert(const EntryPtr idBeforeThis,
 		this->shiftFiles(
 			pNewFile,
 			pNewFile->iOffset + pNewFile->lenHeader,
-			pNewFile->iSize,
+			pNewFile->storedSize,
 			1
 		);
 
@@ -240,7 +240,7 @@ FATArchive::EntryPtr FATArchive::insert(const EntryPtr idBeforeThis,
 	// this and written the data, so our insert should start just after the
 	// header.
 	this->psArchive->seekp(pNewFile->iOffset + pNewFile->lenHeader, stream::start);
-	this->psArchive->insert(pNewFile->iSize);
+	this->psArchive->insert(pNewFile->storedSize);
 
 	this->postInsertFile(pNewFile);
 
@@ -274,13 +274,13 @@ void FATArchive::remove(EntryPtr id)
 	this->shiftFiles(
 		pFATDel,
 		pFATDel->iOffset,
-		-(pFATDel->iSize + pFATDel->lenHeader),
+		-(pFATDel->storedSize + pFATDel->lenHeader),
 		-1
 	);
 
 	// Remove the file's data from the archive
 	this->psArchive->seekp(pFATDel->iOffset, stream::start);
-	this->psArchive->remove(pFATDel->iSize + pFATDel->lenHeader);
+	this->psArchive->remove(pFATDel->storedSize + pFATDel->lenHeader);
 
 	// Mark it as invalid in case some other code is still holding on to it.
 	pFATDel->bValid = false;
@@ -311,34 +311,34 @@ void FATArchive::rename(EntryPtr id, const std::string& strNewName)
 	return;
 }
 
-void FATArchive::resize(EntryPtr id, stream::len iNewSize,
-	stream::len iNewPrefilteredSize)
+void FATArchive::resize(EntryPtr id, stream::len newStoredSize,
+	stream::len newRealSize)
 	throw (stream::error)
 {
 	assert(this->isValid(id));
-	stream::delta iDelta = iNewSize - id->iSize;
+	stream::delta iDelta = newStoredSize - id->storedSize;
 	FATEntry *pFAT = dynamic_cast<FATEntry *>(id.get());
 
 	// Add or remove the data in the underlying stream
 	stream::pos iStart;
 	if (iDelta > 0) { // inserting data
 		// TESTED BY: fmt_grp_duke3d_resize_larger
-		iStart = pFAT->iOffset + pFAT->lenHeader + pFAT->iSize;
+		iStart = pFAT->iOffset + pFAT->lenHeader + pFAT->storedSize;
 		this->psArchive->seekp(iStart, stream::start);
 		this->psArchive->insert(iDelta);
 	} else if (iDelta < 0) { // removing data
 		// TESTED BY: fmt_grp_duke3d_resize_smaller
-		iStart = pFAT->iOffset + pFAT->lenHeader + iNewSize;
+		iStart = pFAT->iOffset + pFAT->lenHeader + newStoredSize;
 		this->psArchive->seekp(iStart, stream::start);
 		this->psArchive->remove(-iDelta);
-	} else if (pFAT->iPrefilteredSize == iNewPrefilteredSize) {
-		// Not resizing the internal size, and the external/prefiltered size
+	} else if (pFAT->realSize == newRealSize) {
+		// Not resizing the internal size, and the external/real size
 		// hasn't changed either, so nothing to do.
 		return;
 	}
 
-	pFAT->iSize = iNewSize;
-	pFAT->iPrefilteredSize = iNewPrefilteredSize;
+	pFAT->storedSize = newStoredSize;
+	pFAT->realSize = newRealSize;
 
 	// Update the FAT with the file's new sizes
 	this->updateFileSize(pFAT, iDelta);
@@ -355,12 +355,12 @@ void FATArchive::resize(EntryPtr id, stream::len iNewSize,
 		) {
 			if (i->first.get() == pFAT) {
 				if (stream::sub_sptr sub = i->second.lock()) {
-					sub->resize(iNewSize);
+					sub->resize(newStoredSize);
 					// no break, could be multiple opens for same entry
 				}
 			}
 		}
-	} // else only iPrefilteredSize changed
+	} // else only realSize changed
 
 	return;
 }
@@ -490,7 +490,7 @@ bool FATArchive::entryInRange(const FATEntry *fat, stream::pos offStart,
 
 		if (
 			// If it's a zero-length file...
-			(fat->iSize == 0)
+			(fat->storedSize == 0)
 			// ...starting at the same location as the skip file...
 			&& (fat->iOffset == fatSkip->iOffset)
 			// ...but appearing before it in the index order...
@@ -509,7 +509,7 @@ void FATArchive::resizeSubstream(FATEntryPtr id, stream::len newSize)
 {
 	// Resize the file in the archive.  This function will also tell the
 	// substream it can now write to a larger area.
-	this->resize(id, newSize, id->iPrefilteredSize);
+	this->resize(id, newSize, id->realSize);
 	return;
 }
 

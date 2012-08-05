@@ -164,19 +164,19 @@ RESArchiveFolder::RESArchiveFolder(stream::inout_sptr psArchive)
 		fatEntry->type = FILETYPE_GENERIC;
 		fatEntry->fAttr = 0;
 		if (isfolder_length & 0x80000000) fatEntry->fAttr |= EA_FOLDER;
-		fatEntry->iSize = isfolder_length & 0x7FFFFFFF;
+		fatEntry->storedSize = isfolder_length & 0x7FFFFFFF;
 		fatEntry->bValid = true;
-		fatEntry->iPrefilteredSize = fatEntry->iSize;
+		fatEntry->realSize = fatEntry->storedSize;
 		this->vcFAT.push_back(ep);
 
 		// Update the offset for the next file
-		offNext += RES_FAT_ENTRY_LEN + fatEntry->iSize;
+		offNext += RES_FAT_ENTRY_LEN + fatEntry->storedSize;
 		if (offNext > lenArchive) {
 			std::cerr << "Warning: File has been truncated or is not in RES format, "
 				"file list may be incomplete or complete garbage..." << std::endl;
 			break;
 		}
-		this->psArchive->seekg(fatEntry->iSize, stream::cur);
+		this->psArchive->seekg(fatEntry->storedSize, stream::cur);
 	}
 }
 
@@ -220,7 +220,7 @@ void RESArchiveFolder::updateFileSize(const FATEntry *pid, stream::delta sizeDel
 	// TESTED BY: fmt_res_stellar7_insert*
 	// TESTED BY: fmt_res_stellar7_resize*
 	this->psArchive->seekp(pid->iOffset + RES_FAT_FILESIZE_OFFSET, stream::start);
-	this->psArchive << u32le(pid->iSize);
+	this->psArchive << u32le(pid->storedSize);
 	return;
 }
 
@@ -237,7 +237,7 @@ FATArchive::FATEntry *RESArchiveFolder::preInsertFile(const FATEntry *idBeforeTh
 	this->psArchive->insert(RES_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
 	this->psArchive << nullPadded(pNewEntry->strName, RES_MAX_FILENAME_LEN);
-	this->psArchive << u32le(pNewEntry->iSize);
+	this->psArchive << u32le(pNewEntry->storedSize);
 
 	// Since we've inserted some data for the embedded header, we need to update
 	// the other file offsets accordingly.

@@ -181,15 +181,15 @@ DAT_BashArchive::DAT_BashArchive(stream::inout_sptr psArchive)
 		// Read the data in from the FAT entry in the file
 		this->psArchive
 			>> u16le(type)
-			>> u16le(fatEntry->iSize)
+			>> u16le(fatEntry->storedSize)
 			>> nullPadded(fatEntry->strName, DAT_FILENAME_FIELD_LEN)
-			>> u16le(fatEntry->iPrefilteredSize);
+			>> u16le(fatEntry->realSize);
 
-		if (fatEntry->iPrefilteredSize) {
+		if (fatEntry->realSize) {
 			fatEntry->fAttr |= EA_COMPRESSED;
 			fatEntry->filter = "lzw-bash"; // decompression algorithm
 		} else {
-			fatEntry->iPrefilteredSize = fatEntry->iSize;
+			fatEntry->realSize = fatEntry->storedSize;
 		}
 
 		switch (type) {
@@ -239,8 +239,8 @@ DAT_BashArchive::DAT_BashArchive(stream::inout_sptr psArchive)
 		}
 		this->vcFAT.push_back(ep);
 
-		this->psArchive->seekg(fatEntry->iSize, stream::cur);
-		pos += DAT_EFAT_ENTRY_LEN + fatEntry->iSize;
+		this->psArchive->seekg(fatEntry->storedSize, stream::cur);
+		pos += DAT_EFAT_ENTRY_LEN + fatEntry->storedSize;
 		numFiles++;
 	}
 
@@ -309,12 +309,12 @@ void DAT_BashArchive::updateFileSize(const FATEntry *pid,
 	// TESTED BY: fmt_dat_bash_insert*
 	// TESTED BY: fmt_dat_bash_resize*
 	this->psArchive->seekp(DAT_FILESIZE_OFFSET(pid), stream::start);
-	this->psArchive << u16le(pid->iSize);
+	this->psArchive << u16le(pid->storedSize);
 
 	// Write out the decompressed size too
 	this->psArchive->seekp(DAT_FILENAME_FIELD_LEN, stream::cur);
 	if (pid->fAttr & EA_COMPRESSED) {
-		this->psArchive << u16le(pid->iPrefilteredSize);
+		this->psArchive << u16le(pid->realSize);
 	} else {
 		this->psArchive << u16le(0);
 	}
@@ -396,7 +396,7 @@ void DAT_BashArchive::postInsertFile(FATEntry *pNewEntry)
 
 	uint16_t expandedSize;
 	if (pNewEntry->fAttr & EA_COMPRESSED) {
-		expandedSize = pNewEntry->iPrefilteredSize;
+		expandedSize = pNewEntry->realSize;
 	} else {
 		expandedSize = 0;
 	}
@@ -404,7 +404,7 @@ void DAT_BashArchive::postInsertFile(FATEntry *pNewEntry)
 	// Write out the entry
 	this->psArchive
 		<< u16le(typeNum)
-		<< u16le(pNewEntry->iSize)
+		<< u16le(pNewEntry->storedSize)
 		<< nullPadded(pNewEntry->strName, DAT_FILENAME_FIELD_LEN)
 		<< u16le(expandedSize)
 	;

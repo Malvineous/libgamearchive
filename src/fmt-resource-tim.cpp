@@ -150,7 +150,7 @@ TIMResourceArchive::TIMResourceArchive(stream::inout_sptr psArchive, stream::ino
 		EntryPtr ep(fatEntry);
 		this->psArchive
 			>> nullPadded(fatEntry->strName, TIM_FILENAME_FIELD_LEN)
-			>> u32le(fatEntry->iSize)
+			>> u32le(fatEntry->storedSize)
 		;
 		fatEntry->iOffset = pos;
 		fatEntry->iIndex = index++;
@@ -158,11 +158,11 @@ TIMResourceArchive::TIMResourceArchive(stream::inout_sptr psArchive, stream::ino
 		fatEntry->type = FILETYPE_GENERIC;
 		fatEntry->fAttr = 0;
 		fatEntry->bValid = true;
-		fatEntry->iPrefilteredSize = fatEntry->iSize;
+		fatEntry->realSize = fatEntry->storedSize;
 		this->vcFAT.push_back(ep);
 
-		this->psArchive->seekg(fatEntry->iSize, stream::cur);
-		pos += TIM_EFAT_ENTRY_LEN + fatEntry->iSize;
+		this->psArchive->seekg(fatEntry->storedSize, stream::cur);
+		pos += TIM_EFAT_ENTRY_LEN + fatEntry->storedSize;
 	}
 }
 
@@ -211,7 +211,7 @@ void TIMResourceArchive::updateFileSize(const FATEntry *pid, stream::delta sizeD
 
 	// Update embedded FAT
 	this->psArchive->seekp(pid->iOffset + TIM_EFAT_FILESIZE_OFFSET, stream::start);
-	this->psArchive << u32le(pid->iSize);
+	this->psArchive << u32le(pid->storedSize);
 
 	return;
 }
@@ -235,7 +235,7 @@ FATArchive::FATEntry *TIMResourceArchive::preInsertFile(const FATEntry *idBefore
 	// Write the header
 	this->psArchive
 		<< nullPadded(pNewEntry->strName, TIM_FILENAME_FIELD_LEN)
-		<< u32le(pNewEntry->iSize)
+		<< u32le(pNewEntry->storedSize)
 	;
 
 	// Since we've inserted some data for the embedded header, we need to update

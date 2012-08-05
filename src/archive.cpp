@@ -40,8 +40,8 @@ std::string Archive::FileEntry::getContent() const
 {
 	std::ostringstream ss;
 	ss << "name=" << this->strName
-		<< ";size=" << this->iSize
-		<< ";prefilteredSize=" << this->iPrefilteredSize
+		<< ";size=" << this->storedSize
+		<< ";realSize=" << this->realSize
 		<< ";type=" << this->type
 		<< ";filter=" << this->filter
 		<< ";attr=" << this->fAttr;
@@ -86,7 +86,7 @@ void Archive::move(const EntryPtr idBeforeThis, EntryPtr id)
 	assert(src);
 
 	// Insert a new file at the destination index
-	EntryPtr n = this->insert(idBeforeThis, id->strName, id->iSize,
+	EntryPtr n = this->insert(idBeforeThis, id->strName, id->storedSize,
 		id->type, id->fAttr);
 	assert(n->bValid);
 
@@ -105,7 +105,7 @@ void Archive::move(const EntryPtr idBeforeThis, EntryPtr id)
 
 	// If there's a filter set then bring the unfiltered size across too.
 	if (!n->filter.empty()) {
-		this->resize(n, n->iSize, id->iPrefilteredSize);
+		this->resize(n, n->storedSize, id->realSize);
 	}
 
 	this->remove(id);

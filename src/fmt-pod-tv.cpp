@@ -176,14 +176,14 @@ PODArchive::PODArchive(stream::inout_sptr psArchive)
 		pEntry->iIndex = i;
 		this->psArchive
 			>> nullPadded(pEntry->strName, POD_MAX_FILENAME_LEN)
-			>> u32le(pEntry->iSize)
+			>> u32le(pEntry->storedSize)
 			>> u32le(pEntry->iOffset)
 		;
 		pEntry->lenHeader = 0;
 		pEntry->type = FILETYPE_GENERIC;
 		pEntry->fAttr = 0;
 		pEntry->bValid = true;
-		pEntry->iPrefilteredSize = pEntry->iSize;
+		pEntry->realSize = pEntry->storedSize;
 		this->vcFAT.push_back(EntryPtr(pEntry));
 	}
 }
@@ -268,7 +268,7 @@ void PODArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 	// TESTED BY: fmt_pod_tv_insert*
 	// TESTED BY: fmt_pod_tv_resize*
 	this->psArchive->seekp(POD_FILESIZE_OFFSET(pid), stream::start);
-	this->psArchive << u32le(pid->iSize);
+	this->psArchive << u32le(pid->storedSize);
 	return;
 }
 
@@ -291,7 +291,7 @@ FATArchive::FATEntry *PODArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	// Write out the entry
 	this->psArchive
 		<< nullPadded(pNewEntry->strName, POD_MAX_FILENAME_LEN)
-		<< u32le(pNewEntry->iSize)
+		<< u32le(pNewEntry->storedSize)
 		<< u32le(pNewEntry->iOffset);
 
 	// Update the offsets now there's a new FAT entry taking up space.

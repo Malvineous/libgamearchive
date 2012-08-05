@@ -217,8 +217,8 @@ DAT_GoTArchive::DAT_GoTArchive(stream::inout_sptr psArchive)
 		this->fatStream
 			>> nullPadded(fatEntry->strName, GOT_FILENAME_FIELD_LEN)
 			>> u32le(fatEntry->iOffset)
-			>> u32le(fatEntry->iSize)
-			>> u32le(fatEntry->iPrefilteredSize)
+			>> u32le(fatEntry->storedSize)
+			>> u32le(fatEntry->realSize)
 			>> u16le(flags)
 		;
 
@@ -286,8 +286,8 @@ void DAT_GoTArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta
 	// TESTED BY: fmt_got_dat_insert*
 	// TESTED BY: fmt_got_dat_resize*
 	this->fatStream->seekp(GOT_FILESIZE_OFFSET(pid), stream::start);
-	this->fatStream << u32le(pid->iSize);
-	this->fatStream << u32le(pid->iPrefilteredSize);
+	this->fatStream << u32le(pid->storedSize);
+	this->fatStream << u32le(pid->realSize);
 	return;
 }
 
@@ -356,8 +356,8 @@ void DAT_GoTArchive::postInsertFile(FATEntry *pNewEntry)
 	this->fatStream
 		<< nullPadded(pNewEntry->strName, GOT_FILENAME_FIELD_LEN)
 		<< u32le(pNewEntry->iOffset)
-		<< u32le(pNewEntry->iSize)
-		<< u32le(pNewEntry->iPrefilteredSize)
+		<< u32le(pNewEntry->storedSize)
+		<< u32le(pNewEntry->realSize)
 		<< u16le(flags)
 	;
 	return;
