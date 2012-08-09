@@ -286,8 +286,10 @@ void DAT_GoTArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta
 	// TESTED BY: fmt_got_dat_insert*
 	// TESTED BY: fmt_got_dat_resize*
 	this->fatStream->seekp(GOT_FILESIZE_OFFSET(pid), stream::start);
-	this->fatStream << u32le(pid->storedSize);
-	this->fatStream << u32le(pid->realSize);
+	this->fatStream
+		<< u32le(pid->storedSize)
+		<< u32le(pid->realSize)
+	;
 	return;
 }
 

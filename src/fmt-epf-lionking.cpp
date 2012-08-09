@@ -303,8 +303,9 @@ void EPFArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 
 	this->psArchive->seekp(this->offFAT + pid->iIndex * EPF_FAT_ENTRY_LEN + EPF_FAT_FILESIZE_OFFSET, stream::start);
 	this->psArchive
-		<< u32le(pid->storedSize)    // compressed size
-		<< u32le(pid->realSize);   // decompressed size
+		<< u32le(pid->storedSize)
+		<< u32le(pid->realSize)
+	;
 
 	this->updateFATOffset();
 

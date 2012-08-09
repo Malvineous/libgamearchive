@@ -27,9 +27,11 @@
 #define CONTENT2 "This is two.dat\0"
 #define CONTENT3 "This is three.dat\0\0\0\0\0\0\0"
 #define CONTENT4 "This is four.dat\0\0\0\0\0\0\0\0"
+#define CONTENT1_NORMALSIZE 16
 #define CONTENT1_LARGESIZE 24
 #define CONTENT1_SMALLSIZE 8
 #define CONTENT1_OVERWRITTEN "Now resized to 24 chars!"
+#define CONTENT1_OVERWSIZE (sizeof(CONTENT1_OVERWRITTEN)-1)
 
 #define testdata_initialstate \
 	"\x00\x00" "\x00\x00" "\x02\x00" \

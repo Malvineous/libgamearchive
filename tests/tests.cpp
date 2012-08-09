@@ -95,6 +95,8 @@ void setRealSize(camoto::gamearchive::ArchivePtr arch,
 	camoto::gamearchive::Archive::EntryPtr id, stream::len newRealSize)
 	throw (std::ios::failure)
 {
+	BOOST_TEST_MESSAGE(createString("Leaving stored size unchanged as "
+		<< id->storedSize << " and setting real size to " << newRealSize));
 	arch->resize(id, id->storedSize, newRealSize);
 	return;
 }

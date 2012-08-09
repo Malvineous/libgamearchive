@@ -129,7 +129,8 @@ void setRealSize(camoto::gamearchive::ArchivePtr arch,
  * @param id
  *   EntryPtr for the stream.
  */
-void applyFilter(camoto::stream::inout_sptr *ppStream, ga::ArchivePtr arch,
+template <class T>
+void applyFilter(T *ppStream, ga::ArchivePtr arch,
 	ga::Archive::EntryPtr id)
 	throw (stream::error)
 {
@@ -936,31 +937,27 @@ finishTesting:
 							stream::input_file_sptr sSrc(new stream::input_file());
 							sSrc->open(strLocalFile);
 							stream::len lenSource = sSrc->size();
-							if (lenSource != id->storedSize) {
+
+							// Note that we are opening the file into an output_sptr (instead
+							// of an inout_sptr) as this is more efficient.  By foregoing read
+							// access to the file, it means a compressed file won't be
+							// decompressed in case we want to read it.  Which we don't,
+							// because we're about to completely overwrite it.
+							camoto::stream::output_sptr psDest(destArch->open(id));
+
+							if (bUseFilters) {
+								applyFilter(&psDest, destArch, id);
+							} else {
 								pArchive->resize(id, lenSource, lenSource);
 							}
-							// Now the file has been resized it's safe to open (if we opened
-							// it before the resize it'd be stuck at the old size)
-							camoto::stream::inout_sptr psDest(destArch->open(id));
-							if (bUseFilters) applyFilter(&psDest, destArch, id);
+
+							// Set the size of the stream within the archive, so it exactly
+							// holds the data we want to write.
+							psDest->truncate(lenSource);
+
+							psDest->seekp(0, stream::start);
 							stream::copy(psDest, sSrc);
 							psDest->flush();
-
-							if (!bUseFilters) {
-								// Since filters were skipped we will pretend we applied the
-								// filter and we got more source data than we really did, so
-								// the next check works.
-								lenSource = lenReal;
-							}
-
-							// If the data that went in was a different length to what we
-							// expected it must have been compressed so update the file
-							// size (keeping the original size as the 'uncompressed length'
-							// field.)
-							stream::len lenActual = psDest->tellp();
-							if (lenActual != lenSource) {
-								pArchive->resize(id, lenActual, lenSource);
-							}
 						}
 					} catch (const stream::open_error& e) {
 						std::cout << " [failed; unable to open replacement file]";

@@ -23,6 +23,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <camoto/iostream_helpers.hpp>
+#include <camoto/stream_memory.hpp>
 #include "fmt-rff-blood.hpp"
 #include "filter-xor-blood.hpp"
 
@@ -179,7 +180,7 @@ RFFArchive::RFFArchive(stream::inout_sptr psArchive)
 	}
 
 	// Copy the decrypted FAT into memory
-	stream::string_sptr tempStorage(new stream::string());
+	stream::memory_sptr tempStorage(new stream::memory());
 	this->fatStream.reset(new stream::seg());
 	this->fatStream->open(tempStorage);
 	this->fatStream->seekp(0, stream::start);

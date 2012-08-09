@@ -507,9 +507,27 @@ bool FATArchive::entryInRange(const FATEntry *fat, stream::pos offStart,
 void FATArchive::resizeSubstream(FATEntryPtr id, stream::len newSize)
 	throw (stream::write_error)
 {
+	// An open substream belonging to file entry 'id' wants to be resized.
+
 	// Resize the file in the archive.  This function will also tell the
 	// substream it can now write to a larger area.
-	this->resize(id, newSize, id->realSize);
+
+	// We are updating both the stored (in-archive) and the real (extracted)
+	// sizes, to handle the case where no filters are used and the sizes are
+	// the same.  When filters are in use, the flush() function that writes
+	// the filtered data out should call us first, then call the archive's
+	// resize() function with the correct real/extracted size.
+	//this->resize(id, newSize, newSize);
+	stream::len newRealSize;
+	if (id->fAttr & EA_COMPRESSED) {
+		// We're compressed, so the real and stored sizes are both valid
+		newRealSize = id->realSize;
+	} else {
+		// We're not compressed, so the real size won't be updated by a filter,
+		// so we need to update it here.
+		newRealSize = newSize;
+	}
+	this->resize(id, newSize, newRealSize);
 	return;
 }
 

@@ -23,10 +23,17 @@
 #define FILENAME3 "THREE.DAT"
 #define FILENAME4 "FOUR.DAT"
 
+#define FCONTENT1_SMALL "\x54\xD0\xA4\x99\x03\x22\xCD\x1C" "\x10\x6F\xDC\x94"
 #define FCONTENT1 "\x54\xD0\xA4\x99\x03\x22\xCD\x1C" "\x10\x6F\xDC\x94\x71\x41\x26\x0C" "\x1D"
 #define FCONTENT2 "\x54\xD0\xA4\x99\x03\x22\xCD\x1C" "\x10\x74\xEE\xBC\x71\x41\x26\x0C" "\x1D"
 #define FCONTENT3 "\x54\xD0\xA4\x99\x03\x22\xCD\x1C" "\x10\x74\xD0\xC8\x29\x53\xC6\x05" "\x99\x30\x74\x00"
 #define FCONTENT4 "\x54\xD0\xA4\x99\x03\x22\xCD\x1C" "\x10\x66\xDE\xD4\x91\xE3\x82\x4C" "\x18\x3A\x00"
+#define FCONTENT_OVERW "\x4E\xDE\xDC\x01\x21\xA7\xCC\x9C" "\x34\x7A\xCA\x90\x01\x41\xE7\x0D" \
+	"\x08\x19\x33\x40\x8C\x41\x13\x46" "\xCE\x1C"
+
+#define CONTENT1_LARGESIZE_STORED 23
+#define CONTENT1_SMALLSIZE_STORED 12
+#define CONTENT1_OVERWSIZE_STORED (sizeof(FCONTENT_OVERW)-1)
 
 #define testdata_initialstate \
 	"\x01\x00" "\x11\x00" \
@@ -124,20 +131,20 @@
 		FCONTENT1
 
 #define testdata_resize_larger \
-	"\x01\x00" "\x14\x00" \
+	"\x01\x00" "\x17\x00" \
 		"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x14\x00" \
-		FCONTENT1 "\0\0\0" \
+		FCONTENT1 "\0\0\0\0\0\0" \
 	"\x20\x00" "\x11\x00" \
 		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x0f\x00" \
 		FCONTENT2
 
 #define testdata_resize_smaller \
-	"\x01\x00" "\x0a\x00" \
+	"\x01\x00" "\x0c\x00" \
 		"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x0a\x00" \
-		"\x54\xD0\xA4\x99\x03\x22\xCD\x1C" "\x10\x6F" \
+		FCONTENT1_SMALL \
 	"\x20\x00" "\x11\x00" \
 		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x0f\x00" \
@@ -147,8 +154,7 @@
 	"\x01\x00" "\x1A\x00" \
 		"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x17\x00" \
-		"\x4E\xDE\xDC\x01\x21\xA7\xCC\x9C" "\x34\x7A\xCA\x90\x01\x41\xE7\x0D" \
-		"\x08\x19\x33\x40\x8C\x41\x13\x46" "\xCE\x1C" \
+		FCONTENT_OVERW \
 	"\x20\x00" "\x11\x00" \
 		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x0f\x00" \

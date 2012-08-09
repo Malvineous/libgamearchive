@@ -2,7 +2,7 @@
  * @file  test-archive.hpp
  * @brief Generic test code for Archive class descendents.
  *
- * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,9 +56,18 @@ using namespace camoto::gamearchive;
 #define CONTENT2 "This is two.dat"
 #define CONTENT3 "This is three.dat"
 #define CONTENT4 "This is four.dat"
+#define CONTENT1_NORMALSIZE 15
 #define CONTENT1_LARGESIZE 20
 #define CONTENT1_SMALLSIZE 10
 #define CONTENT1_OVERWRITTEN "Now resized to 23 chars"
+#define CONTENT1_OVERWSIZE (sizeof(CONTENT1_OVERWRITTEN)-1)
+#endif
+
+#ifndef CONTENT1_LARGESIZE_STORED
+// This must be an unfiltered file, so the stored sizes match the real ones
+#define CONTENT1_LARGESIZE_STORED CONTENT1_LARGESIZE
+#define CONTENT1_SMALLSIZE_STORED CONTENT1_SMALLSIZE
+#define CONTENT1_OVERWSIZE_STORED CONTENT1_OVERWSIZE
 #endif
 
 struct FIXTURE_NAME: public default_sample {
@@ -367,6 +376,9 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(insert_end))
 	// Apply any encryption/compression filter
 	pfsNew = applyFilter(pArchive, ep, pfsNew);
 
+	// Set the size of the file we want to write
+	pfsNew->truncate(sizeof(CONTENT3) - 1);
+	pfsNew->seekp(0, stream::start);
 	pfsNew->write(CONTENT3, sizeof(CONTENT3) - 1);
 	pfsNew->flush();
 
@@ -817,7 +829,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_larger))
 		"Couldn't find first file in sample archive");
 #endif
 
-	pArchive->resize(ep, CONTENT1_LARGESIZE, CONTENT1_LARGESIZE);
+	pArchive->resize(ep, CONTENT1_LARGESIZE_STORED, CONTENT1_LARGESIZE);
 
 	BOOST_CHECK_MESSAGE(
 		is_equal(makeString(TEST_RESULT(resize_larger))),
@@ -853,7 +865,7 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_smaller))
 		"Couldn't find first file in sample archive");
 #endif
 
-	pArchive->resize(ep, CONTENT1_SMALLSIZE, CONTENT1_SMALLSIZE);
+	pArchive->resize(ep, CONTENT1_SMALLSIZE_STORED, CONTENT1_SMALLSIZE);
 
 	BOOST_CHECK_MESSAGE(
 		is_equal(makeString(TEST_RESULT(resize_smaller))),
@@ -889,15 +901,31 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_write))
 		"Couldn't find first file in sample archive");
 #endif
 
-	pArchive->resize(ep, sizeof(CONTENT1_OVERWRITTEN) - 1, sizeof(CONTENT1_OVERWRITTEN) - 1);
+	// We can't call Archive::resize() because that resizes the storage space,
+	// but if there are filters involved the storage space might be quite a
+	// different size to the data we want to write, so we have to open the
+	// stream and use truncate() instead.
+	//pArchive->resize(ep, sizeof(CONTENT1_OVERWRITTEN) - 1, sizeof(CONTENT1_OVERWRITTEN) - 1);
 
 	stream::inout_sptr pfsNew(pArchive->open(ep));
 
 	// Apply any encryption/compression filter
 	pfsNew = applyFilter(pArchive, ep, pfsNew);
 
+	// Make sure it's the right size
+	BOOST_REQUIRE_EQUAL(pfsNew->size(), CONTENT1_NORMALSIZE);
+
+	pfsNew->truncate(sizeof(CONTENT1_OVERWRITTEN) - 1);
+
+	// Make sure it's the right size
+	BOOST_REQUIRE_EQUAL(pfsNew->size(), CONTENT1_OVERWSIZE);
+
+	pfsNew->seekp(0, stream::start);
 	pfsNew->write(CONTENT1_OVERWRITTEN, sizeof(CONTENT1_OVERWRITTEN) - 1);
 	pfsNew->flush();
+
+	// Make sure it's the right size
+	BOOST_REQUIRE_EQUAL(pfsNew->size(), CONTENT1_OVERWSIZE);
 
 	BOOST_CHECK_MESSAGE(
 		is_equal(makeString(TEST_RESULT(resize_write))),
@@ -935,6 +963,9 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(resize_write))
 
 	// Apply any decryption/decompression filter
 	pfsIn = applyFilter(pArchive, ep2, pfsIn);
+
+	// Make sure it's the right size
+	BOOST_REQUIRE_EQUAL(pfsIn->size(), sizeof(CONTENT2)-1);
 
 	// Copy it into the stringstream
 	stream::copy(out, pfsIn);
