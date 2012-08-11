@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<refentry id="gamecomp">
+	<refentryinfo>
+		<application>Camoto</application>
+		<productname>gamecomp</productname>
+		<author>
+			<firstname>Adam</firstname>
+			<surname>Nielsen</surname>
+			<email>malvineous@shikadi.net</email>
+			<contrib>Original document author</contrib>
+		</author>
+	</refentryinfo>
+	<refmeta>
+		<refentrytitle>gamecomp</refentrytitle>
+		<manvolnum>1</manvolnum>
+		<refmiscinfo class="date">2012-08-11</refmiscinfo>
+		<refmiscinfo class="manual">Camoto</refmiscinfo>
+	</refmeta>
+	<refnamediv id="gamecomp-name">
+		<refname>gamecomp</refname>
+		<refpurpose>
+			apply or reverse compression and encryption algorithms used by games
+		</refpurpose>
+	</refnamediv>
+	<refsynopsisdiv>
+		<cmdsynopsis>
+			<command>gamecomp</command>
+			<arg choice="plain">--type=<replaceable>type</replaceable></arg>
+			<arg choice="opt">--apply</arg>
+			<arg choice="plain">&lt; <replaceable>infile</replaceable></arg>
+			<arg choice="plain">&gt; <replaceable>outfile</replaceable></arg>
+		</cmdsynopsis>
+	</refsynopsisdiv>
+
+	<refsect1 id="gamecomp-description">
+		<title>Description</title>
+		<para>
+			Filter data from standard input and send it to standard output, using the
+			given <replaceable>algorithm</replaceable>.  The default is to reverse
+			the algorithm (which will decompress or decrypt the input data) however
+			<option>--apply</option> will apply the algorithm instead (resulting in
+			the input data being compressed or encrypted.)
+		</para>
+	</refsect1>
+
+	<refsect1 id="gamecomp-options">
+		<title id="gamecomp-options-title">Options</title>
+		<variablelist>
+
+			<varlistentry>
+				<term><option>--type</option>=<replaceable>algorithm</replaceable></term>
+				<term><option>-t</option> <replaceable>algorithm</replaceable></term>
+				<listitem>
+					<para>
+						specify the algorithm to use, from the list shown by
+						<option>--list</option>.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><option>--list</option></term>
+				<term><option>-l</option></term>
+				<listitem>
+					<para>
+						list all the algorithms on stdout instead.
+					</para>
+				</listitem>
+			</varlistentry>
+
+		</variablelist>
+	</refsect1>
+
+	<refsect1 id="gamecomp-examples-basic">
+		<title>Examples</title>
+		<variablelist>
+
+			<varlistentry>
+				<term>
+					<command>gamearch bash1.dat -u -x mb1_h1.txt</command>
+					<sbr/><command>gamecomp -t lzw-bash &lt; mb1_h1.txt &gt; decompressed.txt</command>
+				</term>
+				<listitem>
+					<para>
+						extract <literal>mb1_h1.txt</literal> from the Monster Bash archive
+						file (<option>-x</option>), without decompressing it
+						(<option>-u</option>).  Then use <literal>gamecomp</literal> to
+						decompress it instead, saving the data into
+						<literal>decompressed.txt</literal>.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><command>gamecomp -a -t lzw-bash &lt; input.txt &gt; mb1_h1.txt</command></term>
+				<listitem>
+					<para>
+						take the plain text in <literal>input.txt</literal>, compress it
+						using the Monster Bash compression algorithm and store the
+						compressed data in <literal>mb1_h1.txt</literal>.
+					</para>
+				</listitem>
+			</varlistentry>
+
+		</variablelist>
+	</refsect1>
+
+	<refsect1 id="gamecomp-notes">
+		<title id="gamecomp-notes-title">Notes</title>
+		<para>
+			Exit status is <returnvalue>0</returnvalue> on success,
+			<returnvalue>1</returnvalue> on bad parameters and
+			<returnvalue>2</returnvalue> on an I/O error.
+		</para>
+		<para>
+			All the algorithms supported by this utility are fully documented on the
+			<ulink url="http://www.shikadi.net/moddingwiki">Game Modding Wiki</ulink>.
+		</para>
+	</refsect1>
+
+	<refsect1 id="gamecomp-issues">
+		<title>Known Issues</title>
+		<para>
+			Not all algorithms support compression.
+		</para>
+	</refsect1>
+
+	<refsect1 id="gamecomp-bugs">
+		<title id="bugs-title">Bugs and Questions</title>
+		<para>
+			Report bugs at <ulink>http://www.shikadi.net/camoto/bugs/</ulink>
+		</para>
+		<para>
+			Ask questions about Camoto or modding in general at the <ulink
+			url="http://www.classicdosgames.com/forum/viewforum.php?f=25">RGB
+			Classic Games modding forum</ulink>
+		</para>
+	</refsect1>
+
+	<refsect1 id="gamecomp-copyright">
+		<title id="copyright-title">Copyright</title>
+		<para>
+			Copyright (c) 2010-2012 Adam Nielsen.
+		</para>
+		<para>
+			License GPLv3+: <ulink url="http://gnu.org/licenses/gpl.html">GNU GPL
+			version 3 or later</ulink>
+		</para>
+		<para>
+			This is free software: you are free to change and redistribute it.
+			There is NO WARRANTY, to the extent permitted by law.
+		</para>
+	</refsect1>
+
+	<refsect1 id="gamecomp-seealso">
+		<title id="seealso-title">See Also</title>
+		<simplelist type="inline">
+			<member><citerefentry><refentrytitle>gamearch</refentrytitle><manvolnum>1</manvolnum></citerefentry></member>
+			<member><citerefentry><refentrytitle>gametls</refentrytitle><manvolnum>1</manvolnum></citerefentry></member>
+			<member><citerefentry><refentrytitle>gameimg</refentrytitle><manvolnum>1</manvolnum></citerefentry></member>
+			<member><citerefentry><refentrytitle>gamemap</refentrytitle><manvolnum>1</manvolnum></citerefentry></member>
+			<member><citerefentry><refentrytitle>gamemus</refentrytitle><manvolnum>1</manvolnum></citerefentry></member>
+			<member><citerefentry><refentrytitle>camoto-studio</refentrytitle><manvolnum>1</manvolnum></citerefentry></member>
+		</simplelist>
+	</refsect1>
+
+</refentry>

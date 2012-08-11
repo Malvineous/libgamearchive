@@ -1,0 +1,617 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<refentry id="gamearch">
+	<refentryinfo>
+		<application>Camoto</application>
+		<productname>gamearch</productname>
+		<author>
+			<firstname>Adam</firstname>
+			<surname>Nielsen</surname>
+			<email>malvineous@shikadi.net</email>
+			<contrib>Original document author</contrib>
+		</author>
+	</refentryinfo>
+	<refmeta>
+		<refentrytitle>gamearch</refentrytitle>
+		<manvolnum>1</manvolnum>
+		<refmiscinfo class="date">2012-08-11</refmiscinfo>
+		<refmiscinfo class="manual">Camoto</refmiscinfo>
+	</refmeta>
+	<refnamediv id="name">
+		<refname>gamearch</refname>
+		<refpurpose>manipulate file archives used internally by many games</refpurpose>
+	</refnamediv>
+	<refsynopsisdiv>
+		<cmdsynopsis>
+			<command>gamearch</command>
+			<arg choice="opt" rep="repeat"><replaceable>options</replaceable></arg>
+			<arg choice="plain"><replaceable>archive</replaceable></arg>
+			<arg choice="opt" rep="repeat"><replaceable>actions</replaceable></arg>
+		</cmdsynopsis>
+	</refsynopsisdiv>
+
+	<refsect1 id="description">
+		<title>Description</title>
+		<para>
+			Perform the specified <replaceable>actions</replaceable> on the given
+			<replaceable>archive</replaceable>.  The actions are performed in order
+			(i.e. the first action specified on the command line is performed first.)
+		</para>
+	</refsect1>
+
+	<refsect1 id="actions">
+		<title>Actions</title>
+		<variablelist>
+
+			<varlistentry>
+				<term><option>--list</option></term>
+				<term><option>-l</option></term>
+				<listitem>
+					<para>
+						list files in the archive
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><option>--extract-all</option></term>
+				<term><option>-X</option></term>
+				<listitem>
+					<para>
+						extract all the files in the archive, saving them into the current
+						directory.  If a given file already exists, the newly extracted
+						file will have .1 appended (or .2, .3, etc.)
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><option>--extract</option>=<replaceable>file</replaceable><optional>=<replaceable>dest</replaceable></optional></term>
+				<term><option>-x </option><replaceable>file</replaceable><optional>=<replaceable>dest</replaceable></optional></term>
+				<listitem>
+					<para>
+						extract <replaceable>file</replaceable> from the archive, saving it
+						as <replaceable>dest</replaceable> (or into the current directory if
+						<replaceable>dest</replaceable> is not supplied)
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><option>--add</option>=<replaceable>file</replaceable><optional>=<replaceable>source</replaceable></optional></term>
+				<term><option>-a </option><replaceable>file</replaceable><optional>=<replaceable>source</replaceable></optional></term>
+				<listitem>
+					<para>
+						add <replaceable>source</replaceable> into the archive, storing it
+						as <replaceable>file</replaceable>.  If <replaceable>source
+						</replaceable> is not specified, <replaceable>file</replaceable>
+						is read from the current directory.  If
+						<replaceable>file</replaceable> already exists in the archive,
+						depending on the archive format either the operation will fail (see
+						<option>--overwrite</option>) or the file will be added with the
+						same name as the existing file.  (Those files with identical names
+						will need to be referred to by their index number to avoid
+						ambiguity.)
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><option>--insert</option>=<replaceable>file</replaceable><optional>=<replaceable>source</replaceable></optional>:<replaceable>here</replaceable></term>
+				<term><option>-i </option><replaceable>file</replaceable><optional>=<replaceable>source</replaceable></optional>:<replaceable>here</replaceable></term>
+				<listitem>
+					<para>
+						insert <replaceable>source</replaceable> into the archive, storing
+						it at the location currently used by <replaceable>here</replaceable>.
+						<replaceable>here</replaceable> is moved out of the way to make room.
+						If <replaceable>source</replaceable> is not specified,
+						<replaceable>file</replaceable> is read from the current directory.
+						<replaceable>here</replaceable> must already exist in the archive
+						and can be specified by name or index (see <xref
+						linkend="notes" endterm="notes-title"/> below.)
+						After the operation, the newly inserted file exists in the position
+						previously occupied by <replaceable>here</replaceable>, and the
+						original file is moved one position down (i.e. it is now directly
+						after the new <replaceable>file</replaceable>.)
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><option>--overwrite</option>=<replaceable>file</replaceable><optional>=<replaceable>source</replaceable></optional></term>
+				<term><option>-o </option><replaceable>file</replaceable><optional>=<replaceable>source</replaceable></optional></term>
+				<listitem>
+					<para>
+						replace <replaceable>file</replaceable> with the data from
+						<replaceable>newfile</replaceable>.  <replaceable>file</replaceable>
+						can be specified as an index (see <xref linkend="notes"
+						endterm="notes-title"/> below.)  The filename inside the
+						archive (if any) is unchanged.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><option>--rename</option>=<replaceable>file</replaceable>=<replaceable>newname</replaceable></term>
+				<term><option>-r </option><replaceable>file</replaceable>=<replaceable>newname</replaceable></term>
+				<listitem>
+					<para>
+						change the name of <replaceable>file</replaceable> to
+						<replaceable>newname</replaceable>.  This can be used to move files
+						between folders with archives that support subdirectories.
+						<replaceable>file</replaceable> can be specified as an index (see
+						<xref linkend="notes" endterm="notes-title"/>
+						below.)  If <replaceable>newname</replaceable> is specified as an
+						index, the file is moved to that position, pushing the rest of the
+						files down by one.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><option>--delete</option>=<replaceable>file</replaceable></term>
+				<term><option>-d </option><replaceable>file</replaceable></term>
+				<listitem>
+					<para>
+						remove <replaceable>file</replaceable> from the archive.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><option>--filetype</option>=<replaceable>format</replaceable></term>
+				<term><option>-y </option><replaceable>format</replaceable></term>
+				<listitem>
+					<para>
+						when using <option>--add</option> or <option>--insert</option> the
+						file being added can have a type set, for those archives that store
+						this value separately (often when no or incomplete filenames are
+						used.)  Valid values depend on the archive format, and viewing the
+						archive with <option>--list</option> will show any existing file
+						types.  A set file type will remain in effect until changed.  Set
+						to a blank string (&quot;&quot;) to return to the default file type.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><option>--attribute</option>=<replaceable>attr</replaceable></term>
+				<term><option>-b </option><replaceable>attr</replaceable></term>
+				<listitem>
+					<para>
+						when using <option>--add</option> or <option>--insert</option> the
+						new file can have certain attributes set with this option.  This
+						option affects only <option>--add</option> or
+						<option>--insert</option> options following it.  Multiple attributes
+						can be specified by using the option multiple times.  Prefix the
+						attribute with a minus sign to unset it again.  Valid attributes
+						are:
+					</para>
+					<variablelist>
+						<varlistentry>
+							<term><option>empty</option></term>
+							<listitem>
+								<para>file slot is unused</para>
+							</listitem>
+						</varlistentry>
+						<varlistentry>
+							<term><option>hidden</option></term>
+							<listitem>
+								<para>file is hidden between two FAT entries</para>
+							</listitem>
+						</varlistentry>
+						<varlistentry>
+							<term><option>compressed</option></term>
+							<listitem>
+								<para>
+									a compression algorithm has been applied to the file's content
+								</para>
+							</listitem>
+						</varlistentry>
+						<varlistentry>
+							<term><option>encrypted</option></term>
+							<listitem>
+								<para>
+									an encryption algorithm has been applied to the file's content
+								</para>
+							</listitem>
+						</varlistentry>
+					</variablelist>
+					<para>
+						Not all values are supported by a given archive format, and a
+						warning will be shown if an unsupported value is used.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><option>--uncompressed-size</option>=<replaceable>integer</replaceable></term>
+				<term><option>-z </option><replaceable>integer</replaceable></term>
+				<listitem>
+					<para>
+						archives that can compress their files often store both the
+						compressed and decompressed file sizes internally.  Normally filters
+						are enabled and these values are calculated automatically, but when
+						<option>--unfiltered</option> is in use, the uncompressed size is
+						not known.  This option will set the value to use as the
+						uncompressed size for all subsequent changes.  It can be specified
+						multiple times, and would normally be used just prior to any
+						<option>--add</option>, <option>--insert</option> or
+						<option>--overwrite</option>.  This option can only be used with
+						<option>--unfiltered</option>.
+					</para>
+				</listitem>
+			</varlistentry>
+
+		</variablelist>
+	</refsect1>
+
+	<refsect1 id="options">
+		<title id="options-title">Options</title>
+		<variablelist>
+
+			<varlistentry>
+				<term><option>--type</option>=<replaceable>format</replaceable></term>
+				<term><option>-t </option><replaceable>format</replaceable></term>
+				<listitem>
+					<para>
+						manually specify the archive type.  The archive type is normally
+						autodetected, but it needs to be specified for a few archives which
+						lack signatures to identify them by.  See
+						<option>--list-types</option>.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><option>--list-types</option></term>
+				<listitem>
+					<para>
+						show a list of supported file formats, along with the code to pass
+						to <option>--type</option>.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><option>--unfiltered</option></term>
+				<term><option>-u</option></term>
+				<listitem>
+					<para>
+						do not filter files.  When extracting files, if they are compressed
+						or encrypted inside the archive, they will not be decompressed or
+						decrypted, and the output file will contain the unmodified data
+						directly from the archive.  This allows use of an external utility
+						to perform the decompression, such as
+						<citerefentry>
+							<refentrytitle>gamecomp</refentrytitle>
+							<manvolnum>1</manvolnum>
+						</citerefentry>.  When adding files
+						to the archive, they will not be compressed/encrypted and must
+						already be in the format the archive expects (i.e. they should be
+						compressed by an external utility first.)
+					</para>
+					<para>
+						If the file is not encrypted or
+						compressed inside the archive, this option has no effect.  If this
+						option is used, <option>--uncompressed-size</option> will need to be
+						specified if any changes are made to the archive.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><option>--force</option></term>
+				<term><option>-f</option></term>
+				<listitem>
+					<para>
+						open the archive as the given <option>--type</option>, even if it
+						doesn't look like it's in that format.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><option>--verbose</option></term>
+				<term><option>-v</option></term>
+				<listitem>
+					<para>
+						print more detail when listing files with <option>--list</option>.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><option>--script</option></term>
+				<term><option>-s</option></term>
+				<listitem>
+					<para>
+						print output suitable for parsing by a script.
+					</para>
+				</listitem>
+			</varlistentry>
+
+		</variablelist>
+	</refsect1>
+
+	<refsect1 id="examples-basic">
+		<title id="examples-basic-title">Basic Examples</title>
+		<variablelist>
+
+			<varlistentry>
+				<term><command>gamearch duke3d.grp --list</command></term>
+				<listitem>
+					<para>
+						display all the filenames inside the Duke Nukem 3D group file.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><command>gamearch duke3d.grp --extract-all</command></term>
+				<listitem>
+					<para>
+						extract all the files inside duke3d.grp into the current directory.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><command>gamearch wacky.dat --type=dat-wacky --extract-all</command></term>
+				<listitem>
+					<para>
+						extract the contents of <literal>wacky.dat</literal>.  Since the
+						Wacky Wheels archive format lacks a signature, it can't be
+						autodetected so the archive type must be specified with the
+						<option>--type</option> parameter.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><command>gamearch duke3d.grp --extract=subway.voc</command></term>
+				<listitem>
+					<para>
+						extract a sound effect into the current directory.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><command>gamearch duke3d.grp --add=newsong.mid</command></term>
+				<listitem>
+					<para>
+						add a new music track into the group file.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><command>gamearch duke3d.grp --delete=newsong.mid</command></term>
+				<listitem>
+					<para>
+						delete the file added in the last example.
+					</para>
+				</listitem>
+			</varlistentry>
+
+		</variablelist>
+	</refsect1>
+
+	<refsect1 id="examples-advanced">
+		<title id="examples-advanced-title">Advanced Examples</title>
+		<variablelist>
+
+			<varlistentry>
+				<term><command>gamearch hocus.dat -x @1=first.bin</command></term>
+				<listitem>
+					<para>
+						extract the first file in the archive and save it as
+						<literal>first.bin</literal> in the current directory.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><command>gamearch duke3d.grp -f -a subway.voc=/tmp/truck.voc</command></term>
+				<listitem>
+					<para>
+						add <literal>/tmp/truck.voc</literal> into the archive, saving it
+						over the top of <literal>subway.voc</literal>
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><command>gamearch duke3d.grp -x @1.5=hidden.bin</command></term>
+				<listitem>
+					<para>
+						extract the hidden data stored between the first and second files in
+						the archive (only valid if <option>--list</option> reports hidden
+						data present)
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><command>gamearch duke3d.grp -a @1.5=hidden.bin</command></term>
+				<listitem>
+					<para>
+						add hidden data between the first and second files in the archive
+						(not all archive formats support this)
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term>
+					<command>gamearch duke3d.grp -a music/newsong.mid</command>
+					<sbr/><command>gamearch duke3d.grp -a newsong.mid=music/newsong.mid</command>
+				</term>
+				<listitem>
+					<para>
+						the first command fails adding the file, because the .GRP format
+						does not support subdirectories.  The second command works as it is
+						specifying a valid alternate name to store in the archive.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><command>gamearch disk.pod -a music/tame.mod</command></term>
+				<listitem>
+					<para>
+						adds a file called <literal>tame.mod</literal> into the
+						<literal>music</literal> subdirectory in the archive
+						<literal>disk.pod</literal>.  The file being added
+						(<literal>tame.mod</literal>) must also reside in a folder called
+						<literal>music</literal> in the current directory.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><command>gamearch disk.pod -a music/tame.mod=tame.mod</command></term>
+				<listitem>
+					<para>
+						same as previous example, except the file being added is now read
+						from the current directory instead
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><command>gamearch duke3d.grp -r e1l1.map=@1</command></term>
+				<listitem>
+					<para>
+						moves <literal>e1l1.map</literal> to be the first file in the
+						archive.  The other files are shifted out of the way (so the
+						original first file in the archive becomes the second file.)  This
+						is usually only necessary when a game places significance on the
+						positions of files as well as their names (e.g. .wad)
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><command>gamearch duke3d.grp -a data.bin -r data.bin=@5</command></term>
+				<listitem>
+					<para>
+						inserts <literal>data.bin</literal> as the fifth file in the
+						archive, moving the other files out of the way (but not overwriting
+						any of them!)
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term><command>gamearch duke3d.grp -f -a @5=data.bin</command></term>
+				<listitem>
+					<para>
+						overwrites the fifth file in the archive with
+						<literal>data.bin</literal> (renaming the fifth file to
+						<literal>data.bin</literal> in the process, regardless of its
+						previous name.)
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term>
+					<command>gamearch bash1.dat data1.bin --filetype image/bash-sprite
+					-a data2.bin -a data3.bin</command>
+				</term>
+				<listitem>
+					<para>
+						appends <literal>data1.bin</literal> leaving its file type as the
+						default, then appends <literal>data2.bin</literal> followed by
+						<literal>data3.bin</literal>, flagging them both as containing
+						Monster Bash sprite data.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term>
+					<command>gamearch bash1.dat data1.bin --attribute compressed
+					-a data2.bin -a data3.bin --attribute hidden -a data4.bin
+					--attribute -compressed -a data5.bin</command>
+				</term>
+				<listitem>
+					<para>
+						appends <literal>data1.bin</literal> through
+						<literal>data5.bin</literal> as follows:
+						<literal>data1.bin</literal> is normal (no attributes),
+						<literal>data2.bin</literal> and <literal>data3.bin</literal> are
+						both compressed, <literal>data4.bin</literal> is both compressed
+						and hidden, and <literal>data5.bin</literal> is just hidden.
+					</para>
+				</listitem>
+			</varlistentry>
+		</variablelist>
+	</refsect1>
+
+	<refsect1 id="notes">
+		<title id="notes-title">Notes</title>
+		<para>
+			When a filename refers to an item inside an archive, it can be specified
+			either by filename, or by index.  When using an index, prepend an at-sign
+			(<literal>@</literal>) before the number.  Using an index is most useful
+			for archives which don't support filenames, or for accessing hidden data
+			between files in archives which support it.
+		</para>
+		<para>
+			Exit status is <returnvalue>0</returnvalue> on success,
+			<returnvalue>non-zero</returnvalue> on failure (<returnvalue>1</returnvalue>
+			for bad parameters, <returnvalue>2</returnvalue> for critical errors such
+			as being unable to open the the archive file, <returnvalue>3</returnvalue>
+			for more information needed, <returnvalue>4</returnvalue> for non-critical
+			errors such as being unable to insert one of many files,
+			<returnvalue>5</returnvalue> for uncommon failures like running out of disk
+			space.)
+		</para>
+		<para>
+			All the file formats supported by this utility are fully documented on the
+			<ulink url="http://www.shikadi.net/moddingwiki">Game Modding Wiki</ulink>.
+		</para>
+	</refsect1>
+
+	<refsect1 id="bugs">
+		<title id="bugs-title">Bugs and Questions</title>
+		<para>
+			Report bugs at <ulink>http://www.shikadi.net/camoto/bugs/</ulink>
+		</para>
+		<para>
+			Ask questions about Camoto or modding in general at the <ulink
+			url="http://www.classicdosgames.com/forum/viewforum.php?f=25">RGB
+			Classic Games modding forum</ulink>
+		</para>
+	</refsect1>
+
+	<refsect1 id="copyright">
+		<title id="copyright-title">Copyright</title>
+		<para>
+			Copyright (c) 2010-2012 Adam Nielsen.
+		</para>
+		<para>
+			License GPLv3+: <ulink url="http://gnu.org/licenses/gpl.html">GNU GPL
+			version 3 or later</ulink>
+		</para>
+		<para>
+			This is free software: you are free to change and redistribute it.
+			There is NO WARRANTY, to the extent permitted by law.
+		</para>
+	</refsect1>
+
+	<refsect1 id="seealso">
+		<title id="seealso-title">See Also</title>
+		<simplelist type="inline">
+			<member><citerefentry><refentrytitle>gamecomp</refentrytitle><manvolnum>1</manvolnum></citerefentry></member>
+			<member><citerefentry><refentrytitle>gametls</refentrytitle><manvolnum>1</manvolnum></citerefentry></member>
+			<member><citerefentry><refentrytitle>gameimg</refentrytitle><manvolnum>1</manvolnum></citerefentry></member>
+			<member><citerefentry><refentrytitle>gamemap</refentrytitle><manvolnum>1</manvolnum></citerefentry></member>
+			<member><citerefentry><refentrytitle>gamemus</refentrytitle><manvolnum>1</manvolnum></citerefentry></member>
+			<member><citerefentry><refentrytitle>camoto-studio</refentrytitle><manvolnum>1</manvolnum></citerefentry></member>
+		</simplelist>
+	</refsect1>
+
+</refentry>
