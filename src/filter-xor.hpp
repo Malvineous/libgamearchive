@@ -69,10 +69,6 @@ class filter_xor_crypt: public filter {
 		/**
 		 * This can be overridden by descendent classes to provide
 		 * custom algorithms here.
-		 *
-		 * @param delta
-		 *   Offset.  Normally +1 for each byte read, but can be more, or negative,
-		 *   when seeking.
 		 */
 		virtual uint8_t getKey();
 

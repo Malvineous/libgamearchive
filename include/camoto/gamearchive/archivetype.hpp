@@ -73,14 +73,16 @@ class ArchiveType {
 		/// Get a list of games using this format.
 		/**
 		 * @return A vector of game names, such as "Major Stryker", "Cosmo's Cosmic
-		 *         Adventures", "Duke Nukem II"
+		 *   Adventures", "Duke Nukem II"
 		 */
 		virtual std::vector<std::string> getGameList() const
 			throw () = 0;
 
 		/// Check a stream to see if it's in this archive format.
 		/**
-		 * @param  psArchive A C++ iostream of the file to test.
+		 * @param psArchive
+		 *   A C++ iostream of the file to test.
+		 *
 		 * @return A single confidence value from \ref ArchiveType::Certainty.
 		 */
 		virtual ArchiveType::Certainty isInstance(stream::input_sptr psArchive) const
@@ -95,26 +97,33 @@ class ArchiveType {
 		 * if there are headers to write, otherwise an empty stream is passed to
 		 * open() which is expected to succeed.
 		 *
-		 * @param  psArchive A blank stream to store the new archive in.
-		 * @param  suppData Any supplemental data required by this format (see
-		 *         getRequiredSupps()).
+		 * @param psArchive
+		 *   A blank stream to store the new archive in.
+		 *
+		 * @param suppData
+		 *   Any supplemental data required by this format (see getRequiredSupps()).
+		 *
 		 * @return A pointer to an instance of the Archive class, just as if a
-		 *         valid empty file had been opened by open().
+		 *   valid empty file had been opened by open().
 		 */
 		virtual ArchivePtr newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
 			throw (stream::error);
 
 		/// Open an archive file.
 		/**
-		 * @pre    Recommended that isInstance() has returned > DefinitelyNo.
-		 * @param  psArchive The archive file.
-		 * @param  suppData Any supplemental data required by this format (see
-		 *         getRequiredSupps()).
+		 * @pre Recommended that isInstance() has returned > DefinitelyNo.
+		 *
+		 * @param psArchive
+		 *   The archive file to read.
+		 *
+		 * @param suppData
+		 *   Any supplemental data required by this format (see getRequiredSupps()).
+		 *
 		 * @return A pointer to an instance of the Archive class.  Will throw an
-		 *         exception if the data is invalid (i.e. if isInstance() returned
-		 *         DefinitelyNo) however it will try its best to read the data
-		 *         anyway, to make it possible to "force" a file to be opened by a
-		 *         particular format handler.
+		 *   exception if the data is invalid (i.e. if isInstance() returned
+		 *   DefinitelyNo) however it will try its best to read the data anyway, to
+		 *   make it possible to "force" a file to be opened by a particular format
+		 *   handler.
 		 */
 		virtual ArchivePtr open(stream::inout_sptr psArchive, SuppData& suppData) const
 			throw (stream::error) = 0;
@@ -127,16 +136,22 @@ class ArchiveType {
 		 * supplementary files, so the caller can open them and pass them along
 		 * to the archive manipulation classes.
 		 *
-		 * @param  filenameArchive The filename of the archive (no path.)  This is
-		 *         for supplemental files which share the same base name as the
-		 *         archive, but a different filename extension.
+		 * @param data
+		 *   Read-only stream containing the archive content.  This is for archives
+		 *   which contain the names of the other files they need.
+		 *
+		 * @param filenameArchive
+		 *   The filename of the archive (no path.)  This is for supplemental files
+		 *   which share the same base name as the archive, but a different filename
+		 *   extension.
+		 *
 		 * @return A (possibly empty) map associating required supplemental file
-		 *         types with their filenames.  For each returned value the file
-		 *         should be opened and placed in a SuppItem instance.  The
-		 *         SuppItem is then added to an \ref SuppData map where it can
-		 *         be passed to newArchive() or open().  Note that the filenames
-		 *         returned can have relative paths, and may even have an absolute
-		 *         path, if one was passed in with filenameArchive.
+		 *   types with their filenames.  For each returned value the file should be
+		 *   opened and placed in a SuppItem instance.  The \ref SuppItem is then
+		 *   added to a \ref SuppData map where it can be passed to newArchive() or
+		 *   open().  Note that the filenames returned can have relative paths, and
+		 *   may even have an absolute path, if one was passed in with
+		 *   filenameArchive.
 		 */
 		virtual SuppFilenames getRequiredSupps(stream::input_sptr data,
 			const std::string& filenameArchive) const

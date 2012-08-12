@@ -386,8 +386,6 @@ class Archive: virtual public Metadata {
 		 * changes without destroying the class.  However some changes can involve
 		 * shuffling around many hundreds of megabytes of data, so don't call this
 		 * function unless you have good reason to!
-		 *
-		 * @pre The \ref fnTruncate member must be valid before this call.
 		 */
 		virtual void flush()
 			throw (stream::error) = 0;
