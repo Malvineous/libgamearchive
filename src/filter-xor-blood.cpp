@@ -28,7 +28,7 @@ namespace gamearchive {
 #define RFF_FILE_CRYPT_LEN 256  // number of bytes encrypted from start of file
 
 filter_rff_crypt::filter_rff_crypt(int lenCrypt, int seed)
-	: filter_xor_crypt(lenCrypt, seed)
+	:	filter_xor_crypt(lenCrypt, seed)
 {
 }
 
@@ -39,29 +39,24 @@ uint8_t filter_rff_crypt::getKey()
 
 
 RFFFilterType::RFFFilterType()
-	throw ()
 {
 }
 
 RFFFilterType::~RFFFilterType()
-	throw ()
 {
 }
 
 std::string RFFFilterType::getFilterCode() const
-	throw ()
 {
 	return "xor-blood";
 }
 
 std::string RFFFilterType::getFriendlyName() const
-	throw ()
 {
 	return "Blood RFF encryption";
 }
 
 std::vector<std::string> RFFFilterType::getGameList() const
-	throw ()
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Blood");
@@ -70,7 +65,6 @@ std::vector<std::string> RFFFilterType::getGameList() const
 
 stream::inout_sptr RFFFilterType::apply(stream::inout_sptr target,
 	stream::fn_truncate resize)
-	throw (filter_error, stream::read_error)
 {
 	stream::filtered_sptr st(new stream::filtered());
 	// We need two separate filters, otherwise reading from one will
@@ -82,7 +76,6 @@ stream::inout_sptr RFFFilterType::apply(stream::inout_sptr target,
 }
 
 stream::input_sptr RFFFilterType::apply(stream::input_sptr target)
-	throw (filter_error, stream::read_error)
 {
 	stream::input_filtered_sptr st(new stream::input_filtered());
 	filter_sptr de(new filter_rff_crypt(RFF_FILE_CRYPT_LEN, 0));
@@ -92,7 +85,6 @@ stream::input_sptr RFFFilterType::apply(stream::input_sptr target)
 
 stream::output_sptr RFFFilterType::apply(stream::output_sptr target,
 	stream::fn_truncate resize)
-	throw (filter_error)
 {
 	stream::output_filtered_sptr st(new stream::output_filtered());
 	filter_sptr en(new filter_rff_crypt(RFF_FILE_CRYPT_LEN, 0));

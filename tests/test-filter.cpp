@@ -23,8 +23,8 @@
 using namespace camoto;
 
 filter_sample::filter_sample()
-	: in(new stream::string()),
-	  in_filt(new stream::input_filtered())
+	:	in(new stream::string()),
+		in_filt(new stream::input_filtered())
 {
 }
 

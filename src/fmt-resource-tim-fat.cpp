@@ -43,29 +43,24 @@ namespace camoto {
 namespace gamearchive {
 
 TIMResourceFATType::TIMResourceFATType()
-	throw ()
 {
 }
 
 TIMResourceFATType::~TIMResourceFATType()
-	throw ()
 {
 }
 
 std::string TIMResourceFATType::getArchiveCode() const
-	throw ()
 {
 	return "resource-tim-fat";
 }
 
 std::string TIMResourceFATType::getFriendlyName() const
-	throw ()
 {
 	return "FAT for The Incredible Machine Resource File";
 }
 
 std::vector<std::string> TIMResourceFATType::getFileExtensions() const
-	throw ()
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("map");
@@ -73,7 +68,6 @@ std::vector<std::string> TIMResourceFATType::getFileExtensions() const
 }
 
 std::vector<std::string> TIMResourceFATType::getGameList() const
-	throw ()
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("The Incredible Machine");
@@ -81,7 +75,6 @@ std::vector<std::string> TIMResourceFATType::getGameList() const
 }
 
 ArchiveType::Certainty TIMResourceFATType::isInstance(stream::input_sptr psArchive) const
-	throw (stream::error)
 {
 	try {
 		stream::len lenArchive = psArchive->size();
@@ -116,7 +109,6 @@ ArchiveType::Certainty TIMResourceFATType::isInstance(stream::input_sptr psArchi
 }
 
 ArchivePtr TIMResourceFATType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
-	throw (stream::error)
 {
 	psArchive->seekp(0, stream::start);
 	psArchive->write("\x00\x00" "\x00\x00" "\x00\x00", 6);
@@ -124,14 +116,12 @@ ArchivePtr TIMResourceFATType::newArchive(stream::inout_sptr psArchive, SuppData
 }
 
 ArchivePtr TIMResourceFATType::open(stream::inout_sptr psArchive, SuppData& suppData) const
-	throw (stream::error)
 {
 	return ArchivePtr(new TIMResourceFATArchive(psArchive));
 }
 
 SuppFilenames TIMResourceFATType::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
-	throw ()
 {
 	// No supplemental types/empty list
 	return SuppFilenames();
@@ -139,8 +129,7 @@ SuppFilenames TIMResourceFATType::getRequiredSupps(stream::input_sptr data,
 
 
 TIMResourceFATArchive::TIMResourceFATArchive(stream::inout_sptr psArchive)
-	throw (stream::error) :
-		FATArchive(psArchive, TIM_FIRST_FILE_OFFSET, TIM_MAX_FILENAME_LEN)
+	:	FATArchive(psArchive, TIM_FIRST_FILE_OFFSET, TIM_MAX_FILENAME_LEN)
 {
 	this->psArchive->seekg(TIM_FILECOUNT_OFFSET, stream::start);
 	uint16_t numFiles;
@@ -170,12 +159,10 @@ TIMResourceFATArchive::TIMResourceFATArchive(stream::inout_sptr psArchive)
 }
 
 TIMResourceFATArchive::~TIMResourceFATArchive()
-	throw ()
 {
 }
 
 void TIMResourceFATArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_resource_tim_fat_rename
 	assert(strNewName.length() <= TIM_MAX_FILENAME_LEN);
@@ -187,14 +174,12 @@ void TIMResourceFATArchive::updateFileName(const FATEntry *pid, const std::strin
 }
 
 void TIMResourceFATArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
-	throw (stream::error)
 {
 	// Nothing to do
 	return;
 }
 
 void TIMResourceFATArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_resource_tim_fat_insert*
 	// TESTED BY: fmt_resource_tim_fat_resize*
@@ -213,7 +198,6 @@ void TIMResourceFATArchive::updateFileSize(const FATEntry *pid, stream::delta si
 }
 
 FATArchive::FATEntry *TIMResourceFATArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_resource_tim_fat_insert*
 	int len = pNewEntry->strName.length();
@@ -254,7 +238,6 @@ FATArchive::FATEntry *TIMResourceFATArchive::preInsertFile(const FATEntry *idBef
 }
 
 void TIMResourceFATArchive::preRemoveFile(const FATEntry *pid)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_resource_tim_fat_remove*
 	this->updateFileCount(this->vcFAT.size() - 1);
@@ -262,7 +245,6 @@ void TIMResourceFATArchive::preRemoveFile(const FATEntry *pid)
 }
 
 void TIMResourceFATArchive::updateFileCount(uint32_t iNewCount)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_resource_tim_fat_insert*
 	// TESTED BY: fmt_resource_tim_fat_remove*

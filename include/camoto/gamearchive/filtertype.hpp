@@ -46,22 +46,19 @@ class FilterType {
 		 *
 		 * @return The filter's short name/ID.
 		 */
-		virtual std::string getFilterCode() const
-			throw () = 0;
+		virtual std::string getFilterCode() const = 0;
 
 		/// Get the filter name, e.g. "Zone 66 compression"
 		/**
 		 * @return The filter name.
 		 */
-		virtual std::string getFriendlyName() const
-			throw () = 0;
+		virtual std::string getFriendlyName() const = 0;
 
 		/// Get a list of games using this format.
 		/**
 		 * @return A vector of game names, such as "Zone 66".
 		 */
-		virtual std::vector<std::string> getGameList() const
-			throw () = 0;
+		virtual std::vector<std::string> getGameList() const = 0;
 
 		/// Apply the algorithm to an iostream.
 		/**
@@ -90,23 +87,20 @@ class FilterType {
 		 *   processing.
 		 */
 		virtual stream::inout_sptr apply(stream::inout_sptr target,
-			stream::fn_truncate resize)
-			throw (filter_error, stream::read_error) = 0;
+			stream::fn_truncate resize) = 0;
 
 		/// Apply the algorithm to an input stream.
 		/**
 		 * @sa apply(stream::inout_sptr)
 		 */
-		virtual stream::input_sptr apply(stream::input_sptr target)
-			throw (filter_error, stream::read_error) = 0;
+		virtual stream::input_sptr apply(stream::input_sptr target) = 0;
 
 		/// Apply the algorithm to an output stream.
 		/**
 		 * @sa apply(stream::inout_sptr)
 		 */
 		virtual stream::output_sptr apply(stream::output_sptr target,
-			stream::fn_truncate resize)
-			throw (filter_error) = 0;
+			stream::fn_truncate resize) = 0;
 
 };
 

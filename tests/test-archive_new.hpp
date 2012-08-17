@@ -19,8 +19,8 @@
  */
 
 struct EMPTY_FIXTURE_NAME: public FIXTURE_NAME {
-	EMPTY_FIXTURE_NAME() :
-		FIXTURE_NAME(0)
+	EMPTY_FIXTURE_NAME()
+		:	FIXTURE_NAME(0)
 	{
 		#ifdef HAS_FAT
 		{

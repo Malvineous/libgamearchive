@@ -35,12 +35,10 @@ class filter_bash_unrle: public filter {
 
 	public:
 
-		filter_bash_unrle()
-			throw ();
+		filter_bash_unrle();
 
 		void transform(uint8_t *out, stream::len *lenOut,
-			const uint8_t *in, stream::len *lenIn)
-			throw (filter_error);
+			const uint8_t *in, stream::len *lenIn);
 
 };
 
@@ -60,12 +58,10 @@ class filter_bash_rle: public filter {
 
 	public:
 
-		filter_bash_rle()
-			throw ();
+		filter_bash_rle();
 
 		void transform(uint8_t *out, stream::len *lenOut,
-			const uint8_t *in, stream::len *lenIn)
-			throw (filter_error);
+			const uint8_t *in, stream::len *lenIn);
 
 };
 

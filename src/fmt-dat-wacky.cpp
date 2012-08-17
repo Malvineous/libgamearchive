@@ -44,29 +44,24 @@ namespace camoto {
 namespace gamearchive {
 
 DAT_WackyType::DAT_WackyType()
-	throw ()
 {
 }
 
 DAT_WackyType::~DAT_WackyType()
-	throw ()
 {
 }
 
 std::string DAT_WackyType::getArchiveCode() const
-	throw ()
 {
 	return "dat-wacky";
 }
 
 std::string DAT_WackyType::getFriendlyName() const
-	throw ()
 {
 	return "Wacky Wheels DAT File";
 }
 
 std::vector<std::string> DAT_WackyType::getFileExtensions() const
-	throw ()
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("dat");
@@ -74,7 +69,6 @@ std::vector<std::string> DAT_WackyType::getFileExtensions() const
 }
 
 std::vector<std::string> DAT_WackyType::getGameList() const
-	throw ()
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Wacky Wheels");
@@ -82,7 +76,6 @@ std::vector<std::string> DAT_WackyType::getGameList() const
 }
 
 ArchiveType::Certainty DAT_WackyType::isInstance(stream::input_sptr psArchive) const
-	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();
 	// TESTED BY: fmt_dat_wacky_isinstance_c02
@@ -130,7 +123,6 @@ ArchiveType::Certainty DAT_WackyType::isInstance(stream::input_sptr psArchive) c
 }
 
 ArchivePtr DAT_WackyType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
-	throw (stream::error)
 {
 	psArchive->seekp(0, stream::start);
 	psArchive << u16le(0); // file count
@@ -138,14 +130,12 @@ ArchivePtr DAT_WackyType::newArchive(stream::inout_sptr psArchive, SuppData& sup
 }
 
 ArchivePtr DAT_WackyType::open(stream::inout_sptr psArchive, SuppData& suppData) const
-	throw (stream::error)
 {
 	return ArchivePtr(new DAT_WackyArchive(psArchive));
 }
 
 SuppFilenames DAT_WackyType::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
-	throw ()
 {
 	// No supplemental types/empty list
 	return SuppFilenames();
@@ -153,8 +143,7 @@ SuppFilenames DAT_WackyType::getRequiredSupps(stream::input_sptr data,
 
 
 DAT_WackyArchive::DAT_WackyArchive(stream::inout_sptr psArchive)
-	throw (stream::error) :
-		FATArchive(psArchive, DAT_FIRST_FILE_OFFSET, DAT_MAX_FILENAME_LEN)
+	:	FATArchive(psArchive, DAT_FIRST_FILE_OFFSET, DAT_MAX_FILENAME_LEN)
 {
 	stream::pos lenArchive = this->psArchive->size();
 	if (lenArchive < DAT_FAT_OFFSET) {
@@ -193,12 +182,10 @@ DAT_WackyArchive::DAT_WackyArchive(stream::inout_sptr psArchive)
 }
 
 DAT_WackyArchive::~DAT_WackyArchive()
-	throw ()
 {
 }
 
 void DAT_WackyArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_dat_wacky_rename
 	assert(strNewName.length() <= DAT_MAX_FILENAME_LEN);
@@ -210,7 +197,6 @@ void DAT_WackyArchive::updateFileName(const FATEntry *pid, const std::string& st
 void DAT_WackyArchive::updateFileOffset(const FATEntry *pid,
 	stream::delta offDelta
 )
-	throw (stream::error)
 {
 	// TESTED BY: fmt_dat_wacky_insert*
 	// TESTED BY: fmt_dat_wacky_resize*
@@ -226,7 +212,6 @@ void DAT_WackyArchive::updateFileOffset(const FATEntry *pid,
 void DAT_WackyArchive::updateFileSize(const FATEntry *pid,
 	stream::delta sizeDelta
 )
-	throw (stream::error)
 {
 	// TESTED BY: fmt_dat_wacky_insert*
 	// TESTED BY: fmt_dat_wacky_resize*
@@ -238,7 +223,6 @@ void DAT_WackyArchive::updateFileSize(const FATEntry *pid,
 FATArchive::FATEntry *DAT_WackyArchive::preInsertFile(
 	const FATEntry *idBeforeThis, FATEntry *pNewEntry
 )
-	throw (stream::error)
 {
 	// TESTED BY: fmt_dat_wacky_insert*
 	assert(pNewEntry->strName.length() <= DAT_MAX_FILENAME_LEN);
@@ -275,7 +259,6 @@ FATArchive::FATEntry *DAT_WackyArchive::preInsertFile(
 }
 
 void DAT_WackyArchive::preRemoveFile(const FATEntry *pid)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_dat_wacky_remove*
 
@@ -298,7 +281,6 @@ void DAT_WackyArchive::preRemoveFile(const FATEntry *pid)
 }
 
 void DAT_WackyArchive::updateFileCount(uint32_t iNewCount)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_dat_wacky_insert*
 	// TESTED BY: fmt_dat_wacky_remove*

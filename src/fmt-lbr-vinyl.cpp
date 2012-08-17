@@ -345,29 +345,24 @@ int calcHash(const std::string& data)
 }
 
 LBRType::LBRType()
-	throw ()
 {
 }
 
 LBRType::~LBRType()
-	throw ()
 {
 }
 
 std::string LBRType::getArchiveCode() const
-	throw ()
 {
 	return "lbr-vinyl";
 }
 
 std::string LBRType::getFriendlyName() const
-	throw ()
 {
 	return "Vinyl Goddess From Mars Library";
 }
 
 std::vector<std::string> LBRType::getFileExtensions() const
-	throw ()
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("lbr");
@@ -375,7 +370,6 @@ std::vector<std::string> LBRType::getFileExtensions() const
 }
 
 std::vector<std::string> LBRType::getGameList() const
-	throw ()
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Vinyl Goddess From Mars");
@@ -383,7 +377,6 @@ std::vector<std::string> LBRType::getGameList() const
 }
 
 ArchiveType::Certainty LBRType::isInstance(stream::input_sptr psArchive) const
-	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();
 
@@ -411,7 +404,6 @@ ArchiveType::Certainty LBRType::isInstance(stream::input_sptr psArchive) const
 }
 
 ArchivePtr LBRType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
-	throw (stream::error)
 {
 	psArchive->seekp(0, stream::start);
 	psArchive->write("\x00\x00", 2);
@@ -419,14 +411,12 @@ ArchivePtr LBRType::newArchive(stream::inout_sptr psArchive, SuppData& suppData)
 }
 
 ArchivePtr LBRType::open(stream::inout_sptr psArchive, SuppData& suppData) const
-	throw (stream::error)
 {
 	return ArchivePtr(new LBRArchive(psArchive));
 }
 
 SuppFilenames LBRType::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
-	throw ()
 {
 	// No supplemental types/empty list
 	return SuppFilenames();
@@ -434,8 +424,7 @@ SuppFilenames LBRType::getRequiredSupps(stream::input_sptr data,
 
 
 LBRArchive::LBRArchive(stream::inout_sptr psArchive)
-	throw (stream::error) :
-		FATArchive(psArchive, LBR_FIRST_FILE_OFFSET, 0 /* no max filename len */)
+	:	FATArchive(psArchive, LBR_FIRST_FILE_OFFSET, 0 /* no max filename len */)
 {
 	stream::pos lenArchive = psArchive->size();
 
@@ -501,12 +490,10 @@ LBRArchive::LBRArchive(stream::inout_sptr psArchive)
 }
 
 LBRArchive::~LBRArchive()
-	throw ()
 {
 }
 
 void LBRArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_lbr_vinyl_rename
 	this->psArchive->seekp(LBR_HASH_OFFSET(pid), stream::start);
@@ -515,7 +502,6 @@ void LBRArchive::updateFileName(const FATEntry *pid, const std::string& strNewNa
 }
 
 void LBRArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
-	throw (stream::error)
 {
 	this->psArchive->seekp(LBR_FILEOFFSET_OFFSET(pid), stream::start);
 	this->psArchive << u32le(pid->iOffset);
@@ -523,13 +509,11 @@ void LBRArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 }
 
 void LBRArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
-	throw (stream::error)
 {
 	return;
 }
 
 FATArchive::FATEntry *LBRArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_lbr_vinyl_insert*
 
@@ -560,7 +544,6 @@ FATArchive::FATEntry *LBRArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 }
 
 void LBRArchive::preRemoveFile(const FATEntry *pid)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_lbr_vinyl_remove*
 
@@ -583,7 +566,6 @@ void LBRArchive::preRemoveFile(const FATEntry *pid)
 }
 
 void LBRArchive::updateFileCount(uint32_t iNewCount)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_lbr_vinyl_insert*
 	// TESTED BY: fmt_lbr_vinyl_remove*

@@ -53,30 +53,26 @@ class ArchiveType {
 		 *
 		 * @return The archive short name/ID.
 		 */
-		virtual std::string getArchiveCode() const
-			throw () = 0;
+		virtual std::string getArchiveCode() const = 0;
 
 		/// Get the archive name, e.g. "Duke Nukem 3D GRP file"
 		/**
 		 * @return The archive name.
 		 */
-		virtual std::string getFriendlyName() const
-			throw () = 0;
+		virtual std::string getFriendlyName() const = 0;
 
 		/// Get a list of the known file extensions for this format.
 		/**
 		 * @return A vector of file extensions, e.g. "vol", "stn", "cmp"
 		 */
-		virtual std::vector<std::string> getFileExtensions() const
-			throw () = 0;
+		virtual std::vector<std::string> getFileExtensions() const = 0;
 
 		/// Get a list of games using this format.
 		/**
 		 * @return A vector of game names, such as "Major Stryker", "Cosmo's Cosmic
 		 *   Adventures", "Duke Nukem II"
 		 */
-		virtual std::vector<std::string> getGameList() const
-			throw () = 0;
+		virtual std::vector<std::string> getGameList() const = 0;
 
 		/// Check a stream to see if it's in this archive format.
 		/**
@@ -85,8 +81,7 @@ class ArchiveType {
 		 *
 		 * @return A single confidence value from \ref ArchiveType::Certainty.
 		 */
-		virtual ArchiveType::Certainty isInstance(stream::input_sptr psArchive) const
-			throw (stream::error) = 0;
+		virtual ArchiveType::Certainty isInstance(stream::input_sptr psArchive) const = 0;
 
 		/// Create a blank archive in this format.
 		/**
@@ -106,8 +101,7 @@ class ArchiveType {
 		 * @return A pointer to an instance of the Archive class, just as if a
 		 *   valid empty file had been opened by open().
 		 */
-		virtual ArchivePtr newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
-			throw (stream::error);
+		virtual ArchivePtr newArchive(stream::inout_sptr psArchive, SuppData& suppData) const;
 
 		/// Open an archive file.
 		/**
@@ -125,8 +119,7 @@ class ArchiveType {
 		 *   make it possible to "force" a file to be opened by a particular format
 		 *   handler.
 		 */
-		virtual ArchivePtr open(stream::inout_sptr psArchive, SuppData& suppData) const
-			throw (stream::error) = 0;
+		virtual ArchivePtr open(stream::inout_sptr psArchive, SuppData& suppData) const = 0;
 
 		/// Get a list of any required supplemental files.
 		/**
@@ -154,8 +147,7 @@ class ArchiveType {
 		 *   filenameArchive.
 		 */
 		virtual SuppFilenames getRequiredSupps(stream::input_sptr data,
-			const std::string& filenameArchive) const
-			throw () = 0;
+			const std::string& filenameArchive) const = 0;
 
 };
 

@@ -30,7 +30,6 @@ namespace gamearchive {
 
 Archive::EntryPtr findFile(ArchivePtr& archive,
 	const std::string& filename)
-	throw (stream::error)
 {
 	// Save the original archive pointer in case we get half way through a
 	// subfolder tree and get a file-not-found.

@@ -47,29 +47,24 @@ namespace camoto {
 namespace gamearchive {
 
 DLTType::DLTType()
-	throw ()
 {
 }
 
 DLTType::~DLTType()
-	throw ()
 {
 }
 
 std::string DLTType::getArchiveCode() const
-	throw ()
 {
 	return "dlt-stargunner";
 }
 
 std::string DLTType::getFriendlyName() const
-	throw ()
 {
 	return "Star Gunner DLT File";
 }
 
 std::vector<std::string> DLTType::getFileExtensions() const
-	throw ()
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("dlt");
@@ -77,7 +72,6 @@ std::vector<std::string> DLTType::getFileExtensions() const
 }
 
 std::vector<std::string> DLTType::getGameList() const
-	throw ()
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Star Gunner");
@@ -85,7 +79,6 @@ std::vector<std::string> DLTType::getGameList() const
 }
 
 ArchiveType::Certainty DLTType::isInstance(stream::input_sptr psArchive) const
-	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();
 
@@ -104,7 +97,6 @@ ArchiveType::Certainty DLTType::isInstance(stream::input_sptr psArchive) const
 }
 
 ArchivePtr DLTType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
-	throw (stream::error)
 {
 	psArchive->seekp(0, stream::start);
 	psArchive->write("DAVE\x00\x01\x00\x00", 8);
@@ -112,14 +104,12 @@ ArchivePtr DLTType::newArchive(stream::inout_sptr psArchive, SuppData& suppData)
 }
 
 ArchivePtr DLTType::open(stream::inout_sptr psArchive, SuppData& suppData) const
-	throw (stream::error)
 {
 	return ArchivePtr(new DLTArchive(psArchive));
 }
 
 SuppFilenames DLTType::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
-	throw ()
 {
 	// No supplemental types/empty list
 	return SuppFilenames();
@@ -127,8 +117,7 @@ SuppFilenames DLTType::getRequiredSupps(stream::input_sptr data,
 
 
 DLTArchive::DLTArchive(stream::inout_sptr psArchive)
-	throw (stream::error) :
-		FATArchive(psArchive, DLT_FIRST_FILE_OFFSET, DLT_MAX_FILENAME_LEN)
+	:	FATArchive(psArchive, DLT_FIRST_FILE_OFFSET, DLT_MAX_FILENAME_LEN)
 {
 	this->psArchive->seekg(4, stream::start); // skip "DAVE" sig
 
@@ -182,12 +171,10 @@ DLTArchive::DLTArchive(stream::inout_sptr psArchive)
 }
 
 DLTArchive::~DLTArchive()
-	throw ()
 {
 }
 
 void DLTArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
-	throw (stream::error)
 {
 	int lenName = strNewName.length();
 	// TESTED BY: fmt_dlt_stargunner_rename
@@ -208,7 +195,6 @@ void DLTArchive::updateFileName(const FATEntry *pid, const std::string& strNewNa
 }
 
 void DLTArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
-	throw (stream::error)
 {
 	// This format doesn't have any offsets that need updating.  As this function
 	// is only called when removing a file, the "offsets" will be sorted out
@@ -217,7 +203,6 @@ void DLTArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 }
 
 void DLTArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_dlt_stargunner_insert*
 	// TESTED BY: fmt_dlt_stargunner_resize*
@@ -227,7 +212,6 @@ void DLTArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 }
 
 FATArchive::FATEntry *DLTArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-	throw (stream::error)
 {
 	int lenName = pNewEntry->strName.length();
 	// TESTED BY: fmt_dlt_stargunner_insert*
@@ -265,7 +249,6 @@ FATArchive::FATEntry *DLTArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 }
 
 void DLTArchive::preRemoveFile(const FATEntry *pid)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_dlt_stargunner_remove*
 
@@ -274,7 +257,6 @@ void DLTArchive::preRemoveFile(const FATEntry *pid)
 }
 
 void DLTArchive::updateFileCount(uint16_t iNewCount)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_dlt_stargunner_insert*
 	// TESTED BY: fmt_dlt_stargunner_remove*

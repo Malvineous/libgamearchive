@@ -59,13 +59,11 @@ namespace camoto {
 namespace gamearchive {
 
 ManagerPtr getManager()
-	throw ()
 {
 	return ManagerPtr(new Manager());
 }
 
 Manager::Manager()
-	throw ()
 {
 	this->vcTypes.push_back(ArchiveTypePtr(new GRPType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new VOLType()));
@@ -108,19 +106,16 @@ Manager::Manager()
 }
 
 Manager::~Manager()
-	throw ()
 {
 }
 
 ArchiveTypePtr Manager::getArchiveType(unsigned int iIndex)
-	throw ()
 {
 	if (iIndex >= this->vcTypes.size()) return ArchiveTypePtr();
 	return this->vcTypes[iIndex];
 }
 
 ArchiveTypePtr Manager::getArchiveTypeByCode(const std::string& strCode)
-	throw ()
 {
 	for (VC_ARCHIVETYPE::const_iterator i = this->vcTypes.begin();
 		i != this->vcTypes.end(); i++
@@ -131,14 +126,12 @@ ArchiveTypePtr Manager::getArchiveTypeByCode(const std::string& strCode)
 }
 
 FilterTypePtr Manager::getFilterType(unsigned int iIndex)
-	throw ()
 {
 	if (iIndex >= this->vcFilters.size()) return FilterTypePtr();
 	return this->vcFilters[iIndex];
 }
 
 FilterTypePtr Manager::getFilterTypeByCode(const std::string& strCode)
-	throw ()
 {
 	for (VC_FILTERTYPE::const_iterator i = this->vcFilters.begin();
 		i != this->vcFilters.end(); i++

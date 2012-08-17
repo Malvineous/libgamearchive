@@ -55,12 +55,10 @@ class filter_xor_crypt: public filter {
 		 * @param seed
 		 *   @copybrief seed
 		 */
-		filter_xor_crypt(int lenCrypt, int seed)
-			throw ();
+		filter_xor_crypt(int lenCrypt, int seed);
 
 		void transform(uint8_t *out, stream::len *lenOut,
-			const uint8_t *in, stream::len *lenIn)
-			throw (filter_error);
+			const uint8_t *in, stream::len *lenIn);
 
 		/// Change the next XOR value
 		void setSeed(int val);
@@ -77,31 +75,23 @@ class filter_xor_crypt: public filter {
 class XORFilterType: virtual public FilterType {
 
 	public:
-		XORFilterType()
-			throw ();
+		XORFilterType();
 
-		~XORFilterType()
-			throw ();
+		~XORFilterType();
 
-		virtual std::string getFilterCode() const
-			throw ();
+		virtual std::string getFilterCode() const;
 
-		virtual std::string getFriendlyName() const
-			throw ();
+		virtual std::string getFriendlyName() const;
 
-		virtual std::vector<std::string> getGameList() const
-			throw ();
+		virtual std::vector<std::string> getGameList() const;
 
 		virtual stream::inout_sptr apply(stream::inout_sptr target,
-			stream::fn_truncate resize)
-			throw (filter_error, stream::read_error);
+			stream::fn_truncate resize);
 
-		virtual stream::input_sptr apply(stream::input_sptr target)
-			throw (filter_error, stream::read_error);
+		virtual stream::input_sptr apply(stream::input_sptr target);
 
 		virtual stream::output_sptr apply(stream::output_sptr target,
-			stream::fn_truncate resize)
-			throw (filter_error);
+			stream::fn_truncate resize);
 
 };
 

@@ -31,36 +31,26 @@ class EXE_CCavesType: virtual public ArchiveType {
 
 	public:
 
-		EXE_CCavesType()
-			throw ();
+		EXE_CCavesType();
 
-		virtual ~EXE_CCavesType()
-			throw ();
+		virtual ~EXE_CCavesType();
 
-		virtual std::string getArchiveCode() const
-			throw ();
+		virtual std::string getArchiveCode() const;
 
-		virtual std::string getFriendlyName() const
-			throw ();
+		virtual std::string getFriendlyName() const;
 
-		virtual std::vector<std::string> getFileExtensions() const
-			throw ();
+		virtual std::vector<std::string> getFileExtensions() const;
 
-		virtual std::vector<std::string> getGameList() const
-			throw ();
+		virtual std::vector<std::string> getGameList() const;
 
-		virtual ArchiveType::Certainty isInstance(stream::input_sptr fsArchive) const
-			throw (stream::error);
+		virtual ArchiveType::Certainty isInstance(stream::input_sptr fsArchive) const;
 
-		virtual ArchivePtr newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
-			throw (stream::error);
+		virtual ArchivePtr newArchive(stream::inout_sptr psArchive, SuppData& suppData) const;
 
-		virtual ArchivePtr open(stream::inout_sptr fsArchive, SuppData& suppData) const
-			throw (stream::error);
+		virtual ArchivePtr open(stream::inout_sptr fsArchive, SuppData& suppData) const;
 
 		virtual SuppFilenames getRequiredSupps(stream::input_sptr data,
-			const std::string& filenameArchive) const
-			throw ();
+			const std::string& filenameArchive) const;
 
 };
 

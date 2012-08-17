@@ -30,29 +30,24 @@ namespace camoto {
 namespace gamearchive {
 
 EPFSFilterType::EPFSFilterType()
-	throw ()
 {
 }
 
 EPFSFilterType::~EPFSFilterType()
-	throw ()
 {
 }
 
 std::string EPFSFilterType::getFilterCode() const
-	throw ()
 {
 	return "lzw-epfs";
 }
 
 std::string EPFSFilterType::getFriendlyName() const
-	throw ()
 {
 	return "East Point Software EPFS compression";
 }
 
 std::vector<std::string> EPFSFilterType::getGameList() const
-	throw ()
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Alien Breed Tower Assault");
@@ -71,7 +66,6 @@ std::vector<std::string> EPFSFilterType::getGameList() const
 
 stream::inout_sptr EPFSFilterType::apply(stream::inout_sptr target,
 	stream::fn_truncate resize)
-	throw (filter_error, stream::read_error)
 {
 	stream::filtered_sptr st(new stream::filtered());
 	filter_sptr de(new filter_lzw_decompress(
@@ -91,7 +85,6 @@ stream::inout_sptr EPFSFilterType::apply(stream::inout_sptr target,
 }
 
 stream::input_sptr EPFSFilterType::apply(stream::input_sptr target)
-	throw (filter_error, stream::read_error)
 {
 	stream::input_filtered_sptr st(new stream::input_filtered());
 	filter_sptr de(new filter_lzw_decompress(
@@ -111,7 +104,6 @@ stream::input_sptr EPFSFilterType::apply(stream::input_sptr target)
 
 stream::output_sptr EPFSFilterType::apply(stream::output_sptr target,
 	stream::fn_truncate resize)
-	throw (filter_error)
 {
 	return target; /// @todo Fix when LZW compression has been implemented
 	stream::output_filtered_sptr st(new stream::output_filtered());

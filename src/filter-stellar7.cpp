@@ -30,29 +30,24 @@ namespace camoto {
 namespace gamearchive {
 
 Stellar7FilterType::Stellar7FilterType()
-	throw ()
 {
 }
 
 Stellar7FilterType::~Stellar7FilterType()
-	throw ()
 {
 }
 
 std::string Stellar7FilterType::getFilterCode() const
-	throw ()
 {
 	return "lzw-stellar7";
 }
 
 std::string Stellar7FilterType::getFriendlyName() const
-	throw ()
 {
 	return "Stellar 7 compression";
 }
 
 std::vector<std::string> Stellar7FilterType::getGameList() const
-	throw ()
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Stellar 7");
@@ -61,7 +56,6 @@ std::vector<std::string> Stellar7FilterType::getGameList() const
 
 stream::inout_sptr Stellar7FilterType::apply(stream::inout_sptr target,
 	stream::fn_truncate resize)
-	throw (filter_error, stream::read_error)
 {
 	stream::filtered_sptr st(new stream::filtered());
 	filter_sptr de(new filter_lzw_decompress(
@@ -80,7 +74,6 @@ stream::inout_sptr Stellar7FilterType::apply(stream::inout_sptr target,
 }
 
 stream::input_sptr Stellar7FilterType::apply(stream::input_sptr target)
-	throw (filter_error, stream::read_error)
 {
 	stream::input_filtered_sptr st(new stream::input_filtered());
 	filter_sptr de(new filter_lzw_decompress(
@@ -99,7 +92,6 @@ stream::input_sptr Stellar7FilterType::apply(stream::input_sptr target)
 
 stream::output_sptr Stellar7FilterType::apply(stream::output_sptr target,
 	stream::fn_truncate resize)
-	throw (filter_error)
 {
 	stream::output_filtered_sptr st(new stream::output_filtered());
 	filter_sptr en; /// @todo Fix when LZW compression has been implemented

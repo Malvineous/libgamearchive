@@ -45,31 +45,23 @@ class sam_crypt_filter: public filter_xor_crypt {
 class SAMBaseFilterType: virtual public FilterType {
 
 	public:
-		SAMBaseFilterType(int resetInterval)
-			throw ();
+		SAMBaseFilterType(int resetInterval);
 
-		virtual ~SAMBaseFilterType()
-			throw ();
+		virtual ~SAMBaseFilterType();
 
-		virtual std::string getFilterCode() const
-			throw ();
+		virtual std::string getFilterCode() const;
 
-		virtual std::string getFriendlyName() const
-			throw ();
+		virtual std::string getFriendlyName() const;
 
-		virtual std::vector<std::string> getGameList() const
-			throw ();
+		virtual std::vector<std::string> getGameList() const;
 
 		virtual stream::inout_sptr apply(stream::inout_sptr target,
-			stream::fn_truncate resize)
-			throw (filter_error, stream::read_error);
+			stream::fn_truncate resize);
 
-		virtual stream::input_sptr apply(stream::input_sptr target)
-			throw (filter_error, stream::read_error);
+		virtual stream::input_sptr apply(stream::input_sptr target);
 
 		virtual stream::output_sptr apply(stream::output_sptr target,
-			stream::fn_truncate resize)
-			throw (filter_error);
+			stream::fn_truncate resize);
 
 	protected:
 		int resetInterval;
@@ -79,51 +71,39 @@ class SAMBaseFilterType: virtual public FilterType {
 class SAMMapFilterType: virtual public SAMBaseFilterType {
 
 	public:
-		SAMMapFilterType()
-			throw ();
+		SAMMapFilterType();
 
-		virtual ~SAMMapFilterType()
-			throw ();
+		virtual ~SAMMapFilterType();
 
-		virtual std::string getFilterCode() const
-			throw ();
+		virtual std::string getFilterCode() const;
 
-		virtual std::string getFriendlyName() const
-			throw ();
+		virtual std::string getFriendlyName() const;
 
 };
 
 class SAM8SpriteFilterType: virtual public SAMBaseFilterType {
 
 	public:
-		SAM8SpriteFilterType()
-			throw ();
+		SAM8SpriteFilterType();
 
-		virtual ~SAM8SpriteFilterType()
-			throw ();
+		virtual ~SAM8SpriteFilterType();
 
-		virtual std::string getFilterCode() const
-			throw ();
+		virtual std::string getFilterCode() const;
 
-		virtual std::string getFriendlyName() const
-			throw ();
+		virtual std::string getFriendlyName() const;
 
 };
 
 class SAM16SpriteFilterType: virtual public SAMBaseFilterType {
 
 	public:
-		SAM16SpriteFilterType()
-			throw ();
+		SAM16SpriteFilterType();
 
-		virtual ~SAM16SpriteFilterType()
-			throw ();
+		virtual ~SAM16SpriteFilterType();
 
-		virtual std::string getFilterCode() const
-			throw ();
+		virtual std::string getFilterCode() const;
 
-		virtual std::string getFriendlyName() const
-			throw ();
+		virtual std::string getFriendlyName() const;
 
 };
 

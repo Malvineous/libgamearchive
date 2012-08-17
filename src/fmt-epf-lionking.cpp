@@ -47,29 +47,24 @@ namespace camoto {
 namespace gamearchive {
 
 EPFType::EPFType()
-	throw ()
 {
 }
 
 EPFType::~EPFType()
-	throw ()
 {
 }
 
 std::string EPFType::getArchiveCode() const
-	throw ()
 {
 	return "epf-lionking";
 }
 
 std::string EPFType::getFriendlyName() const
-	throw ()
 {
 	return "East Point Software EPFS File";
 }
 
 std::vector<std::string> EPFType::getFileExtensions() const
-	throw ()
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("epf");
@@ -77,7 +72,6 @@ std::vector<std::string> EPFType::getFileExtensions() const
 }
 
 std::vector<std::string> EPFType::getGameList() const
-	throw ()
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Alien Breed Tower Assault");
@@ -95,7 +89,6 @@ std::vector<std::string> EPFType::getGameList() const
 }
 
 ArchiveType::Certainty EPFType::isInstance(stream::input_sptr psArchive) const
-	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();
 
@@ -114,7 +107,6 @@ ArchiveType::Certainty EPFType::isInstance(stream::input_sptr psArchive) const
 }
 
 ArchivePtr EPFType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
-	throw (stream::error)
 {
 	psArchive->seekp(0, stream::start);
 	psArchive
@@ -126,14 +118,12 @@ ArchivePtr EPFType::newArchive(stream::inout_sptr psArchive, SuppData& suppData)
 }
 
 ArchivePtr EPFType::open(stream::inout_sptr psArchive, SuppData& suppData) const
-	throw (stream::error)
 {
 	return ArchivePtr(new EPFArchive(psArchive));
 }
 
 SuppFilenames EPFType::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
-	throw ()
 {
 	// No supplemental types/empty list
 	return SuppFilenames();
@@ -141,8 +131,7 @@ SuppFilenames EPFType::getRequiredSupps(stream::input_sptr data,
 
 
 EPFArchive::EPFArchive(stream::inout_sptr psArchive)
-	throw (stream::error) :
-		FATArchive(psArchive, EPF_FIRST_FILE_OFFSET, EPF_MAX_FILENAME_LEN)
+	:	FATArchive(psArchive, EPF_FIRST_FILE_OFFSET, EPF_MAX_FILENAME_LEN)
 {
 	stream::pos lenArchive = this->psArchive->size();
 
@@ -206,18 +195,15 @@ EPFArchive::EPFArchive(stream::inout_sptr psArchive)
 }
 
 EPFArchive::~EPFArchive()
-	throw ()
 {
 }
 
 int EPFArchive::getSupportedAttributes() const
-	throw ()
 {
 	return EA_COMPRESSED;
 }
 
 EPFArchive::MetadataTypes EPFArchive::getMetadataList() const
-	throw ()
 {
 	// TESTED BY: fmt_epf_lionking_get_metadata_description
 	MetadataTypes m;
@@ -226,7 +212,6 @@ EPFArchive::MetadataTypes EPFArchive::getMetadataList() const
 }
 
 std::string EPFArchive::getMetadata(MetadataType item) const
-	throw (stream::error)
 {
 	// TESTED BY: fmt_epf_lionking_get_metadata_description
 	switch (item) {
@@ -248,7 +233,6 @@ std::string EPFArchive::getMetadata(MetadataType item) const
 }
 
 void EPFArchive::setMetadata(MetadataType item, const std::string& value)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_epf_lionking_set_metadata_description
 	// TESTED BY: fmt_epf_lionking_new_to_initialstate
@@ -278,7 +262,6 @@ void EPFArchive::setMetadata(MetadataType item, const std::string& value)
 }
 
 void EPFArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_epf_lionking_rename
 	assert(strNewName.length() <= EPF_MAX_FILENAME_LEN);
@@ -288,13 +271,11 @@ void EPFArchive::updateFileName(const FATEntry *pid, const std::string& strNewNa
 }
 
 void EPFArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
-	throw (stream::error)
 {
 	return;
 }
 
 void EPFArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_epf_lionking_insert*
 	// TESTED BY: fmt_epf_lionking_resize*
@@ -313,7 +294,6 @@ void EPFArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 }
 
 FATArchive::FATEntry *EPFArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_epf_lionking_insert*
 	assert(pNewEntry->strName.length() <= EPF_MAX_FILENAME_LEN);
@@ -330,7 +310,6 @@ FATArchive::FATEntry *EPFArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 }
 
 void EPFArchive::postInsertFile(FATEntry *pNewEntry)
-	throw (stream::error)
 {
 	this->offFAT += pNewEntry->storedSize;
 
@@ -352,7 +331,6 @@ void EPFArchive::postInsertFile(FATEntry *pNewEntry)
 }
 
 void EPFArchive::preRemoveFile(const FATEntry *pid)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_epf_lionking_remove*
 
@@ -367,7 +345,6 @@ void EPFArchive::preRemoveFile(const FATEntry *pid)
 }
 
 void EPFArchive::updateFileCount(uint16_t iNewCount)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_epf_lionking_insert*
 	// TESTED BY: fmt_epf_lionking_remove*
@@ -377,7 +354,6 @@ void EPFArchive::updateFileCount(uint16_t iNewCount)
 }
 
 void EPFArchive::updateFATOffset()
-	throw (stream::error)
 {
 	// TESTED BY: fmt_epf_lionking_insert*
 	// TESTED BY: fmt_epf_lionking_remove*
@@ -389,7 +365,6 @@ void EPFArchive::updateFATOffset()
 }
 
 stream::pos EPFArchive::getDescOffset() const
-	throw (stream::error)
 {
 	stream::pos offDesc;
 	if (this->vcFAT.size()) {

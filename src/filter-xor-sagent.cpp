@@ -32,8 +32,8 @@ namespace gamearchive {
 const char sam_key[] = SAM_KEY;
 
 sam_crypt_filter::sam_crypt_filter(int resetInterval)
-	: filter_xor_crypt(0, 0),
-	  resetInterval(resetInterval)
+	:	filter_xor_crypt(0, 0),
+		resetInterval(resetInterval)
 {
 }
 
@@ -44,30 +44,25 @@ uint8_t sam_crypt_filter::getKey()
 
 
 SAMBaseFilterType::SAMBaseFilterType(int resetInterval)
-	throw ()
-	: resetInterval(resetInterval)
+	:	resetInterval(resetInterval)
 {
 }
 
 SAMBaseFilterType::~SAMBaseFilterType()
-	throw ()
 {
 }
 
 std::string SAMBaseFilterType::getFilterCode() const
-	throw ()
 {
 	return "xor-sagent";
 }
 
 std::string SAMBaseFilterType::getFriendlyName() const
-	throw ()
 {
 	return "Secret Agent XOR encryption";
 }
 
 std::vector<std::string> SAMBaseFilterType::getGameList() const
-	throw ()
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Secret Agent");
@@ -76,7 +71,6 @@ std::vector<std::string> SAMBaseFilterType::getGameList() const
 
 stream::inout_sptr SAMBaseFilterType::apply(stream::inout_sptr target,
 	stream::fn_truncate resize)
-	throw (filter_error, stream::read_error)
 {
 	stream::filtered_sptr st1(new stream::filtered());
 	// We need two separate filters, otherwise reading from one will
@@ -95,7 +89,6 @@ stream::inout_sptr SAMBaseFilterType::apply(stream::inout_sptr target,
 }
 
 stream::input_sptr SAMBaseFilterType::apply(stream::input_sptr target)
-	throw (filter_error, stream::read_error)
 {
 	stream::input_filtered_sptr st1(new stream::input_filtered());
 	filter_sptr cr(new sam_crypt_filter(this->resetInterval));
@@ -110,7 +103,6 @@ stream::input_sptr SAMBaseFilterType::apply(stream::input_sptr target)
 
 stream::output_sptr SAMBaseFilterType::apply(stream::output_sptr target,
 	stream::fn_truncate resize)
-	throw (filter_error)
 {
 	stream::output_filtered_sptr st1(new stream::output_filtered());
 	filter_sptr cr(new sam_crypt_filter(this->resetInterval));
@@ -125,72 +117,60 @@ stream::output_sptr SAMBaseFilterType::apply(stream::output_sptr target,
 
 
 SAMMapFilterType::SAMMapFilterType()
-	throw ()
-	: SAMBaseFilterType(42)
+	:	SAMBaseFilterType(42)
 {
 }
 
 SAMMapFilterType::~SAMMapFilterType()
-	throw ()
 {
 }
 
 std::string SAMMapFilterType::getFilterCode() const
-	throw ()
 {
 	return "xor-sagent-map";
 }
 
 std::string SAMMapFilterType::getFriendlyName() const
-	throw ()
 {
 	return "Secret Agent XOR encryption (map file)";
 }
 
 
 SAM8SpriteFilterType::SAM8SpriteFilterType()
-	throw ()
-	: SAMBaseFilterType(8064)
+	:	SAMBaseFilterType(8064)
 {
 }
 
 SAM8SpriteFilterType::~SAM8SpriteFilterType()
-	throw ()
 {
 }
 
 std::string SAM8SpriteFilterType::getFilterCode() const
-	throw ()
 {
 	return "xor-sagent-8sprite";
 }
 
 std::string SAM8SpriteFilterType::getFriendlyName() const
-	throw ()
 {
 	return "Secret Agent XOR encryption (8x8 sprite file)";
 }
 
 
 SAM16SpriteFilterType::SAM16SpriteFilterType()
-	throw ()
-	: SAMBaseFilterType(2048)
+	:	SAMBaseFilterType(2048)
 {
 }
 
 SAM16SpriteFilterType::~SAM16SpriteFilterType()
-	throw ()
 {
 }
 
 std::string SAM16SpriteFilterType::getFilterCode() const
-	throw ()
 {
 	return "xor-sagent-16sprite";
 }
 
 std::string SAM16SpriteFilterType::getFriendlyName() const
-	throw ()
 {
 	return "Secret Agent XOR encryption (16x16 sprite file)";
 }

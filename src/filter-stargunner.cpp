@@ -36,8 +36,7 @@ namespace camoto {
 namespace gamearchive {
 
 filter_stargunner_decompress::filter_stargunner_decompress()
-	throw () :
-		gotHeader(false),
+	:	gotHeader(false),
 		lenBufIn(0),
 		posOut(CHUNK_SIZE)
 {
@@ -57,7 +56,6 @@ filter_stargunner_decompress::filter_stargunner_decompress()
  */
 void filter_stargunner_decompress::explode_chunk(const uint8_t* in,
 	unsigned int expanded_size, uint8_t* out)
-	throw (filter_error)
 {
 	uint8_t tableA[256], tableB[256];
 	unsigned int inpos = 0;
@@ -142,7 +140,6 @@ void filter_stargunner_decompress::explode_chunk(const uint8_t* in,
 
 void filter_stargunner_decompress::transform(uint8_t *out, stream::len *lenOut,
 	const uint8_t *in, stream::len *lenIn)
-	throw (filter_error)
 {
 	stream::len amtRead = 0;
 
@@ -227,29 +224,24 @@ void filter_stargunner_decompress::transform(uint8_t *out, stream::len *lenOut,
 
 
 StargunnerFilterType::StargunnerFilterType()
-	throw ()
 {
 }
 
 StargunnerFilterType::~StargunnerFilterType()
-	throw ()
 {
 }
 
 std::string StargunnerFilterType::getFilterCode() const
-	throw ()
 {
 	return "bpe-stargunner";
 }
 
 std::string StargunnerFilterType::getFriendlyName() const
-	throw ()
 {
 	return "Stargunner compression";
 }
 
 std::vector<std::string> StargunnerFilterType::getGameList() const
-	throw ()
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Stargunner");
@@ -258,7 +250,6 @@ std::vector<std::string> StargunnerFilterType::getGameList() const
 
 stream::inout_sptr StargunnerFilterType::apply(stream::inout_sptr target,
 	stream::fn_truncate resize)
-	throw (filter_error, stream::read_error)
 {
 	stream::filtered_sptr st(new stream::filtered());
 	filter_sptr de(new filter_stargunner_decompress());
@@ -269,7 +260,6 @@ stream::inout_sptr StargunnerFilterType::apply(stream::inout_sptr target,
 }
 
 stream::input_sptr StargunnerFilterType::apply(stream::input_sptr target)
-	throw (filter_error, stream::read_error)
 {
 	stream::input_filtered_sptr st(new stream::input_filtered());
 	filter_sptr de(new filter_stargunner_decompress());
@@ -279,7 +269,6 @@ stream::input_sptr StargunnerFilterType::apply(stream::input_sptr target)
 
 stream::output_sptr StargunnerFilterType::apply(stream::output_sptr target,
 	stream::fn_truncate resize)
-	throw (filter_error)
 {
 	stream::output_filtered_sptr st(new stream::output_filtered());
 	/// @todo Implement Stargunner compression

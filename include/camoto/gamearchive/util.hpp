@@ -49,8 +49,7 @@ namespace gamearchive {
  *   passed in.
  */
 Archive::EntryPtr findFile(ArchivePtr& archive,
-	const std::string& filename)
-	throw (stream::error);
+	const std::string& filename);
 
 } // namespace gamearchive
 } // namespace camoto

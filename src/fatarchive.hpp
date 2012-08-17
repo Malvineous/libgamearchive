@@ -55,15 +55,12 @@ class FATArchive: virtual public Archive {
 			stream::len lenHeader;  ///< Size of embedded FAT entry at start of file data
 
 			/// Empty constructor
-			FATEntry()
-				throw ();
+			FATEntry();
 
 			/// Empty destructor
-			virtual ~FATEntry()
-				throw ();
+			virtual ~FATEntry();
 
-			virtual std::string getContent() const
-				throw ();
+			virtual std::string getContent() const;
 
 			private:
 				/// Prevent copying
@@ -130,45 +127,34 @@ class FATArchive: virtual public Archive {
 		 * @throws stream::error on I/O error.
 		 */
 		FATArchive(stream::inout_sptr psArchive, stream::pos offFirstFile,
-			int lenMaxFilename)
-			throw (stream::error);
+			int lenMaxFilename);
 
 	public:
 
-		virtual ~FATArchive()
-			throw ();
+		virtual ~FATArchive();
 
-		virtual EntryPtr find(const std::string& strFilename) const
-			throw ();
+		virtual EntryPtr find(const std::string& strFilename) const;
 
-		virtual const VC_ENTRYPTR& getFileList(void) const
-			throw ();
+		virtual const VC_ENTRYPTR& getFileList(void) const;
 
-		virtual bool isValid(const EntryPtr id) const
-			throw ();
+		virtual bool isValid(const EntryPtr id) const;
 
-		virtual stream::inout_sptr open(const EntryPtr id)
-			throw ();
+		virtual stream::inout_sptr open(const EntryPtr id);
 
 		virtual EntryPtr insert(const EntryPtr idBeforeThis,
 			const std::string& strFilename, stream::pos storedSize, std::string type,
-			int attr)
-			throw (stream::error);
+			int attr);
 
-		virtual void remove(EntryPtr id)
-			throw (stream::error);
+		virtual void remove(EntryPtr id);
 
-		virtual void rename(EntryPtr id, const std::string& strNewName)
-			throw (stream::error);
+		virtual void rename(EntryPtr id, const std::string& strNewName);
 
 		// move() uses implementation from Archive
 
 		virtual void resize(EntryPtr id, stream::pos newStoredSize,
-			stream::pos newRealSize)
-			throw (stream::error);
+			stream::pos newRealSize);
 
-		virtual void flush()
-			throw (stream::error);
+		virtual void flush();
 
 	protected:
 		/// Shift any files *starting* at or after offStart by delta bytes.
@@ -196,8 +182,7 @@ class FATArchive: virtual public Archive {
 		 * @throws stream::error on I/O error.
 		 */
 		virtual void shiftFiles(const FATEntry *fatSkip, stream::pos offStart,
-			stream::len deltaOffset, int deltaIndex)
-			throw (stream::error);
+			stream::len deltaOffset, int deltaIndex);
 
 		// Methods to be filled out by descendent classes
 
@@ -222,8 +207,7 @@ class FATArchive: virtual public Archive {
 		 *   need to ensure the filename length is within the limit (if there is
 		 *   one).
 		 */
-		virtual void updateFileName(const FATEntry *pid, const std::string& name)
-			throw (stream::error) = 0;
+		virtual void updateFileName(const FATEntry *pid, const std::string& name) = 0;
 
 		/// Adjust the offset of the given file in the on-disk FAT.
 		/**
@@ -238,8 +222,7 @@ class FATArchive: virtual public Archive {
 		 * @note pid->offset is already set to the new offset, do not add offDelta
 		 *   to this or you will get the wrong offset!
 		 */
-		virtual void updateFileOffset(const FATEntry *pid, stream::delta offDelta)
-			throw (stream::error) = 0;
+		virtual void updateFileOffset(const FATEntry *pid, stream::delta offDelta) = 0;
 
 		/// Adjust the size of the given file in the on-disk FAT.
 		/**
@@ -254,8 +237,7 @@ class FATArchive: virtual public Archive {
 		 * @note pid->size is already set to the new size, do not add sizeDelta
 		 *   to this or you will get the wrong size!
 		 */
-		virtual void updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
-			throw (stream::error) = 0;
+		virtual void updateFileSize(const FATEntry *pid, stream::delta sizeDelta) = 0;
 
 		/// Insert a new entry in the on-disk FAT.
 		/**
@@ -289,8 +271,7 @@ class FATArchive: virtual public Archive {
 		 * @throws stream::error on I/O error.
 		 */
 		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis,
-			FATEntry *pNewEntry)
-			throw (stream::error);
+			FATEntry *pNewEntry);
 
 		/// Called after the file data has been inserted.
 		/**
@@ -307,8 +288,7 @@ class FATArchive: virtual public Archive {
 		 * is done without the new file, then the new file data is inserted last,
 		 * and postInsertFile() immediately called.
 		 */
-		virtual void postInsertFile(FATEntry *pNewEntry)
-			throw (stream::error);
+		virtual void postInsertFile(FATEntry *pNewEntry);
 
 		/// Remove the entry from the FAT.
 		/**
@@ -324,8 +304,7 @@ class FATArchive: virtual public Archive {
 		 *
 		 * @throws stream::error on I/O error.
 		 */
-		virtual void preRemoveFile(const FATEntry *pid)
-			throw (stream::error);
+		virtual void preRemoveFile(const FATEntry *pid);
 
 		/// Called after the file data has been removed and the FAT has been
 		/// updated.
@@ -337,8 +316,7 @@ class FATArchive: virtual public Archive {
 		 *
 		 * @throws stream::error on I/O error.
 		 */
-		virtual void postRemoveFile(const FATEntry *pid)
-			throw (stream::error);
+		virtual void postRemoveFile(const FATEntry *pid);
 
 		/// Allocate a new, empty FAT entry.
 		/**
@@ -350,25 +328,21 @@ class FATArchive: virtual public Archive {
 		 * passed to the other functions will be a mixture of FATEntry and whatever
 		 * your extended class is.  See fmt-dat-hugo.cpp for an example.
 		 */
-		virtual FATEntry *createNewFATEntry()
-			throw ();
+		virtual FATEntry *createNewFATEntry();
 
 	/// Test code only, do not use, see below.
 	friend EntryPtr getFileAt(const VC_ENTRYPTR& files, unsigned int index);
 
 	private:
 		/// Remove any substreams from the cached list if they have closed.
-		void cleanOpenSubstreams()
-			throw ();
+		void cleanOpenSubstreams();
 
 		/// Should the given entry be moved during an insert/resize operation?
 		bool entryInRange(const FATEntry *fat, stream::pos offStart,
-			const FATEntry *fatSkip)
-			throw ();
+			const FATEntry *fatSkip);
 
 		/// Substream truncate callback to resize the substream.
-		void resizeSubstream(FATEntryPtr id, stream::len newSize)
-			throw (stream::write_error);
+		void resizeSubstream(FATEntryPtr id, stream::len newSize);
 };
 
 /// Function for test code only, do not use.  Searches for files based on the

@@ -32,70 +32,52 @@ class DAT_SangoType: virtual public ArchiveType {
 
 	public:
 
-		DAT_SangoType()
-			throw ();
+		DAT_SangoType();
 
-		virtual ~DAT_SangoType()
-			throw ();
+		virtual ~DAT_SangoType();
 
-		virtual std::string getArchiveCode() const
-			throw ();
+		virtual std::string getArchiveCode() const;
 
-		virtual std::string getFriendlyName() const
-			throw ();
+		virtual std::string getFriendlyName() const;
 
-		virtual std::vector<std::string> getFileExtensions() const
-			throw ();
+		virtual std::vector<std::string> getFileExtensions() const;
 
-		virtual std::vector<std::string> getGameList() const
-			throw ();
+		virtual std::vector<std::string> getGameList() const;
 
-		virtual ArchiveType::Certainty isInstance(stream::input_sptr fsArchive) const
-			throw (stream::error);
+		virtual ArchiveType::Certainty isInstance(stream::input_sptr fsArchive) const;
 
-		virtual ArchivePtr newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
-			throw (stream::error);
+		virtual ArchivePtr newArchive(stream::inout_sptr psArchive, SuppData& suppData) const;
 
-		virtual ArchivePtr open(stream::inout_sptr fsArchive, SuppData& suppData) const
-			throw (stream::error);
+		virtual ArchivePtr open(stream::inout_sptr fsArchive, SuppData& suppData) const;
 
 		virtual SuppFilenames getRequiredSupps(stream::input_sptr data,
-			const std::string& filenameArchive) const
-			throw ();
+			const std::string& filenameArchive) const;
 
 };
 
 class DAT_SangoArchive: virtual public FATArchive {
 	public:
-		DAT_SangoArchive(stream::inout_sptr psArchive)
-			throw (stream::error);
+		DAT_SangoArchive(stream::inout_sptr psArchive);
 
-		virtual ~DAT_SangoArchive()
-			throw ();
+		virtual ~DAT_SangoArchive();
 
 		// As per FATArchive (see there for docs)
 
-		virtual void updateFileName(const FATEntry *pid, const std::string& strNewName)
-			throw (stream::error);
+		virtual void updateFileName(const FATEntry *pid, const std::string& strNewName);
 
-		virtual void updateFileOffset(const FATEntry *pid, stream::delta offDelta)
-			throw (stream::error);
+		virtual void updateFileOffset(const FATEntry *pid, stream::delta offDelta);
 
-		virtual void updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
-			throw (stream::error);
+		virtual void updateFileSize(const FATEntry *pid, stream::delta sizeDelta);
 
-		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-			throw (stream::error);
+		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry);
 
-		virtual void preRemoveFile(const FATEntry *pid)
-			throw (stream::error);
+		virtual void preRemoveFile(const FATEntry *pid);
 
 	protected:
 		stream::pos lenArchive;
 
 		// Update the last FAT entry to point to EOF.
-		void updateLastEntry(int lenDelta)
-			throw (stream::error);
+		void updateLastEntry(int lenDelta);
 
 };
 

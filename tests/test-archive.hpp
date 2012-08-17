@@ -76,8 +76,8 @@ struct FIXTURE_NAME: public default_sample {
 	ArchivePtr pArchive;
 	camoto::SuppData suppData;
 
-	FIXTURE_NAME() :
-		base(new stream::string())
+	FIXTURE_NAME()
+		:	base(new stream::string())
 	{
 		base << makeString(INITIALSTATE_NAME);
 
@@ -103,8 +103,8 @@ struct FIXTURE_NAME: public default_sample {
 		BOOST_REQUIRE_MESSAGE(this->pArchive, "Could not create archive class");
 	}
 
-	FIXTURE_NAME(int i) :
-		base(new stream::string())
+	FIXTURE_NAME(int i)
+		:	base(new stream::string())
 	{
 	}
 

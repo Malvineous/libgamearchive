@@ -109,7 +109,6 @@ void sanitisePath(std::string& strInput)
 /// Callback function to set expanded/native file size.
 void setRealSize(camoto::gamearchive::ArchivePtr arch,
 	camoto::gamearchive::Archive::EntryPtr id, stream::len newRealSize)
-	throw (std::ios::failure)
 {
 	arch->resize(id, id->storedSize, newRealSize);
 	return;
@@ -132,7 +131,6 @@ void setRealSize(camoto::gamearchive::ArchivePtr arch,
 template <class T>
 void applyFilter(T *ppStream, ga::ArchivePtr arch,
 	ga::Archive::EntryPtr id)
-	throw (stream::error)
 {
 	if (!id->filter.empty()) {
 		// The file needs to be filtered first

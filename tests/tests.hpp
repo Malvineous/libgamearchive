@@ -58,7 +58,6 @@ struct default_sample {
  * @return A stream providing filtered data from pStream.
  */
 camoto::stream::inout_sptr applyFilter(camoto::gamearchive::ArchivePtr arch,
-	camoto::gamearchive::Archive::EntryPtr id, camoto::stream::inout_sptr pStream)
-	throw (camoto::stream::error);
+	camoto::gamearchive::Archive::EntryPtr id, camoto::stream::inout_sptr pStream);
 
 #endif // _CAMOTO_GAMEARCHIVE_TESTS_HPP_

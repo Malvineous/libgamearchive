@@ -32,33 +32,24 @@ class BNKType: virtual public ArchiveType {
 
 	public:
 
-		BNKType()
-			throw ();
+		BNKType();
 
-		virtual ~BNKType()
-			throw ();
+		virtual ~BNKType();
 
-		virtual std::string getArchiveCode() const
-			throw ();
+		virtual std::string getArchiveCode() const;
 
-		virtual std::string getFriendlyName() const
-			throw ();
+		virtual std::string getFriendlyName() const;
 
-		virtual std::vector<std::string> getFileExtensions() const
-			throw ();
+		virtual std::vector<std::string> getFileExtensions() const;
 
-		virtual std::vector<std::string> getGameList() const
-			throw ();
+		virtual std::vector<std::string> getGameList() const;
 
-		virtual ArchiveType::Certainty isInstance(stream::input_sptr fsArchive) const
-			throw (stream::error);
+		virtual ArchiveType::Certainty isInstance(stream::input_sptr fsArchive) const;
 
-		virtual ArchivePtr open(stream::inout_sptr psArchive, SuppData& suppData) const
-			throw (stream::error);
+		virtual ArchivePtr open(stream::inout_sptr psArchive, SuppData& suppData) const;
 
 		virtual SuppFilenames getRequiredSupps(stream::input_sptr data,
-			const std::string& filenameArchive) const
-			throw ();
+			const std::string& filenameArchive) const;
 
 };
 
@@ -68,38 +59,29 @@ class BNKArchive: virtual public FATArchive {
 		bool isAC;  // true == Alien Carnage, false == Halloween Harry
 
 	public:
-		BNKArchive(stream::inout_sptr psArchive, stream::inout_sptr psFAT)
-			throw (stream::error);
+		BNKArchive(stream::inout_sptr psArchive, stream::inout_sptr psFAT);
 
-		virtual ~BNKArchive()
-			throw ();
+		virtual ~BNKArchive();
 
 		// As per Archive (see there for docs)
 
-		virtual void flush()
-			throw (stream::error);
+		virtual void flush();
 
 		// As per FATArchive (see there for docs)
 
-		virtual void updateFileName(const FATEntry *pid, const std::string& strNewName)
-			throw (stream::error);
+		virtual void updateFileName(const FATEntry *pid, const std::string& strNewName);
 
-		virtual void updateFileOffset(const FATEntry *pid, stream::delta offDelta)
-			throw (stream::error);
+		virtual void updateFileOffset(const FATEntry *pid, stream::delta offDelta);
 
-		virtual void updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
-			throw (stream::error);
+		virtual void updateFileSize(const FATEntry *pid, stream::delta sizeDelta);
 
-		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-			throw (stream::error);
+		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry);
 
-		virtual void preRemoveFile(const FATEntry *pid)
-			throw (stream::error);
+		virtual void preRemoveFile(const FATEntry *pid);
 
 	protected:
 		// Update the header with the number of files in the archive
-		void updateFileCount(uint32_t iNewCount)
-			throw (stream::error);
+		void updateFileCount(uint32_t iNewCount);
 
 };
 

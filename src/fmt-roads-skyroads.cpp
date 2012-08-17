@@ -32,29 +32,24 @@ namespace camoto {
 namespace gamearchive {
 
 SkyRoadsRoadsType::SkyRoadsRoadsType()
-	throw ()
 {
 }
 
 SkyRoadsRoadsType::~SkyRoadsRoadsType()
-	throw ()
 {
 }
 
 std::string SkyRoadsRoadsType::getArchiveCode() const
-	throw ()
 {
 	return "roads-skyroads";
 }
 
 std::string SkyRoadsRoadsType::getFriendlyName() const
-	throw ()
 {
 	return "SkyRoads Roads File";
 }
 
 std::vector<std::string> SkyRoadsRoadsType::getFileExtensions() const
-	throw ()
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("lzs");
@@ -62,7 +57,6 @@ std::vector<std::string> SkyRoadsRoadsType::getFileExtensions() const
 }
 
 std::vector<std::string> SkyRoadsRoadsType::getGameList() const
-	throw ()
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("SkyRoads");
@@ -70,7 +64,6 @@ std::vector<std::string> SkyRoadsRoadsType::getGameList() const
 }
 
 ArchiveType::Certainty SkyRoadsRoadsType::isInstance(stream::input_sptr psArchive) const
-	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();
 	// An empty file is valid as an archive with no files (since this format
@@ -122,20 +115,17 @@ ArchiveType::Certainty SkyRoadsRoadsType::isInstance(stream::input_sptr psArchiv
 }
 
 ArchivePtr SkyRoadsRoadsType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
-	throw (stream::error)
 {
 	return ArchivePtr(new SkyRoadsRoadsArchive(psArchive));
 }
 
 ArchivePtr SkyRoadsRoadsType::open(stream::inout_sptr psArchive, SuppData& suppData) const
-	throw (stream::error)
 {
 	return ArchivePtr(new SkyRoadsRoadsArchive(psArchive));
 }
 
 SuppFilenames SkyRoadsRoadsType::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
-	throw ()
 {
 	// No supplemental types/empty list
 	return SuppFilenames();
@@ -143,8 +133,7 @@ SuppFilenames SkyRoadsRoadsType::getRequiredSupps(stream::input_sptr data,
 
 
 SkyRoadsRoadsArchive::SkyRoadsRoadsArchive(stream::inout_sptr psArchive)
-	throw (stream::error) :
-		FATArchive(psArchive, SRR_FIRST_FILE_OFFSET, 0)
+	:	FATArchive(psArchive, SRR_FIRST_FILE_OFFSET, 0)
 {
 	stream::pos lenArchive = this->psArchive->size();
 	if (lenArchive > 0) {
@@ -183,18 +172,15 @@ SkyRoadsRoadsArchive::SkyRoadsRoadsArchive(stream::inout_sptr psArchive)
 }
 
 SkyRoadsRoadsArchive::~SkyRoadsRoadsArchive()
-	throw ()
 {
 }
 
 void SkyRoadsRoadsArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
-	throw (stream::error)
 {
 	throw stream::error("This format does not have any filenames.");
 }
 
 void SkyRoadsRoadsArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_skyroads_roads_insert*
 	// TESTED BY: fmt_skyroads_roads_resize*
@@ -204,7 +190,6 @@ void SkyRoadsRoadsArchive::updateFileOffset(const FATEntry *pid, stream::delta o
 }
 
 void SkyRoadsRoadsArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_skyroads_roads_insert*
 	// TESTED BY: fmt_skyroads_roads_resize*
@@ -214,7 +199,6 @@ void SkyRoadsRoadsArchive::updateFileSize(const FATEntry *pid, stream::delta siz
 }
 
 FATArchive::FATEntry *SkyRoadsRoadsArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_skyroads_roads_insert*
 
@@ -245,7 +229,6 @@ FATArchive::FATEntry *SkyRoadsRoadsArchive::preInsertFile(const FATEntry *idBefo
 }
 
 void SkyRoadsRoadsArchive::preRemoveFile(const FATEntry *pid)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_skyroads_roads_remove*
 

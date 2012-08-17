@@ -26,17 +26,14 @@ namespace camoto {
 namespace gamearchive {
 
 Archive::FileEntry::FileEntry()
-	throw ()
 {
 }
 
 Archive::FileEntry::~FileEntry()
-	throw ()
 {
 }
 
 std::string Archive::FileEntry::getContent() const
-	throw ()
 {
 	std::ostringstream ss;
 	ss << "name=" << this->strName
@@ -49,23 +46,19 @@ std::string Archive::FileEntry::getContent() const
 }
 
 ArchivePtr ArchiveType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
-	throw (stream::error)
 {
 	return this->open(psArchive, suppData);
 }
 
 Archive::Archive()
-	throw ()
 {
 }
 
 Archive::~Archive()
-	throw ()
 {
 }
 
 ArchivePtr Archive::openFolder(const Archive::EntryPtr id)
-	throw (stream::error)
 {
 	// This function should only be called for folders (not files)
 	assert(id->fAttr & EA_FOLDER);
@@ -79,7 +72,6 @@ ArchivePtr Archive::openFolder(const Archive::EntryPtr id)
 }
 
 void Archive::move(const EntryPtr idBeforeThis, EntryPtr id)
-	throw (stream::error)
 {
 	// Open the file we want to move
 	stream::inout_sptr src(this->open(id));
@@ -114,13 +106,11 @@ void Archive::move(const EntryPtr idBeforeThis, EntryPtr id)
 }
 
 int Archive::getSupportedAttributes() const
-	throw ()
 {
 	return 0;
 }
 
 void preventResize(stream::len len)
-	throw (stream::write_error)
 {
 	throw stream::write_error("This file is a fixed size, it cannot be made smaller or larger.");
 }

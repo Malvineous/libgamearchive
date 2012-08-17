@@ -31,36 +31,26 @@ class EXE_DDaveType: virtual public ArchiveType {
 
 	public:
 
-		EXE_DDaveType()
-			throw ();
+		EXE_DDaveType();
 
-		virtual ~EXE_DDaveType()
-			throw ();
+		virtual ~EXE_DDaveType();
 
-		virtual std::string getArchiveCode() const
-			throw ();
+		virtual std::string getArchiveCode() const;
 
-		virtual std::string getFriendlyName() const
-			throw ();
+		virtual std::string getFriendlyName() const;
 
-		virtual std::vector<std::string> getFileExtensions() const
-			throw ();
+		virtual std::vector<std::string> getFileExtensions() const;
 
-		virtual std::vector<std::string> getGameList() const
-			throw ();
+		virtual std::vector<std::string> getGameList() const;
 
-		virtual ArchiveType::Certainty isInstance(stream::input_sptr fsArchive) const
-			throw (stream::error);
+		virtual ArchiveType::Certainty isInstance(stream::input_sptr fsArchive) const;
 
-		virtual ArchivePtr newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
-			throw (stream::error);
+		virtual ArchivePtr newArchive(stream::inout_sptr psArchive, SuppData& suppData) const;
 
-		virtual ArchivePtr open(stream::inout_sptr fsArchive, SuppData& suppData) const
-			throw (stream::error);
+		virtual ArchivePtr open(stream::inout_sptr fsArchive, SuppData& suppData) const;
 
 		virtual SuppFilenames getRequiredSupps(stream::input_sptr data,
-			const std::string& filenameArchive) const
-			throw ();
+			const std::string& filenameArchive) const;
 
 };
 
@@ -68,11 +58,9 @@ class EXE_DDaveArchive: virtual public FixedArchive {
 
 	public:
 
-		EXE_DDaveArchive(stream::inout_sptr psArchive)
-			throw (stream::error);
+		EXE_DDaveArchive(stream::inout_sptr psArchive);
 
-		virtual ~EXE_DDaveArchive()
-			throw ();
+		virtual ~EXE_DDaveArchive();
 
 };
 

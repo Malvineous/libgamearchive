@@ -47,29 +47,24 @@ FixedArchiveFile ddave_file_list[] = {
 };
 
 EXE_DDaveType::EXE_DDaveType()
-	throw ()
 {
 }
 
 EXE_DDaveType::~EXE_DDaveType()
-	throw ()
 {
 }
 
 std::string EXE_DDaveType::getArchiveCode() const
-	throw ()
 {
 	return "exe-ddave";
 }
 
 std::string EXE_DDaveType::getFriendlyName() const
-	throw ()
 {
 	return "Dangerous Dave Executable";
 }
 
 std::vector<std::string> EXE_DDaveType::getFileExtensions() const
-	throw ()
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("exe");
@@ -77,7 +72,6 @@ std::vector<std::string> EXE_DDaveType::getFileExtensions() const
 }
 
 std::vector<std::string> EXE_DDaveType::getGameList() const
-	throw ()
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Dangerous Dave");
@@ -85,7 +79,6 @@ std::vector<std::string> EXE_DDaveType::getGameList() const
 }
 
 ArchiveType::Certainty EXE_DDaveType::isInstance(stream::input_sptr psArchive) const
-	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();
 
@@ -106,14 +99,12 @@ ArchiveType::Certainty EXE_DDaveType::isInstance(stream::input_sptr psArchive) c
 }
 
 ArchivePtr EXE_DDaveType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
-	throw (stream::error)
 {
 	// This isn't a true archive so we can't create new versions of it.
 	throw stream::error("Can't create a new archive in this format.");
 }
 
 ArchivePtr EXE_DDaveType::open(stream::inout_sptr psArchive, SuppData& suppData) const
-	throw (stream::error)
 {
 	std::vector<FixedArchiveFile> files;
 	files.reserve(sizeof(ddave_file_list) / sizeof(FixedArchiveFile));
@@ -125,7 +116,6 @@ ArchivePtr EXE_DDaveType::open(stream::inout_sptr psArchive, SuppData& suppData)
 
 SuppFilenames EXE_DDaveType::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
-	throw ()
 {
 	// No supplemental types/empty list
 	return SuppFilenames();

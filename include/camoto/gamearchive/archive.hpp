@@ -136,16 +136,13 @@ class Archive: virtual public Metadata {
 
 
 			/// Empty constructor
-			FileEntry()
-				throw ();
+			FileEntry();
 
 			/// Empty destructor
-			virtual ~FileEntry()
-				throw ();
+			virtual ~FileEntry();
 
 			/// Helper function (for debugging) to return all the data as a string
-			virtual std::string getContent() const
-				throw ();
+			virtual std::string getContent() const;
 
 			private:
 				/// Can't copy FileEntry instances, must use references/pointers.
@@ -158,11 +155,9 @@ class Archive: virtual public Metadata {
 		/// Vector of shared FileEntry pointers
 		typedef std::vector<EntryPtr> VC_ENTRYPTR;
 
-		Archive()
-			throw ();
+		Archive();
 
-		virtual ~Archive()
-			throw ();
+		virtual ~Archive();
 
 		/// Find the given file.
 		/**
@@ -183,16 +178,14 @@ class Archive: virtual public Metadata {
 		 * @return EntryPtr to the requested file, or an empty EntryPtr() if the
 		 *   file can't be found (EntryPtr::bValid will be false.)
 		 */
-		virtual EntryPtr find(const std::string& strFilename) const
-			throw () = 0;
+		virtual EntryPtr find(const std::string& strFilename) const = 0;
 
 		/// Get a list of all files in the archive.
 		/**
 		 * @return A vector of FileEntry with one element for each file in the
 		 *   archive.
 		 */
-		virtual const VC_ENTRYPTR& getFileList(void) const
-			throw () = 0;
+		virtual const VC_ENTRYPTR& getFileList(void) const = 0;
 
 		/// Checks that the EntryPtr points to a file that still exists.
 		/**
@@ -204,8 +197,7 @@ class Archive: virtual public Metadata {
 		 *
 		 * @return true if the EntryPtr is valid.
 		 */
-		virtual bool isValid(const EntryPtr id) const
-			throw () = 0;
+		virtual bool isValid(const EntryPtr id) const = 0;
 
 		/// Open a file in the archive.
 		/**
@@ -217,8 +209,7 @@ class Archive: virtual public Metadata {
 		 *   is not permitted - use resize() if the file needs to change size (grow
 		 *   or shrink.)
 		 */
-		virtual stream::inout_sptr open(const EntryPtr id)
-			throw () = 0;
+		virtual stream::inout_sptr open(const EntryPtr id) = 0;
 
 		/// Open a folder in the archive.
 		/**
@@ -238,8 +229,7 @@ class Archive: virtual public Metadata {
 		 *
 		 * @return Another Archive instance representing the files in the folder.
 		 */
-		virtual ArchivePtr openFolder(const EntryPtr id)
-			throw (stream::error);
+		virtual ArchivePtr openFolder(const EntryPtr id);
 
 		/// Insert a new file into the archive.
 		/**
@@ -285,8 +275,7 @@ class Archive: virtual public Metadata {
 		 */
 		virtual EntryPtr insert(const EntryPtr idBeforeThis,
 			const std::string& strFilename, stream::pos storedSize, std::string type,
-			int attr)
-			throw (stream::error) = 0;
+			int attr) = 0;
 
 		/// Delete the given entry from the archive.
 		/**
@@ -301,8 +290,7 @@ class Archive: virtual public Metadata {
 		 *
 		 * @post Existing EntryPtrs become invalid.  Any open files remain valid.
 		 */
-		virtual void remove(EntryPtr id)
-			throw (stream::error) = 0;
+		virtual void remove(EntryPtr id) = 0;
 
 		/// Rename a file.
 		/**
@@ -316,8 +304,7 @@ class Archive: virtual public Metadata {
 		 *
 		 * @post Existing EntryPtrs remain valid.
 		 */
-		virtual void rename(EntryPtr id, const std::string& strNewName)
-			throw (stream::error) = 0;
+		virtual void rename(EntryPtr id, const std::string& strNewName) = 0;
 
 		/// Move an entry to a different position within the archive.
 		/**
@@ -333,8 +320,7 @@ class Archive: virtual public Metadata {
 		 *
 		 * @post Existing EntryPtrs become invalid.  Any open files remain valid.
 		 */
-		virtual void move(const EntryPtr idBeforeThis, EntryPtr id)
-			throw (stream::error);
+		virtual void move(const EntryPtr idBeforeThis, EntryPtr id);
 
 		/// Enlarge or shrink an existing file.
 		/**
@@ -370,8 +356,7 @@ class Archive: virtual public Metadata {
 		 *   are open.
 		 */
 		virtual void resize(EntryPtr id, stream::pos newStoredSize,
-			stream::pos newRealSize)
-			throw (stream::error) = 0;
+			stream::pos newRealSize) = 0;
 
 		/// Write out any cached changes to the underlying stream.
 		/**
@@ -387,8 +372,7 @@ class Archive: virtual public Metadata {
 		 * shuffling around many hundreds of megabytes of data, so don't call this
 		 * function unless you have good reason to!
 		 */
-		virtual void flush()
-			throw (stream::error) = 0;
+		virtual void flush() = 0;
 
 		/// Find out which attributes can be set on files in this archive.
 		/**
@@ -401,8 +385,7 @@ class Archive: virtual public Metadata {
 		 *
 		 * @return Zero or more E_ATTRIBUTE values OR'd together.
 		 */
-		virtual int getSupportedAttributes() const
-			throw ();
+		virtual int getSupportedAttributes() const;
 
 };
 
@@ -410,8 +393,7 @@ class Archive: virtual public Metadata {
 typedef std::vector<ArchivePtr> VC_ARCHIVE;
 
 /// Truncate callback for substreams that are a fixed size.
-void preventResize(stream::len len)
-	throw (stream::write_error);
+void preventResize(stream::len len);
 
 } // namespace gamearchive
 } // namespace camoto

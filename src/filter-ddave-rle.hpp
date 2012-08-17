@@ -37,12 +37,10 @@ class filter_ddave_unrle: public filter {
 		int copying;       ///< Number of bytes left to copy unchanged
 
 	public:
-		filter_ddave_unrle()
-			throw ();
+		filter_ddave_unrle();
 
 		void transform(uint8_t *out, stream::len *lenOut,
-			const uint8_t *in, stream::len *lenIn)
-			throw (filter_error);
+			const uint8_t *in, stream::len *lenIn);
 };
 
 /// Dangerous Dave RLE compression filter.
@@ -58,43 +56,33 @@ class filter_ddave_rle: public filter {
 
 	public:
 
-		filter_ddave_rle()
-			throw ();
+		filter_ddave_rle();
 
 		void transform(uint8_t *out, stream::len *lenOut,
-			const uint8_t *in, stream::len *lenIn)
-			throw (filter_error);
+			const uint8_t *in, stream::len *lenIn);
 };
 
 /// Dangerous Dave RLE decompression filter.
 class DDaveRLEFilterType: virtual public FilterType {
 
 	public:
-		DDaveRLEFilterType()
-			throw ();
+		DDaveRLEFilterType();
 
-		~DDaveRLEFilterType()
-			throw ();
+		~DDaveRLEFilterType();
 
-		virtual std::string getFilterCode() const
-			throw ();
+		virtual std::string getFilterCode() const;
 
-		virtual std::string getFriendlyName() const
-			throw ();
+		virtual std::string getFriendlyName() const;
 
-		virtual std::vector<std::string> getGameList() const
-			throw ();
+		virtual std::vector<std::string> getGameList() const;
 
 		virtual stream::inout_sptr apply(stream::inout_sptr target,
-			stream::fn_truncate resize)
-			throw (filter_error, stream::read_error);
+			stream::fn_truncate resize);
 
-		virtual stream::input_sptr apply(stream::input_sptr target)
-			throw (filter_error, stream::read_error);
+		virtual stream::input_sptr apply(stream::input_sptr target);
 
 		virtual stream::output_sptr apply(stream::output_sptr target,
-			stream::fn_truncate resize)
-			throw (filter_error);
+			stream::fn_truncate resize);
 
 };
 

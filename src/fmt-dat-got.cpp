@@ -49,29 +49,24 @@ namespace camoto {
 namespace gamearchive {
 
 DAT_GoTType::DAT_GoTType()
-	throw ()
 {
 }
 
 DAT_GoTType::~DAT_GoTType()
-	throw ()
 {
 }
 
 std::string DAT_GoTType::getArchiveCode() const
-	throw ()
 {
 	return "dat-got";
 }
 
 std::string DAT_GoTType::getFriendlyName() const
-	throw ()
 {
 	return "God of Thunder Resource File";
 }
 
 std::vector<std::string> DAT_GoTType::getFileExtensions() const
-	throw ()
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("dat");
@@ -79,7 +74,6 @@ std::vector<std::string> DAT_GoTType::getFileExtensions() const
 }
 
 std::vector<std::string> DAT_GoTType::getGameList() const
-	throw ()
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("God of Thunder");
@@ -87,7 +81,6 @@ std::vector<std::string> DAT_GoTType::getGameList() const
 }
 
 ArchiveType::Certainty DAT_GoTType::isInstance(stream::input_sptr psArchive) const
-	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();
 
@@ -152,7 +145,6 @@ ArchiveType::Certainty DAT_GoTType::isInstance(stream::input_sptr psArchive) con
 }
 
 ArchivePtr DAT_GoTType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
-	throw (stream::error)
 {
 	// Create an empty FAT (of 0x00 bytes) and XOR encode it.  We should really
 	// use the XOR filter but it's much quicker to do it directly.
@@ -166,14 +158,12 @@ ArchivePtr DAT_GoTType::newArchive(stream::inout_sptr psArchive, SuppData& suppD
 }
 
 ArchivePtr DAT_GoTType::open(stream::inout_sptr psArchive, SuppData& suppData) const
-	throw (stream::error)
 {
 	return ArchivePtr(new DAT_GoTArchive(psArchive));
 }
 
 SuppFilenames DAT_GoTType::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
-	throw ()
 {
 	// No supplemental types/empty list
 	return SuppFilenames();
@@ -181,8 +171,7 @@ SuppFilenames DAT_GoTType::getRequiredSupps(stream::input_sptr data,
 
 
 DAT_GoTArchive::DAT_GoTArchive(stream::inout_sptr psArchive)
-	throw (stream::error) :
-		FATArchive(psArchive, GOT_FIRST_FILE_OFFSET, GOT_MAX_FILENAME_LEN),
+	:	FATArchive(psArchive, GOT_FIRST_FILE_OFFSET, GOT_MAX_FILENAME_LEN),
 		fatSubStream(new stream::sub()),
 		fatStream(new stream::seg())
 {
@@ -240,12 +229,10 @@ DAT_GoTArchive::DAT_GoTArchive(stream::inout_sptr psArchive)
 }
 
 DAT_GoTArchive::~DAT_GoTArchive()
-	throw ()
 {
 }
 
 void DAT_GoTArchive::flush()
-	throw (stream::error)
 {
 	this->fatStream->flush();
 
@@ -255,13 +242,11 @@ void DAT_GoTArchive::flush()
 }
 
 int DAT_GoTArchive::getSupportedAttributes() const
-	throw ()
 {
 	return EA_COMPRESSED;
 }
 
 void DAT_GoTArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_got_dat_rename
 	assert(strNewName.length() <= GOT_MAX_FILENAME_LEN);
@@ -271,7 +256,6 @@ void DAT_GoTArchive::updateFileName(const FATEntry *pid, const std::string& strN
 }
 
 void DAT_GoTArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_got_dat_insert*
 	// TESTED BY: fmt_got_dat_resize*
@@ -281,7 +265,6 @@ void DAT_GoTArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelt
 }
 
 void DAT_GoTArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_got_dat_insert*
 	// TESTED BY: fmt_got_dat_resize*
@@ -294,7 +277,6 @@ void DAT_GoTArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta
 }
 
 FATArchive::FATEntry *DAT_GoTArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_got_dat_insert*
 	assert(pNewEntry->strName.length() <= GOT_MAX_FILENAME_LEN);
@@ -349,7 +331,6 @@ FATArchive::FATEntry *DAT_GoTArchive::preInsertFile(const FATEntry *idBeforeThis
 }
 
 void DAT_GoTArchive::postInsertFile(FATEntry *pNewEntry)
-	throw (stream::error)
 {
 	// Write out the entry into the space we allocated in preInsertFile(),
 	// now that the sizes are set.
@@ -366,7 +347,6 @@ void DAT_GoTArchive::postInsertFile(FATEntry *pNewEntry)
 }
 
 void DAT_GoTArchive::preRemoveFile(const FATEntry *pid)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_got_dat_remove*
 
@@ -383,7 +363,6 @@ void DAT_GoTArchive::preRemoveFile(const FATEntry *pid)
 }
 
 void DAT_GoTArchive::truncateFAT(stream::pos newSize)
-	throw (stream::error)
 {
 	// Sanity check to make sure the FAT is not actually changing size.
 	assert(newSize == GOT_FAT_LENGTH);

@@ -44,29 +44,24 @@ namespace camoto {
 namespace gamearchive {
 
 DAT_BashType::DAT_BashType()
-	throw ()
 {
 }
 
 DAT_BashType::~DAT_BashType()
-	throw ()
 {
 }
 
 std::string DAT_BashType::getArchiveCode() const
-	throw ()
 {
 	return "dat-bash";
 }
 
 std::string DAT_BashType::getFriendlyName() const
-	throw ()
 {
 	return "Monster Bash DAT File";
 }
 
 std::vector<std::string> DAT_BashType::getFileExtensions() const
-	throw ()
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("dat");
@@ -74,7 +69,6 @@ std::vector<std::string> DAT_BashType::getFileExtensions() const
 }
 
 std::vector<std::string> DAT_BashType::getGameList() const
-	throw ()
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Monster Bash");
@@ -82,7 +76,6 @@ std::vector<std::string> DAT_BashType::getGameList() const
 }
 
 ArchiveType::Certainty DAT_BashType::isInstance(stream::input_sptr psArchive) const
-	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();
 	// TESTED BY: fmt_dat_bash_isinstance_c02
@@ -137,20 +130,17 @@ ArchiveType::Certainty DAT_BashType::isInstance(stream::input_sptr psArchive) co
 }
 
 ArchivePtr DAT_BashType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
-	throw (stream::error)
 {
 	return ArchivePtr(new DAT_BashArchive(psArchive));
 }
 
 ArchivePtr DAT_BashType::open(stream::inout_sptr psArchive, SuppData& suppData) const
-	throw (stream::error)
 {
 	return ArchivePtr(new DAT_BashArchive(psArchive));
 }
 
 SuppFilenames DAT_BashType::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
-	throw ()
 {
 	// No supplemental types/empty list
 	return SuppFilenames();
@@ -158,8 +148,7 @@ SuppFilenames DAT_BashType::getRequiredSupps(stream::input_sptr data,
 
 
 DAT_BashArchive::DAT_BashArchive(stream::inout_sptr psArchive)
-	throw (stream::error) :
-		FATArchive(psArchive, DAT_FIRST_FILE_OFFSET, DAT_MAX_FILENAME_LEN)
+	:	FATArchive(psArchive, DAT_FIRST_FILE_OFFSET, DAT_MAX_FILENAME_LEN)
 {
 	stream::pos lenArchive = this->psArchive->size();
 
@@ -247,18 +236,15 @@ DAT_BashArchive::DAT_BashArchive(stream::inout_sptr psArchive)
 }
 
 DAT_BashArchive::~DAT_BashArchive()
-	throw ()
 {
 }
 
 int DAT_BashArchive::getSupportedAttributes() const
-	throw ()
 {
 	return EA_COMPRESSED;
 }
 
 void DAT_BashArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
-	throw (stream::error)
 {
 	int typeNum;
 	int newLen = strNewName.length();
@@ -296,7 +282,6 @@ void DAT_BashArchive::updateFileName(const FATEntry *pid, const std::string& str
 void DAT_BashArchive::updateFileOffset(const FATEntry *pid,
 	stream::delta offDelta
 )
-	throw (stream::error)
 {
 	return;
 }
@@ -304,7 +289,6 @@ void DAT_BashArchive::updateFileOffset(const FATEntry *pid,
 void DAT_BashArchive::updateFileSize(const FATEntry *pid,
 	stream::delta sizeDelta
 )
-	throw (stream::error)
 {
 	// TESTED BY: fmt_dat_bash_insert*
 	// TESTED BY: fmt_dat_bash_resize*
@@ -324,7 +308,6 @@ void DAT_BashArchive::updateFileSize(const FATEntry *pid,
 FATArchive::FATEntry *DAT_BashArchive::preInsertFile(
 	const FATEntry *idBeforeThis, FATEntry *pNewEntry
 )
-	throw (stream::error)
 {
 	// See if file extension is known and set type appropriately
 	int newLen = pNewEntry->strName.length();
@@ -371,7 +354,6 @@ FATArchive::FATEntry *DAT_BashArchive::preInsertFile(
 }
 
 void DAT_BashArchive::postInsertFile(FATEntry *pNewEntry)
-	throw (stream::error)
 {
 	this->psArchive->seekp(pNewEntry->iOffset, stream::start);
 

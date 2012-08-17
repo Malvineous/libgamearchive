@@ -44,29 +44,24 @@ namespace camoto {
 namespace gamearchive {
 
 TIMResourceType::TIMResourceType()
-	throw ()
 {
 }
 
 TIMResourceType::~TIMResourceType()
-	throw ()
 {
 }
 
 std::string TIMResourceType::getArchiveCode() const
-	throw ()
 {
 	return "resource-tim";
 }
 
 std::string TIMResourceType::getFriendlyName() const
-	throw ()
 {
 	return "The Incredible Machine Resource File";
 }
 
 std::vector<std::string> TIMResourceType::getFileExtensions() const
-	throw ()
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("001");
@@ -77,7 +72,6 @@ std::vector<std::string> TIMResourceType::getFileExtensions() const
 }
 
 std::vector<std::string> TIMResourceType::getGameList() const
-	throw ()
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("The Incredible Machine");
@@ -85,7 +79,6 @@ std::vector<std::string> TIMResourceType::getGameList() const
 }
 
 ArchiveType::Certainty TIMResourceType::isInstance(stream::input_sptr psArchive) const
-	throw (stream::error)
 {
 	try {
 		stream::len lenArchive = psArchive->size();
@@ -116,7 +109,6 @@ ArchiveType::Certainty TIMResourceType::isInstance(stream::input_sptr psArchive)
 }
 
 ArchivePtr TIMResourceType::open(stream::inout_sptr psArchive, SuppData& suppData) const
-	throw (stream::error)
 {
 	assert(suppData.find(SuppItem::FAT) != suppData.end());
 	return ArchivePtr(new TIMResourceArchive(psArchive, suppData[SuppItem::FAT]));
@@ -124,7 +116,6 @@ ArchivePtr TIMResourceType::open(stream::inout_sptr psArchive, SuppData& suppDat
 
 SuppFilenames TIMResourceType::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
-	throw ()
 {
 	// No supplemental types/empty list
 	SuppFilenames supps;
@@ -134,8 +125,7 @@ SuppFilenames TIMResourceType::getRequiredSupps(stream::input_sptr data,
 
 
 TIMResourceArchive::TIMResourceArchive(stream::inout_sptr psArchive, stream::inout_sptr psFAT)
-	throw (stream::error) :
-		FATArchive(psArchive, TIM_FIRST_FILE_OFFSET, TIM_MAX_FILENAME_LEN),
+	:	FATArchive(psArchive, TIM_FIRST_FILE_OFFSET, TIM_MAX_FILENAME_LEN),
 		psFAT(new stream::seg())
 {
 	this->psFAT->open(psFAT);
@@ -167,12 +157,10 @@ TIMResourceArchive::TIMResourceArchive(stream::inout_sptr psArchive, stream::ino
 }
 
 TIMResourceArchive::~TIMResourceArchive()
-	throw ()
 {
 }
 
 void TIMResourceArchive::flush()
-	throw (stream::error)
 {
 	this->psFAT->flush();
 	this->FATArchive::flush();
@@ -180,7 +168,6 @@ void TIMResourceArchive::flush()
 }
 
 void TIMResourceArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_resource_tim_rename
 	assert(strNewName.length() <= TIM_MAX_FILENAME_LEN);
@@ -192,7 +179,6 @@ void TIMResourceArchive::updateFileName(const FATEntry *pid, const std::string& 
 }
 
 void TIMResourceArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_resource_tim_insert*
 	// TESTED BY: fmt_resource_tim_resize*
@@ -204,7 +190,6 @@ void TIMResourceArchive::updateFileOffset(const FATEntry *pid, stream::delta off
 }
 
 void TIMResourceArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_resource_tim_insert*
 	// TESTED BY: fmt_resource_tim_resize*
@@ -217,7 +202,6 @@ void TIMResourceArchive::updateFileSize(const FATEntry *pid, stream::delta sizeD
 }
 
 FATArchive::FATEntry *TIMResourceArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_resource_tim_insert*
 	int len = pNewEntry->strName.length();
@@ -259,7 +243,6 @@ FATArchive::FATEntry *TIMResourceArchive::preInsertFile(const FATEntry *idBefore
 }
 
 void TIMResourceArchive::preRemoveFile(const FATEntry *pid)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_resource_tim_remove*
 

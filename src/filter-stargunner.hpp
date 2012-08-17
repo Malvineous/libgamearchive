@@ -38,16 +38,13 @@ namespace gamearchive {
 class filter_stargunner_decompress: public filter {
 
 	public:
-		filter_stargunner_decompress()
-			throw ();
+		filter_stargunner_decompress();
 
 		void explode_chunk(const uint8_t* in, unsigned int expanded_size,
-			uint8_t* out)
-			throw (filter_error);
+			uint8_t* out);
 
 		void transform(uint8_t *out, stream::len *lenOut,
-			const uint8_t *in, stream::len *lenIn)
-			throw (filter_error);
+			const uint8_t *in, stream::len *lenIn);
 
 	protected:
 		uint8_t bufIn[CMP_CHUNK_SIZE];  ///< Read (compressed) buffer
@@ -64,31 +61,23 @@ class filter_stargunner_decompress: public filter {
 class StargunnerFilterType: virtual public FilterType {
 
 	public:
-		StargunnerFilterType()
-			throw ();
+		StargunnerFilterType();
 
-		~StargunnerFilterType()
-			throw ();
+		~StargunnerFilterType();
 
-		virtual std::string getFilterCode() const
-			throw ();
+		virtual std::string getFilterCode() const;
 
-		virtual std::string getFriendlyName() const
-			throw ();
+		virtual std::string getFriendlyName() const;
 
-		virtual std::vector<std::string> getGameList() const
-			throw ();
+		virtual std::vector<std::string> getGameList() const;
 
 		virtual stream::inout_sptr apply(stream::inout_sptr target,
-			stream::fn_truncate resize)
-			throw (filter_error, stream::read_error);
+			stream::fn_truncate resize);
 
-		virtual stream::input_sptr apply(stream::input_sptr target)
-			throw (filter_error, stream::read_error);
+		virtual stream::input_sptr apply(stream::input_sptr target);
 
 		virtual stream::output_sptr apply(stream::output_sptr target,
-			stream::fn_truncate resize)
-			throw (filter_error);
+			stream::fn_truncate resize);
 
 };
 

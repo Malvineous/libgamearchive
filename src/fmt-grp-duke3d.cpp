@@ -46,29 +46,24 @@ namespace camoto {
 namespace gamearchive {
 
 GRPType::GRPType()
-	throw ()
 {
 }
 
 GRPType::~GRPType()
-	throw ()
 {
 }
 
 std::string GRPType::getArchiveCode() const
-	throw ()
 {
 	return "grp-duke3d";
 }
 
 std::string GRPType::getFriendlyName() const
-	throw ()
 {
 	return "Duke Nukem 3D Group File";
 }
 
 std::vector<std::string> GRPType::getFileExtensions() const
-	throw ()
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("grp");
@@ -76,7 +71,6 @@ std::vector<std::string> GRPType::getFileExtensions() const
 }
 
 std::vector<std::string> GRPType::getGameList() const
-	throw ()
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Duke Nukem 3D");
@@ -86,7 +80,6 @@ std::vector<std::string> GRPType::getGameList() const
 }
 
 ArchiveType::Certainty GRPType::isInstance(stream::input_sptr psArchive) const
-	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();
 
@@ -105,7 +98,6 @@ ArchiveType::Certainty GRPType::isInstance(stream::input_sptr psArchive) const
 }
 
 ArchivePtr GRPType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
-	throw (stream::error)
 {
 	psArchive->seekp(0, stream::start);
 	psArchive->write("KenSilverman\0\0\0\0", 16);
@@ -113,14 +105,12 @@ ArchivePtr GRPType::newArchive(stream::inout_sptr psArchive, SuppData& suppData)
 }
 
 ArchivePtr GRPType::open(stream::inout_sptr psArchive, SuppData& suppData) const
-	throw (stream::error)
 {
 	return ArchivePtr(new GRPArchive(psArchive));
 }
 
 SuppFilenames GRPType::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
-	throw ()
 {
 	// No supplemental types/empty list
 	return SuppFilenames();
@@ -128,8 +118,7 @@ SuppFilenames GRPType::getRequiredSupps(stream::input_sptr data,
 
 
 GRPArchive::GRPArchive(stream::inout_sptr psArchive)
-	throw (stream::error) :
-		FATArchive(psArchive, GRP_FIRST_FILE_OFFSET, GRP_MAX_FILENAME_LEN)
+	:	FATArchive(psArchive, GRP_FIRST_FILE_OFFSET, GRP_MAX_FILENAME_LEN)
 {
 	this->psArchive->seekg(12, stream::start); // skip "KenSilverman" sig
 
@@ -168,12 +157,10 @@ GRPArchive::GRPArchive(stream::inout_sptr psArchive)
 }
 
 GRPArchive::~GRPArchive()
-	throw ()
 {
 }
 
 void GRPArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_grp_duke3d_rename
 	assert(strNewName.length() <= GRP_MAX_FILENAME_LEN);
@@ -183,7 +170,6 @@ void GRPArchive::updateFileName(const FATEntry *pid, const std::string& strNewNa
 }
 
 void GRPArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
-	throw (stream::error)
 {
 	// This format doesn't have any offsets that need updating.  As this function
 	// is only called when removing a file, the "offsets" will be sorted out
@@ -192,7 +178,6 @@ void GRPArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 }
 
 void GRPArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_grp_duke3d_insert*
 	// TESTED BY: fmt_grp_duke3d_resize*
@@ -202,7 +187,6 @@ void GRPArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 }
 
 FATArchive::FATEntry *GRPArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_grp_duke3d_insert*
 	assert(pNewEntry->strName.length() <= GRP_MAX_FILENAME_LEN);
@@ -234,7 +218,6 @@ FATArchive::FATEntry *GRPArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 }
 
 void GRPArchive::preRemoveFile(const FATEntry *pid)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_grp_duke3d_remove*
 
@@ -257,7 +240,6 @@ void GRPArchive::preRemoveFile(const FATEntry *pid)
 }
 
 void GRPArchive::updateFileCount(uint32_t iNewCount)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_grp_duke3d_insert*
 	// TESTED BY: fmt_grp_duke3d_remove*

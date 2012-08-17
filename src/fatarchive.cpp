@@ -28,15 +28,12 @@ namespace camoto {
 namespace gamearchive {
 
 FATArchive::FATEntry::FATEntry()
-	throw ()
 {
 }
 FATArchive::FATEntry::~FATEntry()
-	throw ()
 {
 }
 std::string FATArchive::FATEntry::getContent() const
-	throw ()
 {
 	std::ostringstream ss;
 	ss << this->FileEntry::getContent()
@@ -58,8 +55,7 @@ Archive::EntryPtr getFileAt(const Archive::VC_ENTRYPTR& files, unsigned int inde
 
 FATArchive::FATArchive(stream::inout_sptr psArchive, stream::pos offFirstFile,
 	int lenMaxFilename)
-	throw (stream::error) :
-		psArchive(new stream::seg()),
+	:	psArchive(new stream::seg()),
 		offFirstFile(offFirstFile),
 		lenMaxFilename(lenMaxFilename)
 {
@@ -69,7 +65,6 @@ FATArchive::FATArchive(stream::inout_sptr psArchive, stream::pos offFirstFile,
 }
 
 FATArchive::~FATArchive()
-	throw ()
 {
 	// Can't flush here as it could throw stream::error and we have no way
 	// of handling it.
@@ -77,13 +72,11 @@ FATArchive::~FATArchive()
 }
 
 const FATArchive::VC_ENTRYPTR& FATArchive::getFileList() const
-	throw ()
 {
 	return this->vcFAT;
 }
 
 FATArchive::EntryPtr FATArchive::find(const std::string& strFilename) const
-	throw ()
 {
 	// TESTED BY: fmt_grp_duke3d_*
 	for (VC_ENTRYPTR::const_iterator i = this->vcFAT.begin();
@@ -99,14 +92,12 @@ FATArchive::EntryPtr FATArchive::find(const std::string& strFilename) const
 }
 
 bool FATArchive::isValid(const EntryPtr id) const
-	throw ()
 {
 	const FATEntry *id2 = dynamic_cast<const FATEntry *>(id.get());
 	return ((id2) && (id2->bValid));
 }
 
 stream::inout_sptr FATArchive::open(const EntryPtr id)
-	throw ()
 {
 	// TESTED BY: fmt_grp_duke3d_open
 
@@ -144,7 +135,6 @@ stream::inout_sptr FATArchive::open(const EntryPtr id)
 FATArchive::EntryPtr FATArchive::insert(const EntryPtr idBeforeThis,
 	const std::string& strFilename, stream::pos storedSize, std::string type, int attr
 )
-	throw (stream::error)
 {
 	// TESTED BY: fmt_grp_duke3d_insert2
 	// TESTED BY: fmt_grp_duke3d_remove_insert
@@ -248,7 +238,6 @@ FATArchive::EntryPtr FATArchive::insert(const EntryPtr idBeforeThis,
 }
 
 void FATArchive::remove(EntryPtr id)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_grp_duke3d_remove
 	// TESTED BY: fmt_grp_duke3d_remove2
@@ -291,7 +280,6 @@ void FATArchive::remove(EntryPtr id)
 }
 
 void FATArchive::rename(EntryPtr id, const std::string& strNewName)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_grp_duke3d_rename
 	assert(this->isValid(id));
@@ -313,7 +301,6 @@ void FATArchive::rename(EntryPtr id, const std::string& strNewName)
 
 void FATArchive::resize(EntryPtr id, stream::len newStoredSize,
 	stream::len newRealSize)
-	throw (stream::error)
 {
 	assert(this->isValid(id));
 	stream::delta iDelta = newStoredSize - id->storedSize;
@@ -366,7 +353,6 @@ void FATArchive::resize(EntryPtr id, stream::len newStoredSize,
 }
 
 void FATArchive::flush()
-	throw (stream::error)
 {
 	// Write out to the underlying stream
 	this->psArchive->flush();
@@ -375,7 +361,6 @@ void FATArchive::flush()
 
 void FATArchive::shiftFiles(const FATEntry *fatSkip, stream::pos offStart,
 	stream::len deltaOffset, int deltaIndex)
-	throw (stream::error)
 {
 	for (VC_ENTRYPTR::iterator i = this->vcFAT.begin(); i != this->vcFAT.end(); i++) {
 		FATEntry *pFAT = dynamic_cast<FATEntry *>(i->get());
@@ -416,38 +401,32 @@ void FATArchive::shiftFiles(const FATEntry *fatSkip, stream::pos offStart,
 
 FATArchive::FATEntry *FATArchive::preInsertFile(const FATEntry *idBeforeThis,
 	FATEntry *pNewEntry)
-	throw (stream::error)
 {
 	// No-op default
 	return NULL;
 }
 
 void FATArchive::postInsertFile(FATEntry *pNewEntry)
-	throw (stream::error)
 {
 	// No-op default
 }
 
 void FATArchive::preRemoveFile(const FATEntry *pid)
-	throw (stream::error)
 {
 	// No-op default
 }
 
 void FATArchive::postRemoveFile(const FATEntry *pid)
-	throw (stream::error)
 {
 	// No-op default
 }
 
 FATArchive::FATEntry *FATArchive::createNewFATEntry()
-	throw ()
 {
 	return new FATEntry();
 }
 
 void FATArchive::cleanOpenSubstreams()
-	throw ()
 {
 	bool clean;
 	do {
@@ -472,7 +451,6 @@ void FATArchive::cleanOpenSubstreams()
 
 bool FATArchive::entryInRange(const FATEntry *fat, stream::pos offStart,
 	const FATEntry *fatSkip)
-	throw ()
 {
 	// Don't move any files earlier than the start of the shift block.
 	if (fat->iOffset < offStart) return false;
@@ -505,7 +483,6 @@ bool FATArchive::entryInRange(const FATEntry *fat, stream::pos offStart,
 }
 
 void FATArchive::resizeSubstream(FATEntryPtr id, stream::len newSize)
-	throw (stream::write_error)
 {
 	// An open substream belonging to file entry 'id' wants to be resized.
 

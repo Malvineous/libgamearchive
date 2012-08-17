@@ -32,65 +32,49 @@ class RESType: virtual public ArchiveType {
 
 	public:
 
-		RESType()
-			throw ();
+		RESType();
 
-		virtual ~RESType()
-			throw ();
+		virtual ~RESType();
 
-		virtual std::string getArchiveCode() const
-			throw ();
+		virtual std::string getArchiveCode() const;
 
-		virtual std::string getFriendlyName() const
-			throw ();
+		virtual std::string getFriendlyName() const;
 
-		virtual std::vector<std::string> getFileExtensions() const
-			throw ();
+		virtual std::vector<std::string> getFileExtensions() const;
 
-		virtual std::vector<std::string> getGameList() const
-			throw ();
+		virtual std::vector<std::string> getGameList() const;
 
-		virtual ArchiveType::Certainty isInstance(stream::input_sptr fsArchive) const
-			throw (stream::error);
+		virtual ArchiveType::Certainty isInstance(stream::input_sptr fsArchive) const;
 
 		// newArchive is not overridden as an entirely blank file is valid
 
-		virtual ArchivePtr open(stream::inout_sptr fsArchive, SuppData& suppData) const
-			throw (stream::error);
+		virtual ArchivePtr open(stream::inout_sptr fsArchive, SuppData& suppData) const;
 
 		virtual SuppFilenames getRequiredSupps(stream::input_sptr data,
-			const std::string& filenameArchive) const
-			throw ();
+			const std::string& filenameArchive) const;
 
 };
 
 class RESArchiveFolder: virtual public FATArchive {
 
 	public:
-		RESArchiveFolder(stream::inout_sptr psArchive)
-			throw (stream::error);
+		RESArchiveFolder(stream::inout_sptr psArchive);
 
-		virtual ~RESArchiveFolder()
-			throw ();
+		virtual ~RESArchiveFolder();
 
 		// As per Archive (see there for docs)
 
-		virtual ArchivePtr openFolder(const EntryPtr id)
-			throw (stream::error);
+		virtual ArchivePtr openFolder(const EntryPtr id);
 
 		// As per FATArchive (see there for docs)
 
-		virtual void updateFileName(const FATEntry *pid, const std::string& strNewName)
-			throw (stream::error);
+		virtual void updateFileName(const FATEntry *pid, const std::string& strNewName);
 
-		virtual void updateFileOffset(const FATEntry *pid, stream::delta offDelta)
-			throw (stream::error);
+		virtual void updateFileOffset(const FATEntry *pid, stream::delta offDelta);
 
-		virtual void updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
-			throw (stream::error);
+		virtual void updateFileSize(const FATEntry *pid, stream::delta sizeDelta);
 
-		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-			throw (stream::error);
+		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry);
 
 };
 

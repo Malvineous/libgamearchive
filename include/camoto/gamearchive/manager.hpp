@@ -42,8 +42,7 @@ typedef boost::shared_ptr<Manager> ManagerPtr;
  *
  * @return A shared pointer to a Manager instance.
  */
-ManagerPtr getManager(void)
-	throw ();
+ManagerPtr getManager(void);
 
 /// Top-level class to manage archive types.
 /**
@@ -66,16 +65,13 @@ class Manager {
 		/// List of available filter types.
 		VC_FILTERTYPE vcFilters;
 
-		Manager()
-			throw ();
+		Manager();
 
-		friend ManagerPtr getManager(void)
-			throw ();
+		friend ManagerPtr getManager(void);
 
 	public:
 
-		~Manager()
-			throw ();
+		~Manager();
 
 		/// Get an ArchiveType instance for a supported file format.
 		/**
@@ -86,8 +82,7 @@ class Manager {
 		 *         an empty pointer once iIndex goes out of range.
 		 * @todo Remove this and replace it with a function that just returns the vector.
 		 */
-		ArchiveTypePtr getArchiveType(unsigned int iIndex)
-			throw ();
+		ArchiveTypePtr getArchiveType(unsigned int iIndex);
 
 		/// Get an ArchiveType instance by its code.
 		/**
@@ -95,8 +90,7 @@ class Manager {
 		 * @return A shared pointer to an ArchiveType for the given code, or
 		 *         an empty pointer on an invalid code.
 		 */
-		ArchiveTypePtr getArchiveTypeByCode(const std::string& strCode)
-			throw ();
+		ArchiveTypePtr getArchiveTypeByCode(const std::string& strCode);
 
 		/// Get a FilterType instance for a supported filtering algorithm.
 		/**
@@ -110,8 +104,7 @@ class Manager {
 		 *
 		 * @todo Remove this and replace it with a function that just returns the vector.
 		 */
-		FilterTypePtr getFilterType(unsigned int iIndex)
-			throw ();
+		FilterTypePtr getFilterType(unsigned int iIndex);
 
 		/// Get a FilterType instance by its code.
 		/**
@@ -121,8 +114,7 @@ class Manager {
 		 * @return A shared pointer to a FilterType for the given code, or
 		 *   an empty pointer on an invalid code.
 		 */
-		FilterTypePtr getFilterTypeByCode(const std::string& strCode)
-			throw ();
+		FilterTypePtr getFilterTypeByCode(const std::string& strCode);
 
 };
 

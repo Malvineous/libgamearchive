@@ -31,8 +31,7 @@ class filter_bitswap: public filter {
 
 	public:
 		void transform(uint8_t *out, stream::len *lenOut,
-			const uint8_t *in, stream::len *lenIn)
-			throw (filter_error);
+			const uint8_t *in, stream::len *lenIn);
 
 };
 

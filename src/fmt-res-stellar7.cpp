@@ -39,29 +39,24 @@ namespace camoto {
 namespace gamearchive {
 
 RESType::RESType()
-	throw ()
 {
 }
 
 RESType::~RESType()
-	throw ()
 {
 }
 
 std::string RESType::getArchiveCode() const
-	throw ()
 {
 	return "res-stellar7";
 }
 
 std::string RESType::getFriendlyName() const
-	throw ()
 {
 	return "Stellar 7 Resource File";
 }
 
 std::vector<std::string> RESType::getFileExtensions() const
-	throw ()
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("res");
@@ -69,7 +64,6 @@ std::vector<std::string> RESType::getFileExtensions() const
 }
 
 std::vector<std::string> RESType::getGameList() const
-	throw ()
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Stellar 7");
@@ -77,7 +71,6 @@ std::vector<std::string> RESType::getGameList() const
 }
 
 ArchiveType::Certainty RESType::isInstance(stream::input_sptr psArchive) const
-	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();
 
@@ -119,7 +112,6 @@ ArchiveType::Certainty RESType::isInstance(stream::input_sptr psArchive) const
 }
 
 ArchivePtr RESType::open(stream::inout_sptr psArchive, SuppData& suppData) const
-	throw (stream::error)
 {
 	ArchivePtr root(new RESArchiveFolder(psArchive));
 	return root;
@@ -127,7 +119,6 @@ ArchivePtr RESType::open(stream::inout_sptr psArchive, SuppData& suppData) const
 
 SuppFilenames RESType::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
-	throw ()
 {
 	// No supplemental types/empty list
 	return SuppFilenames();
@@ -135,8 +126,7 @@ SuppFilenames RESType::getRequiredSupps(stream::input_sptr data,
 
 
 RESArchiveFolder::RESArchiveFolder(stream::inout_sptr psArchive)
-	throw (stream::error) :
-		FATArchive(psArchive, RES_FIRST_FILE_OFFSET, RES_MAX_FILENAME_LEN)
+	:	FATArchive(psArchive, RES_FIRST_FILE_OFFSET, RES_MAX_FILENAME_LEN)
 {
 	stream::pos lenArchive = this->psArchive->size();
 
@@ -181,12 +171,10 @@ RESArchiveFolder::RESArchiveFolder(stream::inout_sptr psArchive)
 }
 
 RESArchiveFolder::~RESArchiveFolder()
-	throw ()
 {
 }
 
 ArchivePtr RESArchiveFolder::openFolder(const EntryPtr id)
-	throw (stream::error)
 {
 	// Make sure we're opening a folder
 	assert(id->fAttr & EA_FOLDER);
@@ -196,7 +184,6 @@ ArchivePtr RESArchiveFolder::openFolder(const EntryPtr id)
 }
 
 void RESArchiveFolder::updateFileName(const FATEntry *pid, const std::string& strNewName)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_res_stellar7_rename
 	assert(strNewName.length() <= RES_MAX_FILENAME_LEN);
@@ -206,7 +193,6 @@ void RESArchiveFolder::updateFileName(const FATEntry *pid, const std::string& st
 }
 
 void RESArchiveFolder::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
-	throw (stream::error)
 {
 	// This format doesn't have any offsets that need updating.  As this function
 	// is only called when removing a file, the "offsets" will be sorted out
@@ -215,7 +201,6 @@ void RESArchiveFolder::updateFileOffset(const FATEntry *pid, stream::delta offDe
 }
 
 void RESArchiveFolder::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_res_stellar7_insert*
 	// TESTED BY: fmt_res_stellar7_resize*
@@ -225,7 +210,6 @@ void RESArchiveFolder::updateFileSize(const FATEntry *pid, stream::delta sizeDel
 }
 
 FATArchive::FATEntry *RESArchiveFolder::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_res_stellar7_insert*
 	assert(pNewEntry->strName.length() <= RES_MAX_FILENAME_LEN);

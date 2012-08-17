@@ -72,23 +72,17 @@ class FixedArchive: virtual public Archive {
 
 	public:
 
-		FixedArchive(stream::inout_sptr psArchive, std::vector<FixedArchiveFile> files)
-			throw (stream::error);
+		FixedArchive(stream::inout_sptr psArchive, std::vector<FixedArchiveFile> files);
 
-		virtual ~FixedArchive()
-			throw ();
+		virtual ~FixedArchive();
 
-		virtual EntryPtr find(const std::string& strFilename) const
-			throw ();
+		virtual EntryPtr find(const std::string& strFilename) const;
 
-		virtual const VC_ENTRYPTR& getFileList(void) const
-			throw ();
+		virtual const VC_ENTRYPTR& getFileList(void) const;
 
-		virtual bool isValid(const EntryPtr id) const
-			throw ();
+		virtual bool isValid(const EntryPtr id) const;
 
-		virtual stream::inout_sptr open(const EntryPtr id)
-			throw ();
+		virtual stream::inout_sptr open(const EntryPtr id);
 
 		/**
 		 * @note Will always throw an exception as the files are fixed and
@@ -97,38 +91,32 @@ class FixedArchive: virtual public Archive {
 		virtual EntryPtr insert(const EntryPtr idBeforeThis,
 			const std::string& strFilename, stream::pos storedSize, std::string type,
 			int attr
-		)
-			throw (stream::error);
+		);
 
 		/**
 		 * @note Will always throw an exception as the files are fixed and
 		 *       thus can't be removed.
 		 */
-		virtual void remove(EntryPtr id)
-			throw (stream::error);
+		virtual void remove(EntryPtr id);
 
 		/**
 		 * @note Will always throw an exception as it makes no sense to rename
 		 *       the made up filenames in this archive format.
 		 */
-		virtual void rename(EntryPtr id, const std::string& strNewName)
-			throw (stream::error);
+		virtual void rename(EntryPtr id, const std::string& strNewName);
 
 		/**
 		 * @note Will always throw an exception as fixed files can't be moved.
 		 */
-		virtual void move(const EntryPtr idBeforeThis, EntryPtr id)
-			throw (stream::error);
+		virtual void move(const EntryPtr idBeforeThis, EntryPtr id);
 
 		/**
 		 * @note Will always throw an exception as fixed files can't be resized.
 		 */
 		virtual void resize(EntryPtr id, stream::pos newStoredSize,
-			stream::pos newRealSize)
-			throw (stream::error);
+			stream::pos newRealSize);
 
-		virtual void flush()
-			throw (stream::error);
+		virtual void flush();
 
 };
 

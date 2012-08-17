@@ -35,12 +35,11 @@ namespace camoto {
 namespace gamearchive {
 
 filter_z66_decompress::filter_z66_decompress()
-	throw () :
-	data(bitstream::bigEndian),
-	state(0),
-	codeLength(9),
-	curDicIndex(0),
-	maxDicIndex(255)
+	:	data(bitstream::bigEndian),
+		state(0),
+		codeLength(9),
+		curDicIndex(0),
+		maxDicIndex(255)
 {
 	for (int i = 0; i < 8192; i++) {
 		nodes[i].code = 0;
@@ -49,7 +48,6 @@ filter_z66_decompress::filter_z66_decompress()
 }
 
 int filter_z66_decompress::nextChar(const uint8_t **in, stream::len *lenIn, stream::len *r, uint8_t *out)
-	throw ()
 {
 	if (*lenIn) {
 		*out = **in; // "read" byte
@@ -62,7 +60,6 @@ int filter_z66_decompress::nextChar(const uint8_t **in, stream::len *lenIn, stre
 
 void filter_z66_decompress::transform(uint8_t *out, stream::len *lenOut,
 	const uint8_t *in, stream::len *lenIn)
-	throw (filter_error)
 {
 	stream::len r = 0, w = 0;
 
@@ -145,29 +142,24 @@ done:
 
 
 Zone66FilterType::Zone66FilterType()
-	throw ()
 {
 }
 
 Zone66FilterType::~Zone66FilterType()
-	throw ()
 {
 }
 
 std::string Zone66FilterType::getFilterCode() const
-	throw ()
 {
 	return "lzw-zone66";
 }
 
 std::string Zone66FilterType::getFriendlyName() const
-	throw ()
 {
 	return "Zone 66 compression";
 }
 
 std::vector<std::string> Zone66FilterType::getGameList() const
-	throw ()
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Zone 66");
@@ -176,7 +168,6 @@ std::vector<std::string> Zone66FilterType::getGameList() const
 
 stream::inout_sptr Zone66FilterType::apply(stream::inout_sptr target,
 	stream::fn_truncate resize)
-	throw (filter_error, stream::read_error)
 {
 	stream::filtered_sptr st(new stream::filtered());
 	filter_sptr de(new filter_z66_decompress());
@@ -187,7 +178,6 @@ stream::inout_sptr Zone66FilterType::apply(stream::inout_sptr target,
 }
 
 stream::input_sptr Zone66FilterType::apply(stream::input_sptr target)
-	throw (filter_error, stream::read_error)
 {
 	stream::input_filtered_sptr st(new stream::input_filtered());
 	filter_sptr de(new filter_z66_decompress());
@@ -197,7 +187,6 @@ stream::input_sptr Zone66FilterType::apply(stream::input_sptr target)
 
 stream::output_sptr Zone66FilterType::apply(stream::output_sptr target,
 	stream::fn_truncate resize)
-	throw (filter_error)
 {
 	stream::output_filtered_sptr st(new stream::output_filtered());
 	/// @todo Implement Zone 66 compression

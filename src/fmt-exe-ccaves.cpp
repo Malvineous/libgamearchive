@@ -94,29 +94,24 @@ FixedArchiveFile ccaves_file_list[] = {
 };
 
 EXE_CCavesType::EXE_CCavesType()
-	throw ()
 {
 }
 
 EXE_CCavesType::~EXE_CCavesType()
-	throw ()
 {
 }
 
 std::string EXE_CCavesType::getArchiveCode() const
-	throw ()
 {
 	return "exe-ccaves";
 }
 
 std::string EXE_CCavesType::getFriendlyName() const
-	throw ()
 {
 	return "Crystal Caves Executable";
 }
 
 std::vector<std::string> EXE_CCavesType::getFileExtensions() const
-	throw ()
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("exe");
@@ -124,7 +119,6 @@ std::vector<std::string> EXE_CCavesType::getFileExtensions() const
 }
 
 std::vector<std::string> EXE_CCavesType::getGameList() const
-	throw ()
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Crystal Caves");
@@ -132,7 +126,6 @@ std::vector<std::string> EXE_CCavesType::getGameList() const
 }
 
 ArchiveType::Certainty EXE_CCavesType::isInstance(stream::input_sptr psArchive) const
-	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();
 
@@ -154,14 +147,12 @@ ArchiveType::Certainty EXE_CCavesType::isInstance(stream::input_sptr psArchive) 
 }
 
 ArchivePtr EXE_CCavesType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
-	throw (stream::error)
 {
 	// This isn't a true archive so we can't create new versions of it.
 	throw stream::error("Can't create a new archive in this format.");
 }
 
 ArchivePtr EXE_CCavesType::open(stream::inout_sptr psArchive, SuppData& suppData) const
-	throw (stream::error)
 {
 	std::vector<FixedArchiveFile> files;
 	files.reserve(sizeof(ccaves_file_list) / sizeof(FixedArchiveFile));
@@ -173,7 +164,6 @@ ArchivePtr EXE_CCavesType::open(stream::inout_sptr psArchive, SuppData& suppData
 
 SuppFilenames EXE_CCavesType::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
-	throw ()
 {
 	// No supplemental types/empty list
 	return SuppFilenames();

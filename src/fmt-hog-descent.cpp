@@ -41,29 +41,24 @@ namespace camoto {
 namespace gamearchive {
 
 HOGType::HOGType()
-	throw ()
 {
 }
 
 HOGType::~HOGType()
-	throw ()
 {
 }
 
 std::string HOGType::getArchiveCode() const
-	throw ()
 {
 	return "hog-descent";
 }
 
 std::string HOGType::getFriendlyName() const
-	throw ()
 {
 	return "Descent HOG file";
 }
 
 std::vector<std::string> HOGType::getFileExtensions() const
-	throw ()
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("hog");
@@ -71,7 +66,6 @@ std::vector<std::string> HOGType::getFileExtensions() const
 }
 
 std::vector<std::string> HOGType::getGameList() const
-	throw ()
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Descent");
@@ -79,7 +73,6 @@ std::vector<std::string> HOGType::getGameList() const
 }
 
 ArchiveType::Certainty HOGType::isInstance(stream::input_sptr psArchive) const
-	throw (stream::error)
 {
 	stream::pos lenArchive = psArchive->size();
 
@@ -98,7 +91,6 @@ ArchiveType::Certainty HOGType::isInstance(stream::input_sptr psArchive) const
 }
 
 ArchivePtr HOGType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
-	throw (stream::error)
 {
 	psArchive->seekp(0, stream::start);
 	psArchive->write("DHF", 3);
@@ -106,14 +98,12 @@ ArchivePtr HOGType::newArchive(stream::inout_sptr psArchive, SuppData& suppData)
 }
 
 ArchivePtr HOGType::open(stream::inout_sptr psArchive, SuppData& suppData) const
-	throw (stream::error)
 {
 	return ArchivePtr(new HOGArchive(psArchive));
 }
 
 SuppFilenames HOGType::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
-	throw ()
 {
 	// No supplemental types/empty list
 	return SuppFilenames();
@@ -121,8 +111,7 @@ SuppFilenames HOGType::getRequiredSupps(stream::input_sptr data,
 
 
 HOGArchive::HOGArchive(stream::inout_sptr psArchive)
-	throw (stream::error) :
-		FATArchive(psArchive, HOG_FIRST_FILE_OFFSET, HOG_MAX_FILENAME_LEN)
+	:	FATArchive(psArchive, HOG_FIRST_FILE_OFFSET, HOG_MAX_FILENAME_LEN)
 {
 	stream::pos lenArchive = this->psArchive->size();
 
@@ -168,12 +157,10 @@ HOGArchive::HOGArchive(stream::inout_sptr psArchive)
 }
 
 HOGArchive::~HOGArchive()
-	throw ()
 {
 }
 
 void HOGArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_hog_descent_rename
 	assert(strNewName.length() <= HOG_MAX_FILENAME_LEN);
@@ -183,7 +170,6 @@ void HOGArchive::updateFileName(const FATEntry *pid, const std::string& strNewNa
 }
 
 void HOGArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
-	throw (stream::error)
 {
 	// This format doesn't have any offsets that need updating.  As this function
 	// is only called when removing a file, the "offsets" will be sorted out
@@ -192,7 +178,6 @@ void HOGArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 }
 
 void HOGArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_hog_descent_insert*
 	// TESTED BY: fmt_hog_descent_resize*
@@ -202,7 +187,6 @@ void HOGArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 }
 
 FATArchive::FATEntry *HOGArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
-	throw (stream::error)
 {
 	// TESTED BY: fmt_hog_descent_insert*
 	assert(pNewEntry->strName.length() <= HOG_MAX_FILENAME_LEN);

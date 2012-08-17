@@ -31,8 +31,7 @@ namespace camoto {
 namespace gamearchive {
 
 filter_xor_crypt::filter_xor_crypt(int lenCrypt, int seed)
-	throw () :
-		lenCrypt(lenCrypt),
+	:	lenCrypt(lenCrypt),
 		seed(seed),
 		offset(0)
 {
@@ -40,7 +39,6 @@ filter_xor_crypt::filter_xor_crypt(int lenCrypt, int seed)
 
 void filter_xor_crypt::transform(uint8_t *out, stream::len *lenOut,
 	const uint8_t *in, stream::len *lenIn)
-	throw (filter_error)
 {
 	stream::len w = 0;
 
@@ -85,36 +83,30 @@ uint8_t filter_xor_crypt::getKey()
 
 
 XORFilterType::XORFilterType()
-	throw ()
 {
 }
 
 XORFilterType::~XORFilterType()
-	throw ()
 {
 }
 
 std::string XORFilterType::getFilterCode() const
-	throw ()
 {
 	return "xor-inc";
 }
 
 std::string XORFilterType::getFriendlyName() const
-	throw ()
 {
 	return "Incremental XOR encryption";
 }
 
 std::vector<std::string> XORFilterType::getGameList() const
-	throw ()
 {
 	return std::vector<std::string>();
 }
 
 stream::inout_sptr XORFilterType::apply(stream::inout_sptr target,
 	stream::fn_truncate resize)
-	throw (filter_error, stream::read_error)
 {
 	stream::filtered_sptr st(new stream::filtered());
 	// We need two separate filters, otherwise reading from one will
@@ -126,7 +118,6 @@ stream::inout_sptr XORFilterType::apply(stream::inout_sptr target,
 }
 
 stream::input_sptr XORFilterType::apply(stream::input_sptr target)
-	throw (filter_error, stream::read_error)
 {
 	stream::input_filtered_sptr st(new stream::input_filtered());
 	filter_sptr de(new filter_xor_crypt(0, 0));
@@ -136,7 +127,6 @@ stream::input_sptr XORFilterType::apply(stream::input_sptr target)
 
 stream::output_sptr XORFilterType::apply(stream::output_sptr target,
 	stream::fn_truncate resize)
-	throw (filter_error)
 {
 	stream::output_filtered_sptr st(new stream::output_filtered());
 	filter_sptr en(new filter_xor_crypt(0, 0));

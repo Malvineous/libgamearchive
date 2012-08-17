@@ -27,8 +27,7 @@ namespace camoto {
 namespace gamearchive {
 
 FixedArchive::FixedArchive(stream::inout_sptr psArchive, std::vector<FixedArchiveFile> files)
-	throw (stream::error) :
-		psArchive(psArchive),
+	:	psArchive(psArchive),
 		files(files)
 {
 	int j = 0;
@@ -50,18 +49,15 @@ FixedArchive::FixedArchive(stream::inout_sptr psArchive, std::vector<FixedArchiv
 }
 
 FixedArchive::~FixedArchive()
-	throw ()
 {
 }
 
 const FixedArchive::VC_ENTRYPTR& FixedArchive::getFileList() const
-	throw ()
 {
 	return this->vcFixedEntries;
 }
 
 FixedArchive::EntryPtr FixedArchive::find(const std::string& strFilename) const
-	throw ()
 {
 	// TESTED BY: TODO
 	for (VC_ENTRYPTR::const_iterator i = this->vcFixedEntries.begin();
@@ -78,14 +74,12 @@ FixedArchive::EntryPtr FixedArchive::find(const std::string& strFilename) const
 }
 
 bool FixedArchive::isValid(const EntryPtr id) const
-	throw ()
 {
 	const FixedEntry *id2 = dynamic_cast<const FixedEntry *>(id.get());
 	return ((id2) && (id2->index < this->files.size()));
 }
 
 stream::inout_sptr FixedArchive::open(const EntryPtr id)
-	throw ()
 {
 	// TESTED BY: TODO
 	const FixedEntry *entry = dynamic_cast<const FixedEntry *>(id.get());
@@ -106,32 +100,27 @@ FixedArchive::EntryPtr FixedArchive::insert(const EntryPtr idBeforeThis,
 	const std::string& strFilename, stream::pos storedSize, std::string type,
 	int attr
 )
-	throw (stream::error)
 {
 	throw stream::error("This is a fixed archive, files cannot be inserted.");
 }
 
 void FixedArchive::remove(EntryPtr id)
-	throw (stream::error)
 {
 	throw stream::error("This is a fixed archive, files cannot be removed.");
 }
 
 void FixedArchive::rename(EntryPtr id, const std::string& strNewName)
-	throw (stream::error)
 {
 	throw stream::error("This is a fixed archive, files cannot be renamed.");
 }
 
 void FixedArchive::move(const EntryPtr idBeforeThis, EntryPtr id)
-	throw (stream::error)
 {
 	throw stream::error("This is a fixed archive, files cannot be moved.");
 }
 
 void FixedArchive::resize(EntryPtr id, stream::pos newStoredSize,
 	stream::pos newRealSize)
-	throw (stream::error)
 {
 	if (id->storedSize != newStoredSize) {
 		throw stream::error(createString("This is a fixed archive, files "
@@ -143,7 +132,6 @@ void FixedArchive::resize(EntryPtr id, stream::pos newStoredSize,
 }
 
 void FixedArchive::flush()
-	throw (stream::error)
 {
 	// no-op (nothing to flush)
 	return;

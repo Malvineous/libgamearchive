@@ -30,15 +30,13 @@ namespace camoto {
 namespace gamearchive {
 
 filter_ddave_unrle::filter_ddave_unrle()
-	throw () :
-		count(0),
+	:	count(0),
 		copying(0)
 {
 }
 
 void filter_ddave_unrle::transform(uint8_t *out, stream::len *lenOut,
 	const uint8_t *in, stream::len *lenIn)
-	throw (filter_error)
 {
 	stream::len r = 0, w = 0;
 	// While there's more space to write, and either more data to read or
@@ -85,8 +83,7 @@ void filter_ddave_unrle::transform(uint8_t *out, stream::len *lenOut,
 
 
 filter_ddave_rle::filter_ddave_rle()
-	throw () :
-		buflen(0),
+	:	buflen(0),
 		prev(0),
 		count(0),
 		step(0)
@@ -95,7 +92,6 @@ filter_ddave_rle::filter_ddave_rle()
 
 void filter_ddave_rle::transform(uint8_t *out, stream::len *lenOut,
 	const uint8_t *in, stream::len *lenIn)
-	throw (filter_error)
 {
 	stream::len r = 0, w = 0;
 
@@ -217,29 +213,24 @@ void filter_ddave_rle::transform(uint8_t *out, stream::len *lenOut,
 
 
 DDaveRLEFilterType::DDaveRLEFilterType()
-	throw ()
 {
 }
 
 DDaveRLEFilterType::~DDaveRLEFilterType()
-	throw ()
 {
 }
 
 std::string DDaveRLEFilterType::getFilterCode() const
-	throw ()
 {
 	return "rle-ddave";
 }
 
 std::string DDaveRLEFilterType::getFriendlyName() const
-	throw ()
 {
 	return "Dangerous Dave RLE";
 }
 
 std::vector<std::string> DDaveRLEFilterType::getGameList() const
-	throw ()
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Dangerous Dave");
@@ -248,7 +239,6 @@ std::vector<std::string> DDaveRLEFilterType::getGameList() const
 
 stream::inout_sptr DDaveRLEFilterType::apply(stream::inout_sptr target,
 	stream::fn_truncate resize)
-	throw (filter_error, stream::read_error)
 {
 	stream::filtered_sptr st(new stream::filtered());
 	filter_sptr de(new filter_ddave_unrle());
@@ -258,7 +248,6 @@ stream::inout_sptr DDaveRLEFilterType::apply(stream::inout_sptr target,
 }
 
 stream::input_sptr DDaveRLEFilterType::apply(stream::input_sptr target)
-	throw (filter_error, stream::read_error)
 {
 	stream::input_filtered_sptr st(new stream::input_filtered());
 	filter_sptr de(new filter_ddave_unrle());
@@ -268,7 +257,6 @@ stream::input_sptr DDaveRLEFilterType::apply(stream::input_sptr target)
 
 stream::output_sptr DDaveRLEFilterType::apply(stream::output_sptr target,
 	stream::fn_truncate resize)
-	throw (filter_error)
 {
 	stream::output_filtered_sptr st(new stream::output_filtered());
 	filter_sptr en(new filter_ddave_rle());

@@ -32,15 +32,12 @@ namespace gamearchive {
 class filter_z66_decompress: public filter {
 
 	public:
-		filter_z66_decompress()
-			throw ();
+		filter_z66_decompress();
 
-		int nextChar(const uint8_t **in, stream::len *lenIn, stream::len *r, uint8_t *out)
-			throw ();
+		int nextChar(const uint8_t **in, stream::len *lenIn, stream::len *r, uint8_t *out);
 
 		void transform(uint8_t *out, stream::len *lenOut,
-			const uint8_t *in, stream::len *lenIn)
-			throw (filter_error);
+			const uint8_t *in, stream::len *lenIn);
 
 	protected:
 		bitstream data;
@@ -60,31 +57,23 @@ class filter_z66_decompress: public filter {
 class Zone66FilterType: virtual public FilterType {
 
 	public:
-		Zone66FilterType()
-			throw ();
+		Zone66FilterType();
 
-		~Zone66FilterType()
-			throw ();
+		~Zone66FilterType();
 
-		virtual std::string getFilterCode() const
-			throw ();
+		virtual std::string getFilterCode() const;
 
-		virtual std::string getFriendlyName() const
-			throw ();
+		virtual std::string getFriendlyName() const;
 
-		virtual std::vector<std::string> getGameList() const
-			throw ();
+		virtual std::vector<std::string> getGameList() const;
 
 		virtual stream::inout_sptr apply(stream::inout_sptr target,
-			stream::fn_truncate resize)
-			throw (filter_error, stream::read_error);
+			stream::fn_truncate resize);
 
-		virtual stream::input_sptr apply(stream::input_sptr target)
-			throw (filter_error, stream::read_error);
+		virtual stream::input_sptr apply(stream::input_sptr target);
 
 		virtual stream::output_sptr apply(stream::output_sptr target,
-			stream::fn_truncate resize)
-			throw (filter_error);
+			stream::fn_truncate resize);
 
 };
 
