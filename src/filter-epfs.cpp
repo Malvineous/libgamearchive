@@ -79,7 +79,17 @@ stream::inout_sptr EPFSFilterType::apply(stream::inout_sptr target,
 		LZW_EOF_PARAM_VALID   | // Has codeword reserved for EOF
 		LZW_RESET_PARAM_VALID   // Has codeword reserved for dict reset
 	));
-	filter_sptr en = de; /// @todo Fix when LZW compression has been implemented
+	filter_sptr en(new filter_lzw_compress(
+		9,   // initial codeword length (in bits)
+		14,  // maximum codeword length (in bits)
+		256, // first valid codeword
+		0,   // EOF codeword is max codeword
+		-1,  // reset codeword is max-1
+		LZW_BIG_ENDIAN        | // bits are split into bytes in big-endian order
+		LZW_NO_BITSIZE_RESET  | // bitsize doesn't go back to 9 after dict reset
+		LZW_EOF_PARAM_VALID   | // Has codeword reserved for EOF
+		LZW_RESET_PARAM_VALID   // Has codeword reserved for dict reset
+	));
 	st->open(target, de, en, resize);
 	return st;
 }
@@ -105,9 +115,8 @@ stream::input_sptr EPFSFilterType::apply(stream::input_sptr target)
 stream::output_sptr EPFSFilterType::apply(stream::output_sptr target,
 	stream::fn_truncate resize)
 {
-	return target; /// @todo Fix when LZW compression has been implemented
 	stream::output_filtered_sptr st(new stream::output_filtered());
-	filter_sptr de(new filter_lzw_decompress(
+	filter_sptr en(new filter_lzw_compress(
 		9,   // initial codeword length (in bits)
 		14,  // maximum codeword length (in bits)
 		256, // first valid codeword
@@ -118,8 +127,7 @@ stream::output_sptr EPFSFilterType::apply(stream::output_sptr target,
 		LZW_EOF_PARAM_VALID   | // Has codeword reserved for EOF
 		LZW_RESET_PARAM_VALID   // Has codeword reserved for dict reset
 	));
-	//filter_sptr en = ...
-	//st->open(target, en, resize);
+	st->open(target, en, resize);
 	return st;
 }
 

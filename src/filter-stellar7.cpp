@@ -68,7 +68,16 @@ stream::inout_sptr Stellar7FilterType::apply(stream::inout_sptr target,
 		LZW_RESET_PARAM_VALID | // has codeword reserved for dictionary reset
 		LZW_FLUSH_ON_RESET      // Jump to next word boundary on dict reset
 	));
-	filter_sptr en = de; /// @todo Fix when LZW compression has been implemented
+	filter_sptr en(new filter_lzw_compress(
+		9,   // initial codeword length (in bits)
+		12,  // maximum codeword length (in bits)
+		257, // first valid codeword
+		0,   // EOF codeword is unused
+		256, // reset codeword is first codeword
+		LZW_LITTLE_ENDIAN     | // bits are split into bytes in little-endian order
+		LZW_RESET_PARAM_VALID | // has codeword reserved for dictionary reset
+		LZW_FLUSH_ON_RESET      // Jump to next word boundary on dict reset
+	));
 	st->open(target, de, en, resize);
 	return st;
 }
@@ -94,7 +103,16 @@ stream::output_sptr Stellar7FilterType::apply(stream::output_sptr target,
 	stream::fn_truncate resize)
 {
 	stream::output_filtered_sptr st(new stream::output_filtered());
-	filter_sptr en; /// @todo Fix when LZW compression has been implemented
+	filter_sptr en(new filter_lzw_compress(
+		9,   // initial codeword length (in bits)
+		12,  // maximum codeword length (in bits)
+		257, // first valid codeword
+		0,   // EOF codeword is unused
+		256, // reset codeword is first codeword
+		LZW_LITTLE_ENDIAN     | // bits are split into bytes in little-endian order
+		LZW_RESET_PARAM_VALID | // has codeword reserved for dictionary reset
+		LZW_FLUSH_ON_RESET      // Jump to next word boundary on dict reset
+	));
 	st->open(target, en, resize);
 	return st;
 }
