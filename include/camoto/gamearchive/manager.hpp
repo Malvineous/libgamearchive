@@ -26,6 +26,10 @@
 #include <camoto/gamearchive/archivetype.hpp>
 #include <camoto/gamearchive/filtertype.hpp>
 
+#ifndef DLL_EXPORT
+#define DLL_EXPORT
+#endif
+
 namespace camoto {
 namespace gamearchive {
 
@@ -102,7 +106,7 @@ typedef boost::shared_ptr<Manager> ManagerPtr;
  *
  * @return A shared pointer to a Manager instance.
  */
-const ManagerPtr getManager(void);
+const ManagerPtr DLL_EXPORT getManager(void);
 
 } // namespace gamearchive
 } // namespace camoto

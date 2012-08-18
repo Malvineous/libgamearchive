@@ -23,6 +23,9 @@
 
 #include <camoto/gamearchive/archive.hpp>
 
+#ifndef DLL_EXPORT
+#define DLL_EXPORT
+#endif
 
 namespace camoto {
 namespace gamearchive {
@@ -43,7 +46,7 @@ namespace gamearchive {
  *   output archive parameter, which may be a different archive to what was
  *   passed in.
  */
-Archive::EntryPtr findFile(ArchivePtr& archive,
+Archive::EntryPtr DLL_EXPORT findFile(ArchivePtr& archive,
 	const std::string& filename);
 
 } // namespace gamearchive
