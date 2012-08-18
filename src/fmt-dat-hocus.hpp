@@ -2,7 +2,7 @@
  * @file   fmt-dat-hocus.hpp
  * @brief  Hocus Pocus .DAT file reader/writer.
  *
- * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,41 +21,34 @@
 #ifndef _CAMOTO_FMT_DAT_HOCUS_HPP_
 #define _CAMOTO_FMT_DAT_HOCUS_HPP_
 
-#include <camoto/gamearchive.hpp>
-
+#include <camoto/gamearchive/archivetype.hpp>
 #include "fatarchive.hpp"
 
 namespace camoto {
 namespace gamearchive {
 
-class DAT_HocusType: virtual public ArchiveType {
-
+class DAT_HocusType: virtual public ArchiveType
+{
 	public:
-
 		DAT_HocusType();
-
 		virtual ~DAT_HocusType();
 
 		virtual std::string getArchiveCode() const;
-
 		virtual std::string getFriendlyName() const;
-
 		virtual std::vector<std::string> getFileExtensions() const;
-
 		virtual std::vector<std::string> getGameList() const;
-
-		virtual ArchiveType::Certainty isInstance(stream::input_sptr fsArchive) const;
-
-		virtual ArchivePtr open(stream::inout_sptr psArchive, SuppData& suppData) const;
-
-		virtual ArchivePtr newArchive(stream::inout_sptr psArchive, SuppData& suppData) const;
-
+		virtual ArchiveType::Certainty isInstance(stream::input_sptr fsArchive)
+			const;
+		virtual ArchivePtr open(stream::inout_sptr psArchive, SuppData& suppData)
+			const;
+		virtual ArchivePtr newArchive(stream::inout_sptr psArchive,
+			SuppData& suppData) const;
 		virtual SuppFilenames getRequiredSupps(stream::input_sptr data,
 			const std::string& filenameArchive) const;
-
 };
 
-class DAT_HocusArchive: virtual public FATArchive {
+class DAT_HocusArchive: virtual public FATArchive
+{
 	protected:
 		stream::seg_sptr psFAT; ///< FAT stream (hocus.exe)
 		uint32_t maxFiles;    ///< Maximum number of files in FAT
@@ -63,29 +56,21 @@ class DAT_HocusArchive: virtual public FATArchive {
 
 	public:
 		DAT_HocusArchive(stream::inout_sptr psArchive, stream::inout_sptr psFAT);
-
 		virtual ~DAT_HocusArchive();
-
-		// As per Archive (see there for docs)
 
 		virtual void flush();
 
-		// As per FATArchive (see there for docs)
-
-		virtual void updateFileName(const FATEntry *pid, const std::string& strNewName);
-
+		virtual void updateFileName(const FATEntry *pid,
+			const std::string& strNewName);
 		virtual void updateFileOffset(const FATEntry *pid, stream::delta offDelta);
-
 		virtual void updateFileSize(const FATEntry *pid, stream::delta sizeDelta);
-
-		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry);
-
+		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis,
+			FATEntry *pNewEntry);
 		virtual void preRemoveFile(const FATEntry *pid);
 
 	protected:
 		// Update the header with the number of files in the archive
 		void updateFileCount(uint32_t iNewCount);
-
 };
 
 } // namespace gamearchive

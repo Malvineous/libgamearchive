@@ -18,8 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string>
-#include <camoto/gamearchive.hpp>
+#include <camoto/gamearchive/manager.hpp>
 
 // Include all the file formats for the Manager to load
 #include "fmt-grp-duke3d.hpp"
@@ -58,12 +57,30 @@
 namespace camoto {
 namespace gamearchive {
 
-ManagerPtr getManager()
+class ActualManager: virtual public Manager
 {
-	return ManagerPtr(new Manager());
+	private:
+		ArchiveTypeVector vcTypes;   ///< List of available archive types
+		FilterTypeVector vcFilters;  ///< List of available filter types
+
+	public:
+		ActualManager();
+		~ActualManager();
+
+		virtual const ArchiveTypePtr getArchiveType(unsigned int iIndex) const;
+		virtual const ArchiveTypePtr getArchiveTypeByCode(
+			const std::string& strCode) const;
+		virtual const FilterTypePtr getFilterType(unsigned int iIndex) const;
+		virtual const FilterTypePtr getFilterTypeByCode(const std::string& strCode)
+			const;
+};
+
+const ManagerPtr getManager()
+{
+	return ManagerPtr(new ActualManager());
 }
 
-Manager::Manager()
+ActualManager::ActualManager()
 {
 	this->vcTypes.push_back(ArchiveTypePtr(new GRPType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new VOLType()));
@@ -105,19 +122,20 @@ Manager::Manager()
 	this->vcFilters.push_back(FilterTypePtr(new DDaveRLEFilterType()));
 }
 
-Manager::~Manager()
+ActualManager::~ActualManager()
 {
 }
 
-ArchiveTypePtr Manager::getArchiveType(unsigned int iIndex)
+const ArchiveTypePtr ActualManager::getArchiveType(unsigned int iIndex) const
 {
 	if (iIndex >= this->vcTypes.size()) return ArchiveTypePtr();
 	return this->vcTypes[iIndex];
 }
 
-ArchiveTypePtr Manager::getArchiveTypeByCode(const std::string& strCode)
+const ArchiveTypePtr ActualManager::getArchiveTypeByCode(
+	const std::string& strCode) const
 {
-	for (VC_ARCHIVETYPE::const_iterator i = this->vcTypes.begin();
+	for (ArchiveTypeVector::const_iterator i = this->vcTypes.begin();
 		i != this->vcTypes.end(); i++
 	) {
 		if ((*i)->getArchiveCode().compare(strCode) == 0) return *i;
@@ -125,15 +143,16 @@ ArchiveTypePtr Manager::getArchiveTypeByCode(const std::string& strCode)
 	return ArchiveTypePtr();
 }
 
-FilterTypePtr Manager::getFilterType(unsigned int iIndex)
+const FilterTypePtr ActualManager::getFilterType(unsigned int iIndex) const
 {
 	if (iIndex >= this->vcFilters.size()) return FilterTypePtr();
 	return this->vcFilters[iIndex];
 }
 
-FilterTypePtr Manager::getFilterTypeByCode(const std::string& strCode)
+const FilterTypePtr ActualManager::getFilterTypeByCode(
+	const std::string& strCode) const
 {
-	for (VC_FILTERTYPE::const_iterator i = this->vcFilters.begin();
+	for (FilterTypeVector::const_iterator i = this->vcFilters.begin();
 		i != this->vcFilters.end(); i++
 	) {
 		if ((*i)->getFilterCode().compare(strCode) == 0) return *i;

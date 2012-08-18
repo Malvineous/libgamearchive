@@ -111,6 +111,12 @@ ArchiveType::Certainty RESType::isInstance(stream::input_sptr psArchive) const
 	return DefinitelyYes;
 }
 
+ArchivePtr RESType::newArchive(stream::inout_sptr psArchive, SuppData& suppData)
+	const
+{
+	return this->open(psArchive, suppData);
+}
+
 ArchivePtr RESType::open(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	ArchivePtr root(new RESArchiveFolder(psArchive));

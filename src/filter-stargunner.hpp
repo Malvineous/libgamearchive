@@ -2,7 +2,7 @@
  * @file   filter-stargunner.hpp
  * @brief  Filter implementation for decompressing Stargunner files.
  *
- * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,8 +35,8 @@ namespace gamearchive {
 /// Largest possible chunk of compressed data.  (No compression + worst case dictionary size.)
 #define CMP_CHUNK_SIZE (CHUNK_SIZE + 256 + 2) // plus 2 for the chunk length
 
-class filter_stargunner_decompress: public filter {
-
+class filter_stargunner_decompress: public filter
+{
 	public:
 		filter_stargunner_decompress();
 
@@ -58,27 +58,20 @@ class filter_stargunner_decompress: public filter {
 };
 
 /// Stargunner decompression filter.
-class StargunnerFilterType: virtual public FilterType {
-
+class StargunnerFilterType: virtual public FilterType
+{
 	public:
 		StargunnerFilterType();
-
 		~StargunnerFilterType();
 
 		virtual std::string getFilterCode() const;
-
 		virtual std::string getFriendlyName() const;
-
 		virtual std::vector<std::string> getGameList() const;
-
 		virtual stream::inout_sptr apply(stream::inout_sptr target,
-			stream::fn_truncate resize);
-
-		virtual stream::input_sptr apply(stream::input_sptr target);
-
+			stream::fn_truncate resize) const;
+		virtual stream::input_sptr apply(stream::input_sptr target) const;
 		virtual stream::output_sptr apply(stream::output_sptr target,
-			stream::fn_truncate resize);
-
+			stream::fn_truncate resize) const;
 };
 
 } // namespace gamearchive

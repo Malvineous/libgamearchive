@@ -29,8 +29,8 @@ namespace camoto {
 namespace gamearchive {
 
 /// Dangerous Dave RLE expansion filter.
-class filter_ddave_unrle: public filter {
-
+class filter_ddave_unrle: public filter
+{
 	protected:
 		int count;         ///< How many times to repeat prev
 		uint8_t countByte; ///< Byte being repeated count times
@@ -44,8 +44,8 @@ class filter_ddave_unrle: public filter {
 };
 
 /// Dangerous Dave RLE compression filter.
-class filter_ddave_rle: public filter {
-
+class filter_ddave_rle: public filter
+{
 	protected:
 		uint8_t buf[129];    ///< Chars to output as-is
 		unsigned int buflen; ///< Number of valid chars in buf
@@ -55,7 +55,6 @@ class filter_ddave_rle: public filter {
 		unsigned int step;   ///< Which point in the algorithm are we up to?
 
 	public:
-
 		filter_ddave_rle();
 
 		void transform(uint8_t *out, stream::len *lenOut,
@@ -63,27 +62,20 @@ class filter_ddave_rle: public filter {
 };
 
 /// Dangerous Dave RLE decompression filter.
-class DDaveRLEFilterType: virtual public FilterType {
-
+class DDaveRLEFilterType: virtual public FilterType
+{
 	public:
 		DDaveRLEFilterType();
-
 		~DDaveRLEFilterType();
 
 		virtual std::string getFilterCode() const;
-
 		virtual std::string getFriendlyName() const;
-
 		virtual std::vector<std::string> getGameList() const;
-
 		virtual stream::inout_sptr apply(stream::inout_sptr target,
-			stream::fn_truncate resize);
-
-		virtual stream::input_sptr apply(stream::input_sptr target);
-
+			stream::fn_truncate resize) const;
+		virtual stream::input_sptr apply(stream::input_sptr target) const;
 		virtual stream::output_sptr apply(stream::output_sptr target,
-			stream::fn_truncate resize);
-
+			stream::fn_truncate resize) const;
 };
 
 } // namespace gamearchive

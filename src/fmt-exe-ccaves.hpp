@@ -2,7 +2,7 @@
  * @file   fmt-exe-ccaves.hpp
  * @brief  FixedArchive implementation for Crystal Caves .exe file.
  *
- * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,36 +22,28 @@
 #define _CAMOTO_FMT_EXE_CCAVES_HPP_
 
 #include <camoto/gamearchive/archivetype.hpp>
-#include <camoto/gamearchive/fixedarchive.hpp>
 
 namespace camoto {
 namespace gamearchive {
 
-class EXE_CCavesType: virtual public ArchiveType {
-
+class EXE_CCavesType: virtual public ArchiveType
+{
 	public:
-
 		EXE_CCavesType();
-
 		virtual ~EXE_CCavesType();
 
 		virtual std::string getArchiveCode() const;
-
 		virtual std::string getFriendlyName() const;
-
 		virtual std::vector<std::string> getFileExtensions() const;
-
 		virtual std::vector<std::string> getGameList() const;
-
-		virtual ArchiveType::Certainty isInstance(stream::input_sptr fsArchive) const;
-
-		virtual ArchivePtr newArchive(stream::inout_sptr psArchive, SuppData& suppData) const;
-
-		virtual ArchivePtr open(stream::inout_sptr fsArchive, SuppData& suppData) const;
-
+		virtual ArchiveType::Certainty isInstance(stream::input_sptr fsArchive)
+			const;
+		virtual ArchivePtr newArchive(stream::inout_sptr psArchive,
+			SuppData& suppData) const;
+		virtual ArchivePtr open(stream::inout_sptr fsArchive, SuppData& suppData)
+			const;
 		virtual SuppFilenames getRequiredSupps(stream::input_sptr data,
 			const std::string& filenameArchive) const;
-
 };
 
 } // namespace gamearchive

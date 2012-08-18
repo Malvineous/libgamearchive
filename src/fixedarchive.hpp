@@ -3,7 +3,7 @@
  * @brief  Generic archive providing access to "files" at specific offsets and
  *         lengths in a host file (e.g. game levels stored in an .exe file.)
  *
- * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@
 #define _CAMOTO_FIXEDARCHIVE_HPP_
 
 #include <vector>
-
 #include <camoto/gamearchive/archive.hpp>
 #include <camoto/stream_sub.hpp>
 
@@ -43,8 +42,8 @@ struct FixedArchiveFile {
 	std::string filter;    ///< Filter type
 };
 
-class FixedArchive: virtual public Archive {
-
+class FixedArchive: virtual public Archive
+{
 	protected:
 		// The archive stream must be mutable, because we need to change it by
 		// seeking and reading data in our get() functions, which don't logically
@@ -71,18 +70,18 @@ class FixedArchive: virtual public Archive {
 		substream_vc vcSubStream; // List of substreams currently open
 
 	public:
-
 		FixedArchive(stream::inout_sptr psArchive, std::vector<FixedArchiveFile> files);
-
 		virtual ~FixedArchive();
 
 		virtual EntryPtr find(const std::string& strFilename) const;
-
 		virtual const VC_ENTRYPTR& getFileList(void) const;
-
 		virtual bool isValid(const EntryPtr id) const;
-
 		virtual stream::inout_sptr open(const EntryPtr id);
+
+		/**
+		 * @note Will always throw an exception as there are never any subfolders.
+		 */
+		virtual ArchivePtr openFolder(const EntryPtr id);
 
 		/**
 		 * @note Will always throw an exception as the files are fixed and
@@ -117,7 +116,7 @@ class FixedArchive: virtual public Archive {
 			stream::pos newRealSize);
 
 		virtual void flush();
-
+		virtual int getSupportedAttributes() const;
 };
 
 } // namespace gamearchive

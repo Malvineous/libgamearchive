@@ -4,7 +4,7 @@
  *         processing operations on data streams (compression/decompression,
  *         encryption, etc.)
  *
- * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,10 +36,9 @@ namespace gamearchive {
  * iostreams so that the data passing through the stream is altered in some
  * way, such as by being compressed or decompressed.
  */
-class FilterType {
-
+class FilterType
+{
 	public:
-
 		/// Get a short code to identify this filter, e.g. "cmp-zone66"
 		/**
 		 * This can be useful for command-line arguments.
@@ -87,28 +86,27 @@ class FilterType {
 		 *   processing.
 		 */
 		virtual stream::inout_sptr apply(stream::inout_sptr target,
-			stream::fn_truncate resize) = 0;
+			stream::fn_truncate resize) const = 0;
 
 		/// Apply the algorithm to an input stream.
 		/**
 		 * @sa apply(stream::inout_sptr)
 		 */
-		virtual stream::input_sptr apply(stream::input_sptr target) = 0;
+		virtual stream::input_sptr apply(stream::input_sptr target) const = 0;
 
 		/// Apply the algorithm to an output stream.
 		/**
 		 * @sa apply(stream::inout_sptr)
 		 */
 		virtual stream::output_sptr apply(stream::output_sptr target,
-			stream::fn_truncate resize) = 0;
-
+			stream::fn_truncate resize) const = 0;
 };
 
 /// Shared pointer to an FilterType.
 typedef boost::shared_ptr<FilterType> FilterTypePtr;
 
 /// Vector of FilterType shared pointers.
-typedef std::vector<FilterTypePtr> VC_FILTERTYPE;
+typedef std::vector<FilterTypePtr> FilterTypeVector;
 
 } // namespace gamearchive
 } // namespace camoto

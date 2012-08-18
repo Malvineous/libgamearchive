@@ -2,7 +2,7 @@
  * @file   fmt-grp-duke3d.hpp
  * @brief  Implementation of Duke3D .GRP file reader/writer.
  *
- * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,56 +21,44 @@
 #ifndef _CAMOTO_FMT_GRP_DUKE3D_HPP_
 #define _CAMOTO_FMT_GRP_DUKE3D_HPP_
 
-#include <camoto/gamearchive.hpp>
-
+#include <camoto/gamearchive/archivetype.hpp>
 #include "fatarchive.hpp"
 
 namespace camoto {
 namespace gamearchive {
 
-class GRPType: virtual public ArchiveType {
-
+class GRPType: virtual public ArchiveType
+{
 	public:
-
 		GRPType();
-
 		virtual ~GRPType();
 
 		virtual std::string getArchiveCode() const;
-
 		virtual std::string getFriendlyName() const;
-
 		virtual std::vector<std::string> getFileExtensions() const;
-
 		virtual std::vector<std::string> getGameList() const;
-
-		virtual ArchiveType::Certainty isInstance(stream::input_sptr fsArchive) const;
-
-		virtual ArchivePtr newArchive(stream::inout_sptr psArchive, SuppData& suppData) const;
-
-		virtual ArchivePtr open(stream::inout_sptr fsArchive, SuppData& suppData) const;
-
+		virtual ArchiveType::Certainty isInstance(stream::input_sptr fsArchive)
+			const;
+		virtual ArchivePtr newArchive(stream::inout_sptr psArchive,
+			SuppData& suppData) const;
+		virtual ArchivePtr open(stream::inout_sptr fsArchive, SuppData& suppData)
+			const;
 		virtual SuppFilenames getRequiredSupps(stream::input_sptr data,
 			const std::string& filenameArchive) const;
-
 };
 
-class GRPArchive: virtual public FATArchive {
+class GRPArchive: virtual public FATArchive
+{
 	public:
 		GRPArchive(stream::inout_sptr psArchive);
-
 		virtual ~GRPArchive();
 
-		// As per FATArchive (see there for docs)
-
-		virtual void updateFileName(const FATEntry *pid, const std::string& strNewName);
-
+		virtual void updateFileName(const FATEntry *pid,
+			const std::string& strNewName);
 		virtual void updateFileOffset(const FATEntry *pid, stream::delta offDelta);
-
 		virtual void updateFileSize(const FATEntry *pid, stream::delta sizeDelta);
-
-		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry);
-
+		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis,
+			FATEntry *pNewEntry);
 		virtual void preRemoveFile(const FATEntry *pid);
 
 	protected:

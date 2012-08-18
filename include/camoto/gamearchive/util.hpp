@@ -21,13 +21,8 @@
 #ifndef _CAMOTO_GAMEARCHIVE_UTIL_HPP_
 #define _CAMOTO_GAMEARCHIVE_UTIL_HPP_
 
-#include <boost/shared_ptr.hpp>
-#include <vector>
+#include <camoto/gamearchive/archive.hpp>
 
-#include <camoto/stream.hpp>
-#include <stdint.h>
-#include <camoto/gamearchive/archivetype.hpp>
-#include <camoto/gamearchive/filtertype.hpp>
 
 namespace camoto {
 namespace gamearchive {

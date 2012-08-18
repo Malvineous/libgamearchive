@@ -21,7 +21,7 @@
 #ifndef _CAMOTO_FMT_DAT_BASH_HPP_
 #define _CAMOTO_FMT_DAT_BASH_HPP_
 
-#include <camoto/gamearchive.hpp>
+#include <camoto/gamearchive/archivetype.hpp>
 
 #include "fatarchive.hpp"
 

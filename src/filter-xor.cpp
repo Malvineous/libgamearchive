@@ -106,7 +106,7 @@ std::vector<std::string> XORFilterType::getGameList() const
 }
 
 stream::inout_sptr XORFilterType::apply(stream::inout_sptr target,
-	stream::fn_truncate resize)
+	stream::fn_truncate resize) const
 {
 	stream::filtered_sptr st(new stream::filtered());
 	// We need two separate filters, otherwise reading from one will
@@ -117,7 +117,7 @@ stream::inout_sptr XORFilterType::apply(stream::inout_sptr target,
 	return st;
 }
 
-stream::input_sptr XORFilterType::apply(stream::input_sptr target)
+stream::input_sptr XORFilterType::apply(stream::input_sptr target) const
 {
 	stream::input_filtered_sptr st(new stream::input_filtered());
 	filter_sptr de(new filter_xor_crypt(0, 0));
@@ -126,7 +126,7 @@ stream::input_sptr XORFilterType::apply(stream::input_sptr target)
 }
 
 stream::output_sptr XORFilterType::apply(stream::output_sptr target,
-	stream::fn_truncate resize)
+	stream::fn_truncate resize) const
 {
 	stream::output_filtered_sptr st(new stream::output_filtered());
 	filter_sptr en(new filter_xor_crypt(0, 0));

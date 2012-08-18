@@ -132,6 +132,15 @@ stream::inout_sptr FATArchive::open(const EntryPtr id)
 	return psSub;
 }
 
+ArchivePtr FATArchive::openFolder(const Archive::EntryPtr id)
+{
+	// This function should only be called for folders (not files)
+	assert(id->fAttr & EA_FOLDER);
+
+	// Throw an exception if assertions have been disabled.
+	throw stream::error("BUG: Archive format doesn't implement openFolder()");
+}
+
 FATArchive::EntryPtr FATArchive::insert(const EntryPtr idBeforeThis,
 	const std::string& strFilename, stream::pos storedSize, std::string type, int attr
 )
@@ -299,6 +308,40 @@ void FATArchive::rename(EntryPtr id, const std::string& strNewName)
 	return;
 }
 
+void FATArchive::move(const EntryPtr idBeforeThis, EntryPtr id)
+{
+	// Open the file we want to move
+	stream::inout_sptr src(this->open(id));
+	assert(src);
+
+	// Insert a new file at the destination index
+	EntryPtr n = this->insert(idBeforeThis, id->strName, id->storedSize,
+		id->type, id->fAttr);
+	assert(n->bValid);
+
+	if (n->filter.compare(id->filter) != 0) {
+		this->remove(n);
+		throw stream::error("Cannot move file to this position (filter change)"
+			" - try removing and then adding it instead");
+	}
+
+	stream::inout_sptr dst(this->open(n));
+	assert(dst);
+
+	// Copy the data into the new file's position
+	stream::copy(dst, src);
+	dst->flush();
+
+	// If there's a filter set then bring the unfiltered size across too.
+	if (!n->filter.empty()) {
+		this->resize(n, n->storedSize, id->realSize);
+	}
+
+	this->remove(id);
+
+	return;
+}
+
 void FATArchive::resize(EntryPtr id, stream::len newStoredSize,
 	stream::len newRealSize)
 {
@@ -357,6 +400,11 @@ void FATArchive::flush()
 	// Write out to the underlying stream
 	this->psArchive->flush();
 	return;
+}
+
+int FATArchive::getSupportedAttributes() const
+{
+	return 0;
 }
 
 void FATArchive::shiftFiles(const FATEntry *fatSkip, stream::pos offStart,

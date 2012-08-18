@@ -5,7 +5,7 @@
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/DLT_Format
  *
- * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2012 Adam Nielsen <malvineous@shikadi.net>
  * Decompression algorithm by The_coder
  *   <http://code.google.com/p/tombexcavator/source/browse/branches/v0/src/providers/stargunner/read.cc>
  *
@@ -249,7 +249,7 @@ std::vector<std::string> StargunnerFilterType::getGameList() const
 }
 
 stream::inout_sptr StargunnerFilterType::apply(stream::inout_sptr target,
-	stream::fn_truncate resize)
+	stream::fn_truncate resize) const
 {
 	stream::filtered_sptr st(new stream::filtered());
 	filter_sptr de(new filter_stargunner_decompress());
@@ -259,7 +259,7 @@ stream::inout_sptr StargunnerFilterType::apply(stream::inout_sptr target,
 	return st;
 }
 
-stream::input_sptr StargunnerFilterType::apply(stream::input_sptr target)
+stream::input_sptr StargunnerFilterType::apply(stream::input_sptr target) const
 {
 	stream::input_filtered_sptr st(new stream::input_filtered());
 	filter_sptr de(new filter_stargunner_decompress());
@@ -268,7 +268,7 @@ stream::input_sptr StargunnerFilterType::apply(stream::input_sptr target)
 }
 
 stream::output_sptr StargunnerFilterType::apply(stream::output_sptr target,
-	stream::fn_truncate resize)
+	stream::fn_truncate resize) const
 {
 	stream::output_filtered_sptr st(new stream::output_filtered());
 	/// @todo Implement Stargunner compression

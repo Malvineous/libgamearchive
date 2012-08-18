@@ -238,7 +238,7 @@ std::vector<std::string> DDaveRLEFilterType::getGameList() const
 }
 
 stream::inout_sptr DDaveRLEFilterType::apply(stream::inout_sptr target,
-	stream::fn_truncate resize)
+	stream::fn_truncate resize) const
 {
 	stream::filtered_sptr st(new stream::filtered());
 	filter_sptr de(new filter_ddave_unrle());
@@ -247,7 +247,7 @@ stream::inout_sptr DDaveRLEFilterType::apply(stream::inout_sptr target,
 	return st;
 }
 
-stream::input_sptr DDaveRLEFilterType::apply(stream::input_sptr target)
+stream::input_sptr DDaveRLEFilterType::apply(stream::input_sptr target) const
 {
 	stream::input_filtered_sptr st(new stream::input_filtered());
 	filter_sptr de(new filter_ddave_unrle());
@@ -256,7 +256,7 @@ stream::input_sptr DDaveRLEFilterType::apply(stream::input_sptr target)
 }
 
 stream::output_sptr DDaveRLEFilterType::apply(stream::output_sptr target,
-	stream::fn_truncate resize)
+	stream::fn_truncate resize) const
 {
 	stream::output_filtered_sptr st(new stream::output_filtered());
 	filter_sptr en(new filter_ddave_rle());

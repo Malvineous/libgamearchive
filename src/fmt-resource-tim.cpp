@@ -108,7 +108,14 @@ ArchiveType::Certainty TIMResourceType::isInstance(stream::input_sptr psArchive)
 	return DefinitelyYes;
 }
 
-ArchivePtr TIMResourceType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr TIMResourceType::newArchive(stream::inout_sptr psArchive,
+	SuppData& suppData) const
+{
+	return this->open(psArchive, suppData);
+}
+
+ArchivePtr TIMResourceType::open(stream::inout_sptr psArchive,
+	SuppData& suppData) const
 {
 	assert(suppData.find(SuppItem::FAT) != suppData.end());
 	return ArchivePtr(new TIMResourceArchive(psArchive, suppData[SuppItem::FAT]));
@@ -124,7 +131,8 @@ SuppFilenames TIMResourceType::getRequiredSupps(stream::input_sptr data,
 }
 
 
-TIMResourceArchive::TIMResourceArchive(stream::inout_sptr psArchive, stream::inout_sptr psFAT)
+TIMResourceArchive::TIMResourceArchive(stream::inout_sptr psArchive,
+	stream::inout_sptr psFAT)
 	:	FATArchive(psArchive, TIM_FIRST_FILE_OFFSET, TIM_MAX_FILENAME_LEN),
 		psFAT(new stream::seg())
 {

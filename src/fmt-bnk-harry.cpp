@@ -103,6 +103,12 @@ ArchiveType::Certainty BNKType::isInstance(stream::input_sptr psArchive) const
 	return DefinitelyYes;
 }
 
+ArchivePtr BNKType::newArchive(stream::inout_sptr psArchive, SuppData& suppData)
+	const
+{
+	return this->open(psArchive, suppData);
+}
+
 ArchivePtr BNKType::open(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	assert(suppData.find(SuppItem::FAT) != suppData.end());

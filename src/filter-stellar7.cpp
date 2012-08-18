@@ -5,7 +5,7 @@
  * This algorithm is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/RES_Format_(Stellar_7)
  *
- * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,7 +55,7 @@ std::vector<std::string> Stellar7FilterType::getGameList() const
 }
 
 stream::inout_sptr Stellar7FilterType::apply(stream::inout_sptr target,
-	stream::fn_truncate resize)
+	stream::fn_truncate resize) const
 {
 	stream::filtered_sptr st(new stream::filtered());
 	filter_sptr de(new filter_lzw_decompress(
@@ -82,7 +82,7 @@ stream::inout_sptr Stellar7FilterType::apply(stream::inout_sptr target,
 	return st;
 }
 
-stream::input_sptr Stellar7FilterType::apply(stream::input_sptr target)
+stream::input_sptr Stellar7FilterType::apply(stream::input_sptr target) const
 {
 	stream::input_filtered_sptr st(new stream::input_filtered());
 	filter_sptr de(new filter_lzw_decompress(
@@ -100,7 +100,7 @@ stream::input_sptr Stellar7FilterType::apply(stream::input_sptr target)
 }
 
 stream::output_sptr Stellar7FilterType::apply(stream::output_sptr target,
-	stream::fn_truncate resize)
+	stream::fn_truncate resize) const
 {
 	stream::output_filtered_sptr st(new stream::output_filtered());
 	filter_sptr en(new filter_lzw_compress(

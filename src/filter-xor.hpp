@@ -27,13 +27,13 @@
 namespace camoto {
 namespace gamearchive {
 
-/// Encrypt a stream using XOR encryption.
+/// Encrypt data using XOR encryption.
 /**
  * This starts by encrypting the first byte with the given seed value, then
  * the seed is incremented by one for the following byte.
  */
-class filter_xor_crypt: public filter {
-
+class filter_xor_crypt: public filter
+{
 	protected:
 		/// Number of bytes to crypt, after this data is left as plaintext.
 		/// 0 means crypt everything.
@@ -46,7 +46,6 @@ class filter_xor_crypt: public filter {
 		int offset;
 
 	public:
-
 		/// Create a new encryption filter with the given options.
 		/**
 		 * @param lenCrypt
@@ -69,30 +68,23 @@ class filter_xor_crypt: public filter {
 		 * custom algorithms here.
 		 */
 		virtual uint8_t getKey();
-
 };
 
-class XORFilterType: virtual public FilterType {
-
+/// Encrypt a stream using XOR encryption.
+class XORFilterType: virtual public FilterType
+{
 	public:
 		XORFilterType();
-
 		~XORFilterType();
 
 		virtual std::string getFilterCode() const;
-
 		virtual std::string getFriendlyName() const;
-
 		virtual std::vector<std::string> getGameList() const;
-
 		virtual stream::inout_sptr apply(stream::inout_sptr target,
-			stream::fn_truncate resize);
-
-		virtual stream::input_sptr apply(stream::input_sptr target);
-
+			stream::fn_truncate resize) const;
+		virtual stream::input_sptr apply(stream::input_sptr target) const;
 		virtual stream::output_sptr apply(stream::output_sptr target,
-			stream::fn_truncate resize);
-
+			stream::fn_truncate resize) const;
 };
 
 } // namespace gamearchive

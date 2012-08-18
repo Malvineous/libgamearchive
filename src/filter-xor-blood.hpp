@@ -2,7 +2,7 @@
  * @file   filter-xor-blood.hpp
  * @brief  Filter that encrypts and decrypts data in Blood RFF archives.
  *
- * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,35 +32,28 @@ namespace gamearchive {
 
 /// Encrypt a stream using XOR encryption, incrementing the key only every
 /// second byte.
-class filter_rff_crypt: public filter_xor_crypt {
-
+class filter_rff_crypt: public filter_xor_crypt
+{
 	public:
 		filter_rff_crypt(int lenCrypt, int seed);
 
 		virtual uint8_t getKey();
 };
 
-class RFFFilterType: virtual public FilterType {
-
+class RFFFilterType: virtual public FilterType
+{
 	public:
 		RFFFilterType();
-
 		~RFFFilterType();
 
 		virtual std::string getFilterCode() const;
-
 		virtual std::string getFriendlyName() const;
-
 		virtual std::vector<std::string> getGameList() const;
-
 		virtual stream::inout_sptr apply(stream::inout_sptr target,
-			stream::fn_truncate resize);
-
-		virtual stream::input_sptr apply(stream::input_sptr target);
-
+			stream::fn_truncate resize) const;
+		virtual stream::input_sptr apply(stream::input_sptr target) const;
 		virtual stream::output_sptr apply(stream::output_sptr target,
-			stream::fn_truncate resize);
-
+			stream::fn_truncate resize) const;
 };
 
 } // namespace gamearchive

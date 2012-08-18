@@ -2,7 +2,7 @@
  * @file   filter-zone66.hpp
  * @brief  Filter implementation for decompressing Zone 66 files.
  *
- * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,12 +29,13 @@
 namespace camoto {
 namespace gamearchive {
 
-class filter_z66_decompress: public filter {
-
+class filter_z66_decompress: public filter
+{
 	public:
 		filter_z66_decompress();
 
-		int nextChar(const uint8_t **in, stream::len *lenIn, stream::len *r, uint8_t *out);
+		int nextChar(const uint8_t **in, stream::len *lenIn, stream::len *r,
+			uint8_t *out);
 
 		void transform(uint8_t *out, stream::len *lenOut,
 			const uint8_t *in, stream::len *lenIn);
@@ -53,28 +54,21 @@ class filter_z66_decompress: public filter {
 		} nodes[8192];
 };
 
-/// Zone 66 decompression filter.
-class Zone66FilterType: virtual public FilterType {
-
+/// Zone 66 decompression filter
+class Zone66FilterType: virtual public FilterType
+{
 	public:
 		Zone66FilterType();
-
 		~Zone66FilterType();
 
 		virtual std::string getFilterCode() const;
-
 		virtual std::string getFriendlyName() const;
-
 		virtual std::vector<std::string> getGameList() const;
-
 		virtual stream::inout_sptr apply(stream::inout_sptr target,
-			stream::fn_truncate resize);
-
-		virtual stream::input_sptr apply(stream::input_sptr target);
-
+			stream::fn_truncate resize) const;
+		virtual stream::input_sptr apply(stream::input_sptr target) const;
 		virtual stream::output_sptr apply(stream::output_sptr target,
-			stream::fn_truncate resize);
-
+			stream::fn_truncate resize) const;
 };
 
 } // namespace gamearchive

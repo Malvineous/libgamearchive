@@ -130,31 +130,23 @@ class FATArchive: virtual public Archive {
 			int lenMaxFilename);
 
 	public:
-
 		virtual ~FATArchive();
 
 		virtual EntryPtr find(const std::string& strFilename) const;
-
 		virtual const VC_ENTRYPTR& getFileList(void) const;
-
 		virtual bool isValid(const EntryPtr id) const;
-
 		virtual stream::inout_sptr open(const EntryPtr id);
-
+		virtual ArchivePtr openFolder(const EntryPtr id);
 		virtual EntryPtr insert(const EntryPtr idBeforeThis,
 			const std::string& strFilename, stream::pos storedSize, std::string type,
 			int attr);
-
 		virtual void remove(EntryPtr id);
-
 		virtual void rename(EntryPtr id, const std::string& strNewName);
-
-		// move() uses implementation from Archive
-
+		virtual void move(const EntryPtr idBeforeThis, EntryPtr id);
 		virtual void resize(EntryPtr id, stream::pos newStoredSize,
 			stream::pos newRealSize);
-
 		virtual void flush();
+		virtual int getSupportedAttributes() const;
 
 	protected:
 		/// Shift any files *starting* at or after offStart by delta bytes.

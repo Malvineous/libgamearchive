@@ -2,7 +2,7 @@
  * @file   filter-xor-blood.cpp
  * @brief  Filter that encrypts and decrypts files in Blood RFF archives.
  *
- * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,7 +64,7 @@ std::vector<std::string> RFFFilterType::getGameList() const
 }
 
 stream::inout_sptr RFFFilterType::apply(stream::inout_sptr target,
-	stream::fn_truncate resize)
+	stream::fn_truncate resize) const
 {
 	stream::filtered_sptr st(new stream::filtered());
 	// We need two separate filters, otherwise reading from one will
@@ -75,7 +75,7 @@ stream::inout_sptr RFFFilterType::apply(stream::inout_sptr target,
 	return st;
 }
 
-stream::input_sptr RFFFilterType::apply(stream::input_sptr target)
+stream::input_sptr RFFFilterType::apply(stream::input_sptr target) const
 {
 	stream::input_filtered_sptr st(new stream::input_filtered());
 	filter_sptr de(new filter_rff_crypt(RFF_FILE_CRYPT_LEN, 0));
@@ -84,7 +84,7 @@ stream::input_sptr RFFFilterType::apply(stream::input_sptr target)
 }
 
 stream::output_sptr RFFFilterType::apply(stream::output_sptr target,
-	stream::fn_truncate resize)
+	stream::fn_truncate resize) const
 {
 	stream::output_filtered_sptr st(new stream::output_filtered());
 	filter_sptr en(new filter_rff_crypt(RFF_FILE_CRYPT_LEN, 0));

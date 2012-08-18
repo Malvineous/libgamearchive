@@ -2,7 +2,7 @@
  * @file   fmt-exe-ddave.hpp
  * @brief  FixedArchive implementation for Dangerous Dave .exe file.
  *
- * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,46 +22,28 @@
 #define _CAMOTO_FMT_EXE_DDAVE_HPP_
 
 #include <camoto/gamearchive/archivetype.hpp>
-#include <camoto/gamearchive/fixedarchive.hpp>
 
 namespace camoto {
 namespace gamearchive {
 
-class EXE_DDaveType: virtual public ArchiveType {
-
+class EXE_DDaveType: virtual public ArchiveType
+{
 	public:
-
 		EXE_DDaveType();
-
 		virtual ~EXE_DDaveType();
 
 		virtual std::string getArchiveCode() const;
-
 		virtual std::string getFriendlyName() const;
-
 		virtual std::vector<std::string> getFileExtensions() const;
-
 		virtual std::vector<std::string> getGameList() const;
-
-		virtual ArchiveType::Certainty isInstance(stream::input_sptr fsArchive) const;
-
-		virtual ArchivePtr newArchive(stream::inout_sptr psArchive, SuppData& suppData) const;
-
-		virtual ArchivePtr open(stream::inout_sptr fsArchive, SuppData& suppData) const;
-
+		virtual ArchiveType::Certainty isInstance(stream::input_sptr fsArchive)
+			const;
+		virtual ArchivePtr newArchive(stream::inout_sptr psArchive,
+			SuppData& suppData) const;
+		virtual ArchivePtr open(stream::inout_sptr fsArchive, SuppData& suppData)
+			const;
 		virtual SuppFilenames getRequiredSupps(stream::input_sptr data,
 			const std::string& filenameArchive) const;
-
-};
-
-class EXE_DDaveArchive: virtual public FixedArchive {
-
-	public:
-
-		EXE_DDaveArchive(stream::inout_sptr psArchive);
-
-		virtual ~EXE_DDaveArchive();
-
 };
 
 } // namespace gamearchive

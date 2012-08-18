@@ -20,11 +20,16 @@
  */
 
 #include <boost/algorithm/string.hpp>
-#include <camoto/gamearchive/fixedarchive.hpp>
 #include <camoto/util.hpp>
+#include "fixedarchive.hpp"
 
 namespace camoto {
 namespace gamearchive {
+
+void preventResize(stream::len len)
+{
+	throw stream::write_error("This file is a fixed size, it cannot be made smaller or larger.");
+}
 
 FixedArchive::FixedArchive(stream::inout_sptr psArchive, std::vector<FixedArchiveFile> files)
 	:	psArchive(psArchive),
@@ -96,6 +101,16 @@ stream::inout_sptr FixedArchive::open(const EntryPtr id)
 	return psSub;
 }
 
+ArchivePtr FixedArchive::openFolder(const Archive::EntryPtr id)
+{
+	// This function should only be called for folders (not files)
+	assert(id->fAttr & EA_FOLDER);
+
+	// Throw an exception if assertions have been disabled.
+	throw stream::error("BUG: openFolder() called for archive format that "
+		"doesn't have any folders.");
+}
+
 FixedArchive::EntryPtr FixedArchive::insert(const EntryPtr idBeforeThis,
 	const std::string& strFilename, stream::pos storedSize, std::string type,
 	int attr
@@ -135,6 +150,11 @@ void FixedArchive::flush()
 {
 	// no-op (nothing to flush)
 	return;
+}
+
+int FixedArchive::getSupportedAttributes() const
+{
+	return 0;
 }
 
 } // namespace gamearchive

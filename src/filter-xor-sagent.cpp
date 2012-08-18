@@ -18,7 +18,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/iostreams/invert.hpp>
 #include <camoto/stream_filtered.hpp>
 #include "filter-xor-sagent.hpp"
 #include "filter-bitswap.hpp"
@@ -70,7 +69,7 @@ std::vector<std::string> SAMBaseFilterType::getGameList() const
 }
 
 stream::inout_sptr SAMBaseFilterType::apply(stream::inout_sptr target,
-	stream::fn_truncate resize)
+	stream::fn_truncate resize) const
 {
 	stream::filtered_sptr st1(new stream::filtered());
 	// We need two separate filters, otherwise reading from one will
@@ -88,7 +87,7 @@ stream::inout_sptr SAMBaseFilterType::apply(stream::inout_sptr target,
 	return st2;
 }
 
-stream::input_sptr SAMBaseFilterType::apply(stream::input_sptr target)
+stream::input_sptr SAMBaseFilterType::apply(stream::input_sptr target) const
 {
 	stream::input_filtered_sptr st1(new stream::input_filtered());
 	filter_sptr cr(new sam_crypt_filter(this->resetInterval));
@@ -102,7 +101,7 @@ stream::input_sptr SAMBaseFilterType::apply(stream::input_sptr target)
 }
 
 stream::output_sptr SAMBaseFilterType::apply(stream::output_sptr target,
-	stream::fn_truncate resize)
+	stream::fn_truncate resize) const
 {
 	stream::output_filtered_sptr st1(new stream::output_filtered());
 	filter_sptr cr(new sam_crypt_filter(this->resetInterval));

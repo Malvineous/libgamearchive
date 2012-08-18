@@ -5,7 +5,7 @@
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/Zone_66_Compression
  *
- * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2012 Adam Nielsen <malvineous@shikadi.net>
  * Decompression algorithm by john_doe
  *   <http://forum.xentax.com/memberlist.php?mode=viewprofile&u=1896>
  *
@@ -23,11 +23,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stack>
 #include <boost/bind.hpp>
-#include <camoto/filter.hpp>
 #include <camoto/stream_filtered.hpp>
-#include <camoto/bitstream.hpp>
 
 #include "filter-zone66.hpp"
 
@@ -167,7 +164,7 @@ std::vector<std::string> Zone66FilterType::getGameList() const
 }
 
 stream::inout_sptr Zone66FilterType::apply(stream::inout_sptr target,
-	stream::fn_truncate resize)
+	stream::fn_truncate resize) const
 {
 	stream::filtered_sptr st(new stream::filtered());
 	filter_sptr de(new filter_z66_decompress());
@@ -177,7 +174,7 @@ stream::inout_sptr Zone66FilterType::apply(stream::inout_sptr target,
 	return st;
 }
 
-stream::input_sptr Zone66FilterType::apply(stream::input_sptr target)
+stream::input_sptr Zone66FilterType::apply(stream::input_sptr target) const
 {
 	stream::input_filtered_sptr st(new stream::input_filtered());
 	filter_sptr de(new filter_z66_decompress());
@@ -186,7 +183,7 @@ stream::input_sptr Zone66FilterType::apply(stream::input_sptr target)
 }
 
 stream::output_sptr Zone66FilterType::apply(stream::output_sptr target,
-	stream::fn_truncate resize)
+	stream::fn_truncate resize) const
 {
 	stream::output_filtered_sptr st(new stream::output_filtered());
 	/// @todo Implement Zone 66 compression

@@ -155,10 +155,6 @@ class Archive: virtual public Metadata {
 		/// Vector of shared FileEntry pointers
 		typedef std::vector<EntryPtr> VC_ENTRYPTR;
 
-		Archive();
-
-		virtual ~Archive();
-
 		/// Find the given file.
 		/**
 		 * In the unlikely event that the filename exists multiple times in the
@@ -229,7 +225,7 @@ class Archive: virtual public Metadata {
 		 *
 		 * @return Another Archive instance representing the files in the folder.
 		 */
-		virtual ArchivePtr openFolder(const EntryPtr id);
+		virtual ArchivePtr openFolder(const EntryPtr id) = 0;
 
 		/// Insert a new file into the archive.
 		/**
@@ -320,7 +316,7 @@ class Archive: virtual public Metadata {
 		 *
 		 * @post Existing EntryPtrs become invalid.  Any open files remain valid.
 		 */
-		virtual void move(const EntryPtr idBeforeThis, EntryPtr id);
+		virtual void move(const EntryPtr idBeforeThis, EntryPtr id) = 0;
 
 		/// Enlarge or shrink an existing file.
 		/**
@@ -385,12 +381,11 @@ class Archive: virtual public Metadata {
 		 *
 		 * @return Zero or more E_ATTRIBUTE values OR'd together.
 		 */
-		virtual int getSupportedAttributes() const;
-
+		virtual int getSupportedAttributes() const = 0;
 };
 
 /// Vector of Archive shared pointers.
-typedef std::vector<ArchivePtr> VC_ARCHIVE;
+typedef std::vector<ArchivePtr> ArchiveVector;
 
 /// Truncate callback for substreams that are a fixed size.
 void preventResize(stream::len len);

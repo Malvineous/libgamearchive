@@ -3,7 +3,7 @@
  * @brief  ArchiveType class, used to identify and open an instance of a
  *         particular archive format.
  *
- * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,10 +35,9 @@ namespace camoto {
 namespace gamearchive {
 
 /// Interface to a particular archive format.
-class ArchiveType {
-
+class ArchiveType
+{
 	public:
-
 		/// Confidence level when guessing a file format.
 		enum Certainty {
 			DefinitelyNo,  ///< Definitely not in this format
@@ -101,7 +100,8 @@ class ArchiveType {
 		 * @return A pointer to an instance of the Archive class, just as if a
 		 *   valid empty file had been opened by open().
 		 */
-		virtual ArchivePtr newArchive(stream::inout_sptr psArchive, SuppData& suppData) const;
+		virtual ArchivePtr newArchive(stream::inout_sptr psArchive,
+			SuppData& suppData) const = 0;
 
 		/// Open an archive file.
 		/**
@@ -119,7 +119,8 @@ class ArchiveType {
 		 *   make it possible to "force" a file to be opened by a particular format
 		 *   handler.
 		 */
-		virtual ArchivePtr open(stream::inout_sptr psArchive, SuppData& suppData) const = 0;
+		virtual ArchivePtr open(stream::inout_sptr psArchive, SuppData& suppData)
+			const = 0;
 
 		/// Get a list of any required supplemental files.
 		/**
@@ -148,14 +149,13 @@ class ArchiveType {
 		 */
 		virtual SuppFilenames getRequiredSupps(stream::input_sptr data,
 			const std::string& filenameArchive) const = 0;
-
 };
 
 /// Shared pointer to an ArchiveType.
 typedef boost::shared_ptr<ArchiveType> ArchiveTypePtr;
 
 /// Vector of ArchiveType shared pointers.
-typedef std::vector<ArchiveTypePtr> VC_ARCHIVETYPE;
+typedef std::vector<ArchiveTypePtr> ArchiveTypeVector;
 
 } // namespace gamearchive
 } // namespace camoto

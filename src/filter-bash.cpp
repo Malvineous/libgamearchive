@@ -57,7 +57,7 @@ std::vector<std::string> BashFilterType::getGameList() const
 }
 
 stream::inout_sptr BashFilterType::apply(stream::inout_sptr target,
-	stream::fn_truncate resize)
+	stream::fn_truncate resize) const
 {
 	stream::filtered_sptr st1(new stream::filtered());
 	filter_sptr f_delzw(new filter_lzw_decompress(
@@ -89,7 +89,7 @@ stream::inout_sptr BashFilterType::apply(stream::inout_sptr target,
 	return st2;
 }
 
-stream::input_sptr BashFilterType::apply(stream::input_sptr target)
+stream::input_sptr BashFilterType::apply(stream::input_sptr target) const
 {
 	stream::input_filtered_sptr st1(new stream::input_filtered());
 	filter_sptr f_delzw(new filter_lzw_decompress(
@@ -111,7 +111,7 @@ stream::input_sptr BashFilterType::apply(stream::input_sptr target)
 }
 
 stream::output_sptr BashFilterType::apply(stream::output_sptr target,
-	stream::fn_truncate resize)
+	stream::fn_truncate resize) const
 {
 	stream::output_filtered_sptr st1(new stream::output_filtered());
 	filter_sptr f_lzw(new filter_lzw_compress(

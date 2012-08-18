@@ -93,7 +93,6 @@ homepage <http://www.shikadi.net/camoto>.
 #include <camoto/gamearchive/archive.hpp>
 #include <camoto/gamearchive/archivetype.hpp>
 #include <camoto/gamearchive/filtertype.hpp>
-#include <camoto/gamearchive/fixedarchive.hpp>
 #include <camoto/gamearchive/manager.hpp>
 #include <camoto/gamearchive/util.hpp>
 

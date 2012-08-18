@@ -2,7 +2,7 @@
  * @file   filter-stellar7.hpp
  * @brief  FilterType for Stellar 7 compression algorithm.
  *
- * Copyright (C) 2010-2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,34 +21,26 @@
 #ifndef _CAMOTO_FILTER_STELLAR7_HPP_
 #define _CAMOTO_FILTER_STELLAR7_HPP_
 
-#include <camoto/stream.hpp>
-#include <stdint.h>
 #include <camoto/gamearchive/filtertype.hpp>
 
 namespace camoto {
 namespace gamearchive {
 
 /// Stellar 7 decompression filter.
-class Stellar7FilterType: virtual public FilterType {
-
+class Stellar7FilterType: virtual public FilterType
+{
 	public:
 		Stellar7FilterType();
-
-		~Stellar7FilterType();
+		virtual ~Stellar7FilterType();
 
 		virtual std::string getFilterCode() const;
-
 		virtual std::string getFriendlyName() const;
-
 		virtual std::vector<std::string> getGameList() const;
-
 		virtual stream::inout_sptr apply(stream::inout_sptr target,
-			stream::fn_truncate resize);
-
-		virtual stream::input_sptr apply(stream::input_sptr target);
-
+			stream::fn_truncate resize) const;
+		virtual stream::input_sptr apply(stream::input_sptr target) const;
 		virtual stream::output_sptr apply(stream::output_sptr target,
-			stream::fn_truncate resize);
+			stream::fn_truncate resize) const;
 };
 
 } // namespace gamearchive
