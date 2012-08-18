@@ -174,7 +174,7 @@ bool insertFile(ga::ArchivePtr pArchive, const std::string& strLocalFile,
 	try {
 		stream::copy(psNew, fsIn);
 		psNew->flush();
-	} catch (std::ios_base::failure& e) {
+	} catch (const stream::error& e) {
 		std::cout << " [failed; " << e.what() << "]";
 		return false;
 	}
@@ -767,7 +767,7 @@ finishTesting:
 					} else {
 						destArch->remove(id);
 					}
-				} catch (std::ios_base::failure& e) {
+				} catch (const stream::error& e) {
 					std::cout << " [failed; " << e.what() << "]";
 					iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
 				}
