@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "fixedarchive.hpp"
+#include <camoto/gamearchive/fixedarchive.hpp>
 #include "fmt-exe-ccaves.hpp"
 
 namespace camoto {
@@ -160,7 +160,7 @@ ArchivePtr EXE_CCavesType::open(stream::inout_sptr psArchive, SuppData& suppData
 	for (unsigned int i = 0; i < sizeof(ccaves_file_list) / sizeof(FixedArchiveFile); i++) {
 		files.push_back(ccaves_file_list[i]);
 	}
-	return ArchivePtr(new FixedArchive(psArchive, files));
+	return createFixedArchive(psArchive, files);
 }
 
 SuppFilenames EXE_CCavesType::getRequiredSupps(stream::input_sptr data,
