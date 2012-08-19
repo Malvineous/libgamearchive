@@ -41,8 +41,10 @@ namespace stream = camoto::stream;
 
 int main(int iArgC, char *cArgV[])
 {
+#ifdef __GLIBCXX__
 	// Set a better exception handler
-	std::set_terminate( __gnu_cxx::__verbose_terminate_handler );
+	std::set_terminate(__gnu_cxx::__verbose_terminate_handler);
+#endif
 
 	// Disable stdin/printf/etc. sync for a speed boost
 	std::ios_base::sync_with_stdio(false);
