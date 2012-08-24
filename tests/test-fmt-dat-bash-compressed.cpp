@@ -24,85 +24,85 @@
 #define FILENAME4 "FOUR.DAT"
 
 #define FCONTENT1_SMALL "\x54\xD0\xA4\x99\x03\x22\xCD\x1C" "\x10\x6F\xDC\x94"
-#define FCONTENT1 "\x54\xD0\xA4\x99\x03\x22\xCD\x1C" "\x10\x6F\xDC\x94\x71\x41\x26\x0C" "\x1D"
-#define FCONTENT2 "\x54\xD0\xA4\x99\x03\x22\xCD\x1C" "\x10\x74\xEE\xBC\x71\x41\x26\x0C" "\x1D"
-#define FCONTENT3 "\x54\xD0\xA4\x99\x03\x22\xCD\x1C" "\x10\x74\xD0\xC8\x29\x53\xC6\x05" "\x99\x30\x74\x00"
-#define FCONTENT4 "\x54\xD0\xA4\x99\x03\x22\xCD\x1C" "\x10\x66\xDE\xD4\x91\xE3\x82\x4C" "\x18\x3A\x00"
+#define FCONTENT1 "\x54\xD0\xA4\x99\x03\x22\xCD\x1C" "\x10\x6F\xDC\x94\x71\x41\x26\x0C" "\x1D\x80"
+#define FCONTENT2 "\x54\xD0\xA4\x99\x03\x22\xCD\x1C" "\x10\x74\xEE\xBC\x71\x41\x26\x0C" "\x1D\x80"
+#define FCONTENT3 "\x54\xD0\xA4\x99\x03\x22\xCD\x1C" "\x10\x74\xD0\xC8\x29\x53\xC6\x05" "\x99\x30\x74\x00\x02"
+#define FCONTENT4 "\x54\xD0\xA4\x99\x03\x22\xCD\x1C" "\x10\x66\xDE\xD4\x91\xE3\x82\x4C" "\x18\x3A\x00\x01"
 #define FCONTENT_OVERW "\x4E\xDE\xDC\x01\x21\xA7\xCC\x9C" "\x34\x7A\xCA\x90\x01\x41\xE7\x0D" \
-	"\x08\x19\x33\x40\x8C\x41\x13\x46" "\xCE\x1C"
+	"\x08\x19\x33\x40\x8C\x41\x13\x46" "\xCE\x1C\x80"
 
 #define CONTENT1_LARGESIZE_STORED 23
 #define CONTENT1_SMALLSIZE_STORED 12
 #define CONTENT1_OVERWSIZE_STORED (sizeof(FCONTENT_OVERW)-1)
 
 #define testdata_initialstate \
-	"\x01\x00" "\x11\x00" \
+	"\x01\x00" "\x12\x00" \
 		"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x0f\x00" \
 		FCONTENT1 \
-	"\x20\x00" "\x11\x00" \
+	"\x20\x00" "\x12\x00" \
 		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x0f\x00" \
 		FCONTENT2
 
 #define testdata_rename \
-	"\x20\x00" "\x11\x00" \
+	"\x20\x00" "\x12\x00" \
 		"THREE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x0f\x00" \
 		FCONTENT1 \
-	"\x20\x00" "\x11\x00" \
+	"\x20\x00" "\x12\x00" \
 		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x0f\x00" \
 		FCONTENT2
 
 #define testdata_insert_end \
-	"\x01\x00" "\x11\x00" \
+	"\x01\x00" "\x12\x00" \
 		"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x0f\x00" \
 		FCONTENT1 \
-	"\x20\x00" "\x11\x00" \
+	"\x20\x00" "\x12\x00" \
 		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x0f\x00" \
 		FCONTENT2 \
-	"\x20\x00" "\x14\x00" \
+	"\x20\x00" "\x15\x00" \
 		"THREE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x11\x00" \
 		FCONTENT3
 
 #define testdata_insert_mid \
-	"\x01\x00" "\x11\x00" \
+	"\x01\x00" "\x12\x00" \
 		"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x0f\x00" \
 		FCONTENT1 \
-	"\x20\x00" "\x14\x00" \
+	"\x20\x00" "\x15\x00" \
 		"THREE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x11\x00" \
 		FCONTENT3 \
-	"\x20\x00" "\x11\x00" \
+	"\x20\x00" "\x12\x00" \
 		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x0f\x00" \
 		FCONTENT2
 
 #define testdata_insert2 \
-	"\x01\x00" "\x11\x00" \
+	"\x01\x00" "\x12\x00" \
 		"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x0f\x00" \
 		FCONTENT1 \
-	"\x20\x00" "\x14\x00" \
+	"\x20\x00" "\x15\x00" \
 		"THREE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x11\x00" \
 		FCONTENT3 \
-	"\x20\x00" "\x13\x00" \
+	"\x20\x00" "\x14\x00" \
 		"FOUR.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x10\x00" \
 		FCONTENT4 \
-	"\x20\x00" "\x11\x00" \
+	"\x20\x00" "\x12\x00" \
 		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x0f\x00" \
 		FCONTENT2
 
 #define testdata_remove \
-	"\x20\x00" "\x11\x00" \
+	"\x20\x00" "\x12\x00" \
 		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x0f\x00" \
 		FCONTENT2
@@ -111,21 +111,21 @@
 	""
 
 #define testdata_insert_remove \
-	"\x20\x00" "\x14\x00" \
+	"\x20\x00" "\x15\x00" \
 		"THREE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x11\x00" \
 		FCONTENT3 \
-	"\x20\x00" "\x11\x00" \
+	"\x20\x00" "\x12\x00" \
 		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x0f\x00" \
 		FCONTENT2
 
 #define testdata_move \
-	"\x20\x00" "\x11\x00" \
+	"\x20\x00" "\x12\x00" \
 		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x0f\x00" \
 		FCONTENT2 \
-	"\x01\x00" "\x11\x00" \
+	"\x01\x00" "\x12\x00" \
 		"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x0f\x00" \
 		FCONTENT1
@@ -134,8 +134,8 @@
 	"\x01\x00" "\x17\x00" \
 		"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x14\x00" \
-		FCONTENT1 "\0\0\0\0\0\0" \
-	"\x20\x00" "\x11\x00" \
+		FCONTENT1 "\0\0\0\0\0" \
+	"\x20\x00" "\x12\x00" \
 		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x0f\x00" \
 		FCONTENT2
@@ -145,17 +145,17 @@
 		"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x0a\x00" \
 		FCONTENT1_SMALL \
-	"\x20\x00" "\x11\x00" \
+	"\x20\x00" "\x12\x00" \
 		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x0f\x00" \
 		FCONTENT2
 
 #define testdata_resize_write \
-	"\x01\x00" "\x1A\x00" \
+	"\x01\x00" "\x1b\x00" \
 		"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x17\x00" \
 		FCONTENT_OVERW \
-	"\x20\x00" "\x11\x00" \
+	"\x20\x00" "\x12\x00" \
 		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x0f\x00" \
 		FCONTENT2
@@ -175,11 +175,11 @@
 // initial state is correctly identified as a valid archive.
 
 ISINSTANCE_TEST(c01,
-	"\x20\x00" "\x11\x00" \
+	"\x20\x00" "\x12\x00" \
 		"ONE.DAT\x05\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x0f\x00" \
 		FCONTENT1 \
-	"\x20\x00" "\x11\x00" \
+	"\x20\x00" "\x12\x00" \
 		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x0f\x00" \
 		FCONTENT2,
@@ -193,11 +193,11 @@ ISINSTANCE_TEST(c02,
 );
 
 ISINSTANCE_TEST(c03,
-	"\x20\x00" "\x11\x01" \
+	"\x20\x00" "\x12\x01" \
 		"ONE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x0f\x00" \
 		FCONTENT1 \
-	"\x20\x00" "\x11\x00" \
+	"\x20\x00" "\x12\x00" \
 		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x0f\x00" \
 		FCONTENT2,
