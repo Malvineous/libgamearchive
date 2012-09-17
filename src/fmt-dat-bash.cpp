@@ -260,12 +260,13 @@ void DAT_BashArchive::updateFileName(const FATEntry *pid, const std::string& str
 	else if (boost::iequals(ext, ".tfg")) typeNum = 4;
 	else if (boost::iequals(ext, ".tbn")) typeNum = 5;
 	else if (boost::iequals(ext, ".msp")) typeNum = 7;
+	else if (boost::iequals(ext, ".snd")) typeNum = 8;
 	else if (boost::iequals(ext, ".pal")) typeNum = 14;
 	else if (boost::iequals(ext, ".spr")) typeNum = 64;
 	else typeNum = 32;
 
 	std::string strNativeName; // name to write to .dat file
-	if (typeNum != 32) {
+	if ((typeNum != 32) && (typeNum != 8)) {
 		// Custom file, chop off extension
 		strNativeName = strNewName.substr(0, newLen - 4);
 		newLen -= 4;
@@ -374,11 +375,12 @@ void DAT_BashArchive::postInsertFile(FATEntry *pNewEntry)
 	else if (boost::iequals(ext, ".tfg")) typeNum = 4;
 	else if (boost::iequals(ext, ".tbn")) typeNum = 5;
 	else if (boost::iequals(ext, ".msp")) typeNum = 7;
+	else if (boost::iequals(ext, ".snd")) typeNum = 8;
 	else if (boost::iequals(ext, ".pal")) typeNum = 14;
 	else if (boost::iequals(ext, ".spr")) typeNum = 64;
 	else typeNum = 32;
 
-	if (typeNum != 32) {
+	if ((typeNum != 32) && (typeNum != 8)) {
 		// Custom file, chop off extension
 		pNewEntry->strName = pNewEntry->strName.substr(0, newLen - 4);
 	}
