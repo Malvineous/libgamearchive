@@ -90,20 +90,8 @@ ArchiveType::Certainty DAT_BashType::isInstance(stream::input_sptr psArchive) co
 	while (pos < lenArchive) {
 		psArchive
 			>> u16le(type)
-			>> u16le(lenEntry);
-		/*switch (type) {
-			case 0: //?
-			case 1: //?
-			case 3:
-			case 4:
-			case 5:
-			case 32:
-			case 64:
-				break;
-			default:
-				std::cout << "Unknown filetype number " << type << std::endl;
-				return DefinitelyNo;
-		}*/
+			>> u16le(lenEntry)
+		;
 		psArchive->read(fn, DAT_FILENAME_FIELD_LEN);
 		// Make sure there aren't any invalid characters in the filename
 		for (int j = 0; j < DAT_MAX_FILENAME_LEN; j++) {
