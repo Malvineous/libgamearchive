@@ -29,7 +29,7 @@ namespace camoto {
 namespace gamearchive {
 
 /// Dangerous Dave RLE expansion filter.
-class filter_ddave_unrle: public filter
+class filter_ddave_unrle: virtual public filter
 {
 	protected:
 		int count;         ///< How many times to repeat prev
@@ -37,14 +37,13 @@ class filter_ddave_unrle: public filter
 		int copying;       ///< Number of bytes left to copy unchanged
 
 	public:
-		filter_ddave_unrle();
-
-		void transform(uint8_t *out, stream::len *lenOut,
+		virtual void reset();
+		virtual void transform(uint8_t *out, stream::len *lenOut,
 			const uint8_t *in, stream::len *lenIn);
 };
 
 /// Dangerous Dave RLE compression filter.
-class filter_ddave_rle: public filter
+class filter_ddave_rle: virtual public filter
 {
 	protected:
 		uint8_t buf[129];    ///< Chars to output as-is
@@ -55,9 +54,8 @@ class filter_ddave_rle: public filter
 		unsigned int step;   ///< Which point in the algorithm are we up to?
 
 	public:
-		filter_ddave_rle();
-
-		void transform(uint8_t *out, stream::len *lenOut,
+		virtual void reset();
+		virtual void transform(uint8_t *out, stream::len *lenOut,
 			const uint8_t *in, stream::len *lenIn);
 };
 

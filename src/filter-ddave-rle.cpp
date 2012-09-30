@@ -29,10 +29,11 @@
 namespace camoto {
 namespace gamearchive {
 
-filter_ddave_unrle::filter_ddave_unrle()
-	:	count(0),
-		copying(0)
+void filter_ddave_unrle::reset()
 {
+	this->count = 0;
+	this->copying = 0;
+	return;
 }
 
 void filter_ddave_unrle::transform(uint8_t *out, stream::len *lenOut,
@@ -82,12 +83,13 @@ void filter_ddave_unrle::transform(uint8_t *out, stream::len *lenOut,
 }
 
 
-filter_ddave_rle::filter_ddave_rle()
-	:	buflen(0),
-		prev(0),
-		count(0),
-		step(0)
+void filter_ddave_rle::reset()
 {
+	this->buflen = 0;
+	this->prev = 0;
+	this->count = 0;
+	this->step = 0;
+	return;
 }
 
 void filter_ddave_rle::transform(uint8_t *out, stream::len *lenOut,

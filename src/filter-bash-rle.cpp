@@ -23,9 +23,10 @@
 namespace camoto {
 namespace gamearchive {
 
-filter_bash_unrle::filter_bash_unrle()
-	:	count(0)
+void filter_bash_unrle::reset()
 {
+	this->count = 0;
+	return;
 }
 
 void filter_bash_unrle::transform(uint8_t *out, stream::len *lenOut,
@@ -87,11 +88,12 @@ void filter_bash_unrle::transform(uint8_t *out, stream::len *lenOut,
 }
 
 
-filter_bash_rle::filter_bash_rle()
-	:	prev(-1),
-		count(0),
-		state(S0_NORMAL)
+void filter_bash_rle::reset()
 {
+	this->prev = -1;
+	this->count = 0;
+	this->state = S0_NORMAL;
+	return;
 }
 
 void filter_bash_rle::transform(uint8_t *out, stream::len *lenOut,

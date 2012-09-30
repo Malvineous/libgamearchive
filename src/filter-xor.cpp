@@ -32,9 +32,18 @@ namespace gamearchive {
 
 filter_xor_crypt::filter_xor_crypt(int lenCrypt, int seed)
 	:	lenCrypt(lenCrypt),
-		seed(seed),
-		offset(0)
+		seed(seed)
 {
+}
+
+filter_xor_crypt::~filter_xor_crypt()
+{
+}
+
+void filter_xor_crypt::reset()
+{
+	this->offset = 0;
+	return;
 }
 
 void filter_xor_crypt::transform(uint8_t *out, stream::len *lenOut,

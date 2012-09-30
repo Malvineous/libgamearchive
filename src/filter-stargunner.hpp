@@ -35,15 +35,26 @@ namespace gamearchive {
 /// Largest possible chunk of compressed data.  (No compression + worst case dictionary size.)
 #define CMP_CHUNK_SIZE (CHUNK_SIZE + 256 + 2) // plus 2 for the chunk length
 
-class filter_stargunner_decompress: public filter
+class filter_stargunner_decompress: virtual public filter
 {
 	public:
-		filter_stargunner_decompress();
-
+		/// Decompress a data chunk.
+		/**
+		 * @param in
+		 *   Input data.  First byte is the one immediately following the chunk length.
+		 *
+		 * @param expanded_size
+		 *   The size of the input chunk after decompression.  The output buffer must
+		 *   be able to hold this many bytes.
+		 *
+		 * @param out
+		 *   Output buffer.
+		 */
 		void explode_chunk(const uint8_t* in, unsigned int expanded_size,
 			uint8_t* out);
 
-		void transform(uint8_t *out, stream::len *lenOut,
+		virtual void reset();
+		virtual void transform(uint8_t *out, stream::len *lenOut,
 			const uint8_t *in, stream::len *lenIn);
 
 	protected:

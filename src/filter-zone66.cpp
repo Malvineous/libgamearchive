@@ -32,16 +32,12 @@ namespace camoto {
 namespace gamearchive {
 
 filter_z66_decompress::filter_z66_decompress()
-	:	data(bitstream::bigEndian),
-		state(0),
-		codeLength(9),
-		curDicIndex(0),
-		maxDicIndex(255)
+	:	data(bitstream::bigEndian)
 {
-	for (int i = 0; i < 8192; i++) {
-		nodes[i].code = 0;
-		nodes[i].nextCode = 0;
-	}
+}
+
+filter_z66_decompress::~filter_z66_decompress()
+{
 }
 
 int filter_z66_decompress::nextChar(const uint8_t **in, stream::len *lenIn, stream::len *r, uint8_t *out)
@@ -53,6 +49,21 @@ int filter_z66_decompress::nextChar(const uint8_t **in, stream::len *lenIn, stre
 		return 1;    // return number of bytes read
 	}
 	return 0; // EOF
+}
+
+void filter_z66_decompress::reset()
+{
+	this->state = 0;
+	this->codeLength = 9;
+	this->curDicIndex = 0;
+	this->maxDicIndex = 255;
+
+	for (int i = 0; i < 8192; i++) {
+		nodes[i].code = 0;
+		nodes[i].nextCode = 0;
+	}
+
+	this->data.flushByte(); // drop any pending byte
 }
 
 void filter_z66_decompress::transform(uint8_t *out, stream::len *lenOut,

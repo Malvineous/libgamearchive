@@ -32,7 +32,7 @@ namespace gamearchive {
  * This starts by encrypting the first byte with the given seed value, then
  * the seed is incremented by one for the following byte.
  */
-class filter_xor_crypt: public filter
+class filter_xor_crypt: virtual public filter
 {
 	protected:
 		/// Number of bytes to crypt, after this data is left as plaintext.
@@ -55,8 +55,10 @@ class filter_xor_crypt: public filter
 		 *   @copybrief seed
 		 */
 		filter_xor_crypt(int lenCrypt, int seed);
+		virtual ~filter_xor_crypt();
 
-		void transform(uint8_t *out, stream::len *lenOut,
+		virtual void reset();
+		virtual void transform(uint8_t *out, stream::len *lenOut,
 			const uint8_t *in, stream::len *lenIn);
 
 		/// Change the next XOR value

@@ -29,15 +29,17 @@
 namespace camoto {
 namespace gamearchive {
 
-class filter_z66_decompress: public filter
+class filter_z66_decompress: virtual public filter
 {
 	public:
 		filter_z66_decompress();
+		virtual ~filter_z66_decompress();
 
 		int nextChar(const uint8_t **in, stream::len *lenIn, stream::len *r,
 			uint8_t *out);
 
-		void transform(uint8_t *out, stream::len *lenOut,
+		virtual void reset();
+		virtual void transform(uint8_t *out, stream::len *lenOut,
 			const uint8_t *in, stream::len *lenIn);
 
 	protected:
@@ -59,7 +61,7 @@ class Zone66FilterType: virtual public FilterType
 {
 	public:
 		Zone66FilterType();
-		~Zone66FilterType();
+		virtual ~Zone66FilterType();
 
 		virtual std::string getFilterCode() const;
 		virtual std::string getFriendlyName() const;

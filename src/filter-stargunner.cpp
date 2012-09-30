@@ -35,25 +35,14 @@
 namespace camoto {
 namespace gamearchive {
 
-filter_stargunner_decompress::filter_stargunner_decompress()
-	:	gotHeader(false),
-		lenBufIn(0),
-		posOut(CHUNK_SIZE)
+void filter_stargunner_decompress::reset()
 {
+	this->gotHeader = false;
+	this->lenBufIn = 0;
+	this->posOut = CHUNK_SIZE;
+	return;
 }
 
-/// Decompress a data chunk.
-/**
- * @param in
- *   Input data.  First byte is the one immediately following the chunk length.
- *
- * @param expanded_size
- *   The size of the input chunk after decompression.  The output buffer must
- *   be able to hold this many bytes.
- *
- * @param out
- *   Output buffer.
- */
 void filter_stargunner_decompress::explode_chunk(const uint8_t* in,
 	unsigned int expanded_size, uint8_t* out)
 {
