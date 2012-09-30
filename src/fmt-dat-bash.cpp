@@ -206,6 +206,10 @@ DAT_BashArchive::DAT_BashArchive(stream::inout_sptr psArchive)
 				fatEntry->strName += ".tbn";
 				fatEntry->type = "image/bash-tiles-fg";
 				break;
+			case 6:
+				fatEntry->strName += ".sgl";
+				fatEntry->type = "data/bash-sprite-graphics-list";
+				break;
 			case 7:
 				fatEntry->strName += ".msp";
 				fatEntry->type = "map/bash-sprites";
@@ -214,9 +218,21 @@ DAT_BashArchive::DAT_BashArchive(stream::inout_sptr psArchive)
 				// Already has ".snd" extension
 				fatEntry->type = "sound/bash";
 				break;
+			case 12:
+				fatEntry->strName += ".pbg";
+				fatEntry->type = "data/bash-tile-properties";
+				break;
+			case 13:
+				fatEntry->strName += ".pfg";
+				fatEntry->type = "data/bash-tile-properties";
+				break;
 			case 14:
 				fatEntry->strName += ".pal";
 				fatEntry->type = "image/pal-ega";
+				break;
+			case 16:
+				fatEntry->strName += ".pbn";
+				fatEntry->type = "data/bash-tile-properties";
 				break;
 			case 64:
 				fatEntry->strName += ".spr";
@@ -259,9 +275,13 @@ void DAT_BashArchive::updateFileName(const FATEntry *pid, const std::string& str
 	else if (boost::iequals(ext, ".tbg")) typeNum = 3;
 	else if (boost::iequals(ext, ".tfg")) typeNum = 4;
 	else if (boost::iequals(ext, ".tbn")) typeNum = 5;
+	else if (boost::iequals(ext, ".sgl")) typeNum = 6;
 	else if (boost::iequals(ext, ".msp")) typeNum = 7;
 	else if (boost::iequals(ext, ".snd")) typeNum = 8;
+	else if (boost::iequals(ext, ".pbg")) typeNum = 12;
+	else if (boost::iequals(ext, ".pfg")) typeNum = 13;
 	else if (boost::iequals(ext, ".pal")) typeNum = 14;
+	else if (boost::iequals(ext, ".pbn")) typeNum = 16;
 	else if (boost::iequals(ext, ".spr")) typeNum = 64;
 	else typeNum = 32;
 
@@ -325,8 +345,12 @@ FATArchive::FATEntry *DAT_BashArchive::preInsertFile(
 		boost::iequals(ext, ".tbg") ||
 		boost::iequals(ext, ".tfg") ||
 		boost::iequals(ext, ".tbn") ||
+		boost::iequals(ext, ".sgl") ||
 		boost::iequals(ext, ".msp") ||
+		boost::iequals(ext, ".pbg") ||
+		boost::iequals(ext, ".pfg") ||
 		boost::iequals(ext, ".pal") ||
+		boost::iequals(ext, ".pbn") ||
 		boost::iequals(ext, ".spr")
 	) {
 		newLen -= 4; // don't count the fake extension in the length limit
@@ -374,9 +398,13 @@ void DAT_BashArchive::postInsertFile(FATEntry *pNewEntry)
 	else if (boost::iequals(ext, ".tbg")) typeNum = 3;
 	else if (boost::iequals(ext, ".tfg")) typeNum = 4;
 	else if (boost::iequals(ext, ".tbn")) typeNum = 5;
+	else if (boost::iequals(ext, ".sgl")) typeNum = 6;
 	else if (boost::iequals(ext, ".msp")) typeNum = 7;
 	else if (boost::iequals(ext, ".snd")) typeNum = 8;
+	else if (boost::iequals(ext, ".pbg")) typeNum = 12;
+	else if (boost::iequals(ext, ".pfg")) typeNum = 13;
 	else if (boost::iequals(ext, ".pal")) typeNum = 14;
+	else if (boost::iequals(ext, ".pbn")) typeNum = 16;
 	else if (boost::iequals(ext, ".spr")) typeNum = 64;
 	else typeNum = 32;
 
