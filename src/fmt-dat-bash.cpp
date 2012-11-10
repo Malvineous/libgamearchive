@@ -355,7 +355,6 @@ FATArchive::FATEntry *DAT_BashArchive::preInsertFile(
 
 	this->psArchive->seekp(pNewEntry->iOffset, stream::start);
 	this->psArchive->insert(DAT_EFAT_ENTRY_LEN);
-	boost::to_upper(pNewEntry->strName);
 
 	if (pNewEntry->fAttr & EA_COMPRESSED) {
 		pNewEntry->filter = "lzw-bash";
