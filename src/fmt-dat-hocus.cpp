@@ -84,6 +84,10 @@ ArchivePtr DAT_HocusType::open(stream::inout_sptr psArchive, SuppData& suppData)
 	stream::pos lenEXE = suppData[SuppItem::FAT]->size();
 	stream::pos offFAT, lenFAT;
 	switch (lenEXE) {
+		case 218096: // leaked beta
+			offFAT = 0x01AD74;
+			lenFAT = 8 * 236;
+			break;
 		case 178592: // shareware v1.0
 			offFAT = 0x01EE04;
 			lenFAT = 8 * 252;
