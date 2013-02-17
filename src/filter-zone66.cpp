@@ -42,7 +42,7 @@ filter_z66_decompress::~filter_z66_decompress()
 
 int filter_z66_decompress::nextChar(const uint8_t **in, stream::len *lenIn, stream::len *r, uint8_t *out)
 {
-	if (*lenIn) {
+	if (*r < *lenIn) {
 		*out = **in; // "read" byte
 		(*in)++;     // increment read buffer
 		(*r)++;      // increment read count
