@@ -54,6 +54,9 @@ class filter_z66_decompress: virtual public filter
 		struct {
 			int code, nextCode;
 		} nodes[8192];
+
+		int totalWritten; ///< Number of bytes written out so far overall
+		int outputLimit;  ///< Maximum number of bytes to write out overall
 };
 
 /// Zone 66 decompression filter

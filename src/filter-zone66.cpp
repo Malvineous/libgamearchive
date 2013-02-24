@@ -53,6 +53,8 @@ int filter_z66_decompress::nextChar(const uint8_t **in, stream::len *lenIn, stre
 
 void filter_z66_decompress::reset()
 {
+	this->outputLimit = 4; // need to allow enough to read the length field
+	this->totalWritten = 0;
 	this->state = 0;
 	this->codeLength = 9;
 	this->curDicIndex = 0;
@@ -73,13 +75,24 @@ void filter_z66_decompress::transform(uint8_t *out, stream::len *lenOut,
 
 	fn_getnextchar cbNext = boost::bind(&filter_z66_decompress::nextChar, this, &in, lenIn, &r, _1);
 
-	while ((w < *lenOut) && ((r < *lenIn))) {// || (!this->stack.empty()))) {
+	while (
+		(w < *lenOut)  // while there is more space to write into
+		&& (
+			(r + 1 < *lenIn) // and there's at least two more bytes to read
+			|| (
+				(*lenIn < 10)   // or there's less than 10 bytes to read in this buffer (i.e. near EOF)
+				&& (r < *lenIn) // and there's at least one more byte to read
+			)
+			|| (this->state > 1) // or we're still processing what we read previously
+		)
+		&& (this->totalWritten < this->outputLimit) // and we haven't reached the target file size yet
+	) {
 		switch (this->state) {
 			case 0: {
-				// Discard the first four bytes (decompressed size)
+				// Read the first four bytes (decompressed size) so we can limit the
+				// output size appropriately.
 				this->data.changeEndian(bitstream::littleEndian);
-				int dummy;
-				this->data.read(cbNext, 32, &dummy);
+				this->data.read(cbNext, 32, &this->outputLimit);
 				this->data.changeEndian(bitstream::bigEndian);
 				this->state++;
 				break;
@@ -96,6 +109,7 @@ void filter_z66_decompress::transform(uint8_t *out, stream::len *lenOut,
 				if (this->curCode < 256) {
 					*out++ = this->curCode;
 					w++;
+					this->totalWritten++;
 					if (!stack.empty()) {
 						this->curCode = stack.top();
 						stack.pop();
@@ -117,6 +131,7 @@ void filter_z66_decompress::transform(uint8_t *out, stream::len *lenOut,
 				if (this->data.read(cbNext, 8, &value) != 8) goto done;
 				*out++ = value;
 				w++;
+				this->totalWritten++;
 
 				if (this->code >= 0x100 + this->curDicIndex) {
 					// This code hasn't been put in the dictionary yet (tpal.z66)
