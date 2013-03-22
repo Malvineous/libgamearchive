@@ -141,11 +141,10 @@ class ArchiveType
 		 *
 		 * @return A (possibly empty) map associating required supplemental file
 		 *   types with their filenames.  For each returned value the file should be
-		 *   opened and placed in a SuppItem instance.  The \ref SuppItem is then
-		 *   added to a \ref SuppData map where it can be passed to newArchive() or
-		 *   open().  Note that the filenames returned can have relative paths, and
-		 *   may even have an absolute path, if one was passed in with
-		 *   filenameArchive.
+		 *   opened and added to a \ref SuppData map, where it can be passed to
+		 *   newArchive() or open().  Note that the filenames returned can have
+		 *   relative paths, and may even have an absolute path, if one was passed
+		 *   in with filenameArchive.
 		 */
 		virtual SuppFilenames getRequiredSupps(stream::input_sptr data,
 			const std::string& filenameArchive) const = 0;

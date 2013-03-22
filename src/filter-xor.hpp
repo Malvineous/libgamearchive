@@ -49,10 +49,11 @@ class filter_xor_crypt: virtual public filter
 		/// Create a new encryption filter with the given options.
 		/**
 		 * @param lenCrypt
-		 *   @copybrief lenCrypt
+		 *   Number of bytes to crypt, after this data is left as plaintext.
+		 *   0 means crypt everything.
 		 *
 		 * @param seed
-		 *   @copybrief seed
+		 *   Initial XOR value.
 		 */
 		filter_xor_crypt(int lenCrypt, int seed);
 		virtual ~filter_xor_crypt();
