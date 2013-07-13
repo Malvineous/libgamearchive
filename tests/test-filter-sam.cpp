@@ -1,0 +1,53 @@
+/**
+ * @file   test-filter-sam.cpp
+ * @brief  Test code for Secret Agent XOR encryption algorithm.
+ *
+ * Copyright (C) 2010-2013 Adam Nielsen <malvineous@shikadi.net>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "test-filter.hpp"
+#include "../src/filter-xor-sagent.hpp"
+
+using namespace camoto;
+using namespace camoto::gamearchive;
+
+BOOST_FIXTURE_TEST_SUITE(sam_suite, filter_sample)
+
+BOOST_AUTO_TEST_CASE(read)
+{
+	BOOST_TEST_MESSAGE("Decode some Secret Agent XOR-encoded data");
+
+	SAMMapFilterType filter;
+
+	BOOST_CHECK_MESSAGE(is_equal_read(&filter,
+		makeString("\xC2\x76\x4E\x5E\xB1\x69\x19\xE9"),
+		makeString("\x00\x01\x02\x03\xFF\xFF\xFF\xFF")),
+		"Decoding Secret Agent XOR-encoded data failed");
+}
+
+BOOST_AUTO_TEST_CASE(write)
+{
+	BOOST_TEST_MESSAGE("Encode some data using Secret Agent XOR cipher");
+
+	SAMMapFilterType filter;
+
+	BOOST_CHECK_MESSAGE(is_equal_write(&filter,
+		makeString("\x00\x01\x02\x03\xFF\xFF\xFF\xFF"),
+		makeString("\xC2\x76\x4E\x5E\xB1\x69\x19\xE9")),
+		"Secret Agent XOR-encoding failed");
+}
+
+BOOST_AUTO_TEST_SUITE_END()

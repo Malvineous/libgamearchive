@@ -18,6 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <boost/bind.hpp>
 #include "test-filter.hpp"
 
 using namespace camoto;
@@ -36,6 +37,40 @@ boost::test_tools::predicate_result filter_sample::is_equal(const std::string& s
 
 	// See if the stringstream now matches what we expected
 	return this->default_sample::is_equal(strExpected, out->str());
+}
+
+boost::test_tools::predicate_result filter_sample::is_equal_read(
+	camoto::gamearchive::FilterType *ft, const std::string& strInput,
+	const std::string& strExpected)
+{
+	this->in->write(strInput);
+
+	stream::inout_sptr in2 = this->in;
+	stream::fn_truncate fnTruncate = boost::bind(&stream::string::truncate,
+		this->in.get(), _1);
+	stream::inout_sptr s = ft->apply(in2, fnTruncate);
+
+	stream::string_sptr out(new stream::string());
+	stream::copy(out, s);
+
+	// See if the stringstream now matches what we expected
+	return this->default_sample::is_equal(strExpected, out->str());
+}
+
+boost::test_tools::predicate_result filter_sample::is_equal_write(
+	camoto::gamearchive::FilterType *ft, const std::string& strInput,
+	const std::string& strExpected)
+{
+	stream::inout_sptr in2 = this->in;
+	stream::fn_truncate fnTruncate = boost::bind(&stream::string::truncate,
+		this->in.get(), _1);
+	stream::inout_sptr s = ft->apply(in2, fnTruncate);
+
+	s->write(strInput);
+	s->flush();
+
+	// See if the stringstream now matches what we expected
+	return this->default_sample::is_equal(strExpected, this->in->str());
 }
 
 boost::test_tools::predicate_result filter_sample::should_fail()

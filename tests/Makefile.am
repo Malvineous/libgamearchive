@@ -23,9 +23,10 @@ tests_SOURCES += test-fmt-resource-tim.cpp test-fmt-resource-tim-fat.cpp
 tests_SOURCES += test-filter.cpp
 tests_SOURCES += test-filter-bash-rle.cpp
 tests_SOURCES += test-filter-bitswap.cpp
+tests_SOURCES += test-filter-ddave-rle.cpp
+tests_SOURCES += test-filter-sam.cpp
 tests_SOURCES += test-filter-xor.cpp
 tests_SOURCES += test-filter-xor-blood.cpp
-tests_SOURCES += test-filter-ddave-rle.cpp
 tests_SOURCES += test-filter-zone66.cpp
 
 EXTRA_tests_SOURCES = tests.hpp

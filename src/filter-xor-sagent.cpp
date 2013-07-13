@@ -71,47 +71,50 @@ std::vector<std::string> SAMBaseFilterType::getGameList() const
 stream::inout_sptr SAMBaseFilterType::apply(stream::inout_sptr target,
 	stream::fn_truncate resize) const
 {
-	stream::filtered_sptr st1(new stream::filtered());
+	stream::filtered_sptr sxor(new stream::filtered());
 	// We need two separate filters, otherwise reading from one will
 	// affect the XOR key next used when writing to the other.
-	filter_sptr de_cr(new sam_crypt_filter(this->resetInterval));
-	filter_sptr en_cr(new sam_crypt_filter(this->resetInterval));
-	st1->open(target, de_cr, en_cr, NULL);
+	filter_sptr de_fxor(new sam_crypt_filter(this->resetInterval));
+	filter_sptr en_fxor(new sam_crypt_filter(this->resetInterval));
 
-	stream::filtered_sptr st2(new stream::filtered());
+	stream::filtered_sptr sswap(new stream::filtered());
 	// Since the bitswap doesn't care how many bytes have been read or
 	// written, we can use the same filter for both reading and writing.
-	filter_sptr bs(new filter_bitswap());
-	st2->open(st1, bs, bs, resize);
+	filter_sptr fswap(new filter_bitswap());
 
-	return st2;
+	sswap->open(target, fswap, fswap, resize);
+	sxor->open(sswap, de_fxor, en_fxor, NULL);
+
+	return sxor;
 }
 
 stream::input_sptr SAMBaseFilterType::apply(stream::input_sptr target) const
 {
-	stream::input_filtered_sptr st1(new stream::input_filtered());
-	filter_sptr cr(new sam_crypt_filter(this->resetInterval));
-	st1->open(target, cr);
+	stream::input_filtered_sptr sxor(new stream::input_filtered());
+	filter_sptr fxor(new sam_crypt_filter(this->resetInterval));
 
-	stream::input_filtered_sptr st2(new stream::input_filtered());
-	filter_sptr bs(new filter_bitswap());
-	st2->open(st1, bs);
+	stream::input_filtered_sptr sswap(new stream::input_filtered());
+	filter_sptr fswap(new filter_bitswap());
 
-	return st2;
+	sswap->open(target, fswap);
+	sxor->open(sswap, fxor);
+
+	return sxor;
 }
 
 stream::output_sptr SAMBaseFilterType::apply(stream::output_sptr target,
 	stream::fn_truncate resize) const
 {
-	stream::output_filtered_sptr st1(new stream::output_filtered());
-	filter_sptr cr(new sam_crypt_filter(this->resetInterval));
-	st1->open(target, cr, NULL);
+	stream::output_filtered_sptr sxor(new stream::output_filtered());
+	filter_sptr fxor(new sam_crypt_filter(this->resetInterval));
 
-	stream::output_filtered_sptr st2(new stream::output_filtered());
-	filter_sptr bs(new filter_bitswap());
-	st2->open(st1, bs, resize);
+	stream::output_filtered_sptr sswap(new stream::output_filtered());
+	filter_sptr fswap(new filter_bitswap());
 
-	return st2;
+	sswap->open(target, fswap, NULL);
+	sxor->open(sswap, fxor, resize);
+
+	return sxor;
 }
 
 
@@ -136,7 +139,7 @@ std::string SAMMapFilterType::getFriendlyName() const
 
 
 SAM8SpriteFilterType::SAM8SpriteFilterType()
-	:	SAMBaseFilterType(8064)
+	:	SAMBaseFilterType(2048)
 {
 }
 
@@ -156,7 +159,7 @@ std::string SAM8SpriteFilterType::getFriendlyName() const
 
 
 SAM16SpriteFilterType::SAM16SpriteFilterType()
-	:	SAMBaseFilterType(2048)
+	:	SAMBaseFilterType(8064)
 {
 }
 

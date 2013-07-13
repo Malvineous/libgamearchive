@@ -18,10 +18,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/test/unit_test.hpp>
-
 #include <camoto/stream_string.hpp>
 #include <camoto/stream_filtered.hpp>
+#include <camoto/gamearchive/filtertype.hpp>
 #include "tests.hpp"
 
 struct filter_sample: public default_sample {
@@ -32,6 +31,12 @@ struct filter_sample: public default_sample {
 
 	filter_sample();
 	boost::test_tools::predicate_result is_equal(const std::string& strExpected);
+	boost::test_tools::predicate_result is_equal_read(
+		camoto::gamearchive::FilterType *ft, const std::string& strInput,
+		const std::string& strExpected);
+	boost::test_tools::predicate_result is_equal_write(
+		camoto::gamearchive::FilterType *ft, const std::string& strInput,
+		const std::string& strExpected);
 	boost::test_tools::predicate_result should_fail();
 
 };

@@ -36,6 +36,7 @@ class sam_crypt_filter: public filter_xor_crypt
 		virtual uint8_t getKey();
 
 	protected:
+		/// How many bytes to decode before jumping back to the start of the key
 		int resetInterval;
 };
 
