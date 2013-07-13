@@ -13,3 +13,6 @@ Outstanding tasks
  - Add tests for Secret Agent encryption/decryption
 
  - Add tests for Stargunner decompression, and confirm files go in as uncompressed
+
+ - Allow files within folders to be extracted/replaced by order using dots in
+   the @ notation
