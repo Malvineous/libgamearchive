@@ -38,6 +38,10 @@ sam_crypt_filter::sam_crypt_filter(int resetInterval)
 
 uint8_t sam_crypt_filter::getKey()
 {
+	if ((this->resetInterval == 42) && ((this->offset % 42) == 41)) {
+		// Special case for last char in each row of map file
+		return 0;
+	}
 	return (uint8_t)(sam_key[(this->offset % this->resetInterval) % SAM_KEYLEN]);
 }
 
