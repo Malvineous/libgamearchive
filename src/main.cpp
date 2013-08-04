@@ -31,6 +31,7 @@
 #include "fmt-rff-blood.hpp"
 #include "fmt-dat-wacky.hpp"
 #include "fmt-dat-hugo.hpp"
+#include "fmt-gd-doofus.hpp"
 #include "fmt-exe-ccaves.hpp"
 #include "fmt-exe-ddave.hpp"
 #include "fmt-dat-bash.hpp"
@@ -106,6 +107,7 @@ ActualManager::ActualManager()
 	// The following formats are difficult to autodetect, so putting them last
 	// means they should only be checked if all the more robust formats above
 	// have already failed to match.
+	this->vcTypes.push_back(ArchiveTypePtr(new GD_DoofusType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_HugoType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_HocusType()));
 
