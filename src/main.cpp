@@ -31,6 +31,7 @@
 #include "filter-xor.hpp"
 #include "filter-zone66.hpp"
 #include "fmt-bnk-harry.hpp"
+#include "fmt-da-levels.hpp"
 #include "fmt-dat-bash.hpp"
 #include "fmt-dat-got.hpp"
 #include "fmt-dat-hocus.hpp"
@@ -121,6 +122,7 @@ ActualManager::ActualManager()
 	this->vcTypes.push_back(ArchiveTypePtr(new GD_DoofusType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_HugoType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_HocusType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new DA_LevelsType()));
 }
 
 ActualManager::~ActualManager()
