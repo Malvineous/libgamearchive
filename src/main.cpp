@@ -21,39 +21,38 @@
 #include <camoto/gamearchive/manager.hpp>
 
 // Include all the file formats for the Manager to load
-#include "fmt-grp-duke3d.hpp"
-#include "fmt-vol-cosmo.hpp"
-#include "fmt-pod-tv.hpp"
-#include "fmt-bnk-harry.hpp"
-#include "fmt-res-stellar7.hpp"
-#include "fmt-hog-descent.hpp"
-#include "fmt-epf-lionking.hpp"
-#include "fmt-rff-blood.hpp"
-#include "fmt-dat-wacky.hpp"
-#include "fmt-dat-hugo.hpp"
-#include "fmt-gd-doofus.hpp"
-#include "fmt-exe-ccaves.hpp"
-#include "fmt-exe-ddave.hpp"
-#include "fmt-dat-bash.hpp"
-#include "fmt-dat-hocus.hpp"
-#include "fmt-dat-sango.hpp"
-#include "fmt-dlt-stargunner.hpp"
-#include "fmt-lbr-vinyl.hpp"
-#include "fmt-resource-tim.hpp"
-#include "fmt-resource-tim-fat.hpp"
-#include "fmt-roads-skyroads.hpp"
-#include "fmt-dat-got.hpp"
-#include "fmt-pcxlib.hpp"
-
 #include "filter-bash.hpp"
+#include "filter-ddave-rle.hpp"
 #include "filter-epfs.hpp"
-#include "filter-zone66.hpp"
 #include "filter-stargunner.hpp"
 #include "filter-stellar7.hpp"
-#include "filter-xor.hpp"
 #include "filter-xor-blood.hpp"
 #include "filter-xor-sagent.hpp"
-#include "filter-ddave-rle.hpp"
+#include "filter-xor.hpp"
+#include "filter-zone66.hpp"
+#include "fmt-bnk-harry.hpp"
+#include "fmt-dat-bash.hpp"
+#include "fmt-dat-got.hpp"
+#include "fmt-dat-hocus.hpp"
+#include "fmt-dat-hugo.hpp"
+#include "fmt-dat-sango.hpp"
+#include "fmt-dat-wacky.hpp"
+#include "fmt-dlt-stargunner.hpp"
+#include "fmt-epf-lionking.hpp"
+#include "fmt-exe-ccaves.hpp"
+#include "fmt-exe-ddave.hpp"
+#include "fmt-gd-doofus.hpp"
+#include "fmt-grp-duke3d.hpp"
+#include "fmt-hog-descent.hpp"
+#include "fmt-lbr-vinyl.hpp"
+#include "fmt-pcxlib.hpp"
+#include "fmt-pod-tv.hpp"
+#include "fmt-res-stellar7.hpp"
+#include "fmt-resource-tim-fat.hpp"
+#include "fmt-resource-tim.hpp"
+#include "fmt-rff-blood.hpp"
+#include "fmt-roads-skyroads.hpp"
+#include "fmt-vol-cosmo.hpp"
 
 namespace camoto {
 namespace gamearchive {
@@ -83,26 +82,38 @@ const ManagerPtr getManager()
 
 ActualManager::ActualManager()
 {
-	this->vcTypes.push_back(ArchiveTypePtr(new GRPType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new VOLType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new PODType()));
+	this->vcFilters.push_back(FilterTypePtr(new BashFilterType()));
+	this->vcFilters.push_back(FilterTypePtr(new DDaveRLEFilterType()));
+	this->vcFilters.push_back(FilterTypePtr(new EPFSFilterType()));
+	this->vcFilters.push_back(FilterTypePtr(new RFFFilterType()));
+	this->vcFilters.push_back(FilterTypePtr(new SAM16SpriteFilterType()));
+	this->vcFilters.push_back(FilterTypePtr(new SAM8SpriteFilterType()));
+	this->vcFilters.push_back(FilterTypePtr(new SAMMapFilterType()));
+	this->vcFilters.push_back(FilterTypePtr(new StargunnerFilterType()));
+	this->vcFilters.push_back(FilterTypePtr(new Stellar7FilterType()));
+	this->vcFilters.push_back(FilterTypePtr(new XORFilterType()));
+	this->vcFilters.push_back(FilterTypePtr(new Zone66FilterType()));
+
 	this->vcTypes.push_back(ArchiveTypePtr(new BNKType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new RESType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new HOGType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new EPFType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new RFFType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new DAT_BashType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new DAT_GoTType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new DAT_SangoType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_WackyType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new DLTType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new EPFType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new EXE_CCavesType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new EXE_DDaveType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new DAT_BashType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new DAT_SangoType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new DLTType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new GRPType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new HOGType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new LBRType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new SkyRoadsRoadsType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new TIMResourceType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new TIMResourceFATType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new DAT_GoTType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new PCXLibType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new PODType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new RESType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new RFFType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new SkyRoadsRoadsType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new TIMResourceFATType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new TIMResourceType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new VOLType()));
 
 	// The following formats are difficult to autodetect, so putting them last
 	// means they should only be checked if all the more robust formats above
@@ -110,18 +121,6 @@ ActualManager::ActualManager()
 	this->vcTypes.push_back(ArchiveTypePtr(new GD_DoofusType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_HugoType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_HocusType()));
-
-	this->vcFilters.push_back(FilterTypePtr(new BashFilterType()));
-	this->vcFilters.push_back(FilterTypePtr(new EPFSFilterType()));
-	this->vcFilters.push_back(FilterTypePtr(new Zone66FilterType()));
-	this->vcFilters.push_back(FilterTypePtr(new StargunnerFilterType()));
-	this->vcFilters.push_back(FilterTypePtr(new Stellar7FilterType()));
-	this->vcFilters.push_back(FilterTypePtr(new XORFilterType()));
-	this->vcFilters.push_back(FilterTypePtr(new RFFFilterType()));
-	this->vcFilters.push_back(FilterTypePtr(new SAMMapFilterType()));
-	this->vcFilters.push_back(FilterTypePtr(new SAM8SpriteFilterType()));
-	this->vcFilters.push_back(FilterTypePtr(new SAM16SpriteFilterType()));
-	this->vcFilters.push_back(FilterTypePtr(new DDaveRLEFilterType()));
 }
 
 ActualManager::~ActualManager()
