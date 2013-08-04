@@ -33,12 +33,6 @@
 namespace camoto {
 namespace gamearchive {
 
-// Truncate function that doesn't do anything (since the FAT is inside the EXE,
-// and a fixed size, so there's no need to alter the size of the .exe)
-void dummyTrunc(unsigned long len)
-{
-}
-
 DAT_HocusType::DAT_HocusType()
 {
 }
