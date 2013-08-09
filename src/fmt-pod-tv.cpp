@@ -79,7 +79,7 @@ ArchiveType::Certainty PODType::isInstance(stream::input_sptr psArchive) const
 	stream::pos lenArchive = psArchive->size();
 
 	// Must have filecount + description
-	if (lenArchive < 84) return DefinitelyNo;
+	if (lenArchive < POD_FAT_OFFSET) return DefinitelyNo;
 
 	psArchive->seekg(0, stream::start);
 	uint32_t numFiles;

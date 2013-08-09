@@ -90,6 +90,9 @@ ArchiveType::Certainty DAT_HugoType::isInstance(stream::input_sptr psArchive) co
 	if (fatEnd + firstLen > lenArchive)
 		return DefinitelyNo; // first file finishes after EOF
 
+	// Last FAT entry is truncated
+	if (fatEnd % DAT_FAT_ENTRY_LEN != 0) return DefinitelyNo;
+
 	uint32_t numFiles = fatEnd / DAT_FAT_ENTRY_LEN;
 
 	uint32_t offEntry, lenEntry;

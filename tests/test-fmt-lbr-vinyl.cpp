@@ -134,3 +134,33 @@ ISINSTANCE_TEST(c02,
 	"This is two.dat",
 	DefinitelyNo
 );
+
+// Handle truncated FAT
+ISINSTANCE_TEST(c03,
+	"\x02\x00"
+	"\x00\x00" "\x0e\x00\x00\x00"
+	,
+	DefinitelyNo
+);
+
+// Offset is inside FAT
+ISINSTANCE_TEST(c04,
+	"\x02\x00"
+	"\x00\x00" "\x0e\x00\x00\x00"
+	"\x00\x00" "\x02\x00\x00\x00"
+	"This is one.dat"
+	"This is two.dat"
+	,
+	DefinitelyNo
+);
+
+// No files but trailing data (which would be data for the first file)
+ISINSTANCE_TEST(c05,
+	"\x00\x00"
+	"\x00\x00" "\x0e\x00\x00\x00"
+	"\x00\x00" "\x1d\x00\x00\x00"
+	"This is one.dat"
+	"This is two.dat"
+	,
+	DefinitelyNo
+);

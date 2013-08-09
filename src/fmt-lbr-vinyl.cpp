@@ -388,6 +388,18 @@ ArchiveType::Certainty LBRType::isInstance(stream::input_sptr psArchive) const
 	uint32_t numFiles;
 	psArchive >> u16le(numFiles);
 
+	// Since the last file goes from its offset to EOF, it's invalid to have
+	// data after the FAT if there are zero files in the archive (because that
+	// data would belong to the first file, which doesn't exist.)
+	// TESTED BY: fmt_lbr_vinyl_isinstance_c05
+	if ((numFiles == 0) && (lenArchive != 2)) return DefinitelyNo;
+
+	stream::pos offContent = LBR_HEADER_LEN + LBR_FAT_ENTRY_LEN * numFiles;
+
+	// Abort if the FAT is truncated.
+	// TESTED BY: fmt_lbr_vinyl_isinstance_c03
+	if (offContent > lenArchive) return DefinitelyNo;
+
 	uint16_t hash;
 	uint32_t offset;
 	while (numFiles--) {
@@ -395,8 +407,13 @@ ArchiveType::Certainty LBRType::isInstance(stream::input_sptr psArchive) const
 			>> u16le(hash)
 			>> u32le(offset)
 		;
+		// Make sure the offset is within the archive file.
 		// TESTED BY: fmt_lbr_vinyl_isinstance_c02
 		if (offset > lenArchive) return DefinitelyNo;
+
+		// Make sure the offset is after the FAT.
+		// TESTED BY: fmt_lbr_vinyl_isinstance_c04
+		if (offset < offContent) return DefinitelyNo;
 	}
 
 	// TESTED BY: fmt_lbr_vinyl_isinstance_c00

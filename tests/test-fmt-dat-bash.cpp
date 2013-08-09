@@ -161,6 +161,7 @@
 // The "c00" test has already been performed in test-archive.hpp to ensure the
 // initial state is correctly identified as a valid archive.
 
+// Invalid chars in filename
 ISINSTANCE_TEST(c01,
 	"\x20\x00" "\x0f\x00" \
 		"ONE.DAT\x05\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
@@ -179,6 +180,7 @@ ISINSTANCE_TEST(c02,
 	DefinitelyYes
 );
 
+// File ends past EOF
 ISINSTANCE_TEST(c03,
 	"\x20\x00" "\x0f\x01" \
 		"ONE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
@@ -188,5 +190,16 @@ ISINSTANCE_TEST(c03,
 		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 		"\x00\x00" \
 		"This is two.dat",
+	DefinitelyNo
+);
+
+// Truncated FAT entry
+ISINSTANCE_TEST(c04,
+	"\x20\x00" "\x0f\x00"
+		"ONE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+		"\x00\x00"
+		"This is one.dat"
+	"\x20\x00" "\x0f\x00"
+		"TWO.DA",
 	DefinitelyNo
 );

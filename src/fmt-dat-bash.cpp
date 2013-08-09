@@ -88,6 +88,11 @@ ArchiveType::Certainty DAT_BashType::isInstance(stream::input_sptr psArchive) co
 	stream::pos pos = 0;
 	uint16_t type, lenEntry;
 	while (pos < lenArchive) {
+		if (pos + DAT_EFAT_ENTRY_LEN > lenArchive) {
+			// File ends on an incomplete FAT entry
+			// TESTED BY: fmt_dat_bash_isinstance_c04
+			return DefinitelyNo;
+		}
 		psArchive
 			>> u16le(type)
 			>> u16le(lenEntry)

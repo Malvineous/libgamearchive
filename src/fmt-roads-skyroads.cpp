@@ -104,6 +104,10 @@ ArchiveType::Certainty SkyRoadsRoadsType::isInstance(stream::input_sptr psArchiv
 		// TESTED BY: fmt_skyroads_roads_isinstance_c06
 		if (offEntry < offPrev) return DefinitelyNo;
 
+		// Assume files cannot be zero length.  This helps avoid false positives
+		// with Sango .dat files.
+		if (lenDecomp == 0) return DefinitelyNo;
+
 		offPrev = offEntry;
 	}
 

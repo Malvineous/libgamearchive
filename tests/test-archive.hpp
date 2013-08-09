@@ -198,6 +198,28 @@ ISINSTANCE_TEST(c00, INITIALSTATE_NAME, DefinitelyYes);
 		); \
 	}
 
+
+// Check all file formats except this one to avoid any false positives
+BOOST_AUTO_TEST_CASE(TEST_NAME(isinstance_others))
+{
+	BOOST_TEST_MESSAGE("isInstance check for other formats (not " ARCHIVE_TYPE ")");
+	ManagerPtr pManager(getManager());
+	int i = 0;
+	ArchiveTypePtr pTestType;
+	for (int i = 0; (pTestType = pManager->getArchiveType(i)); i++) {
+		// Don't check our own type, that's done by the other isinstance_* tests
+		std::string otherType = pTestType->getArchiveCode();
+		if (otherType.compare(ARCHIVE_TYPE) == 0) continue;
+
+		BOOST_TEST_MESSAGE("Checking " ARCHIVE_TYPE
+			" content against isInstance() for " << otherType);
+
+		BOOST_CHECK_MESSAGE(pTestType->isInstance(base) < ArchiveType::DefinitelyYes,
+			"isInstance() for " << otherType << " incorrectly recognises content for "
+			ARCHIVE_TYPE);
+	}
+}
+
 BOOST_AUTO_TEST_CASE(TEST_NAME(open))
 {
 	BOOST_TEST_MESSAGE("Opening file in archive");
