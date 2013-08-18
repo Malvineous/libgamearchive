@@ -272,7 +272,7 @@ void FATArchive::remove(EntryPtr id)
 	this->shiftFiles(
 		pFATDel,
 		pFATDel->iOffset,
-		-(pFATDel->storedSize + pFATDel->lenHeader),
+		-((stream::delta)pFATDel->storedSize + (stream::delta)pFATDel->lenHeader),
 		-1
 	);
 
@@ -408,7 +408,7 @@ int FATArchive::getSupportedAttributes() const
 }
 
 void FATArchive::shiftFiles(const FATEntry *fatSkip, stream::pos offStart,
-	stream::len deltaOffset, int deltaIndex)
+	stream::delta deltaOffset, int deltaIndex)
 {
 	for (VC_ENTRYPTR::iterator i = this->vcFAT.begin(); i != this->vcFAT.end(); i++) {
 		FATEntry *pFAT = dynamic_cast<FATEntry *>(i->get());

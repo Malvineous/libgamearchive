@@ -224,7 +224,7 @@ void DAT_SangoArchive::preRemoveFile(const FATEntry *pid)
 	);
 
 	// Update the last FAT entry (the one that points to EOF.)
-	this->updateLastEntry(-(pid->storedSize + DAT_FAT_ENTRY_LEN));
+	this->updateLastEntry(-((stream::delta)pid->storedSize + DAT_FAT_ENTRY_LEN));
 
 	this->psArchive->seekp(DAT_FATENTRY_OFFSET(pid), stream::start);
 	this->psArchive->remove(DAT_FAT_ENTRY_LEN);
@@ -232,7 +232,7 @@ void DAT_SangoArchive::preRemoveFile(const FATEntry *pid)
 	return;
 }
 
-void DAT_SangoArchive::updateLastEntry(int lenDelta)
+void DAT_SangoArchive::updateLastEntry(stream::delta lenDelta)
 {
 	this->lenArchive += lenDelta;
 	this->psArchive->seekp(this->vcFAT.size() * DAT_FAT_ENTRY_LEN, stream::start);

@@ -174,7 +174,7 @@ class FATArchive: virtual public Archive {
 		 * @throws stream::error on I/O error.
 		 */
 		virtual void shiftFiles(const FATEntry *fatSkip, stream::pos offStart,
-			stream::len deltaOffset, int deltaIndex);
+			stream::delta deltaOffset, int deltaIndex);
 
 		// Methods to be filled out by descendent classes
 

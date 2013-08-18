@@ -64,7 +64,7 @@ class DAT_SangoArchive: virtual public FATArchive {
 		stream::pos lenArchive;
 
 		// Update the last FAT entry to point to EOF.
-		void updateLastEntry(int lenDelta);
+		void updateLastEntry(stream::delta lenDelta);
 };
 
 } // namespace gamearchive
