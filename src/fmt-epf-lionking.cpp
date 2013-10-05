@@ -280,14 +280,13 @@ void EPFArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 	// TESTED BY: fmt_epf_lionking_insert*
 	// TESTED BY: fmt_epf_lionking_resize*
 
-	this->offFAT += sizeDelta;
-
 	this->psArchive->seekp(this->offFAT + pid->iIndex * EPF_FAT_ENTRY_LEN + EPF_FAT_FILESIZE_OFFSET, stream::start);
 	this->psArchive
 		<< u32le(pid->storedSize)
 		<< u32le(pid->realSize)
 	;
 
+	this->offFAT += sizeDelta;
 	this->updateFATOffset();
 
 	return;

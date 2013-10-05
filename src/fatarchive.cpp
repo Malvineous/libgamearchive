@@ -349,11 +349,26 @@ void FATArchive::resize(EntryPtr id, stream::len newStoredSize,
 	stream::delta iDelta = newStoredSize - id->storedSize;
 	FATEntry *pFAT = dynamic_cast<FATEntry *>(id.get());
 
+	stream::len oldStoredSize = pFAT->storedSize;
+	stream::len oldRealSize = pFAT->realSize;
+	pFAT->storedSize = newStoredSize;
+	pFAT->realSize = newRealSize;
+
+	try {
+		// Update the FAT with the file's new sizes
+		this->updateFileSize(pFAT, iDelta);
+	} catch (stream::error) {
+		// Undo and abort the resize
+		pFAT->storedSize = oldStoredSize;
+		pFAT->realSize = oldRealSize;
+		throw;
+	}
+
 	// Add or remove the data in the underlying stream
 	stream::pos iStart;
 	if (iDelta > 0) { // inserting data
 		// TESTED BY: fmt_grp_duke3d_resize_larger
-		iStart = pFAT->iOffset + pFAT->lenHeader + pFAT->storedSize;
+		iStart = pFAT->iOffset + pFAT->lenHeader + oldStoredSize;
 		this->psArchive->seekp(iStart, stream::start);
 		this->psArchive->insert(iDelta);
 	} else if (iDelta < 0) { // removing data
@@ -366,12 +381,6 @@ void FATArchive::resize(EntryPtr id, stream::len newStoredSize,
 		// hasn't changed either, so nothing to do.
 		return;
 	}
-
-	pFAT->storedSize = newStoredSize;
-	pFAT->realSize = newRealSize;
-
-	// Update the FAT with the file's new sizes
-	this->updateFileSize(pFAT, iDelta);
 
 	if (iDelta != 0) {
 		// The internal file size is changing, so adjust the offsets etc. of the

@@ -1252,6 +1252,44 @@ BOOST_AUTO_TEST_CASE(TEST_NAME(get_metadata_version))
 }
 #endif
 
+BOOST_AUTO_TEST_CASE(TEST_NAME(resize_over64k))
+{
+	BOOST_TEST_MESSAGE("Enlarging a file to over the 64k limit");
+
+#if !NO_FILENAMES
+	// Find the file we're going to resize
+	Archive::EntryPtr ep = pArchive->find(FILENAME1);
+
+	// Make sure we found it
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
+		"Couldn't find " FILENAME1 " in sample archive");
+#else
+	// No filenames in this format, do it by order
+	const Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	Archive::EntryPtr ep = getFileAt(files, 0);
+
+	// Make sure we found it
+	BOOST_REQUIRE_MESSAGE(pArchive->isValid(ep),
+		"Couldn't find first file in sample archive");
+#endif
+
+	// Do a potentially illegal resize
+	try {
+		pArchive->resize(ep, 65537, 65537);
+	} catch (stream::error) {
+		BOOST_CHECK_MESSAGE(
+			is_equal(makeString(TEST_RESULT(initialstate))),
+			"Archive corrupted after failed file resize to over 64k"
+		);
+#ifdef HAS_FAT
+		BOOST_CHECK_MESSAGE(
+			is_supp_equal(camoto::SuppItem::FAT, makeString(TEST_RESULT(FAT_initialstate))),
+			"Archive corrupted after failed file resize to over 64k"
+		);
+#endif
+	}
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 #include "test-archive_new.hpp"
