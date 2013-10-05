@@ -309,6 +309,19 @@ void DAT_BashArchive::updateFileSize(const FATEntry *pid,
 	stream::delta sizeDelta
 )
 {
+	if (pid->storedSize > 65535) {
+		throw stream::error(createString("The file \"" << pid->strName
+			<< "\" cannot be expanded to the requested size of " << pid->storedSize
+			<< " bytes, as the Monster Bash .DAT file cannot store files larger than "
+			"65535 bytes."));
+	}
+	if (pid->realSize > 65535) {
+		throw stream::error(createString("The file \"" << pid->strName
+			<< "\" cannot have its decompressed size set to " << pid->storedSize
+			<< " bytes, as the Monster Bash .DAT file cannot store files that are "
+			"larger than 65535 bytes, before or after decompression."));
+	}
+
 	// TESTED BY: fmt_dat_bash_insert*
 	// TESTED BY: fmt_dat_bash_resize*
 	this->psArchive->seekp(DAT_FILESIZE_OFFSET(pid), stream::start);
