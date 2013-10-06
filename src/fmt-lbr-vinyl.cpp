@@ -78,7 +78,7 @@ const char *filenames[] = {
 "CRUSH.MUS",
 "CSTARS.CMP",
 "DATA.DAT",
-"DDARKBAR2.GRA",
+"DARKBAR2.GRA",
 "DEATH.CMP",
 "DEMO_1.DTA",
 "DEMO_2.DTA",
@@ -301,6 +301,13 @@ const char *filenames[] = {
 // could be wrong (each hash matches about 56 billion different filenames...)
 "BEGIN.PAL",    // Also ARCHIL.PAL.   Before Bl, so probably correct.
 "P.PAL",        // Also SANGGIL.PAL.  Between O-P, maybe correct.
+"HDICFONT.GRA", // probably wrong
+"KOEWA.SND",    // almost certainly wrong, also JADEJM.SND
+"PALET1.PAL",
+"QTYFONT.GRA",
+"SHWFFONT.GRA",
+"ROLPC.TIM",    // brute forced, but correct because...
+"ROLPC.MUS",    // ...there's a matching song name too
 
 // These names were guessed from the music filenames but with a different
 // extension for the instruments.
