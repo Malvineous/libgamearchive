@@ -4,6 +4,7 @@ tests_SOURCES  = tests.cpp
 tests_SOURCES += test-filter-bash-rle.cpp
 tests_SOURCES += test-filter-bitswap.cpp
 tests_SOURCES += test-filter-ddave-rle.cpp
+tests_SOURCES += test-filter-glb-raptor.cpp
 tests_SOURCES += test-filter-sam.cpp
 tests_SOURCES += test-filter-xor-blood.cpp
 tests_SOURCES += test-filter-xor.cpp

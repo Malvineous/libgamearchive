@@ -24,6 +24,7 @@
 #include "filter-bash.hpp"
 #include "filter-ddave-rle.hpp"
 #include "filter-epfs.hpp"
+#include "filter-glb-raptor.hpp"
 #include "filter-stargunner.hpp"
 #include "filter-stellar7.hpp"
 #include "filter-xor-blood.hpp"
@@ -86,6 +87,8 @@ ActualManager::ActualManager()
 	this->vcFilters.push_back(FilterTypePtr(new BashFilterType()));
 	this->vcFilters.push_back(FilterTypePtr(new DDaveRLEFilterType()));
 	this->vcFilters.push_back(FilterTypePtr(new EPFSFilterType()));
+	this->vcFilters.push_back(FilterTypePtr(new GLBFATFilterType()));
+	this->vcFilters.push_back(FilterTypePtr(new GLBFileFilterType()));
 	this->vcFilters.push_back(FilterTypePtr(new RFFFilterType()));
 	this->vcFilters.push_back(FilterTypePtr(new SAM16SpriteFilterType()));
 	this->vcFilters.push_back(FilterTypePtr(new SAM8SpriteFilterType()));
