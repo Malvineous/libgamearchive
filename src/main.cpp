@@ -44,6 +44,7 @@
 #include "fmt-exe-ccaves.hpp"
 #include "fmt-exe-ddave.hpp"
 #include "fmt-gd-doofus.hpp"
+#include "fmt-glb-raptor.hpp"
 #include "fmt-grp-duke3d.hpp"
 #include "fmt-hog-descent.hpp"
 #include "fmt-lbr-vinyl.hpp"
@@ -107,6 +108,7 @@ ActualManager::ActualManager()
 	this->vcTypes.push_back(ArchiveTypePtr(new EPFType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new EXE_CCavesType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new EXE_DDaveType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new GLBType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new GRPType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new HOGType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new LBRType()));

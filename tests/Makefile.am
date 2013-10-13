@@ -19,6 +19,7 @@ tests_SOURCES += test-fmt-dat-sango.cpp
 tests_SOURCES += test-fmt-dat-wacky.cpp
 tests_SOURCES += test-fmt-dlt-stargunner.cpp
 tests_SOURCES += test-fmt-epf-lionking.cpp
+tests_SOURCES += test-fmt-glb-raptor.cpp
 tests_SOURCES += test-fmt-grp-duke3d.cpp
 tests_SOURCES += test-fmt-hog-descent.cpp
 tests_SOURCES += test-fmt-lbr-vinyl.cpp

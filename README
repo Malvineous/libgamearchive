@@ -30,6 +30,7 @@ File formats from the following games have been implemented:
   * Lion King (.epf)
   * Major Stryker (.ms[123])
   * Monster Bash (.dat)
+  * Raptor (.glb)
   * Redneck Rampage (.grp)
   * Sango Fighter (.dat, .pcm, and many others)
   * SkyRoads (.lzs)
@@ -48,6 +49,7 @@ compression/encryption algorithms used by these formats:
   * Dangerous Dave
   * Lion King (decompress only)
   * Monster Bash (decompress only)
+  * Raptor
   * Secret Agent
   * Stargunner (decompress only, game works with uncompressed files)
   * Stellar 7 (decompress only)
