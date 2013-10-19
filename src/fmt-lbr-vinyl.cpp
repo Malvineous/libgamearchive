@@ -329,6 +329,17 @@ const char *filenames[] = {
 "TRAMPLE.TIM",
 "TWILIGHT.TIM",
 
+// These were guessed by lemm
+"BAPPLE1.OMP",
+"BAPPLE2.OMP",
+"BAPPLE3.OMP",
+"BAPPLE4.OMP",
+
+// These were guessed by wiivn
+"SWOOSH.SND",
+"TEXTBOX.GRA",
+"TEXTBOX2.GRA",
+
 // Files used by test code
 "ONE.DAT",
 "TWO.DAT",
