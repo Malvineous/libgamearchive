@@ -56,7 +56,6 @@ EXTRA_libgamearchive_la_SOURCES += filter-xor-blood.hpp
 EXTRA_libgamearchive_la_SOURCES += filter-xor-sagent.hpp
 EXTRA_libgamearchive_la_SOURCES += filter-xor.hpp
 EXTRA_libgamearchive_la_SOURCES += filter-zone66.hpp
-EXTRA_libgamearchive_la_SOURCES += fixedarchive.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-bnk-harry.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-da-levels.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-dat-bash.hpp
