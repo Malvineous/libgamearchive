@@ -103,11 +103,15 @@ void filter_ddave_rle::transform(uint8_t *out, stream::len *lenOut,
 		(w < *lenOut)      // more space to write into, and
 		&& (
 			(r < *lenIn)     // more data to read, or
-			|| (this->count) // more data to write
-			|| (this->buflen)
+			|| (
+				(*lenIn == 0) && ( // no data to read, but
+					(this->count)    // more data to write
+					|| (this->buflen)
+				)
+			)
 		)
 	) {
-		if ((r >= *lenIn) && (step < 20)) {
+		if ((*lenIn == 0) && (step < 20)) {
 			// No more read data, just flush
 			if ((this->buflen) && (this->count == 0)) step = 50;
 			else step = 11;
@@ -152,8 +156,9 @@ void filter_ddave_rle::transform(uint8_t *out, stream::len *lenOut,
 					break;
 				}
 
-				if (count > 0) {
-					// May have some repeated bytes, but they're too short for an RLE code
+				// May have some repeated bytes, but they're too short for an RLE code,
+				// so include them in the escaped data
+				while ((count > 0) && (buflen < 128)) {
 					assert(this->buflen < 128);
 					this->buf[this->buflen++] = this->prev;
 					this->count--;
@@ -198,12 +203,12 @@ void filter_ddave_rle::transform(uint8_t *out, stream::len *lenOut,
 				memcpy(out, this->buf, maxCopy);
 				out += maxCopy;
 				w += maxCopy;
-				this->buflen -= maxCopy;
 				if (maxCopy < this->buflen) {
-					memmove(this->buf, this->buf + maxCopy, this->buflen);
+					memmove(this->buf, this->buf + maxCopy, this->buflen - maxCopy);
 				} else {
 					step = 10;
 				}
+				this->buflen -= maxCopy;
 				break;
 		}
 	}
