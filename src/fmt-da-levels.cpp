@@ -25,16 +25,16 @@ namespace camoto {
 namespace gamearchive {
 
 FixedArchiveFile da_file_list[] = {
-	{1152 * 0, 1152, "l01.dal",   FILTER_NONE},
-	{1152 * 1, 1152, "l02.dal",   FILTER_NONE},
-	{1152 * 2, 1152, "l03.dal",   FILTER_NONE},
-	{1152 * 3, 1152, "l04.dal",   FILTER_NONE},
-	{1152 * 4, 1152, "l05.dal",   FILTER_NONE},
-	{1152 * 5, 1152, "l06.dal",   FILTER_NONE},
-	{1152 * 6, 1152, "l07.dal",   FILTER_NONE},
-	{1152 * 7, 1152, "l08.dal",   FILTER_NONE},
-	{1152 * 8, 1152, "l09.dal",   FILTER_NONE},
-	{1152 * 9, 1152, "l10.dal",   FILTER_NONE},
+	{1152 * 0, 1152, "l01.dal",   FILTER_NONE, RESIZE_NONE},
+	{1152 * 1, 1152, "l02.dal",   FILTER_NONE, RESIZE_NONE},
+	{1152 * 2, 1152, "l03.dal",   FILTER_NONE, RESIZE_NONE},
+	{1152 * 3, 1152, "l04.dal",   FILTER_NONE, RESIZE_NONE},
+	{1152 * 4, 1152, "l05.dal",   FILTER_NONE, RESIZE_NONE},
+	{1152 * 5, 1152, "l06.dal",   FILTER_NONE, RESIZE_NONE},
+	{1152 * 6, 1152, "l07.dal",   FILTER_NONE, RESIZE_NONE},
+	{1152 * 7, 1152, "l08.dal",   FILTER_NONE, RESIZE_NONE},
+	{1152 * 8, 1152, "l09.dal",   FILTER_NONE, RESIZE_NONE},
+	{1152 * 9, 1152, "l10.dal",   FILTER_NONE, RESIZE_NONE},
 };
 
 DA_LevelsType::DA_LevelsType()

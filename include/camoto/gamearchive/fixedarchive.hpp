@@ -33,6 +33,13 @@
 namespace camoto {
 namespace gamearchive {
 
+/// Callback function to "resize" files in a fixed archive.
+typedef boost::function<stream::len(stream::inout_sptr arch, unsigned int index,
+	stream::len newStoredSize, stream::len newRealSize)> FA_ResizeCallback;
+
+/// Value to put in FixedArchiveFile::fnResize when resizing is not possible.
+#define RESIZE_NONE FA_ResizeCallback()
+
 /// File declaration structure
 /**
  * This structure is used to describe a file contained within the fixed
@@ -44,6 +51,7 @@ struct FixedArchiveFile {
 	unsigned long size;    ///< Length of the subfile in bytes
 	std::string name;      ///< Filename of the subfile
 	std::string filter;    ///< Filter type
+	FA_ResizeCallback fnResize; ///< Callback if a file needs to be resized
 };
 
 /// Create an archive by splitting up the given stream into files.

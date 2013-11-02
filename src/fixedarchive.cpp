@@ -20,6 +20,7 @@
  */
 
 #include <boost/algorithm/string.hpp>
+#include <boost/bind.hpp>
 #include <camoto/util.hpp>
 #include <camoto/gamearchive/fixedarchive.hpp>
 
@@ -107,6 +108,9 @@ class FixedArchive: virtual public Archive
 
 		virtual void flush();
 		virtual int getSupportedAttributes() const;
+
+		/// Substream truncate callback to resize the substream.
+		void resizeSubstream(EntryPtr id, stream::len newSize);
 };
 
 ArchivePtr createFixedArchive(stream::inout_sptr psArchive,
@@ -126,11 +130,16 @@ FixedArchive::FixedArchive(stream::inout_sptr psArchive, std::vector<FixedArchiv
 		EntryPtr ep(fe);
 		fe->bValid = true;
 		fe->storedSize = i->size;
-		fe->realSize = i->size;
+		if (i->fnResize) {
+			fe->realSize = i->fnResize(psArchive, j, (stream::len)-1, (stream::len)-1);
+		} else {
+			fe->realSize = i->size;
+		}
 		fe->strName = i->name;
 		fe->type = FILETYPE_GENERIC;
 		fe->filter = i->filter;
 		fe->fAttr = 0;
+		if (!i->filter.empty()) fe->fAttr |= EA_COMPRESSED;
 
 		fe->index = j++;
 
@@ -174,7 +183,8 @@ stream::inout_sptr FixedArchive::open(const EntryPtr id)
 	// TESTED BY: TODO
 	const FixedEntry *entry = dynamic_cast<const FixedEntry *>(id.get());
 	const FixedArchiveFile *file = &this->files[entry->index];
-	stream::fn_truncate fnTrunc = preventResize;
+	stream::fn_truncate fnTrunc = boost::bind(&FixedArchive::resizeSubstream,
+		this, id, _1);
 	stream::sub_sptr psSub(new stream::sub());
 	psSub->open(
 		this->psArchive,
@@ -222,7 +232,11 @@ void FixedArchive::move(const EntryPtr idBeforeThis, EntryPtr id)
 void FixedArchive::resize(EntryPtr id, stream::pos newStoredSize,
 	stream::pos newRealSize)
 {
-	if (id->storedSize != newStoredSize) {
+	const FixedEntry *entry = dynamic_cast<const FixedEntry *>(id.get());
+	const FixedArchiveFile *file = &this->files[entry->index];
+	if (file->fnResize) {
+		file->fnResize(this->psArchive, entry->index, newStoredSize, newRealSize);
+	} else if (id->storedSize != newStoredSize) {
 		throw stream::error(createString("This is a fixed archive, files "
 			"cannot be resized (tried to resize to " << newStoredSize <<
 			", must remain as " << id->storedSize << ")"));
@@ -240,6 +254,32 @@ void FixedArchive::flush()
 int FixedArchive::getSupportedAttributes() const
 {
 	return 0;
+}
+
+void FixedArchive::resizeSubstream(EntryPtr id, stream::len newSize)
+{
+	// An open substream belonging to file entry 'id' wants to be resized.
+
+	// Resize the file in the archive.  This function will also tell the
+	// substream it can now write to a larger area.
+
+	// We are updating both the stored (in-archive) and the real (extracted)
+	// sizes, to handle the case where no filters are used and the sizes are
+	// the same.  When filters are in use, the flush() function that writes
+	// the filtered data out should call us first, then call the archive's
+	// resize() function with the correct real/extracted size.
+	//this->resize(id, newSize, newSize);
+	stream::len newRealSize;
+	if (id->fAttr & EA_COMPRESSED) {
+		// We're compressed, so the real and stored sizes are both valid
+		newRealSize = id->realSize;
+	} else {
+		// We're not compressed, so the real size won't be updated by a filter,
+		// so we need to update it here.
+		newRealSize = newSize;
+	}
+	this->resize(id, newSize, newRealSize);
+	return;
 }
 
 } // namespace gamearchive
