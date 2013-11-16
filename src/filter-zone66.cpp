@@ -110,18 +110,18 @@ void filter_z66_decompress::transform(uint8_t *out, stream::len *lenOut,
 					*out++ = this->curCode;
 					w++;
 					this->totalWritten++;
-					if (!stack.empty()) {
-						this->curCode = stack.top();
-						stack.pop();
+					if (!this->stack.empty()) {
+						this->curCode = this->stack.top();
+						this->stack.pop();
 					} else {
 						this->state++;
 						break;
 					}
 				} else {
 					this->curCode -= 256;
-					stack.push(this->nodes[this->curCode].nextCode);
+					this->stack.push(this->nodes[this->curCode].nextCode);
 					this->curCode = this->nodes[this->curCode].code;
-					if (stack.size() > 65534) {
+					if (this->stack.size() > 65534) {
 						throw filter_error("Corrupted Zone 66 data - token stack > 64k");
 					}
 				}
