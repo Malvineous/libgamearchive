@@ -35,7 +35,7 @@
 namespace camoto {
 namespace gamearchive {
 
-void filter_stargunner_decompress::reset()
+void filter_stargunner_decompress::reset(stream::len lenInput)
 {
 	this->gotHeader = false;
 	this->lenBufIn = 0;

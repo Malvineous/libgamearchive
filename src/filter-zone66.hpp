@@ -38,7 +38,7 @@ class filter_z66_decompress: virtual public filter
 		int nextChar(const uint8_t **in, stream::len *lenIn, stream::len *r,
 			uint8_t *out);
 
-		virtual void reset();
+		virtual void reset(stream::len lenInput);
 		virtual void transform(uint8_t *out, stream::len *lenOut,
 			const uint8_t *in, stream::len *lenIn);
 

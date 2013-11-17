@@ -29,7 +29,7 @@
 namespace camoto {
 namespace gamearchive {
 
-void filter_ddave_unrle::reset()
+void filter_ddave_unrle::reset(stream::len lenInput)
 {
 	this->count = 0;
 	this->copying = 0;
@@ -83,7 +83,7 @@ void filter_ddave_unrle::transform(uint8_t *out, stream::len *lenOut,
 }
 
 
-void filter_ddave_rle::reset()
+void filter_ddave_rle::reset(stream::len lenInput)
 {
 	this->buflen = 0;
 	this->prev = 0;

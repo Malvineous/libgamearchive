@@ -37,7 +37,7 @@ class filter_ddave_unrle: virtual public filter
 		int copying;       ///< Number of bytes left to copy unchanged
 
 	public:
-		virtual void reset();
+		virtual void reset(stream::len lenInput);
 		virtual void transform(uint8_t *out, stream::len *lenOut,
 			const uint8_t *in, stream::len *lenIn);
 };
@@ -54,7 +54,7 @@ class filter_ddave_rle: virtual public filter
 		unsigned int step;   ///< Which point in the algorithm are we up to?
 
 	public:
-		virtual void reset();
+		virtual void reset(stream::len lenInput);
 		virtual void transform(uint8_t *out, stream::len *lenOut,
 			const uint8_t *in, stream::len *lenIn);
 };

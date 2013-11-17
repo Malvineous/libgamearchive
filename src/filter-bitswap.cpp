@@ -23,7 +23,7 @@
 namespace camoto {
 namespace gamearchive {
 
-void filter_bitswap::reset()
+void filter_bitswap::reset(stream::len lenInput)
 {
 	return;
 }

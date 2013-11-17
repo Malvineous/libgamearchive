@@ -51,7 +51,7 @@ int filter_z66_decompress::nextChar(const uint8_t **in, stream::len *lenIn, stre
 	return 0; // EOF
 }
 
-void filter_z66_decompress::reset()
+void filter_z66_decompress::reset(stream::len lenInput)
 {
 	this->outputLimit = 4; // need to allow enough to read the length field
 	this->totalWritten = 0;

@@ -53,7 +53,7 @@ class filter_stargunner_decompress: virtual public filter
 		void explode_chunk(const uint8_t* in, unsigned int expanded_size,
 			uint8_t* out);
 
-		virtual void reset();
+		virtual void reset(stream::len lenInput);
 		virtual void transform(uint8_t *out, stream::len *lenOut,
 			const uint8_t *in, stream::len *lenIn);
 

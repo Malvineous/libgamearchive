@@ -50,7 +50,7 @@ class filter_glb_decrypt: virtual public filter
 		filter_glb_decrypt(const std::string& key, int lenBlock);
 		virtual ~filter_glb_decrypt();
 
-		virtual void reset();
+		virtual void reset(stream::len lenInput);
 		virtual void transform(uint8_t *out, stream::len *lenOut,
 			const uint8_t *in, stream::len *lenIn);
 };
@@ -79,7 +79,7 @@ class filter_glb_encrypt: virtual public filter
 		filter_glb_encrypt(const std::string& key, int lenBlock);
 		virtual ~filter_glb_encrypt();
 
-		virtual void reset();
+		virtual void reset(stream::len lenInput);
 		virtual void transform(uint8_t *out, stream::len *lenOut,
 			const uint8_t *in, stream::len *lenIn);
 };

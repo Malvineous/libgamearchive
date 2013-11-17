@@ -39,14 +39,14 @@ filter_glb_decrypt::filter_glb_decrypt(const std::string& key, int lenBlock)
 		offset(0)
 		// lastByte in reset()
 {
-	this->reset();
+	this->reset(0);
 }
 
 filter_glb_decrypt::~filter_glb_decrypt()
 {
 }
 
-void filter_glb_decrypt::reset()
+void filter_glb_decrypt::reset(stream::len lenInput)
 {
 	this->posKey = 25 % this->lenKey;
 	this->lastByte = this->key[this->posKey];
@@ -63,7 +63,7 @@ void filter_glb_decrypt::transform(uint8_t *out, stream::len *lenOut,
 		// Reset the cipher if the block length has been reached
 		if (this->lenBlock != 0) {
 			if ((this->offset % this->lenBlock) == 0) {
-				this->reset();
+				this->reset(0);
 			}
 		}
 
@@ -88,14 +88,14 @@ filter_glb_encrypt::filter_glb_encrypt(const std::string& key, int lenBlock)
 		offset(0)
 		// lastByte in reset()
 {
-	this->reset();
+	this->reset(0);
 }
 
 filter_glb_encrypt::~filter_glb_encrypt()
 {
 }
 
-void filter_glb_encrypt::reset()
+void filter_glb_encrypt::reset(stream::len lenInput)
 {
 	this->posKey = 25 % this->lenKey;
 	this->lastByte = this->key[this->posKey];
@@ -112,7 +112,7 @@ void filter_glb_encrypt::transform(uint8_t *out, stream::len *lenOut,
 		// Reset the cipher if the block length has been reached
 		if (this->lenBlock != 0) {
 			if ((this->offset % this->lenBlock) == 0) {
-				this->reset();
+				this->reset(0);
 			}
 		}
 

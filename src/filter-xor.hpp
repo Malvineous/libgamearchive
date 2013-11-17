@@ -58,7 +58,7 @@ class filter_xor_crypt: virtual public filter
 		filter_xor_crypt(int lenCrypt, int seed);
 		virtual ~filter_xor_crypt();
 
-		virtual void reset();
+		virtual void reset(stream::len lenInput);
 		virtual void transform(uint8_t *out, stream::len *lenOut,
 			const uint8_t *in, stream::len *lenIn);
 

@@ -40,7 +40,7 @@ filter_xor_crypt::~filter_xor_crypt()
 {
 }
 
-void filter_xor_crypt::reset()
+void filter_xor_crypt::reset(stream::len lenInput)
 {
 	this->offset = 0;
 	return;

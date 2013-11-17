@@ -30,7 +30,7 @@ namespace gamearchive {
 class filter_bash_unrle: virtual public filter
 {
 	public:
-		virtual void reset();
+		virtual void reset(stream::len lenInput);
 		virtual void transform(uint8_t *out, stream::len *lenOut,
 			const uint8_t *in, stream::len *lenIn);
 
@@ -42,7 +42,7 @@ class filter_bash_unrle: virtual public filter
 class filter_bash_rle: virtual public filter
 {
 	public:
-		virtual void reset();
+		virtual void reset(stream::len lenInput);
 		virtual void transform(uint8_t *out, stream::len *lenOut,
 			const uint8_t *in, stream::len *lenIn);
 
