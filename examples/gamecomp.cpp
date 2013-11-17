@@ -19,6 +19,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef WIN32
+#include <io.h>
+#include <fcntl.h>
+#endif
+
 #include <boost/algorithm/string.hpp> // for case-insensitive string compare
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -44,6 +49,13 @@ int main(int iArgC, char *cArgV[])
 #ifdef __GLIBCXX__
 	// Set a better exception handler
 	std::set_terminate(__gnu_cxx::__verbose_terminate_handler);
+#endif
+
+#ifdef WIN32
+	// Change stdout to be binary, so writing \x0A does not get changed to \x0D\x0A
+	_setmode(0, _O_BINARY);
+	_setmode(1, _O_BINARY);
+	_setmode(2, _O_BINARY);
 #endif
 
 	// Disable stdin/printf/etc. sync for a speed boost
