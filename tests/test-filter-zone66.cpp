@@ -29,14 +29,14 @@
 
 using namespace camoto;
 using namespace camoto::gamearchive;
-/*
+
 struct z66_compress_sample: public filter_sample {
 	z66_compress_sample()
 	{
 		this->filter.reset(new filter_z66_compress());
 	}
 };
-*/
+
 struct z66_decompress_sample: public filter_sample {
 	z66_decompress_sample()
 	{
@@ -140,6 +140,16 @@ struct z66_decompress_sample: public filter_sample {
 	"\x2e\x00\x3f\x29\x00\x3f\x23\x00\x3f\x1e\x00\x3f\x18\x00\x3f\x13" \
 	"\x00\x3f\x00\x00\x10\x2d\x20\x13\x33\x26\x3f\x15\x00\x3f\x3f\x3f"
 
+#define DATA_DECODED_CAMOTO \
+	"\x00\x00\x00\x00\x00\x2a\x00\x2a\x00\x00\x2a\x2a\x2a\x00\x00\x2a" \
+	"\x00\x2a\x2a\x15\x00\x2a\x2a\x2a\x15\x15\x15\x15\x15\x3f\x15\x3f"
+
+#define DATA_ENCODED_CAMOTO \
+	"\x20\x00\x00\x00" \
+	"\x00\x00\x00\x00\x00\x05\x40\x02\xa0\x00\x00\xa8\xa8\x54\x00\x00" \
+	"\x2a\x00\x15\x0a\x85\x40\x05\x42\xa2\xa0\xa8\xa8\x54\x54\x2a\x7e" \
+	"\x15\x3f"
+
 BOOST_FIXTURE_TEST_SUITE(z66_decompress_suite, z66_decompress_sample)
 
 BOOST_AUTO_TEST_CASE(decode)
@@ -152,50 +162,28 @@ BOOST_AUTO_TEST_CASE(decode)
 		"Decompressing Zone 66 data failed");
 }
 
+BOOST_AUTO_TEST_CASE(decode_camoto)
+{
+	BOOST_TEST_MESSAGE("Decompress some Zone 66 format data compressed by Camoto");
+
+	in << makeString(DATA_ENCODED_CAMOTO);
+
+	BOOST_CHECK_MESSAGE(is_equal(makeString(DATA_DECODED_CAMOTO)),
+		"Decompressing Zone 66 data failed");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
-/*
 BOOST_FIXTURE_TEST_SUITE(z66_compress_suite, z66_compress_sample)
 
 BOOST_AUTO_TEST_CASE(encode)
 {
-	BOOST_TEST_MESSAGE("RLE some data");
+	BOOST_TEST_MESSAGE("Compress some data in Zone 66 format");
 
-	in << makeString(DATA_DECODED);
+	in << makeString(DATA_DECODED_CAMOTO);
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString(DATA_ENCODED)),
-		"Encoding RLE data failed");
-}
-
-BOOST_AUTO_TEST_CASE(encode_repeat)
-{
-	BOOST_TEST_MESSAGE("RLE some data ending with repeated bytes");
-
-	in << makeString(DATA_DECODED "\x45\x45");
-
-	BOOST_CHECK_MESSAGE(is_equal(makeString(DATA_ENCODED "\x81\x45\x45")),
-		"Encoding RLE data failed");
-}
-
-BOOST_AUTO_TEST_CASE(encode_repeat_many)
-{
-	BOOST_TEST_MESSAGE("RLE some data ending with many repeated bytes");
-
-	in << makeString(DATA_DECODED "\x45\x45\x45\x45\x45");
-
-	BOOST_CHECK_MESSAGE(is_equal(makeString(DATA_ENCODED "\x02\x45")),
-		"Encoding RLE data failed");
-}
-
-BOOST_AUTO_TEST_CASE(encode_repeat_exact)
-{
-	BOOST_TEST_MESSAGE("RLE some data ending with three repeated bytes");
-
-	in << makeString(DATA_DECODED "\x00\x00\x00\xFF\xFF\xFF");
-
-	BOOST_CHECK_MESSAGE(is_equal(makeString(DATA_ENCODED "\x00\x00\x00\xFF")),
-		"Encoding RLE data failed");
+	BOOST_CHECK_MESSAGE(is_equal(makeString(DATA_ENCODED_CAMOTO)),
+		"Compressing Zone 66 data failed");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-*/

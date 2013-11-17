@@ -29,6 +29,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// Zone 66 decompression filter
 class filter_z66_decompress: virtual public filter
 {
 	public:
@@ -46,20 +47,47 @@ class filter_z66_decompress: virtual public filter
 		bitstream data;
 		int state;
 
-		int code, curCode;
+		unsigned int code, curCode;
 
 		std::stack<int> stack;
 		int codeLength, curDicIndex, maxDicIndex;
 
 		struct {
-			int code, nextCode;
+			unsigned int code, nextCode;
 		} nodes[8192];
 
-		int totalWritten; ///< Number of bytes written out so far overall
-		int outputLimit;  ///< Maximum number of bytes to write out overall
+		unsigned int totalWritten; ///< Number of bytes written out so far overall
+		unsigned int outputLimit;  ///< Maximum number of bytes to write out overall
 };
 
-/// Zone 66 decompression filter
+/// Zone 66 compression filter
+/**
+ * This is a "fake" compression filter, in that it does not actually compress
+ * the data, it just writes it out in such a way that when the game tries to
+ * decompress it, it will recover the original data.  This also means the
+ * "compressed" data will always be larger than the original data.
+ */
+class filter_z66_compress: virtual public filter
+{
+	public:
+		filter_z66_compress();
+		virtual ~filter_z66_compress();
+
+		int putChar(uint8_t **out, const stream::len *lenOut, stream::len *w,
+			uint8_t in);
+
+		virtual void reset(stream::len lenInput);
+		virtual void transform(uint8_t *out, stream::len *lenOut,
+			const uint8_t *in, stream::len *lenIn);
+
+	protected:
+		bitstream data;
+		int state;
+		int codeLength, curDicIndex, maxDicIndex;
+		unsigned int outputLimit;  ///< Maximum number of bytes to write out overall
+};
+
+/// Zone 66 compression handler
 class Zone66FilterType: virtual public FilterType
 {
 	public:

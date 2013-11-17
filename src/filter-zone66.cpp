@@ -127,28 +127,28 @@ void filter_z66_decompress::transform(uint8_t *out, stream::len *lenOut,
 				}
 				break;
 			case 3: {
-				int value;
+				unsigned int value;
 				if (this->data.read(cbNext, 8, &value) != 8) goto done;
 				*out++ = value;
 				w++;
 				this->totalWritten++;
 
-				if (this->code >= 0x100 + this->curDicIndex) {
+				if (this->code >= 0x100u + this->curDicIndex) {
 					// This code hasn't been put in the dictionary yet (tpal.z66)
 					this->code = 0x100;
 				}
-				nodes[curDicIndex].code = this->code;
-				nodes[curDicIndex].nextCode = value;
-				curDicIndex++;
+				nodes[this->curDicIndex].code = this->code;
+				nodes[this->curDicIndex].nextCode = value;
+				this->curDicIndex++;
 
-				if (curDicIndex >= maxDicIndex) {
-					codeLength++;
-					if (codeLength == 13) {
-						codeLength = 9;
-						curDicIndex = 64;
-						maxDicIndex = 255;
+				if (this->curDicIndex >= this->maxDicIndex) {
+					this->codeLength++;
+					if (this->codeLength == 13) {
+						this->codeLength = 9;
+						this->curDicIndex = 64;
+						this->maxDicIndex = 255;
 					} else {
-						maxDicIndex = (1 << codeLength) - 257;
+						this->maxDicIndex = (1 << this->codeLength) - 257;
 					}
 				}
 				this->state = 1;
@@ -163,6 +163,92 @@ done:
 	return;
 }
 
+
+filter_z66_compress::filter_z66_compress()
+	:	data(bitstream::bigEndian)
+{
+}
+
+filter_z66_compress::~filter_z66_compress()
+{
+}
+
+int filter_z66_compress::putChar(uint8_t **out, const stream::len *lenOut, stream::len *w, uint8_t in)
+{
+	if (*w < *lenOut) {
+		**out = in; // "write" byte
+		(*out)++;     // increment write buffer
+		(*w)++;      // increment write count
+		return 1;    // return number of bytes written
+	}
+	return 0; // EOF
+}
+
+void filter_z66_compress::reset(stream::len lenInput)
+{
+	this->outputLimit = lenInput;
+	this->state = 0;
+	this->codeLength = 9;
+	this->curDicIndex = 0;
+	this->maxDicIndex = 255;
+
+	this->data.flushByte(); // drop any pending byte
+}
+
+void filter_z66_compress::transform(uint8_t *out, stream::len *lenOut,
+	const uint8_t *in, stream::len *lenIn)
+{
+	stream::len r = 0, w = 0;
+
+	fn_putnextchar cbNext = boost::bind(&filter_z66_compress::putChar, this, &out, lenOut, &w, _1);
+
+	if (*lenIn == 0) {
+		// No more data to read, so flush
+		this->data.flushByte(cbNext);
+	}
+
+	while (
+		(w + 2 < *lenOut)  // while there is more space to write into
+		&& (r < *lenIn) // and there's at least one more byte to read
+	) {
+		switch (this->state) {
+			case 0:
+				// Read the first four bytes (decompressed size) so we can limit the
+				// output size appropriately.
+				this->data.changeEndian(bitstream::littleEndian);
+				this->data.write(cbNext, 32, this->outputLimit);
+				this->data.changeEndian(bitstream::bigEndian);
+				this->state++;
+				break;
+			case 1:
+				this->data.write(cbNext, this->codeLength, *in++);
+				r++;
+				this->state++;
+				break;
+			case 2:
+				this->data.write(cbNext, 8, *in++);
+				r++;
+
+				this->curDicIndex++;
+				if (this->curDicIndex >= this->maxDicIndex) {
+					this->codeLength++;
+					if (this->codeLength == 13) {
+						this->codeLength = 9;
+						this->curDicIndex = 64;
+						this->maxDicIndex = 255;
+					} else {
+						this->maxDicIndex = (1 << this->codeLength) - 257;
+					}
+				}
+				this->state = 1;
+				break;
+		} // switch(state)
+	} // while (more data to be read)
+
+	*lenIn = r;
+	*lenOut = w;
+	return;
+}
 
 Zone66FilterType::Zone66FilterType()
 {
@@ -194,8 +280,7 @@ stream::inout_sptr Zone66FilterType::apply(stream::inout_sptr target,
 {
 	stream::filtered_sptr st(new stream::filtered());
 	filter_sptr de(new filter_z66_decompress());
-	/// @todo Implement Zone 66 compression
-	filter_sptr en;//(new filter_z66_compress());
+	filter_sptr en(new filter_z66_compress());
 	st->open(target, de, en, resize);
 	return st;
 }
@@ -212,8 +297,7 @@ stream::output_sptr Zone66FilterType::apply(stream::output_sptr target,
 	stream::fn_truncate resize) const
 {
 	stream::output_filtered_sptr st(new stream::output_filtered());
-	/// @todo Implement Zone 66 compression
-	filter_sptr en;//(new filter_z66_compress());
+	filter_sptr en(new filter_z66_compress());
 	st->open(target, en, resize);
 	return st;
 }

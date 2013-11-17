@@ -53,7 +53,7 @@ compression/encryption algorithms used by these formats:
   * Secret Agent
   * Stargunner (decompress only, game works with uncompressed files)
   * Stellar 7 (decompress only)
-  * Zone 66 (decompress only)
+  * Zone 66
 
 The library is compiled and installed in the usual way:
 
