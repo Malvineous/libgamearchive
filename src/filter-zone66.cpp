@@ -78,7 +78,7 @@ void filter_z66_decompress::transform(uint8_t *out, stream::len *lenOut,
 	while (
 		(w < *lenOut)  // while there is more space to write into
 		&& (
-			(r + 1 < *lenIn) // and there's at least two more bytes to read
+			(r + 2 < *lenIn) // and there's at least two more bytes to read
 			|| (
 				(*lenIn < 10)   // or there's less than 10 bytes to read in this buffer (i.e. near EOF)
 				&& (r < *lenIn) // and there's at least one more byte to read

@@ -186,4 +186,28 @@ BOOST_AUTO_TEST_CASE(encode)
 		"Compressing Zone 66 data failed");
 }
 
+BOOST_AUTO_TEST_CASE(encode_decode_20k)
+{
+	BOOST_TEST_MESSAGE("Compress >20k bytes in Zone 66 format");
+
+	std::string src;
+	for (unsigned int i = 0; i < 21000/3; i++) {
+		in->write("ABC", 3);
+		src += "ABC";
+	}
+
+	stream::string_sptr out(new stream::string());
+	this->in_filt->open(this->in, this->filter);
+	stream::copy(out, this->in_filt);
+	this->in_filt.reset(new stream::input_filtered());
+
+	this->in.reset(new stream::string());
+	out->seekg(0, stream::start);
+	stream::copy(in, out);
+
+	this->filter.reset(new filter_z66_decompress());
+	BOOST_CHECK_MESSAGE(is_equal(src),
+		"Compressing >20k of Zone 66 data failed");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
