@@ -47,6 +47,7 @@ Many more formats are planned.  The library also implements the following
 compression/encryption algorithms used by these formats:
 
   * Dangerous Dave
+  * God of Thunder
   * Lion King (decompress only)
   * Monster Bash (decompress only)
   * Raptor
