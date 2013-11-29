@@ -948,7 +948,12 @@ finishTesting:
 							if (bUseFilters) {
 								applyFilter(&psDest, destArch, id);
 							} else {
-								pArchive->resize(id, lenSource, lenSource);
+								if (lenReal) {
+									pArchive->resize(id, lenSource, lenReal);
+								} else {
+									// Leave the prefiltered/decompressed size unchanged
+									pArchive->resize(id, lenSource, id->realSize);
+								}
 							}
 
 							// Set the size of the stream within the archive, so it exactly
