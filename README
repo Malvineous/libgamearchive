@@ -52,6 +52,7 @@ compression/encryption algorithms used by these formats:
   * Monster Bash (decompress only)
   * Raptor
   * Secret Agent
+  * SkyRoads
   * Stargunner (decompress only, game works with uncompressed files)
   * Stellar 7 (decompress only)
   * Zone 66

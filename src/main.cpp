@@ -26,6 +26,7 @@
 #include "filter-epfs.hpp"
 #include "filter-glb-raptor.hpp"
 #include "filter-got-lzss.hpp"
+#include "filter-skyroads.hpp"
 #include "filter-stargunner.hpp"
 #include "filter-stellar7.hpp"
 #include "filter-xor-blood.hpp"
@@ -96,6 +97,7 @@ ActualManager::ActualManager()
 	this->vcFilters.push_back(FilterTypePtr(new SAM16SpriteFilterType()));
 	this->vcFilters.push_back(FilterTypePtr(new SAM8SpriteFilterType()));
 	this->vcFilters.push_back(FilterTypePtr(new SAMMapFilterType()));
+	this->vcFilters.push_back(FilterTypePtr(new SkyRoadsFilterType()));
 	this->vcFilters.push_back(FilterTypePtr(new StargunnerFilterType()));
 	this->vcFilters.push_back(FilterTypePtr(new Stellar7FilterType()));
 	this->vcFilters.push_back(FilterTypePtr(new XORFilterType()));
