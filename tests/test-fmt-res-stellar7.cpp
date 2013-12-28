@@ -30,6 +30,7 @@ class test_res_stellar7: public test_archive
 			this->filename[1] = "TWO:";
 			this->filename[2] = "THR:";
 			this->filename[3] = "FOU:";
+			this->filename_shortext = "TS";
 			this->lenMaxFilename = 4;
 		}
 

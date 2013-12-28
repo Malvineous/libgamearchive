@@ -26,6 +26,7 @@ class test_lbr_vinyl: public test_archive
 		test_lbr_vinyl()
 		{
 			this->type = "lbr-vinyl";
+			this->filename_shortext = "LEVEL1-1.M";
 			this->lenMaxFilename = 0; // no limit
 		}
 

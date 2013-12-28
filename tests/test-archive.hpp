@@ -80,6 +80,7 @@ class test_archive: public test_main
 		void test_remove_all_re_add();
 		void test_insert_zero_then_resize();
 		void test_resize_over64k();
+		void test_shortext();
 
 		void test_new_isinstance();
 		void test_new_to_initialstate();
@@ -223,6 +224,9 @@ class test_archive: public test_main
 		 * Defaults to ONE.DAT, TWO.DAT, THREE.DAT and FOUR.DAT.
 		 */
 		std::string filename[4];
+
+		/// Filename with an extension less than three chars.
+		std::string filename_shortext;
 
 		/// Maximum length of a filename, not including any terminating null.
 		/**

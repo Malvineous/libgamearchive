@@ -93,6 +93,7 @@ test_archive::test_archive()
 	this->filename[1] = "TWO.DAT";
 	this->filename[2] = "THREE.DAT";
 	this->filename[3] = "FOUR.DAT";
+	this->filename_shortext = "TEST.A";
 	this->lenMaxFilename = 12;
 	this->insertAttr = EA_NONE;
 
@@ -125,6 +126,7 @@ void test_archive::addTests()
 	if (this->lenMaxFilename >= 0) {
 		// Only perform the rename test if the archive has filenames
 		ADD_ARCH_TEST(false, &test_archive::test_rename);
+		ADD_ARCH_TEST(false, &test_archive::test_shortext);
 	}
 	if (this->lenMaxFilename > 0) {
 		// Only perform these tests if the archive has a filename length limit
@@ -958,6 +960,39 @@ void test_archive::test_resize_over64k()
 		CHECK_SUPP_ITEM(FAT, initialstate,
 			"Archive corrupted after failed file resize to over 64k");
 	}
+}
+
+void test_archive::test_shortext()
+{
+	BOOST_TEST_MESSAGE("Rename a file with a short extension");
+
+	Archive::EntryPtr ep = this->findFile(0);
+	this->pArchive->rename(ep, this->filename_shortext);
+	this->pArchive->flush();
+	this->pArchive.reset();
+
+	// Reopen the archive
+	ManagerPtr pManager(getManager());
+	ArchiveTypePtr pTestType(pManager->getArchiveTypeByCode(this->type));
+	BOOST_REQUIRE_MESSAGE(pTestType,
+		createString("Could not find archive type " << this->type));
+
+	this->pArchive = pTestType->open(this->base, this->suppData);
+
+	// See if we can find the file again
+	ep = this->pArchive->find(this->filename_shortext);
+
+	// Make sure we found it
+	BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(ep),
+		createString("Couldn't find file after rename to "
+			<< this->filename_shortext));
+
+	this->pArchive->rename(ep, this->filename[0]);
+
+	BOOST_CHECK_MESSAGE(
+		this->is_content_equal(this->initialstate()),
+		"Failed to rename file with short extension back to long"
+	);
 }
 
 //
