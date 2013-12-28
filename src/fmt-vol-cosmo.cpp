@@ -125,7 +125,7 @@ ArchiveType::Certainty VOLType::isInstance(stream::input_sptr psArchive) const
 	if (lenArchive < VOL_FAT_LENGTH) return PossiblyYes; // too short though
 
 	// The FAT is not 4000 bytes.  Not sure whether this is a requirement.
-	if (lenFAT != 4000) return PossiblyYes;
+	if ((lenFAT != 0) && (lenFAT != 4000)) return PossiblyYes;
 
 	// TESTED BY: fmt_vol_cosmo_isinstance_c00
 	return DefinitelyYes;
@@ -133,10 +133,8 @@ ArchiveType::Certainty VOLType::isInstance(stream::input_sptr psArchive) const
 
 ArchivePtr VOLType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
 {
-	char emptyFAT[VOL_FAT_LENGTH];
-	memset(emptyFAT, 0, VOL_FAT_LENGTH);
 	psArchive->seekp(0, stream::start);
-	psArchive->write(emptyFAT, VOL_FAT_LENGTH);
+	psArchive->write(std::string(VOL_FAT_LENGTH, '\0'));
 	return ArchivePtr(new VOLArchive(psArchive));
 }
 
