@@ -1,6 +1,6 @@
 /**
- * @file  test-fmt-hog-descent.cpp
- * @brief Test code for HOGArchive class.
+ * @file   test-arch-hog-descent.cpp
+ * @brief  Test code for Descent .HOG archives.
  *
  * Copyright (C) 2010-2013 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -18,123 +18,172 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define FILENAME1 "ONE.DAT"
-#define FILENAME2 "TWO.DAT"
-#define FILENAME3 "THREE.DAT"
-#define FILENAME4 "FOUR.DAT"
-
-#define testdata_initialstate \
-	"DHF" \
-	"ONE.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is one.dat" \
-	"TWO.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is two.dat"
-
-#define testdata_rename \
-	"DHF" \
-	"THREE.DAT\0\0\0\0"   "\x0f\x00\x00\x00" \
-	"This is one.dat" \
-	"TWO.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is two.dat"
-
-#define testdata_insert_end \
-	"DHF" \
-	"ONE.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is one.dat" \
-	"TWO.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is two.dat" \
-	"THREE.DAT\0\0\0\0"   "\x11\x00\x00\x00" \
-	"This is three.dat"
-
-#define testdata_insert_mid \
-	"DHF" \
-	"ONE.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is one.dat" \
-	"THREE.DAT\0\0\0\0"   "\x11\x00\x00\x00" \
-	"This is three.dat" \
-	"TWO.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is two.dat"
-
-#define testdata_insert2 \
-	"DHF" \
-	"ONE.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is one.dat" \
-	"THREE.DAT\0\0\0\0"   "\x11\x00\x00\x00" \
-	"This is three.dat" \
-	"FOUR.DAT\0\0\0\0\0"  "\x10\x00\x00\x00" \
-	"This is four.dat" \
-	"TWO.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is two.dat"
-
-#define testdata_remove \
-	"DHF" \
-	"TWO.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is two.dat"
-
-#define testdata_remove2 \
-	"DHF"
-
-#define testdata_insert_remove \
-	"DHF" \
-	"THREE.DAT\0\0\0\0"   "\x11\x00\x00\x00" \
-	"This is three.dat" \
-	"TWO.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is two.dat"
-
-#define testdata_move \
-	"DHF" \
-	"TWO.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is two.dat" \
-	"ONE.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is one.dat" \
-
-#define testdata_resize_larger \
-	"DHF" \
-	"ONE.DAT\0\0\0\0\0\0" "\x14\x00\x00\x00" \
-	"This is one.dat\0\0\0\0\0" \
-	"TWO.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is two.dat"
-
-#define testdata_resize_smaller \
-	"DHF" \
-	"ONE.DAT\0\0\0\0\0\0" "\x0a\x00\x00\x00" \
-	"This is on" \
-	"TWO.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is two.dat"
-
-#define testdata_resize_write \
-	"DHF" \
-	"ONE.DAT\0\0\0\0\0\0" "\x17\x00\x00\x00" \
-	"Now resized to 23 chars" \
-	"TWO.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is two.dat"
-
-#define MAX_FILENAME_LEN  12
-
-#define ARCHIVE_CLASS fmt_hog_descent
-#define ARCHIVE_TYPE  "hog-descent"
 #include "test-archive.hpp"
 
-// Test some invalid formats to make sure they're not identified as valid
-// archives.  Note that they can still be opened though (by 'force'), this
-// only checks whether they look like valid files or not.
+class test_hog_descent: public test_archive
+{
+	public:
+		test_hog_descent()
+		{
+			this->type = "hog-descent";
+			this->lenMaxFilename = 12;
+		}
 
-// The "c00" test has already been performed in test-archive.hpp to ensure the
-// initial state is correctly identified as a valid archive.
+		void addTests()
+		{
+			this->test_archive::addTests();
 
-ISINSTANCE_TEST(c01,
-	"DHL"
-	"ONE.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00"
-	"This is one.dat"
-	"TWO.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00"
-	"This is two.dat",
-	DefinitelyNo
-);
+			// c00: Initial state
+			this->isInstance(ArchiveType::DefinitelyYes, this->initialstate());
 
-ISINSTANCE_TEST(c02,
-	"DH",
-	DefinitelyNo
-);
+			// c01: Bad signature
+			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+				"DHL"
+				"ONE.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is one.dat"
+				"TWO.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is two.dat"
+			));
 
-// Not really possible to do any INVALIDDATA_TEST() tests here, because the
-// worst that can happen is it looks like the archive has been truncated.
+			// c02: Too short
+			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+				"DH"
+			));
+		}
+
+		virtual std::string initialstate()
+		{
+			return STRING_WITH_NULLS(
+				"DHF"
+				"ONE.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is one.dat"
+				"TWO.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string rename()
+		{
+			return STRING_WITH_NULLS(
+				"DHF"
+				"THREE.DAT\0\0\0\0"   "\x0f\x00\x00\x00"
+				"This is one.dat"
+				"TWO.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string insert_end()
+		{
+			return STRING_WITH_NULLS(
+				"DHF"
+				"ONE.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is one.dat"
+				"TWO.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is two.dat"
+				"THREE.DAT\0\0\0\0"   "\x11\x00\x00\x00"
+				"This is three.dat"
+			);
+		}
+
+		virtual std::string insert_mid()
+		{
+			return STRING_WITH_NULLS(
+				"DHF"
+				"ONE.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is one.dat"
+				"THREE.DAT\0\0\0\0"   "\x11\x00\x00\x00"
+				"This is three.dat"
+				"TWO.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string insert2()
+		{
+			return STRING_WITH_NULLS(
+				"DHF"
+				"ONE.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is one.dat"
+				"THREE.DAT\0\0\0\0"   "\x11\x00\x00\x00"
+				"This is three.dat"
+				"FOUR.DAT\0\0\0\0\0"  "\x10\x00\x00\x00"
+				"This is four.dat"
+				"TWO.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string remove()
+		{
+			return STRING_WITH_NULLS(
+				"DHF"
+				"TWO.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string remove2()
+		{
+			return STRING_WITH_NULLS(
+				"DHF"
+			);
+		}
+
+		virtual std::string insert_remove()
+		{
+			return STRING_WITH_NULLS(
+				"DHF"
+				"THREE.DAT\0\0\0\0"   "\x11\x00\x00\x00"
+				"This is three.dat"
+				"TWO.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string move()
+		{
+			return STRING_WITH_NULLS(
+				"DHF"
+				"TWO.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is two.dat"
+				"ONE.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is one.dat"
+			);
+		}
+
+		virtual std::string resize_larger()
+		{
+			return STRING_WITH_NULLS(
+				"DHF"
+				"ONE.DAT\0\0\0\0\0\0" "\x14\x00\x00\x00"
+				"This is one.dat\0\0\0\0\0"
+				"TWO.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string resize_smaller()
+		{
+			return STRING_WITH_NULLS(
+				"DHF"
+				"ONE.DAT\0\0\0\0\0\0" "\x0a\x00\x00\x00"
+				"This is on"
+				"TWO.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string resize_write()
+		{
+			return STRING_WITH_NULLS(
+				"DHF"
+				"ONE.DAT\0\0\0\0\0\0" "\x17\x00\x00\x00"
+				"Now resized to 23 chars"
+				"TWO.DAT\0\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is two.dat"
+			);
+		}
+};
+
+IMPLEMENT_TESTS(hog_descent);

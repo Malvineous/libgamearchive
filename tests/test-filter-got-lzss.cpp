@@ -19,25 +19,23 @@
  */
 
 #include <boost/test/unit_test.hpp>
-
 #include <camoto/stream_string.hpp>
 #include <camoto/stream_filtered.hpp>
 #include <camoto/util.hpp>
 #include "../src/filter-got-lzss.hpp"
-#include "tests.hpp"
 #include "test-filter.hpp"
 
 using namespace camoto;
 using namespace camoto::gamearchive;
 
-struct got_lzss_sample: public filter_sample {
+struct got_lzss_sample: public test_filter {
 	got_lzss_sample()
 	{
 		this->filter.reset(new filter_got_lzss());
 	}
 };
 
-struct got_unlzss_sample: public filter_sample {
+struct got_unlzss_sample: public test_filter {
 	got_unlzss_sample()
 	{
 		this->filter.reset(new filter_got_unlzss());
@@ -50,7 +48,7 @@ BOOST_AUTO_TEST_CASE(got_unlzss_read)
 {
 	BOOST_TEST_MESSAGE("Decompress some GoT data");
 
-	this->in << makeString(
+	this->in << STRING_WITH_NULLS(
 		"\x10\x00\x01\x00"
 		"\xFF""ABCDEFGH"
 		"\xFF""IJKLMNOP"
@@ -64,7 +62,7 @@ BOOST_AUTO_TEST_CASE(got_unlzss_read_short)
 {
 	BOOST_TEST_MESSAGE("Decompress a little GoT data");
 
-	this->in << makeString("\x05\x00\x01\x00" "\xFF""ABCDE");
+	this->in << STRING_WITH_NULLS("\x05\x00\x01\x00" "\xFF""ABCDE");
 
 	BOOST_CHECK_MESSAGE(is_equal("ABCDE"),
 		"Decompressing a little GoT data failed");
@@ -81,7 +79,7 @@ BOOST_AUTO_TEST_CASE(got_lzss_read)
 
 	this->in << "ABCDEFGHIJKLMNOP";
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString(
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(
 		"\x10\x00\x01\x00"
 		"\xFF""ABCDEFGH"
 		"\xFF""IJKLMNOP"
@@ -95,7 +93,7 @@ BOOST_AUTO_TEST_CASE(got_lzss_read_short)
 
 	this->in << "ABCDE";
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString("\x05\x00\x01\x00" "\xFF""ABCDE")),
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS("\x05\x00\x01\x00" "\xFF""ABCDE")),
 		"Compressing a little GoT data failed");
 }
 

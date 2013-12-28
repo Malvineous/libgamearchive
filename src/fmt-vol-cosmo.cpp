@@ -85,6 +85,7 @@ ArchiveType::Certainty VOLType::isInstance(stream::input_sptr psArchive) const
 	psArchive >> u32le(lenFAT);
 
 	// If the FAT is larger than the entire archive then it's not a VOL file
+	// TESTED BY: fmt_vol_cosmo_isinstance_c04
 	if (lenFAT > lenArchive) return DefinitelyNo;
 
 	// If the FAT is smaller than a single entry then it's not a VOL file, but
@@ -102,7 +103,8 @@ ArchiveType::Certainty VOLType::isInstance(stream::input_sptr psArchive) const
 			if (!fn[j]) break; // stop on terminating null
 
 			// Fail on control characters in the filename
-			if (fn[j] < 32) return DefinitelyNo; // TESTED BY: fmt_vol_cosmo_isinstance_c01
+			// TESTED BY: fmt_vol_cosmo_isinstance_c01
+			if (fn[j] < 32) return DefinitelyNo;
 		}
 
 		uint32_t offEntry, lenEntry;

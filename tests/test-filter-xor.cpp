@@ -22,24 +22,22 @@
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <sstream>
-
-#include "tests.hpp"
 #include "test-filter.hpp"
 #include "../src/filter-xor.hpp"
 
 using namespace camoto::gamearchive;
 
-BOOST_FIXTURE_TEST_SUITE(xor_suite, filter_sample)
+BOOST_FIXTURE_TEST_SUITE(xor_suite, test_filter)
 
 BOOST_AUTO_TEST_CASE(xor_read)
 {
 	BOOST_TEST_MESSAGE("Decode some XOR-encoded data");
 
-	in << makeString("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
+	in << STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
 
 	this->filter.reset(new filter_xor_crypt(0, 0));
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString("\x00\x00\x00\x00\xFB\xFA\xF9\xF8")),
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS("\x00\x00\x00\x00\xFB\xFA\xF9\xF8")),
 		"Decoding XOR-encoded data failed");
 }
 
@@ -47,11 +45,11 @@ BOOST_AUTO_TEST_CASE(xor_partial_read)
 {
 	BOOST_TEST_MESSAGE("Decode some partially XOR-encoded data");
 
-	in << makeString("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
+	in << STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
 
 	this->filter.reset(new filter_xor_crypt(4, 0));
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString("\x00\x00\x00\x00\xFF\xFF\xFF\xFF")),
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS("\x00\x00\x00\x00\xFF\xFF\xFF\xFF")),
 		"Decoding partially XOR-encoded data failed");
 }
 
@@ -59,11 +57,11 @@ BOOST_AUTO_TEST_CASE(xor_altseed_read)
 {
 	BOOST_TEST_MESSAGE("Decode some XOR-encoded data with alternate seed");
 
-	in << makeString("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
+	in << STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
 
 	this->filter.reset(new filter_xor_crypt(0, 0xFE));
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString("\xFE\xFE\x02\x02\xFD\xFC\xFB\xFA")),
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS("\xFE\xFE\x02\x02\xFD\xFC\xFB\xFA")),
 		"Decoding XOR-encoded data with alternate seed failed");
 }
 

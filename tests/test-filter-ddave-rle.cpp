@@ -22,8 +22,6 @@
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <camoto/util.hpp>
-
-#include "tests.hpp"
 #include "test-filter.hpp"
 #include "../src/filter-ddave-rle.hpp"
 
@@ -77,14 +75,14 @@
 using namespace camoto;
 using namespace camoto::gamearchive;
 
-struct ddave_rle_sample: public filter_sample {
+struct ddave_rle_sample: public test_filter {
 	ddave_rle_sample()
 	{
 		this->filter.reset(new filter_ddave_rle());
 	}
 };
 
-struct ddave_unrle_sample: public filter_sample {
+struct ddave_unrle_sample: public test_filter {
 	ddave_unrle_sample()
 	{
 		this->filter.reset(new filter_ddave_unrle());
@@ -210,9 +208,9 @@ BOOST_AUTO_TEST_CASE(decode)
 {
 	BOOST_TEST_MESSAGE("Un-RLE some data");
 
-	in << makeString(DATA_ENCODED);
+	in << STRING_WITH_NULLS(DATA_ENCODED);
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString(DATA_DECODED)),
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(DATA_DECODED)),
 		"Decoding RLE data failed");
 }
 
@@ -220,12 +218,12 @@ BOOST_AUTO_TEST_CASE(decoder_trail)
 {
 	BOOST_TEST_MESSAGE("Un-RLE some data, with trailing garbage");
 
-	in << makeString(DATA_ENCODED DATA_BAD_TRAIL);
+	in << STRING_WITH_NULLS(DATA_ENCODED DATA_BAD_TRAIL);
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString(DATA_DECODED)),
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(DATA_DECODED)),
 		"Decoding RLE data with trailing incomplete code was not ignored");
 
-	BOOST_CHECK_MESSAGE(this->default_sample::is_equal(makeString(DATA_ENCODED
+	BOOST_CHECK_MESSAGE(this->test_main::is_equal(STRING_WITH_NULLS(DATA_ENCODED
 		DATA_BAD_TRAIL), in->str()),
 		"Decoding RLE data corrupted the source data");
 }
@@ -238,9 +236,9 @@ BOOST_AUTO_TEST_CASE(encode)
 {
 	BOOST_TEST_MESSAGE("RLE some data");
 
-	in << makeString(DATA_DECODED);
+	in << STRING_WITH_NULLS(DATA_DECODED);
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString(DATA_ENCODED)),
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(DATA_ENCODED)),
 		"Encoding RLE data failed");
 }
 
@@ -248,9 +246,9 @@ BOOST_AUTO_TEST_CASE(encode_repeat)
 {
 	BOOST_TEST_MESSAGE("RLE some data ending with repeated bytes");
 
-	in << makeString(DATA_DECODED "\x45\x45");
+	in << STRING_WITH_NULLS(DATA_DECODED "\x45\x45");
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString(DATA_ENCODED "\x81\x45\x45")),
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(DATA_ENCODED "\x81\x45\x45")),
 		"Encoding RLE data failed");
 }
 
@@ -258,9 +256,9 @@ BOOST_AUTO_TEST_CASE(encode_repeat_many)
 {
 	BOOST_TEST_MESSAGE("RLE some data ending with many repeated bytes");
 
-	in << makeString(DATA_DECODED "\x45\x45\x45\x45\x45");
+	in << STRING_WITH_NULLS(DATA_DECODED "\x45\x45\x45\x45\x45");
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString(DATA_ENCODED "\x02\x45")),
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(DATA_ENCODED "\x02\x45")),
 		"Encoding RLE data failed");
 }
 
@@ -268,9 +266,9 @@ BOOST_AUTO_TEST_CASE(encode_repeat_exact)
 {
 	BOOST_TEST_MESSAGE("RLE some data ending with three repeated bytes");
 
-	in << makeString(DATA_DECODED "\x00\x00\x00\xFF\xFF\xFF");
+	in << STRING_WITH_NULLS(DATA_DECODED "\x00\x00\x00\xFF\xFF\xFF");
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString(DATA_ENCODED "\x00\x00\x00\xFF")),
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(DATA_ENCODED "\x00\x00\x00\xFF")),
 		"Encoding RLE data failed");
 }
 
@@ -278,9 +276,9 @@ BOOST_AUTO_TEST_CASE(encode_escape_double00)
 {
 	BOOST_TEST_MESSAGE("RLE some data with escaped duplicate bytes");
 
-	in << makeString("\x9E\x00\x00\x00\x7C\x02\x00\x00\x7C\x03\x00\x00");
+	in << STRING_WITH_NULLS("\x9E\x00\x00\x00\x7C\x02\x00\x00\x7C\x03\x00\x00");
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString("\x80\x9E\x00\x00\x87\x7C\x02\x00\x00\x7C\x03\x00\x00")),
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS("\x80\x9E\x00\x00\x87\x7C\x02\x00\x00\x7C\x03\x00\x00")),
 		"Encoding RLE data failed");
 }
 
@@ -288,7 +286,7 @@ BOOST_AUTO_TEST_CASE(encode_escape_exact)
 {
 	BOOST_TEST_MESSAGE("RLE some data with one full-sized escaped section");
 
-	in << makeString(
+	in << STRING_WITH_NULLS(
 		"\x00\x00\x00\x00"
 		"\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02"
 		"\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02"
@@ -300,7 +298,7 @@ BOOST_AUTO_TEST_CASE(encode_escape_exact)
 		"\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02"
 	);
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString(
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(
 		"\x01\x00"
 		"\xFF"
 		"\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02"
@@ -320,7 +318,7 @@ BOOST_AUTO_TEST_CASE(encode_escape_overflow)
 {
 	BOOST_TEST_MESSAGE("RLE some data with large escaped sections");
 
-	in << makeString(
+	in << STRING_WITH_NULLS(
 		"\x00\x00\x00\x00"
 		"\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02"
 		"\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02"
@@ -348,7 +346,7 @@ BOOST_AUTO_TEST_CASE(encode_escape_overflow)
 		"\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02"
 	);
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString(
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(
 		"\x01\x00"
 		"\xFF"
 		"\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02"
@@ -386,7 +384,7 @@ BOOST_AUTO_TEST_CASE(encode_escape_overflow_shrink)
 {
 	BOOST_TEST_MESSAGE("RLE some data with RLE spanning large escaped sections");
 
-	in << makeString(
+	in << STRING_WITH_NULLS(
 		"\x00\x00\x00\x00"
 		"\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02"
 		"\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02"
@@ -415,7 +413,7 @@ BOOST_AUTO_TEST_CASE(encode_escape_overflow_shrink)
 		"\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02"
 	);
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString(
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(
 		"\x01\x00"
 		"\xFE"
 		"\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02"
@@ -457,12 +455,12 @@ BOOST_AUTO_TEST_CASE(encode_splitbuf_count)
 	BOOST_REQUIRE_MESSAGE(BUFFER_SIZE <= 4096,
 		"This test only works on buffers <= 4096 bytes");
 
-	in << makeString(
+	in << STRING_WITH_NULLS(
 		dat_4030
 		dat_130
 	);
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString(
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(
 		rle_4030
 		rle_130
 	)),
@@ -484,7 +482,7 @@ BOOST_AUTO_TEST_CASE(encode_splitbuf_escape)
 	"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" \
 	"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
 
-	in << makeString(
+	in << STRING_WITH_NULLS(
 		dat_4030
 		dat_48
 		"\xCB\xCB\xCB"
@@ -494,7 +492,7 @@ BOOST_AUTO_TEST_CASE(encode_splitbuf_escape)
 		"\x82\x80\x80\x81\x82\x83\x84\x85\x85\x87\x87\x87\x86\x84\x83\x83"
 	);
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString(
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(
 		rle_4030
 		rle_48
 		"\x00\xCB"
@@ -529,7 +527,7 @@ BOOST_AUTO_TEST_CASE(encode_splitbuf_count2)
 #define rle_120e \
 	"\xF7" dat_120e
 
-	in << makeString(
+	in << STRING_WITH_NULLS(
 		dat_3968e
 		dat_120e
 		"\xCB\xCB\xCB"
@@ -539,7 +537,7 @@ BOOST_AUTO_TEST_CASE(encode_splitbuf_count2)
 		"\x82\x80\x80\x81\x82\x83\x84\x85\x85\x87\x87\x87\x86\x84\x83\x83"
 	);
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString(
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(
 		rle_3968e
 		rle_120e
 		"\x00\xCB"
@@ -572,7 +570,7 @@ BOOST_AUTO_TEST_CASE(encode_splitbuf_escape2)
 #define rle_94e \
 	"\xDD" dat_94e
 
-	in << makeString(
+	in << STRING_WITH_NULLS(
 		dat_3968e
 		dat_94e
 		"\xCB\xCB\xCB"
@@ -582,7 +580,7 @@ BOOST_AUTO_TEST_CASE(encode_splitbuf_escape2)
 		"\x82\x80\x80\x81\x82\x83\x84\x85\x85\x87\x87\x87\x86\x84\x83\x83"
 	);
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString(
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(
 		rle_3968e
 		rle_94e
 		"\x00\xCB"
@@ -613,7 +611,7 @@ BOOST_AUTO_TEST_CASE(encode_splitbuf_escape3)
 #define rle_62e \
 	"\xBD" dat_62e
 
-	in << makeString(
+	in << STRING_WITH_NULLS(
 		dat_3968e
 		dat_62e
 		"\xCB\xCB\xCB"
@@ -623,7 +621,7 @@ BOOST_AUTO_TEST_CASE(encode_splitbuf_escape3)
 		"\x82\x80\x80\x81\x82\x83\x84\x85\x85\x87\x87\x87\x86\x84\x83\x83"
 	);
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString(
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(
 		rle_3968e
 		rle_62e
 		"\x00\xCB"

@@ -23,23 +23,23 @@
 
 using namespace camoto;
 
-filter_sample::filter_sample()
+test_filter::test_filter()
 	:	in(new stream::string()),
 		in_filt(new stream::input_filtered())
 {
 }
 
-boost::test_tools::predicate_result filter_sample::is_equal(const std::string& strExpected)
+boost::test_tools::predicate_result test_filter::is_equal(const std::string& strExpected)
 {
 	stream::string_sptr out(new stream::string());
 	this->in_filt->open(this->in, this->filter);
 	stream::copy(out, this->in_filt);
 
 	// See if the stringstream now matches what we expected
-	return this->default_sample::is_equal(strExpected, out->str());
+	return this->test_main::is_equal(strExpected, out->str());
 }
 
-boost::test_tools::predicate_result filter_sample::is_equal_read(
+boost::test_tools::predicate_result test_filter::is_equal_read(
 	camoto::gamearchive::FilterType *ft, const std::string& strInput,
 	const std::string& strExpected)
 {
@@ -54,10 +54,10 @@ boost::test_tools::predicate_result filter_sample::is_equal_read(
 	stream::copy(out, s);
 
 	// See if the stringstream now matches what we expected
-	return this->default_sample::is_equal(strExpected, out->str());
+	return this->test_main::is_equal(strExpected, out->str());
 }
 
-boost::test_tools::predicate_result filter_sample::is_equal_write(
+boost::test_tools::predicate_result test_filter::is_equal_write(
 	camoto::gamearchive::FilterType *ft, const std::string& strInput,
 	const std::string& strExpected)
 {
@@ -70,10 +70,10 @@ boost::test_tools::predicate_result filter_sample::is_equal_write(
 	s->flush();
 
 	// See if the stringstream now matches what we expected
-	return this->default_sample::is_equal(strExpected, this->in->str());
+	return this->test_main::is_equal(strExpected, this->in->str());
 }
 
-boost::test_tools::predicate_result filter_sample::should_fail()
+boost::test_tools::predicate_result test_filter::should_fail()
 {
 	stream::string_sptr out(new stream::string());
 	try {

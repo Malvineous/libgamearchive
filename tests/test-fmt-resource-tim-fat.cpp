@@ -1,6 +1,6 @@
 /**
- * @file  test-fmt-resource-tim-fat.cpp
- * @brief Test code for TIMResourceFATArchive class.
+ * @file   test-arch-resource-tim-fat.cpp
+ * @brief  Test code for The Incredible Machine resource list archives.
  *
  * Copyright (C) 2010-2013 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -18,117 +18,171 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define FILENAME1 "RESOURCE.001"
-#define FILENAME2 "RESOURCE.002"
-#define FILENAME3 "RESOURCE.003"
-#define FILENAME4 "RESOURCE.004"
+#include "test-archive.hpp"
 
+// This format requires all files to be a multiple of eight bytes in length.
 #define CONTENT1 "This is one.dat\0"
 #define CONTENT2 "This is two.dat\0"
 #define CONTENT3 "This is three.dat\0\0\0\0\0\0\0"
 #define CONTENT4 "This is four.dat\0\0\0\0\0\0\0\0"
-#define CONTENT1_NORMALSIZE 16
-#define CONTENT1_LARGESIZE 24
-#define CONTENT1_SMALLSIZE 8
 #define CONTENT1_OVERWRITTEN "Now resized to 24 chars!"
-#define CONTENT1_OVERWSIZE (sizeof(CONTENT1_OVERWRITTEN)-1)
 
-#define testdata_initialstate \
-	"\x00\x00" "\x00\x00" "\x02\x00" \
-	"RESOURCE.001\0" "\x02\x00" CONTENT1 \
-	"RESOURCE.002\0" "\x02\x00" CONTENT2
+class test_resource_tim_fat: public test_archive
+{
+	public:
+		test_resource_tim_fat()
+		{
+			this->type = "resource-tim-fat";
+			this->filename[0] = "RESOURCE.001";
+			this->filename[1] = "RESOURCE.002";
+			this->filename[2] = "RESOURCE.003";
+			this->filename[3] = "RESOURCE.004";
+			this->lenMaxFilename = 12;
+			this->content[0] = STRING_WITH_NULLS(CONTENT1);
+			this->content[1] = STRING_WITH_NULLS(CONTENT2);
+			this->content[2] = STRING_WITH_NULLS(CONTENT3);
+			this->content[3] = STRING_WITH_NULLS(CONTENT4);
+			this->content0_largeSize = 24;
+			this->content0_smallSize = 8;
+			this->content0_overwritten = STRING_WITH_NULLS(CONTENT1_OVERWRITTEN);
+		}
 
-#define testdata_rename \
-	"\x00\x00" "\x00\x00" "\x02\x00" \
-	"RESOURCE.003\0" "\x02\x00" CONTENT1 \
-	"RESOURCE.002\0" "\x02\x00" CONTENT2
+		void addTests()
+		{
+			this->test_archive::addTests();
 
-#define testdata_insert_end \
-	"\x00\x00" "\x00\x00" "\x03\x00" \
-	"RESOURCE.001\0" "\x02\x00" CONTENT1 \
-	"RESOURCE.002\0" "\x02\x00" CONTENT2 \
-	"RESOURCE.003\0" "\x03\x00" CONTENT3
+			// c00: Initial state
+			this->isInstance(ArchiveType::DefinitelyYes, this->initialstate());
 
-#define testdata_insert_mid \
-	"\x00\x00" "\x00\x00" "\x03\x00" \
-	"RESOURCE.001\0" "\x02\x00" CONTENT1 \
-	"RESOURCE.003\0" "\x03\x00" CONTENT3 \
-	"RESOURCE.002\0" "\x02\x00" CONTENT2
+			// c01: File too short
+			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+				"\x00\x00" "\x00\x00" "\x02"
+			));
 
-#define testdata_insert2 \
-	"\x00\x00" "\x00\x00" "\x04\x00" \
-	"RESOURCE.001\0" "\x02\x00" CONTENT1 \
-	"RESOURCE.003\0" "\x03\x00" CONTENT3 \
-	"RESOURCE.004\0" "\x03\x00" CONTENT4 \
-	"RESOURCE.002\0" "\x02\x00" CONTENT2
+			// c02: Data trailing after last file
+			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+				"\x00\x00" "\x00\x00" "\x02\x00"
+				"RESOURCE.001\0" "\x02\x00" CONTENT1
+				"RESOURCE.002\0" "\x02\x00" CONTENT2
+				"blah"
+			));
 
-#define testdata_remove \
-	"\x00\x00" "\x00\x00" "\x01\x00" \
-	"RESOURCE.002\0" "\x02\x00" CONTENT2
+			// c03: Count field truncated
+			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+				"\x00\x00" "\x00\x00" "\x02\x00"
+				"RESOURCE.001\0" "\x02\x00" CONTENT1
+				"RESOURCE.002\0" "\x02"
+			));
+		}
 
-#define testdata_remove2 \
-	"\x00\x00" "\x00\x00" "\x00\x00"
+		virtual std::string initialstate()
+		{
+			return STRING_WITH_NULLS(
+				"\x00\x00" "\x00\x00" "\x02\x00"
+				"RESOURCE.001\0" "\x02\x00" CONTENT1
+				"RESOURCE.002\0" "\x02\x00" CONTENT2
+			);
+		}
 
-#define testdata_insert_remove \
-	"\x00\x00" "\x00\x00" "\x02\x00" \
-	"RESOURCE.003\0" "\x03\x00" CONTENT3 \
-	"RESOURCE.002\0" "\x02\x00" CONTENT2
+		virtual std::string rename()
+		{
+			return STRING_WITH_NULLS(
+				"\x00\x00" "\x00\x00" "\x02\x00"
+				"RESOURCE.003\0" "\x02\x00" CONTENT1
+				"RESOURCE.002\0" "\x02\x00" CONTENT2
+			);
+		}
 
-#define testdata_move \
-	"\x00\x00" "\x00\x00" "\x02\x00" \
-	"RESOURCE.002\0" "\x02\x00" CONTENT2 \
-	"RESOURCE.001\0" "\x02\x00" CONTENT1
+		virtual std::string insert_end()
+		{
+			return STRING_WITH_NULLS(
+				"\x00\x00" "\x00\x00" "\x03\x00"
+				"RESOURCE.001\0" "\x02\x00" CONTENT1
+				"RESOURCE.002\0" "\x02\x00" CONTENT2
+				"RESOURCE.003\0" "\x03\x00" CONTENT3
+			);
+		}
 
-#define testdata_resize_larger \
-	"\x00\x00" "\x00\x00" "\x02\x00" \
-	"RESOURCE.001\0" "\x03\x00" CONTENT1 "\0\0\0\0\0\0\0\0" \
-	"RESOURCE.002\0" "\x02\x00" CONTENT2
+		virtual std::string insert_mid()
+		{
+			return STRING_WITH_NULLS(
+				"\x00\x00" "\x00\x00" "\x03\x00"
+				"RESOURCE.001\0" "\x02\x00" CONTENT1
+				"RESOURCE.003\0" "\x03\x00" CONTENT3
+				"RESOURCE.002\0" "\x02\x00" CONTENT2
+			);
+		}
 
-#define testdata_resize_smaller \
-	"\x00\x00" "\x00\x00" "\x02\x00" \
-	"RESOURCE.001\0" "\x01\x00" "This is " \
-	"RESOURCE.002\0" "\x02\x00" CONTENT2
+		virtual std::string insert2()
+		{
+			return STRING_WITH_NULLS(
+				"\x00\x00" "\x00\x00" "\x04\x00"
+				"RESOURCE.001\0" "\x02\x00" CONTENT1
+				"RESOURCE.003\0" "\x03\x00" CONTENT3
+				"RESOURCE.004\0" "\x03\x00" CONTENT4
+				"RESOURCE.002\0" "\x02\x00" CONTENT2
+			);
+		}
 
-#define testdata_resize_write \
-	"\x00\x00" "\x00\x00" "\x02\x00" \
-	"RESOURCE.001\0" "\x03\x00" CONTENT1_OVERWRITTEN \
-	"RESOURCE.002\0" "\x02\x00" CONTENT2
+		virtual std::string remove()
+		{
+			return STRING_WITH_NULLS(
+				"\x00\x00" "\x00\x00" "\x01\x00"
+				"RESOURCE.002\0" "\x02\x00" CONTENT2
+			);
+		}
 
-#define MAX_FILENAME_LEN  12
+		virtual std::string remove2()
+		{
+			return STRING_WITH_NULLS(
+				"\x00\x00" "\x00\x00" "\x00\x00"
+			);
+		}
 
-#define ARCHIVE_CLASS fmt_resource_tim_fat
-#define ARCHIVE_TYPE  "resource-tim-fat"
-#include "test-archive.hpp"
+		virtual std::string insert_remove()
+		{
+			return STRING_WITH_NULLS(
+				"\x00\x00" "\x00\x00" "\x02\x00"
+				"RESOURCE.003\0" "\x03\x00" CONTENT3
+				"RESOURCE.002\0" "\x02\x00" CONTENT2
+			);
+		}
 
-// Test some invalid formats to make sure they're not identified as valid
-// archives.  Note that they can still be opened though (by 'force'), this
-// only checks whether they look like valid files or not.
+		virtual std::string move()
+		{
+			return STRING_WITH_NULLS(
+				"\x00\x00" "\x00\x00" "\x02\x00"
+				"RESOURCE.002\0" "\x02\x00" CONTENT2
+				"RESOURCE.001\0" "\x02\x00" CONTENT1
+			);
+		}
 
-// The "c00" test has already been performed in test-archive.hpp to ensure the
-// initial state is correctly identified as a valid archive.
+		virtual std::string resize_larger()
+		{
+			return STRING_WITH_NULLS(
+				"\x00\x00" "\x00\x00" "\x02\x00"
+				"RESOURCE.001\0" "\x03\x00" CONTENT1 "\0\0\0\0\0\0\0\0"
+				"RESOURCE.002\0" "\x02\x00" CONTENT2
+			);
+		}
 
-ISINSTANCE_TEST(c01,
-	"\x00\x00" "\x00\x00" "\x02"
-	,
-	DefinitelyNo
-);
+		virtual std::string resize_smaller()
+		{
+			return STRING_WITH_NULLS(
+				"\x00\x00" "\x00\x00" "\x02\x00"
+				"RESOURCE.001\0" "\x01\x00" "This is "
+				"RESOURCE.002\0" "\x02\x00" CONTENT2
+			);
+		}
 
-ISINSTANCE_TEST(c02,
-	"\x00\x00" "\x00\x00" "\x02\x00"
-	"RESOURCE.001\0" "\x02\x00" CONTENT1
-	"RESOURCE.002\0" "\x02\x00" CONTENT2
-	"blah"
-	,
-	DefinitelyNo
-);
+		virtual std::string resize_write()
+		{
+			return STRING_WITH_NULLS(
+				"\x00\x00" "\x00\x00" "\x02\x00"
+				"RESOURCE.001\0" "\x03\x00" CONTENT1_OVERWRITTEN
+				"RESOURCE.002\0" "\x02\x00" CONTENT2
+			);
+		}
+};
 
-ISINSTANCE_TEST(c03,
-	"\x00\x00" "\x00\x00" "\x02\x00"
-	"RESOURCE.001\0" "\x02\x00" CONTENT1
-	"RESOURCE.002\0" "\x02"
-	,
-	DefinitelyNo
-);
-
-// Not really possible to do any INVALIDDATA_TEST() tests here, because the
-// worst that can happen is it looks like the archive has been truncated.
+IMPLEMENT_TESTS(resource_tim_fat);

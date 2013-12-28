@@ -35,15 +35,17 @@
 
 using namespace camoto;
 
-void default_sample::printNice(boost::test_tools::predicate_result& res,
+void test_main::printNice(boost::test_tools::predicate_result& res,
 	const std::string& s, const std::string& diff)
 {
 	const char *c = CLR_YELLOW;
 	res.message() << c;
 	for (int i = 0; i < s.length(); i++) {
-		if ((i > 0) && (i % 41 == 0)) {
+		if ((i > 0) && (i % 28 == 0)) {
+//res.message() << "\" \\";
 			res.message() << CLR_NORM << "\n" << std::setfill('0') << std::setw(3)
 				<< std::hex << i << ": " << c;
+//res.message() << "\"";
 		}
 		if ((i >= diff.length()) || (s[i] != diff[i])) {
 			if (c != CLR_MAG) {
@@ -56,17 +58,22 @@ void default_sample::printNice(boost::test_tools::predicate_result& res,
 				res.message() << CLR_YELLOW;
 			}
 		}
+/*
+		res.message() << "\\x" << std::setfill('0') << std::setw(2)
+			<< std::hex << (int)((uint8_t)s[i]);
+/*/
 		if ((s[i] < 32) || (s[i] == 127)) {
 			res.message() << std::setfill('0') << std::setw(2)
 				<< std::hex << (int)((uint8_t)s[i]) << ' ';
 		} else {
 			res.message() << '_' << s[i] << ' ';
 		}
+// */
 	}
 	return;
 }
 
-void default_sample::print_wrong(boost::test_tools::predicate_result& res,
+void test_main::print_wrong(boost::test_tools::predicate_result& res,
 	const std::string& strExpected, const std::string& strResult)
 {
 	res.message() << "\nExp: ";
@@ -78,7 +85,7 @@ void default_sample::print_wrong(boost::test_tools::predicate_result& res,
 	return;
 }
 
-boost::test_tools::predicate_result default_sample::is_equal(
+boost::test_tools::predicate_result test_main::is_equal(
 	const std::string& strExpected, const std::string& strCheck)
 {
 	if (strExpected.compare(strCheck)) {
@@ -88,34 +95,4 @@ boost::test_tools::predicate_result default_sample::is_equal(
 	}
 
 	return true;
-}
-
-/// Callback function to set expanded/native file size.
-void setRealSize(camoto::gamearchive::ArchivePtr arch,
-	camoto::gamearchive::Archive::EntryPtr id, stream::len newRealSize)
-{
-	BOOST_TEST_MESSAGE(createString("Leaving stored size unchanged as "
-		<< id->storedSize << " and setting real size to " << newRealSize));
-	arch->resize(id, id->storedSize, newRealSize);
-	return;
-}
-
-stream::inout_sptr applyFilter(gamearchive::ArchivePtr arch,
-	gamearchive::Archive::EntryPtr id, stream::inout_sptr pStream)
-{
-	if (!id->filter.empty()) {
-		// The file needs to be filtered first
-		gamearchive::ManagerPtr pManager(gamearchive::getManager());
-		gamearchive::FilterTypePtr pFilterType(
-			pManager->getFilterTypeByCode(id->filter));
-		if (!pFilterType) {
-			throw stream::error(createString(
-				"could not find filter \"" << id->filter << "\""
-			));
-		}
-
-		stream::fn_truncate fn_resize = boost::bind<void>(setRealSize, arch, id, _1);
-		return pFilterType->apply(pStream, fn_resize);
-	}
-	return pStream; // no filters to apply
 }

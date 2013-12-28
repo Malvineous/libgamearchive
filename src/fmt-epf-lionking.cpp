@@ -153,10 +153,10 @@ EPFArchive::EPFArchive(stream::inout_sptr psArchive)
 		// one in case the values are so large they wrap and the second one
 		// returns an incorrect result.
 
-		// TESTED BY: fmt_epf_lionking_invaliddata_c01
+		// TESTED BY: test_epf_lionking::invalidcontent_i01
 		(this->offFAT > lenArchive) ||
 
-		// TESTED BY: fmt_epf_lionking_invaliddata_c02, when stream::pos <= 32bit
+		// TESTED BY: test_epf_lionking::invalidcontent_i02, when stream::pos <= 32bit
 		((this->offFAT + numFiles * EPF_FAT_ENTRY_LEN) > lenArchive)
 	) {
 		throw stream::error("header corrupted or file truncated");

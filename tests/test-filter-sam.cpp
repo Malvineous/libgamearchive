@@ -24,7 +24,7 @@
 using namespace camoto;
 using namespace camoto::gamearchive;
 
-BOOST_FIXTURE_TEST_SUITE(sam_suite, filter_sample)
+BOOST_FIXTURE_TEST_SUITE(sam_suite, test_filter)
 
 BOOST_AUTO_TEST_CASE(read)
 {
@@ -33,8 +33,8 @@ BOOST_AUTO_TEST_CASE(read)
 	SAMMapFilterType filter;
 
 	BOOST_CHECK_MESSAGE(is_equal_read(&filter,
-		makeString("\xC2\x76\x4E\x5E\xB1\x69\x19\xE9"),
-		makeString("\x00\x01\x02\x03\xFF\xFF\xFF\xFF")),
+		STRING_WITH_NULLS("\xC2\x76\x4E\x5E\xB1\x69\x19\xE9"),
+		STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF")),
 		"Decoding Secret Agent XOR-encoded data failed");
 }
 
@@ -45,8 +45,8 @@ BOOST_AUTO_TEST_CASE(write)
 	SAMMapFilterType filter;
 
 	BOOST_CHECK_MESSAGE(is_equal_write(&filter,
-		makeString("\x00\x01\x02\x03\xFF\xFF\xFF\xFF"),
-		makeString("\xC2\x76\x4E\x5E\xB1\x69\x19\xE9")),
+		STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF"),
+		STRING_WITH_NULLS("\xC2\x76\x4E\x5E\xB1\x69\x19\xE9")),
 		"Secret Agent XOR-encoding failed");
 }
 

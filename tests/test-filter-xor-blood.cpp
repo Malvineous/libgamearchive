@@ -1,6 +1,6 @@
 /**
- * @file   test-filter-rff.cpp
- * @brief  Test code for generic XOR encryption algorithm.
+ * @file   test-filter-xor-blood.cpp
+ * @brief  Test code for Blood XOR encryption algorithm.
  *
  * Copyright (C) 2010-2013 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -20,15 +20,13 @@
 
 #include <boost/test/unit_test.hpp>
 #include <camoto/stream_filtered.hpp>
-
-#include "tests.hpp"
 #include "test-filter.hpp"
 #include "../src/filter-xor-blood.hpp"
 
 using namespace camoto;
 using namespace camoto::gamearchive;
 
-struct rff_decrypt_sample: public filter_sample {
+struct rff_decrypt_sample: public test_filter {
 	rff_decrypt_sample()
 	{
 		this->filter.reset(new filter_rff_crypt(0, 0));
@@ -41,11 +39,11 @@ BOOST_AUTO_TEST_CASE(rff_crypt_read)
 {
 	BOOST_TEST_MESSAGE("Decode some XOR-encoded data");
 
-	in << makeString("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
+	in << STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
 
 	this->filter.reset(new filter_rff_crypt(0, 0));
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString("\x00\x01\x03\x02\xFD\xFD\xFC\xFC")),
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS("\x00\x01\x03\x02\xFD\xFD\xFC\xFC")),
 		"Decoding XOR-encoded data failed");
 }
 
@@ -53,11 +51,11 @@ BOOST_AUTO_TEST_CASE(rff_crypt_partial_read)
 {
 	BOOST_TEST_MESSAGE("Decode some partially XOR-encoded data");
 
-	in << makeString("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
+	in << STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
 
 	this->filter.reset(new filter_rff_crypt(4, 0));
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString("\x00\x01\x03\x02\xFF\xFF\xFF\xFF")),
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS("\x00\x01\x03\x02\xFF\xFF\xFF\xFF")),
 		"Decoding partially XOR-encoded data failed");
 }
 
@@ -65,17 +63,17 @@ BOOST_AUTO_TEST_CASE(rff_crypt_altseed_read)
 {
 	BOOST_TEST_MESSAGE("Decode some XOR-encoded data with alternate seed");
 
-	in << makeString("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
+	in << STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
 
 	this->filter.reset(new filter_rff_crypt(0, 0xFE));
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString("\xFE\xFF\xFD\xFC\xFF\xFF\xFE\xFE")),
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS("\xFE\xFF\xFD\xFC\xFF\xFF\xFE\xFE")),
 		"Decoding XOR-encoded data with alternate seed failed");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_FIXTURE_TEST_SUITE(rff_encrypt_suite, default_sample)
+BOOST_FIXTURE_TEST_SUITE(rff_encrypt_suite, test_main)
 
 BOOST_AUTO_TEST_CASE(rff_crypt_write_filteredstream)
 {
@@ -92,7 +90,7 @@ BOOST_AUTO_TEST_CASE(rff_crypt_write_filteredstream)
 	f->write("\x00\x01\x02\x03\xFF\xFF\xFF\xFF", 8);
 	f->flush();
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString("\x00\x01\x03\x02\xFD\xFD\xFC\xFC"),
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS("\x00\x01\x03\x02\xFD\xFD\xFC\xFC"),
 		out->str()),
 		"Encoding data through filteredstream failed");
 }

@@ -1,5 +1,5 @@
 /**
- * @file   test-fmt-dat-bash.cpp
+ * @file   test-arch-dat-bash.cpp
  * @brief  Test code for uncompressed Monster Bash .DAT files.
  *
  * Copyright (C) 2010-2013 Adam Nielsen <malvineous@shikadi.net>
@@ -18,188 +18,237 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define FILENAME1 "ONE.MBG"
-#define FILENAME2 "TWO.DAT"
-#define FILENAME3 "THREE.DAT"
-#define FILENAME4 "FOUR.DAT"
-
-#define testdata_initialstate \
-	"\x01\x00" "\x0f\x00" \
-		"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"This is one.dat" \
-	"\x20\x00" "\x0f\x00" \
-		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"This is two.dat"
-
-#define testdata_rename \
-	"\x20\x00" "\x0f\x00" \
-		"THREE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"This is one.dat" \
-	"\x20\x00" "\x0f\x00" \
-		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"This is two.dat"
-
-#define testdata_insert_end \
-	"\x01\x00" "\x0f\x00" \
-		"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"This is one.dat" \
-	"\x20\x00" "\x0f\x00" \
-		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"This is two.dat" \
-	"\x20\x00" "\x11\x00" \
-		"THREE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"This is three.dat"
-
-#define testdata_insert_mid \
-	"\x01\x00" "\x0f\x00" \
-		"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"This is one.dat" \
-	"\x20\x00" "\x11\x00" \
-		"THREE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"This is three.dat" \
-	"\x20\x00" "\x0f\x00" \
-		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"This is two.dat"
-
-#define testdata_insert2 \
-	"\x01\x00" "\x0f\x00" \
-		"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"This is one.dat" \
-	"\x20\x00" "\x11\x00" \
-		"THREE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"This is three.dat" \
-	"\x20\x00" "\x10\x00" \
-		"FOUR.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"This is four.dat" \
-	"\x20\x00" "\x0f\x00" \
-		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"This is two.dat"
-
-#define testdata_remove \
-	"\x20\x00" "\x0f\x00" \
-		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"This is two.dat"
-
-#define testdata_remove2 \
-	""
-
-#define testdata_insert_remove \
-	"\x20\x00" "\x11\x00" \
-		"THREE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"This is three.dat" \
-	"\x20\x00" "\x0f\x00" \
-		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"This is two.dat"
-
-#define testdata_move \
-	"\x20\x00" "\x0f\x00" \
-		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"This is two.dat" \
-	"\x01\x00" "\x0f\x00" \
-		"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"This is one.dat"
-
-#define testdata_resize_larger \
-	"\x01\x00" "\x14\x00" \
-		"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"This is one.dat\0\0\0\0\0" \
-	"\x20\x00" "\x0f\x00" \
-		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"This is two.dat"
-
-#define testdata_resize_smaller \
-	"\x01\x00" "\x0a\x00" \
-		"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"This is on" \
-	"\x20\x00" "\x0f\x00" \
-		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"This is two.dat"
-
-#define testdata_resize_write \
-	"\x01\x00" "\x17\x00" \
-		"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"Now resized to 23 chars" \
-	"\x20\x00" "\x0f\x00" \
-		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"This is two.dat"
-
-#define MAX_FILENAME_LEN  30
-
-#define ARCHIVE_CLASS fmt_dat_bash
-#define ARCHIVE_TYPE  "dat-bash"
 #include "test-archive.hpp"
 
-// Test some invalid formats to make sure they're not identified as valid
-// archives.  Note that they can still be opened though (by 'force'), this
-// only checks whether they look like valid files or not.
+class test_dat_bash: public test_archive
+{
+	public:
+		test_dat_bash()
+		{
+			this->type = "dat-bash";
+			this->filename[0] = "ONE.MBG";
+			this->lenMaxFilename = 30;
+		}
 
-// The "c00" test has already been performed in test-archive.hpp to ensure the
-// initial state is correctly identified as a valid archive.
+		void addTests()
+		{
+			this->test_archive::addTests();
 
-// Invalid chars in filename
-ISINSTANCE_TEST(c01,
-	"\x20\x00" "\x0f\x00" \
-		"ONE.DAT\x05\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"This is one.dat" \
-	"\x20\x00" "\x0f\x00" \
-		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"This is two.dat",
-	DefinitelyNo
-);
+			// c00: Initial state
+			this->isInstance(ArchiveType::DefinitelyYes, this->initialstate());
 
-// Blank archive
-ISINSTANCE_TEST(c02,
-	"",
-	DefinitelyYes
-);
+			// c01: access charst in by filename
+			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+				"\x20\x00" "\x0f\x00"
+					"ONE.DAT\x05\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is one.dat"
+				"\x20\x00" "\x0f\x00"
+					"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is two.dat"
+			));
 
-// File ends past EOF
-ISINSTANCE_TEST(c03,
-	"\x20\x00" "\x0f\x01" \
-		"ONE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"This is one.dat" \
-	"\x20\x00" "\x0f\x00" \
-		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x00\x00" \
-		"This is two.dat",
-	DefinitelyNo
-);
+			// c02: Blank archive
+			this->isInstance(ArchiveType::DefinitelyYes, STRING_WITH_NULLS(
+				""
+			));
 
-// Truncated FAT entry
-ISINSTANCE_TEST(c04,
-	"\x20\x00" "\x0f\x00"
-		"ONE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
-		"\x00\x00"
-		"This is one.dat"
-	"\x20\x00" "\x0f\x00"
-		"TWO.DA",
-	DefinitelyNo
-);
+			// c03: File ends past EOF
+			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+				"\x20\x00" "\x0f\x01"
+					"ONE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is one.dat"
+				"\x20\x00" "\x0f\x00"
+					"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is two.dat"
+			));
+
+			// c04: Truncated FAT entry
+			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+				"\x20\x00" "\x0f\x00"
+					"ONE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is one.dat"
+				"\x20\x00" "\x0f\x00"
+					"TWO.DA"
+			));
+		}
+
+		virtual std::string initialstate()
+		{
+			return STRING_WITH_NULLS(
+				"\x01\x00" "\x0f\x00"
+					"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is one.dat"
+				"\x20\x00" "\x0f\x00"
+					"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is two.dat"
+			);
+		}
+
+		virtual std::string rename()
+		{
+			return STRING_WITH_NULLS(
+				"\x20\x00" "\x0f\x00"
+					"THREE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is one.dat"
+				"\x20\x00" "\x0f\x00"
+					"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is two.dat"
+			);
+		}
+
+		virtual std::string insert_end()
+		{
+			return STRING_WITH_NULLS(
+				"\x01\x00" "\x0f\x00"
+					"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is one.dat"
+				"\x20\x00" "\x0f\x00"
+					"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is two.dat"
+				"\x20\x00" "\x11\x00"
+					"THREE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is three.dat"
+			);
+		}
+
+		virtual std::string insert_mid()
+		{
+			return STRING_WITH_NULLS(
+				"\x01\x00" "\x0f\x00"
+					"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is one.dat"
+				"\x20\x00" "\x11\x00"
+					"THREE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is three.dat"
+				"\x20\x00" "\x0f\x00"
+					"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is two.dat"
+			);
+		}
+
+		virtual std::string insert2()
+		{
+			return STRING_WITH_NULLS(
+				"\x01\x00" "\x0f\x00"
+					"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is one.dat"
+				"\x20\x00" "\x11\x00"
+					"THREE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is three.dat"
+				"\x20\x00" "\x10\x00"
+					"FOUR.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is four.dat"
+				"\x20\x00" "\x0f\x00"
+					"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is two.dat"
+			);
+		}
+
+		virtual std::string remove()
+		{
+			return STRING_WITH_NULLS(
+				"\x20\x00" "\x0f\x00"
+					"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is two.dat"
+			);
+		}
+
+		virtual std::string remove2()
+		{
+			return STRING_WITH_NULLS(
+				""
+			);
+		}
+
+		virtual std::string insert_remove()
+		{
+			return STRING_WITH_NULLS(
+				"\x20\x00" "\x11\x00"
+					"THREE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is three.dat"
+				"\x20\x00" "\x0f\x00"
+					"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is two.dat"
+			);
+		}
+
+		virtual std::string move()
+		{
+			return STRING_WITH_NULLS(
+				"\x20\x00" "\x0f\x00"
+					"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is two.dat"
+				"\x01\x00" "\x0f\x00"
+					"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is one.dat"
+			);
+		}
+
+		virtual std::string resize_larger()
+		{
+			return STRING_WITH_NULLS(
+				"\x01\x00" "\x14\x00"
+					"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is one.dat\0\0\0\0\0"
+				"\x20\x00" "\x0f\x00"
+					"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is two.dat"
+			);
+		}
+
+		virtual std::string resize_smaller()
+		{
+			return STRING_WITH_NULLS(
+				"\x01\x00" "\x0a\x00"
+					"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is on"
+				"\x20\x00" "\x0f\x00"
+					"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is two.dat"
+			);
+		}
+
+		virtual std::string resize_write()
+		{
+			return STRING_WITH_NULLS(
+				"\x01\x00" "\x17\x00"
+					"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"Now resized to 23 chars"
+				"\x20\x00" "\x0f\x00"
+					"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x00\x00"
+					"This is two.dat"
+			);
+		}
+};
+
+IMPLEMENT_TESTS(dat_bash);

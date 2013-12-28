@@ -144,6 +144,7 @@ RFFArchive::RFFArchive(stream::inout_sptr psArchive)
 		>> u32le(numFiles);
 
 	if (numFiles >= RFF_SAFETY_MAX_FILECOUNT) {
+		// TESTED BY: test_rff_blood::invalidcontent_i01
 		throw stream::error("too many files or corrupted archive");
 	}
 

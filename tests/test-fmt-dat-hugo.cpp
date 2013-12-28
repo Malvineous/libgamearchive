@@ -1,6 +1,6 @@
 /**
- * @file  test-fmt-dat-hugo.cpp
- * @brief Test code for DAT_HugoArchive class.
+ * @file   test-arch-dat-hugo.cpp
+ * @brief  Test code for Hugo2/3 .DAT archives.
  *
  * Copyright (C) 2010-2013 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -18,110 +18,165 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define testdata_initialstate \
-	"\x10\x00\x00\x00" "\x0f\x00\x00\x00" \
-	"\x1f\x00\x00\x00" "\x0f\x00\x00\x00" \
-	"This is one.dat" \
-	"This is two.dat"
-
-#define testdata_insert_end \
-	"\x18\x00\x00\x00" "\x0f\x00\x00\x00" \
-	"\x27\x00\x00\x00" "\x0f\x00\x00\x00" \
-	"\x36\x00\x00\x00" "\x11\x00\x00\x00" \
-	"This is one.dat" \
-	"This is two.dat" \
-	"This is three.dat"
-
-#define testdata_insert_mid \
-	"\x18\x00\x00\x00" "\x0f\x00\x00\x00" \
-	"\x27\x00\x00\x00" "\x11\x00\x00\x00" \
-	"\x38\x00\x00\x00" "\x0f\x00\x00\x00" \
-	"This is one.dat" \
-	"This is three.dat" \
-	"This is two.dat"
-
-#define testdata_insert2 \
-	"\x20\x00\x00\x00" "\x0f\x00\x00\x00" \
-	"\x2f\x00\x00\x00" "\x11\x00\x00\x00" \
-	"\x40\x00\x00\x00" "\x10\x00\x00\x00" \
-	"\x50\x00\x00\x00" "\x0f\x00\x00\x00" \
-	"This is one.dat" \
-	"This is three.dat" \
-	"This is four.dat" \
-	"This is two.dat"
-
-#define testdata_remove \
-	"\x08\x00\x00\x00" "\x0f\x00\x00\x00" \
-	"This is two.dat"
-
-#define testdata_remove2 \
-	""
-
-#define testdata_insert_remove \
-	"\x10\x00\x00\x00" "\x11\x00\x00\x00" \
-	"\x21\x00\x00\x00" "\x0f\x00\x00\x00" \
-	"This is three.dat" \
-	"This is two.dat"
-
-#define testdata_move \
-	"\x10\x00\x00\x00" "\x0f\x00\x00\x00" \
-	"\x1f\x00\x00\x00" "\x0f\x00\x00\x00" \
-	"This is two.dat" \
-	"This is one.dat"
-
-#define testdata_resize_larger \
-	"\x10\x00\x00\x00" "\x14\x00\x00\x00" \
-	"\x24\x00\x00\x00" "\x0f\x00\x00\x00" \
-	"This is one.dat\0\0\0\0\0" \
-	"This is two.dat"
-
-#define testdata_resize_smaller \
-	"\x10\x00\x00\x00" "\x0a\x00\x00\x00" \
-	"\x1a\x00\x00\x00" "\x0f\x00\x00\x00" \
-	"This is on" \
-	"This is two.dat"
-
-#define testdata_resize_write \
-	"\x10\x00\x00\x00" "\x17\x00\x00\x00" \
-	"\x27\x00\x00\x00" "\x0f\x00\x00\x00" \
-	"Now resized to 23 chars" \
-	"This is two.dat"
-
-#define NO_FILENAMES 1
-#define MAX_FILENAME_LEN  0
-
-#define ARCHIVE_CLASS fmt_dat_hugo
-#define ARCHIVE_TYPE  "dat-hugo"
 #include "test-archive.hpp"
 
-// Test some invalid formats to make sure they're not identified as valid
-// archives.  Note that they can still be opened though (by 'force'), this
-// only checks whether they look like valid files or not.
+class test_dat_hugo: public test_archive
+{
+	public:
+		test_dat_hugo()
+		{
+			this->type = "dat-hugo";
+			this->lenMaxFilename = -1; // no filenames
+		}
 
-// The "c00" test has already been performed in test-archive.hpp to ensure the
-// initial state is correctly identified as a valid archive.
+		void addTests()
+		{
+			this->test_archive::addTests();
 
-ISINSTANCE_TEST(c01,
-	"\x50\x00\x00\x00" "\x0f\x00\x00\x00"
-	"This is one.dat",
-	DefinitelyNo
-);
+			// c00: Initial state
+			this->isInstance(ArchiveType::DefinitelyYes, this->initialstate());
 
-ISINSTANCE_TEST(c02,
-	"\x08\x00\x00\x00" "\x0f\x00\x00",
-	DefinitelyNo
-);
+			// c01: File offset/size is past EOF
+			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+				"\x50\x00\x00\x00" "\x0f\x00\x00\x00"
+				"This is one.dat"
+			));
 
-ISINSTANCE_TEST(c03,
-	"\x08\x00\x00\x00" "\x50\x00\x00\x00"
-	"This is one.dat",
-	DefinitelyNo
-);
+			// c02: Too short
+			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+				"\x08\x00\x00\x00" "\x0f\x00\x00"
+			));
 
-ISINSTANCE_TEST(c04,
-	"",
-	PossiblyYes
-);
+			// c03: First file finishes past EOF
+			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+				"\x08\x00\x00\x00" "\x50\x00\x00\x00"
+				"This is one.dat"
+			));
 
-// Not really possible to do any INVALIDDATA_TEST() tests here, because the
-// worst that can happen is it looks like the archive has been truncated.
+			// c04: Empty file can be valid
+			this->isInstance(ArchiveType::PossiblyYes, STRING_WITH_NULLS(
+				""
+			));
+		}
+
+		virtual std::string initialstate()
+		{
+			return STRING_WITH_NULLS(
+				"\x10\x00\x00\x00" "\x0f\x00\x00\x00"
+				"\x1f\x00\x00\x00" "\x0f\x00\x00\x00"
+				"This is one.dat"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string rename()
+		{
+			// No filenames to rename
+			throw 1;
+		}
+
+		virtual std::string insert_end()
+		{
+			return STRING_WITH_NULLS(
+				"\x18\x00\x00\x00" "\x0f\x00\x00\x00"
+				"\x27\x00\x00\x00" "\x0f\x00\x00\x00"
+				"\x36\x00\x00\x00" "\x11\x00\x00\x00"
+				"This is one.dat"
+				"This is two.dat"
+				"This is three.dat"
+			);
+		}
+
+		virtual std::string insert_mid()
+		{
+			return STRING_WITH_NULLS(
+				"\x18\x00\x00\x00" "\x0f\x00\x00\x00"
+				"\x27\x00\x00\x00" "\x11\x00\x00\x00"
+				"\x38\x00\x00\x00" "\x0f\x00\x00\x00"
+				"This is one.dat"
+				"This is three.dat"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string insert2()
+		{
+			return STRING_WITH_NULLS(
+				"\x20\x00\x00\x00" "\x0f\x00\x00\x00"
+				"\x2f\x00\x00\x00" "\x11\x00\x00\x00"
+				"\x40\x00\x00\x00" "\x10\x00\x00\x00"
+				"\x50\x00\x00\x00" "\x0f\x00\x00\x00"
+				"This is one.dat"
+				"This is three.dat"
+				"This is four.dat"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string remove()
+		{
+			return STRING_WITH_NULLS(
+				"\x08\x00\x00\x00" "\x0f\x00\x00\x00"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string remove2()
+		{
+			return STRING_WITH_NULLS(
+				""
+			);
+		}
+
+		virtual std::string insert_remove()
+		{
+			return STRING_WITH_NULLS(
+				"\x10\x00\x00\x00" "\x11\x00\x00\x00"
+				"\x21\x00\x00\x00" "\x0f\x00\x00\x00"
+				"This is three.dat"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string move()
+		{
+			return STRING_WITH_NULLS(
+				"\x10\x00\x00\x00" "\x0f\x00\x00\x00"
+				"\x1f\x00\x00\x00" "\x0f\x00\x00\x00"
+				"This is two.dat"
+				"This is one.dat"
+			);
+		}
+
+		virtual std::string resize_larger()
+		{
+			return STRING_WITH_NULLS(
+				"\x10\x00\x00\x00" "\x14\x00\x00\x00"
+				"\x24\x00\x00\x00" "\x0f\x00\x00\x00"
+				"This is one.dat\0\0\0\0\0"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string resize_smaller()
+		{
+			return STRING_WITH_NULLS(
+				"\x10\x00\x00\x00" "\x0a\x00\x00\x00"
+				"\x1a\x00\x00\x00" "\x0f\x00\x00\x00"
+				"This is on"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string resize_write()
+		{
+			return STRING_WITH_NULLS(
+				"\x10\x00\x00\x00" "\x17\x00\x00\x00"
+				"\x27\x00\x00\x00" "\x0f\x00\x00\x00"
+				"Now resized to 23 chars"
+				"This is two.dat"
+			);
+		}
+};
+
+IMPLEMENT_TESTS(dat_hugo);

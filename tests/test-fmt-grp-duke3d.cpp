@@ -1,5 +1,6 @@
-/*
- * test-fmt-grp-duke3d.cpp - test code for GRPArchive class.
+/**
+ * @file   test-arch-grp-duke3d.cpp
+ * @brief  Test code for Duke Nukem 3D .GRP archives.
  *
  * Copyright (C) 2010-2013 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -17,129 +18,178 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define FILENAME1 "ONE.DAT"
-#define FILENAME2 "TWO.DAT"
-#define FILENAME3 "THREE.DAT"
-#define FILENAME4 "FOUR.DAT"
-
-#define testdata_initialstate \
-	"KenSilverman"      "\x02\x00\x00\x00" \
-	"ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is one.dat" \
-	"This is two.dat"
-
-#define testdata_rename \
-	"KenSilverman"      "\x02\x00\x00\x00" \
-	"THREE.DAT\0\0\0"   "\x0f\x00\x00\x00" \
-	"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is one.dat" \
-	"This is two.dat" \
-
-#define testdata_insert_end \
-	"KenSilverman"      "\x03\x00\x00\x00" \
-	"ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"THREE.DAT\0\0\0"   "\x11\x00\x00\x00" \
-	"This is one.dat" \
-	"This is two.dat" \
-	"This is three.dat"
-
-#define testdata_insert_mid \
-	"KenSilverman"      "\x03\x00\x00\x00" \
-	"ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"THREE.DAT\0\0\0"   "\x11\x00\x00\x00" \
-	"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is one.dat" \
-	"This is three.dat" \
-	"This is two.dat"
-
-#define testdata_insert2 \
-	"KenSilverman"      "\x04\x00\x00\x00" \
-	"ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"THREE.DAT\0\0\0"   "\x11\x00\x00\x00" \
-	"FOUR.DAT\0\0\0\0"  "\x10\x00\x00\x00" \
-	"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is one.dat" \
-	"This is three.dat" \
-	"This is four.dat" \
-	"This is two.dat"
-
-#define testdata_remove \
-	"KenSilverman"      "\x01\x00\x00\x00" \
-	"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is two.dat"
-
-#define testdata_remove2 \
-	"KenSilverman"      "\x00\x00\x00\x00"
-
-#define testdata_insert_remove \
-	"KenSilverman"      "\x02\x00\x00\x00" \
-	"THREE.DAT\0\0\0"   "\x11\x00\x00\x00" \
-	"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is three.dat" \
-	"This is two.dat" \
-
-#define testdata_move \
-	"KenSilverman"      "\x02\x00\x00\x00" \
-	"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is two.dat" \
-	"This is one.dat"
-
-#define testdata_resize_larger \
-	"KenSilverman"      "\x02\x00\x00\x00" \
-	"ONE.DAT\0\0\0\0\0" "\x14\x00\x00\x00" \
-	"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is one.dat\0\0\0\0\0" \
-	"This is two.dat"
-
-#define testdata_resize_smaller \
-	"KenSilverman"      "\x02\x00\x00\x00" \
-	"ONE.DAT\0\0\0\0\0" "\x0a\x00\x00\x00" \
-	"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"This is on" \
-	"This is two.dat"
-
-#define testdata_resize_write \
-	"KenSilverman"      "\x02\x00\x00\x00" \
-	"ONE.DAT\0\0\0\0\0" "\x17\x00\x00\x00" \
-	"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" \
-	"Now resized to 23 chars" \
-	"This is two.dat"
-
-#define MAX_FILENAME_LEN  12
-
-#define ARCHIVE_CLASS fmt_grp_duke3d
-#define ARCHIVE_TYPE  "grp-duke3d"
 #include "test-archive.hpp"
 
-// Test some invalid formats to make sure they're not identified as valid
-// archives.  Note that they can still be opened though (by 'force'), this
-// only checks whether they look like valid files or not.
+class test_grp_duke3d: public test_archive
+{
+	public:
+		test_grp_duke3d()
+		{
+			this->type = "grp-duke3d";
+		}
 
-// The "c00" test has already been performed in test-archive.hpp to ensure the
-// initial state is correctly identified as a valid archive.
+		void addTests()
+		{
+			this->test_archive::addTests();
 
-ISINSTANCE_TEST(c01,
-	"KenSliverman"      "\x02\x00\x00\x00"
-	"ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00"
-	"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00"
-	"This is one.dat"
-	"This is two.dat",
-	DefinitelyNo
-);
+			// c00: Initial state
+			this->isInstance(ArchiveType::DefinitelyYes, this->initialstate());
 
-ISINSTANCE_TEST(c02,
-	"KenGoldman",
-	DefinitelyNo
-);
+			// c01: Bad signature
+			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+				"KenSliverman"      "\x02\x00\x00\x00"
+				"ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is one.dat"
+				"This is two.dat"
+			));
 
-// Test some valid formats but with corrupted data, to make sure nothing
-// strange happens.  These must be valid files (correct signature, so
-// isInstance passes them) but with invalid content.
-INVALIDDATA_TEST(c01,
-	"KenSilverman"      "\xff\xff\xff\xf0"
-	"ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00"
-	"This is one.dat"
-);
+			// c01: File too short
+			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+				"KenSilverman\x00\x00"
+			));
+
+			// i01: Too many files
+			this->invalidContent(STRING_WITH_NULLS(
+				"KenSilverman"      "\xff\xff\xff\xf0"
+				"ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is one.dat"
+			));
+		}
+
+		virtual std::string initialstate()
+		{
+			return STRING_WITH_NULLS(
+				"KenSilverman"      "\x02\x00\x00\x00"
+				"ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is one.dat"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string rename()
+		{
+			return STRING_WITH_NULLS(
+				"KenSilverman"      "\x02\x00\x00\x00"
+				"THREE.DAT\0\0\0"   "\x0f\x00\x00\x00"
+				"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is one.dat"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string insert_end()
+		{
+			return STRING_WITH_NULLS(
+				"KenSilverman"      "\x03\x00\x00\x00"
+				"ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"THREE.DAT\0\0\0"   "\x11\x00\x00\x00"
+				"This is one.dat"
+				"This is two.dat"
+				"This is three.dat"
+			);
+		}
+
+		virtual std::string insert_mid()
+		{
+			return STRING_WITH_NULLS(
+				"KenSilverman"      "\x03\x00\x00\x00"
+				"ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"THREE.DAT\0\0\0"   "\x11\x00\x00\x00"
+				"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is one.dat"
+				"This is three.dat"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string insert2()
+		{
+			return STRING_WITH_NULLS(
+				"KenSilverman"      "\x04\x00\x00\x00"
+				"ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"THREE.DAT\0\0\0"   "\x11\x00\x00\x00"
+				"FOUR.DAT\0\0\0\0"  "\x10\x00\x00\x00"
+				"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is one.dat"
+				"This is three.dat"
+				"This is four.dat"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string remove()
+		{
+			return STRING_WITH_NULLS(
+				"KenSilverman"      "\x01\x00\x00\x00"
+				"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string remove2()
+		{
+			return STRING_WITH_NULLS(
+				"KenSilverman"      "\x00\x00\x00\x00"
+			);
+		}
+
+		virtual std::string insert_remove()
+		{
+			return STRING_WITH_NULLS(
+				"KenSilverman"      "\x02\x00\x00\x00"
+				"THREE.DAT\0\0\0"   "\x11\x00\x00\x00"
+				"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is three.dat"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string move()
+		{
+			return STRING_WITH_NULLS(
+				"KenSilverman"      "\x02\x00\x00\x00"
+				"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"ONE.DAT\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is two.dat"
+				"This is one.dat"
+			);
+		}
+
+		virtual std::string resize_larger()
+		{
+			return STRING_WITH_NULLS(
+				"KenSilverman"      "\x02\x00\x00\x00"
+				"ONE.DAT\0\0\0\0\0" "\x14\x00\x00\x00"
+				"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is one.dat\0\0\0\0\0"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string resize_smaller()
+		{
+			return STRING_WITH_NULLS(
+				"KenSilverman"      "\x02\x00\x00\x00"
+				"ONE.DAT\0\0\0\0\0" "\x0a\x00\x00\x00"
+				"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"This is on"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string resize_write()
+		{
+			return STRING_WITH_NULLS(
+				"KenSilverman"      "\x02\x00\x00\x00"
+				"ONE.DAT\0\0\0\0\0" "\x17\x00\x00\x00"
+				"TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00"
+				"Now resized to 23 chars"
+				"This is two.dat"
+			);
+		}
+};
+
+IMPLEMENT_TESTS(grp_duke3d);

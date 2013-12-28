@@ -23,20 +23,22 @@
 #include <camoto/gamearchive/filtertype.hpp>
 #include "tests.hpp"
 
-struct filter_sample: public default_sample {
+class test_filter: public test_main
+{
+	public:
 
-	camoto::stream::string_sptr in;
-	camoto::stream::input_filtered_sptr in_filt;
-	camoto::filter_sptr filter;
+		camoto::stream::string_sptr in;
+		camoto::stream::input_filtered_sptr in_filt;
+		camoto::filter_sptr filter;
 
-	filter_sample();
-	boost::test_tools::predicate_result is_equal(const std::string& strExpected);
-	boost::test_tools::predicate_result is_equal_read(
-		camoto::gamearchive::FilterType *ft, const std::string& strInput,
-		const std::string& strExpected);
-	boost::test_tools::predicate_result is_equal_write(
-		camoto::gamearchive::FilterType *ft, const std::string& strInput,
-		const std::string& strExpected);
-	boost::test_tools::predicate_result should_fail();
+		test_filter();
 
+		boost::test_tools::predicate_result is_equal(const std::string& strExpected);
+		boost::test_tools::predicate_result is_equal_read(
+			camoto::gamearchive::FilterType *ft, const std::string& strInput,
+			const std::string& strExpected);
+		boost::test_tools::predicate_result is_equal_write(
+			camoto::gamearchive::FilterType *ft, const std::string& strInput,
+			const std::string& strExpected);
+		boost::test_tools::predicate_result should_fail();
 };

@@ -1,5 +1,5 @@
 /**
- * @file   test-fmt-dat-bash-compressed.cpp
+ * @file   test-arch-dat-bash-compressed.cpp
  * @brief  Test code for compressed Monster Bash .DAT files.
  *
  * Copyright (C) 2010-2013 Adam Nielsen <malvineous@shikadi.net>
@@ -18,10 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define FILENAME1 "ONE.MBG"
-#define FILENAME2 "TWO.DAT"
-#define FILENAME3 "THREE.DAT"
-#define FILENAME4 "FOUR.DAT"
+#include "test-archive.hpp"
 
 #define FCONTENT1_SMALL "\x54\xD0\xA4\x99\x03\x22\xCD\x1C" "\x10\x6F\xDC\x94"
 #define FCONTENT1 "\x54\xD0\xA4\x99\x03\x22\xCD\x1C" "\x10\x6F\xDC\x94\x71\x41\x26\x0C" "\x1D\x80"
@@ -31,175 +28,238 @@
 #define FCONTENT_OVERW "\x4E\xDE\xDC\x01\x21\xA7\xCC\x9C" "\x34\x7A\xCA\x90\x01\x41\xE7\x0D" \
 	"\x08\x19\x33\x40\x8C\x41\x13\x46" "\xCE\x1C\x80"
 
-#define CONTENT1_LARGESIZE_STORED 23
-#define CONTENT1_SMALLSIZE_STORED 12
-#define CONTENT1_OVERWSIZE_STORED (sizeof(FCONTENT_OVERW)-1)
+class test_dat_bash_compressed: public test_archive
+{
+	public:
+		test_dat_bash_compressed()
+		{
+			this->type = "dat-bash";
+			this->filename[0] = "ONE.MBG";
+			this->lenMaxFilename = 30;
+			this->insertAttr = EA_COMPRESSED;
+			this->content0_largeSize = 23;
+			this->content0_smallSize = 12;
+		}
 
-#define testdata_initialstate \
-	"\x01\x00" "\x12\x00" \
-		"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x0f\x00" \
-		FCONTENT1 \
-	"\x20\x00" "\x12\x00" \
-		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x0f\x00" \
-		FCONTENT2
+		void addTests()
+		{
+			this->test_archive::addTests();
 
-#define testdata_rename \
-	"\x20\x00" "\x12\x00" \
-		"THREE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x0f\x00" \
-		FCONTENT1 \
-	"\x20\x00" "\x12\x00" \
-		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x0f\x00" \
-		FCONTENT2
+			// c00: Initial state
+			this->isInstance(ArchiveType::DefinitelyYes, this->initialstate());
 
-#define testdata_insert_end \
-	"\x01\x00" "\x12\x00" \
-		"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x0f\x00" \
-		FCONTENT1 \
-	"\x20\x00" "\x12\x00" \
-		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x0f\x00" \
-		FCONTENT2 \
-	"\x20\x00" "\x15\x00" \
-		"THREE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x11\x00" \
-		FCONTENT3
+			// c01: access charst in by filename
+			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+				"\x20\x00" "\x12\x00"
+					"ONE.DAT\x05\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x0f\x00"
+					FCONTENT1
+				"\x20\x00" "\x12\x00"
+					"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x0f\x00"
+					FCONTENT2
+			));
 
-#define testdata_insert_mid \
-	"\x01\x00" "\x12\x00" \
-		"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x0f\x00" \
-		FCONTENT1 \
-	"\x20\x00" "\x15\x00" \
-		"THREE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x11\x00" \
-		FCONTENT3 \
-	"\x20\x00" "\x12\x00" \
-		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x0f\x00" \
-		FCONTENT2
+			// c02: Blank archive
+			this->isInstance(ArchiveType::DefinitelyYes, STRING_WITH_NULLS(
+				""
+			));
 
-#define testdata_insert2 \
-	"\x01\x00" "\x12\x00" \
-		"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x0f\x00" \
-		FCONTENT1 \
-	"\x20\x00" "\x15\x00" \
-		"THREE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x11\x00" \
-		FCONTENT3 \
-	"\x20\x00" "\x14\x00" \
-		"FOUR.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x10\x00" \
-		FCONTENT4 \
-	"\x20\x00" "\x12\x00" \
-		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x0f\x00" \
-		FCONTENT2
+			// c03: File ends past EOF
+			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+				"\x20\x00" "\x12\x01"
+					"ONE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x0f\x00"
+					FCONTENT1
+				"\x20\x00" "\x12\x00"
+					"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x0f\x00"
+					FCONTENT2
+			));
 
-#define testdata_remove \
-	"\x20\x00" "\x12\x00" \
-		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x0f\x00" \
-		FCONTENT2
+			// c04: Truncated FAT entry
+			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+				"\x20\x00" "\x12\x00"
+					"ONE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x0f\x00"
+					FCONTENT1
+				"\x20\x00" "\x12\x00"
+					"TWO.DA"
+			));
+		}
 
-#define testdata_remove2 \
-	""
+		virtual std::string initialstate()
+		{
+			return STRING_WITH_NULLS(
+				"\x01\x00" "\x12\x00"
+					"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x0f\x00"
+					FCONTENT1
+				"\x20\x00" "\x12\x00"
+					"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x0f\x00"
+					FCONTENT2
+			);
+		}
 
-#define testdata_insert_remove \
-	"\x20\x00" "\x15\x00" \
-		"THREE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x11\x00" \
-		FCONTENT3 \
-	"\x20\x00" "\x12\x00" \
-		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x0f\x00" \
-		FCONTENT2
+		virtual std::string rename()
+		{
+			return STRING_WITH_NULLS(
+				"\x20\x00" "\x12\x00"
+					"THREE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x0f\x00"
+					FCONTENT1
+				"\x20\x00" "\x12\x00"
+					"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x0f\x00"
+					FCONTENT2
+			);
+		}
 
-#define testdata_move \
-	"\x20\x00" "\x12\x00" \
-		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x0f\x00" \
-		FCONTENT2 \
-	"\x01\x00" "\x12\x00" \
-		"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x0f\x00" \
-		FCONTENT1
+		virtual std::string insert_end()
+		{
+			return STRING_WITH_NULLS(
+				"\x01\x00" "\x12\x00"
+					"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x0f\x00"
+					FCONTENT1
+				"\x20\x00" "\x12\x00"
+					"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x0f\x00"
+					FCONTENT2
+				"\x20\x00" "\x15\x00"
+					"THREE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x11\x00"
+					FCONTENT3
+			);
+		}
 
-#define testdata_resize_larger \
-	"\x01\x00" "\x17\x00" \
-		"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x14\x00" \
-		FCONTENT1 "\0\0\0\0\0" \
-	"\x20\x00" "\x12\x00" \
-		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x0f\x00" \
-		FCONTENT2
+		virtual std::string insert_mid()
+		{
+			return STRING_WITH_NULLS(
+				"\x01\x00" "\x12\x00"
+					"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x0f\x00"
+					FCONTENT1
+				"\x20\x00" "\x15\x00"
+					"THREE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x11\x00"
+					FCONTENT3
+				"\x20\x00" "\x12\x00"
+					"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x0f\x00"
+					FCONTENT2
+			);
+		}
 
-#define testdata_resize_smaller \
-	"\x01\x00" "\x0c\x00" \
-		"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x0a\x00" \
-		FCONTENT1_SMALL \
-	"\x20\x00" "\x12\x00" \
-		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x0f\x00" \
-		FCONTENT2
+		virtual std::string insert2()
+		{
+			return STRING_WITH_NULLS(
+				"\x01\x00" "\x12\x00"
+					"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x0f\x00"
+					FCONTENT1
+				"\x20\x00" "\x15\x00"
+					"THREE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x11\x00"
+					FCONTENT3
+				"\x20\x00" "\x14\x00"
+					"FOUR.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x10\x00"
+					FCONTENT4
+				"\x20\x00" "\x12\x00"
+					"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x0f\x00"
+					FCONTENT2
+			);
+		}
 
-#define testdata_resize_write \
-	"\x01\x00" "\x1b\x00" \
-		"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x17\x00" \
-		FCONTENT_OVERW \
-	"\x20\x00" "\x12\x00" \
-		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x0f\x00" \
-		FCONTENT2
+		virtual std::string remove()
+		{
+			return STRING_WITH_NULLS(
+				"\x20\x00" "\x12\x00"
+					"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x0f\x00"
+					FCONTENT2
+			);
+		}
 
-#define MAX_FILENAME_LEN  30
-#define INSERT_ATTRIBUTE EA_COMPRESSED
+		virtual std::string remove2()
+		{
+			return STRING_WITH_NULLS(
+				""
+			);
+		}
 
-#define ARCHIVE_CLASS fmt_dat_bash_compressed
-#define ARCHIVE_TYPE  "dat-bash"
-#include "test-archive.hpp"
+		virtual std::string insert_remove()
+		{
+			return STRING_WITH_NULLS(
+				"\x20\x00" "\x15\x00"
+					"THREE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x11\x00"
+					FCONTENT3
+				"\x20\x00" "\x12\x00"
+					"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x0f\x00"
+					FCONTENT2
+			);
+		}
 
-// Test some invalid formats to make sure they're not identified as valid
-// archives.  Note that they can still be opened though (by 'force'), this
-// only checks whether they look like valid files or not.
+		virtual std::string move()
+		{
+			return STRING_WITH_NULLS(
+				"\x20\x00" "\x12\x00"
+					"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x0f\x00"
+					FCONTENT2
+				"\x01\x00" "\x12\x00"
+					"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x0f\x00"
+					FCONTENT1
+			);
+		}
 
-// The "c00" test has already been performed in test-archive.hpp to ensure the
-// initial state is correctly identified as a valid archive.
+		virtual std::string resize_larger()
+		{
+			return STRING_WITH_NULLS(
+				"\x01\x00" "\x17\x00"
+					"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x14\x00"
+					FCONTENT1 "\0\0\0\0\0"
+				"\x20\x00" "\x12\x00"
+					"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x0f\x00"
+					FCONTENT2
+			);
+		}
 
-ISINSTANCE_TEST(c01,
-	"\x20\x00" "\x12\x00" \
-		"ONE.DAT\x05\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x0f\x00" \
-		FCONTENT1 \
-	"\x20\x00" "\x12\x00" \
-		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x0f\x00" \
-		FCONTENT2,
-	DefinitelyNo
-);
+		virtual std::string resize_smaller()
+		{
+			return STRING_WITH_NULLS(
+				"\x01\x00" "\x0c\x00"
+					"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x0a\x00"
+					FCONTENT1_SMALL
+				"\x20\x00" "\x12\x00"
+					"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x0f\x00"
+					FCONTENT2
+			);
+		}
 
-// Blank archive
-ISINSTANCE_TEST(c02,
-	"",
-	DefinitelyYes
-);
+		virtual std::string resize_write()
+		{
+			return STRING_WITH_NULLS(
+				"\x01\x00" "\x1b\x00"
+					"ONE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x17\x00"
+					FCONTENT_OVERW
+				"\x20\x00" "\x12\x00"
+					"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+					"\x0f\x00"
+					FCONTENT2
+			);
+		}
+};
 
-ISINSTANCE_TEST(c03,
-	"\x20\x00" "\x12\x01" \
-		"ONE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x0f\x00" \
-		FCONTENT1 \
-	"\x20\x00" "\x12\x00" \
-		"TWO.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-		"\x0f\x00" \
-		FCONTENT2,
-	DefinitelyNo
-);
+IMPLEMENT_TESTS(dat_bash_compressed);

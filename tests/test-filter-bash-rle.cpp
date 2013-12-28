@@ -24,20 +24,19 @@
 #include <camoto/stream_filtered.hpp>
 #include <camoto/util.hpp>
 #include "../src/filter-bash-rle.hpp"
-#include "tests.hpp"
 #include "test-filter.hpp"
 
 using namespace camoto;
 using namespace camoto::gamearchive;
 
-struct bash_rle_sample: public filter_sample {
+struct bash_rle_sample: public test_filter {
 	bash_rle_sample()
 	{
 		this->filter.reset(new filter_bash_rle());
 	}
 };
 
-struct bash_unrle_sample: public filter_sample {
+struct bash_unrle_sample: public test_filter {
 	bash_unrle_sample()
 	{
 		this->filter.reset(new filter_bash_unrle());
@@ -133,7 +132,7 @@ BOOST_AUTO_TEST_CASE(bash_unrle_long_escape)
 	BOOST_TEST_MESSAGE("Unescaping many RLE event chars in Monster Bash RLE-encoded data");
 
 	// Would come out larger post-RLE, so don't bother
-	this->in << makeString("AB\x90\x00\x90\xFF\x90\x00""D");
+	this->in << STRING_WITH_NULLS("AB\x90\x00\x90\xFF\x90\x00""D");
 
 	BOOST_CHECK_MESSAGE(is_equal(createString("AB" << std::string(1+254+1, '\x90') << "D")),
 		"Unescaping doubled RLE event char in Monster Bash RLE-encoded data failed");
@@ -160,7 +159,7 @@ BOOST_AUTO_TEST_CASE(bash_rle_escape)
 
 	this->in << "ABC\x90""D";
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString("ABC\x90\x00""D")),
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS("ABC\x90\x00""D")),
 		"Encoding RLE-escape in Monster Bash RLE-encoded data failed");
 }
 
@@ -190,7 +189,7 @@ BOOST_AUTO_TEST_CASE(bash_rle_escape_trailing)
 
 	this->in << "ABC\x90";
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString("ABC\x90\x00")),
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS("ABC\x90\x00")),
 		"Write ending with RLE char in Monster Bash RLE-encoded data failed");
 }
 
@@ -285,7 +284,7 @@ BOOST_AUTO_TEST_CASE(bash_rle_long_escape)
 	// Would come out larger post-RLE, so don't bother
 	this->in << "AB" << std::string(1+254+1, '\x90') << "D";
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString("AB\x90\x00\x90\xFF\x90\x00""D")),
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS("AB\x90\x00\x90\xFF\x90\x00""D")),
 		"Escaping doubled RLE event char in Monster Bash RLE-encoded data failed");
 }
 

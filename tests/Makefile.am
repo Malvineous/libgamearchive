@@ -1,6 +1,8 @@
 check_PROGRAMS = tests
 
 tests_SOURCES  = tests.cpp
+tests_SOURCES += test-archive.cpp
+tests_SOURCES += test-filter.cpp
 tests_SOURCES += test-filter-bash-rle.cpp
 tests_SOURCES += test-filter-bitswap.cpp
 tests_SOURCES += test-filter-ddave-rle.cpp
@@ -10,7 +12,6 @@ tests_SOURCES += test-filter-sam.cpp
 tests_SOURCES += test-filter-xor-blood.cpp
 tests_SOURCES += test-filter-xor.cpp
 tests_SOURCES += test-filter-zone66.cpp
-tests_SOURCES += test-filter.cpp
 tests_SOURCES += test-fmt-bnk-harry.cpp
 tests_SOURCES += test-fmt-dat-bash-compressed.cpp
 tests_SOURCES += test-fmt-dat-bash.cpp
@@ -27,14 +28,15 @@ tests_SOURCES += test-fmt-lbr-vinyl.cpp
 tests_SOURCES += test-fmt-pcxlib.cpp
 tests_SOURCES += test-fmt-pod-tv.cpp
 tests_SOURCES += test-fmt-res-stellar7.cpp
-tests_SOURCES += test-fmt-resource-tim.cpp test-fmt-resource-tim-fat.cpp
-tests_SOURCES += test-fmt-rff-blood.cpp test-fmt-rff-blood_encrypted.cpp
+tests_SOURCES += test-fmt-resource-tim.cpp
+tests_SOURCES += test-fmt-resource-tim-fat.cpp
+tests_SOURCES += test-fmt-rff-blood.cpp
+tests_SOURCES += test-fmt-rff-blood_encrypted.cpp
 tests_SOURCES += test-fmt-roads-skyroads.cpp
 tests_SOURCES += test-fmt-vol-cosmo.cpp
 
 EXTRA_tests_SOURCES = tests.hpp
 EXTRA_tests_SOURCES += test-archive.hpp
-EXTRA_tests_SOURCES += test-archive_new.hpp
 EXTRA_tests_SOURCES += test-filter.hpp
 
 TESTS = tests

@@ -1,5 +1,6 @@
-/*
- * test-fmt-res-stellar7.cpp - test code for RESArchiveFolder class.
+/**
+ * @file   test-arch-res-stellar7.cpp
+ * @brief  Test code for Stellar 7 .RES archives.
  *
  * Copyright (C) 2010-2013 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -17,114 +18,167 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define FILENAME1 "ONE:"
-#define FILENAME2 "TWO:"
-#define FILENAME3 "THR:"
-#define FILENAME4 "FOU:"
-
-#define testdata_initialstate \
-	"ONE:" "\x0f\x00\x00\x00" \
-	"This is one.dat" \
-	"TWO:" "\x0f\x00\x00\x00" \
-	"This is two.dat"
-
-#define testdata_rename \
-	"THR:" "\x0f\x00\x00\x00" \
-	"This is one.dat" \
-	"TWO:" "\x0f\x00\x00\x00" \
-	"This is two.dat"
-
-#define testdata_insert_end \
-	"ONE:" "\x0f\x00\x00\x00" \
-	"This is one.dat" \
-	"TWO:" "\x0f\x00\x00\x00" \
-	"This is two.dat" \
-	"THR:" "\x11\x00\x00\x00" \
-	"This is three.dat"
-
-#define testdata_insert_mid \
-	"ONE:" "\x0f\x00\x00\x00" \
-	"This is one.dat" \
-	"THR:" "\x11\x00\x00\x00" \
-	"This is three.dat" \
-	"TWO:" "\x0f\x00\x00\x00" \
-	"This is two.dat"
-
-#define testdata_insert2 \
-	"ONE:" "\x0f\x00\x00\x00" \
-	"This is one.dat" \
-	"THR:" "\x11\x00\x00\x00" \
-	"This is three.dat" \
-	"FOU:" "\x10\x00\x00\x00" \
-	"This is four.dat" \
-	"TWO:" "\x0f\x00\x00\x00" \
-	"This is two.dat"
-
-#define testdata_remove \
-	"TWO:" "\x0f\x00\x00\x00" \
-	"This is two.dat"
-
-#define testdata_remove2 \
-	""
-
-#define testdata_insert_remove \
-	"THR:" "\x11\x00\x00\x00" \
-	"This is three.dat" \
-	"TWO:" "\x0f\x00\x00\x00" \
-	"This is two.dat"
-
-#define testdata_move \
-	"TWO:" "\x0f\x00\x00\x00" \
-	"This is two.dat" \
-	"ONE:" "\x0f\x00\x00\x00" \
-	"This is one.dat"
-
-#define testdata_resize_larger \
-	"ONE:" "\x14\x00\x00\x00" \
-	"This is one.dat\0\0\0\0\0" \
-	"TWO:" "\x0f\x00\x00\x00" \
-	"This is two.dat"
-
-#define testdata_resize_smaller \
-	"ONE:" "\x0a\x00\x00\x00" \
-	"This is on" \
-	"TWO:" "\x0f\x00\x00\x00" \
-	"This is two.dat"
-
-#define testdata_resize_write \
-	"ONE:" "\x17\x00\x00\x00" \
-	"Now resized to 23 chars" \
-	"TWO:" "\x0f\x00\x00\x00" \
-	"This is two.dat"
-
-#define MAX_FILENAME_LEN  4
-
-#define ARCHIVE_CLASS fmt_res_stellar7
-#define ARCHIVE_TYPE  "res-stellar7"
 #include "test-archive.hpp"
 
-// Test some invalid formats to make sure they're not identified as valid
-// archives.  Note that they can still be opened though (by 'force'), this
-// only checks whether they look like valid files or not.
+class test_res_stellar7: public test_archive
+{
+	public:
+		test_res_stellar7()
+		{
+			this->type = "res-stellar7";
+			this->filename[0] = "ONE:";
+			this->filename[1] = "TWO:";
+			this->filename[2] = "THR:";
+			this->filename[3] = "FOU:";
+			this->lenMaxFilename = 4;
+		}
 
-// The "c00" test has already been performed in test-archive.hpp to ensure the
-// initial state is correctly identified as a valid archive.
+		void addTests()
+		{
+			this->test_archive::addTests();
 
-ISINSTANCE_TEST(c01,
-	"\x5NE:" "\x0f\x00\x00\x00"
-	"This is one.dat"
-	"TWO:" "\x0f\x00\x00\x00"
-	"This is two.dat",
-	DefinitelyNo
-);
+			// c00: Initial state
+			this->isInstance(ArchiveType::DefinitelyYes, this->initialstate());
 
-ISINSTANCE_TEST(c02,
-	"ONE:" "\xef\x00\x00\x00"
-	"This is one.dat"
-	"TWO:" "\x0f\x00\x00\x00"
-	"This is two.dat",
-	DefinitelyNo
-);
+			// c01: Control characters in filename
+			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+				"\x5NE:" "\x0f\x00\x00\x00"
+				"This is one.dat"
+				"TWO:" "\x0f\x00\x00\x00"
+				"This is two.dat"
+			));
 
-// Not really possible to do any INVALIDDATA_TEST() tests here, because the
-// worst that can happen is it looks like the archive has been truncated.
+			// c02: Offset past EOF
+			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+				"ONE:" "\xef\x00\x00\x00"
+				"This is one.dat"
+				"TWO:" "\x0f\x00\x00\x00"
+				"This is two.dat"
+			));
+		}
+
+		virtual std::string initialstate()
+		{
+			return STRING_WITH_NULLS(
+				"ONE:" "\x0f\x00\x00\x00"
+				"This is one.dat"
+				"TWO:" "\x0f\x00\x00\x00"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string rename()
+		{
+			return STRING_WITH_NULLS(
+				"THR:" "\x0f\x00\x00\x00"
+				"This is one.dat"
+				"TWO:" "\x0f\x00\x00\x00"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string insert_end()
+		{
+			return STRING_WITH_NULLS(
+				"ONE:" "\x0f\x00\x00\x00"
+				"This is one.dat"
+				"TWO:" "\x0f\x00\x00\x00"
+				"This is two.dat"
+				"THR:" "\x11\x00\x00\x00"
+				"This is three.dat"
+			);
+		}
+
+		virtual std::string insert_mid()
+		{
+			return STRING_WITH_NULLS(
+				"ONE:" "\x0f\x00\x00\x00"
+				"This is one.dat"
+				"THR:" "\x11\x00\x00\x00"
+				"This is three.dat"
+				"TWO:" "\x0f\x00\x00\x00"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string insert2()
+		{
+			return STRING_WITH_NULLS(
+				"ONE:" "\x0f\x00\x00\x00"
+				"This is one.dat"
+				"THR:" "\x11\x00\x00\x00"
+				"This is three.dat"
+				"FOU:" "\x10\x00\x00\x00"
+				"This is four.dat"
+				"TWO:" "\x0f\x00\x00\x00"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string remove()
+		{
+			return STRING_WITH_NULLS(
+				"TWO:" "\x0f\x00\x00\x00"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string remove2()
+		{
+			return STRING_WITH_NULLS(
+				""
+			);
+		}
+
+		virtual std::string insert_remove()
+		{
+			return STRING_WITH_NULLS(
+				"THR:" "\x11\x00\x00\x00"
+				"This is three.dat"
+				"TWO:" "\x0f\x00\x00\x00"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string move()
+		{
+			return STRING_WITH_NULLS(
+				"TWO:" "\x0f\x00\x00\x00"
+				"This is two.dat"
+				"ONE:" "\x0f\x00\x00\x00"
+				"This is one.dat"
+			);
+		}
+
+		virtual std::string resize_larger()
+		{
+			return STRING_WITH_NULLS(
+				"ONE:" "\x14\x00\x00\x00"
+				"This is one.dat\0\0\0\0\0"
+				"TWO:" "\x0f\x00\x00\x00"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string resize_smaller()
+		{
+			return STRING_WITH_NULLS(
+				"ONE:" "\x0a\x00\x00\x00"
+				"This is on"
+				"TWO:" "\x0f\x00\x00\x00"
+				"This is two.dat"
+			);
+		}
+
+		virtual std::string resize_write()
+		{
+			return STRING_WITH_NULLS(
+				"ONE:" "\x17\x00\x00\x00"
+				"Now resized to 23 chars"
+				"TWO:" "\x0f\x00\x00\x00"
+				"This is two.dat"
+			);
+		}
+};
+
+IMPLEMENT_TESTS(res_stellar7);

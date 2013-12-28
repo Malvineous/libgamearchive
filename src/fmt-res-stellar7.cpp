@@ -76,7 +76,7 @@ ArchiveType::Certainty RESType::isInstance(stream::input_sptr psArchive) const
 
 	psArchive->seekg(0, stream::start);
 
-	stream::pos offNext = 0; // offset of first file (+1 for KenSilverman sig)
+	stream::pos offNext = 0;
 	int i;
 	for (i = 0; (
 		(i < RES_SAFETY_MAX_FILECOUNT) &&

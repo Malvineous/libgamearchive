@@ -22,22 +22,20 @@
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <camoto/util.hpp>
-
-#include "tests.hpp"
 #include "test-filter.hpp"
 #include "../src/filter-zone66.hpp"
 
 using namespace camoto;
 using namespace camoto::gamearchive;
 
-struct z66_compress_sample: public filter_sample {
+struct z66_compress_sample: public test_filter {
 	z66_compress_sample()
 	{
 		this->filter.reset(new filter_z66_compress());
 	}
 };
 
-struct z66_decompress_sample: public filter_sample {
+struct z66_decompress_sample: public test_filter {
 	z66_decompress_sample()
 	{
 		this->filter.reset(new filter_z66_decompress());
@@ -156,9 +154,9 @@ BOOST_AUTO_TEST_CASE(decode)
 {
 	BOOST_TEST_MESSAGE("Decompress some Zone 66 format data");
 
-	in << makeString(DATA_ENCODED);
+	in << STRING_WITH_NULLS(DATA_ENCODED);
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString(DATA_DECODED)),
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(DATA_DECODED)),
 		"Decompressing Zone 66 data failed");
 }
 
@@ -166,9 +164,9 @@ BOOST_AUTO_TEST_CASE(decode_camoto)
 {
 	BOOST_TEST_MESSAGE("Decompress some Zone 66 format data compressed by Camoto");
 
-	in << makeString(DATA_ENCODED_CAMOTO);
+	in << STRING_WITH_NULLS(DATA_ENCODED_CAMOTO);
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString(DATA_DECODED_CAMOTO)),
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(DATA_DECODED_CAMOTO)),
 		"Decompressing Zone 66 data failed");
 }
 
@@ -180,9 +178,9 @@ BOOST_AUTO_TEST_CASE(encode)
 {
 	BOOST_TEST_MESSAGE("Compress some data in Zone 66 format");
 
-	in << makeString(DATA_DECODED_CAMOTO);
+	in << STRING_WITH_NULLS(DATA_DECODED_CAMOTO);
 
-	BOOST_CHECK_MESSAGE(is_equal(makeString(DATA_ENCODED_CAMOTO)),
+	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(DATA_ENCODED_CAMOTO)),
 		"Compressing Zone 66 data failed");
 }
 

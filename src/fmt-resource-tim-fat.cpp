@@ -95,6 +95,7 @@ ArchiveType::Certainty TIMResourceFATType::isInstance(stream::input_sptr psArchi
 			dataSize = count * TIM_CONTENT_ITEM_LEN;
 			step += 2 + dataSize;
 		}
+		// There should be no data following the last file.
 		// TESTED BY: fmt_resource_tim_fat_isinstance_c02
 		if (step != lenArchive) return DefinitelyNo;
 
