@@ -199,7 +199,7 @@ void SkyRoadsRoadsArchive::updateFileSize(const FATEntry *pid, stream::delta siz
 	// TESTED BY: fmt_skyroads_roads_insert*
 	// TESTED BY: fmt_skyroads_roads_resize*
 	this->psArchive->seekp(pid->iIndex * SRR_FAT_ENTRY_LEN + 2, stream::start);
-	this->psArchive << u16le(pid->realSize);
+	this->psArchive << u16le(pid->storedSize);
 	return;
 }
 
