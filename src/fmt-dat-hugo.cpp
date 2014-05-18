@@ -108,6 +108,12 @@ ArchiveType::Certainty DAT_HugoType::isInstance(stream::input_sptr psArchive) co
 		if (offEntry + lenEntry > lenArchive) return DefinitelyNo;
 	}
 
+	if (offEntry + lenEntry != lenArchive) {
+		// There's trailing data at the end of the format, so it could be one
+		// of the other similar ones.
+		return Unsure;
+	}
+
 	// If we've made it this far, this is almost certainly a DAT file.
 
 	// TESTED BY: fmt_dat_hugo_isinstance_c00
@@ -240,8 +246,7 @@ void DAT_HugoArchive::updateFileName(const FATEntry *pid, const std::string& str
 }
 
 void DAT_HugoArchive::updateFileOffset(const FATEntry *pid,
-	stream::delta offDelta
-)
+	stream::delta offDelta)
 {
 	// TESTED BY: fmt_dat_hugo_insert*
 	// TESTED BY: fmt_dat_hugo_resize*
@@ -252,8 +257,7 @@ void DAT_HugoArchive::updateFileOffset(const FATEntry *pid,
 }
 
 void DAT_HugoArchive::updateFileSize(const FATEntry *pid,
-	stream::delta sizeDelta
-)
+	stream::delta sizeDelta)
 {
 	// TESTED BY: fmt_dat_hugo_insert*
 	// TESTED BY: fmt_dat_hugo_resize*
@@ -263,9 +267,10 @@ void DAT_HugoArchive::updateFileSize(const FATEntry *pid,
 }
 
 FATArchive::FATEntry *DAT_HugoArchive::preInsertFile(
-	const FATEntry *idBeforeThis, FATEntry *pNewEntry
-)
+	const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
+	// TESTED BY: fmt_dat_hugo_insert*
+
 	// Set the format-specific variables
 	pNewEntry->lenHeader = 0;
 

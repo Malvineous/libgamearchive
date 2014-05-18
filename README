@@ -1,5 +1,5 @@
 Camoto: Classic-game Modding Tools
-Copyright 2010-2013 Adam Nielsen <malvineous@shikadi.net>
+Copyright 2010-2014 Adam Nielsen <malvineous@shikadi.net>
 http://www.shikadi.net/camoto/
 
 Camoto is a collection of utilities for editing (modding) "classic games",
@@ -28,6 +28,7 @@ File formats from the following games have been implemented:
   * Hocus Pocus (.dat)
   * Hugo II: Whodunit? and Hugo III: Jungle of Doom! (.dat)
   * Lion King (.epf)
+  * Lost Vikings (.dat)
   * Major Stryker (.ms[123])
   * Monster Bash (.dat)
   * Raptor (.glb)
