@@ -171,6 +171,52 @@ WADArchive::~WADArchive()
 {
 }
 
+WADArchive::MetadataTypes WADArchive::getMetadataList() const
+{
+	// TESTED BY: fmt_wad_doom::test_metadata_get_ver
+	MetadataTypes m;
+	m.push_back(Version);
+	return m;
+}
+
+std::string WADArchive::getMetadata(MetadataType item) const
+{
+	// TESTED BY: fmt_wad_doom::test_metadata_get_ver
+	switch (item) {
+		case Version: {
+			psArchive->seekg(0, stream::start);
+			char wadtype;
+			psArchive->read(&wadtype, 1);
+			return std::string(1, wadtype);
+		}
+		default:
+			assert(false);
+			throw stream::error("unsupported metadata item");
+	}
+}
+
+void WADArchive::setMetadata(MetadataType item, const std::string& value)
+{
+	// TESTED BY: test_wad_doom_changemetadata_c01
+	// TESTED BY: fmt_wad_doom_new_to_initialstate
+	switch (item) {
+		case Version:
+			if (
+				(value.compare("I") != 0) &&
+				(value.compare("P") != 0)
+			) {
+				throw stream::error("Version can only be set to I or P for IWAD or PWAD");
+			}
+			this->psArchive->seekp(0, stream::start);
+			this->psArchive->write(&(value[0]), 1);
+			break;
+		default:
+			assert(false);
+			throw stream::error("unsupported metadata item");
+	}
+	return;
+}
+
 void WADArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
 {
 	// TESTED BY: fmt_wad_doom_rename

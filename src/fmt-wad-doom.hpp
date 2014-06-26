@@ -53,6 +53,10 @@ class WADArchive: virtual public FATArchive
 		WADArchive(stream::inout_sptr psArchive);
 		virtual ~WADArchive();
 
+		virtual MetadataTypes getMetadataList() const;
+		virtual std::string getMetadata(MetadataType item) const;
+		virtual void setMetadata(MetadataType item, const std::string& value);
+
 		virtual void updateFileName(const FATEntry *pid,
 			const std::string& strNewName);
 		virtual void updateFileOffset(const FATEntry *pid, stream::delta offDelta);
