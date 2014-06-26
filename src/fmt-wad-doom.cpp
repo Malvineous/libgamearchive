@@ -68,6 +68,7 @@ std::vector<std::string> WADType::getFileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("wad");
+	vcExtensions.push_back("rts");
 	return vcExtensions;
 }
 
