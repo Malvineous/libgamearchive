@@ -87,7 +87,8 @@ stream::inout_sptr applyFilter(gamearchive::ArchivePtr arch,
 test_archive::test_archive()
 	:	init(false),
 		numIsInstanceTests(0),
-		numInvalidContentTests(1)
+		numInvalidContentTests(1),
+		numChangeMetadataTests(1)
 {
 	this->filename[0] = "ONE.DAT";
 	this->filename[1] = "TWO.DAT";
@@ -343,6 +344,44 @@ void test_archive::test_invalidContent(const std::string& content,
 		stream::error
 	);
 
+	return;
+}
+
+void test_archive::changeMetadata(camoto::Metadata::MetadataType item,
+	const std::string& newValue, const std::string& content)
+{
+	boost::function<void()> fnTest = boost::bind(&test_archive::test_changeMetadata,
+		this, item, newValue, content, this->numChangeMetadataTests);
+	this->ts->add(boost::unit_test::make_test_case(
+			boost::unit_test::callback0<>(fnTest),
+			createString("test_archive[" << this->basename << "]::changemetadata_c"
+				<< std::setfill('0') << std::setw(2) << this->numIsInstanceTests)
+		));
+	this->numChangeMetadataTests++;
+	return;
+}
+
+void test_archive::test_changeMetadata(camoto::Metadata::MetadataType item,
+	const std::string& newValue, const std::string& content,
+	unsigned int testNumber)
+{
+	BOOST_TEST_MESSAGE(createString("changeMetadata check (" << this->basename
+		<< "; " << std::setfill('0') << std::setw(2) << testNumber << ")"));
+
+	this->prepareTest(false);
+	this->pArchive->setMetadata(item, newValue);
+
+	stream::string_sptr ss(new stream::string());
+	ss << content;
+
+	BOOST_CHECK_MESSAGE(
+		this->is_content_equal(content),
+		"Error setting metadata field"
+	);
+/*
+	CHECK_SUPP_ITEM(FAT, metadata_set_desc_larger,
+		"Error setting 'description' metadata field");
+*/
 	return;
 }
 

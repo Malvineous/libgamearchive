@@ -185,6 +185,28 @@ class test_archive: public test_main
 		void test_invalidContent(const std::string& content,
 			unsigned int testNumber);
 
+		/// Add an changeMetadata check to run later.
+		/**
+		 * These checks make sure metadata alterations work correctly.
+		 *
+		 * @param item
+		 *   Metadata item to change.
+		 *
+		 * @param newValue
+		 *   New content for metadata item.
+		 *
+		 * @param content
+		 *   Expected result after taking the initialstate() and changing the
+		 *   given metadata item as specified.
+		 */
+		void changeMetadata(camoto::Metadata::MetadataType item,
+			const std::string& newValue, const std::string& content);
+
+		/// Perform a changeMetadata check now.
+		void test_changeMetadata(camoto::Metadata::MetadataType item,
+			const std::string& newValue, const std::string& content,
+			unsigned int testNumber);
+
 		/// Does the archive content match the parameter?
 		boost::test_tools::predicate_result is_content_equal(const std::string& exp);
 
@@ -214,6 +236,9 @@ class test_archive: public test_main
 
 		/// Number of invalidData tests, used to number them sequentially.
 		unsigned int numInvalidContentTests;
+
+		/// Number of changeMetadata tests, used to number them sequentially.
+		unsigned int numChangeMetadataTests;
 
 	public:
 		/// File type code for this format.
