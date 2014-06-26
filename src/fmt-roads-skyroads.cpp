@@ -166,8 +166,8 @@ SkyRoadsRoadsArchive::SkyRoadsRoadsArchive(stream::inout_sptr psArchive)
 			fatEntry->iIndex = i;
 			fatEntry->lenHeader = 0;
 			fatEntry->type = "map/skyroads";
-			fatEntry->fAttr = EA_COMPRESSED;
-			fatEntry->filter = "";//"lzss-skyroads"; // decompression algorithm
+			fatEntry->fAttr = 0;
+			fatEntry->filter = "";
 			fatEntry->bValid = true;
 			this->vcFAT.push_back(ep);
 

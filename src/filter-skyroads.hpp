@@ -51,8 +51,8 @@ class filter_skyroads_unlzs: virtual public filter
 			S0_READ_LEN,     ///< Read the header
 			S1_READ_FLAG1,   ///< Read the first code/flag
 			S2_READ_FLAG2,   ///< Read the second code/flag
-			S3_DECOMP_SHORT,
-			S4_DECOMP_LONG,
+			S3_DECOMP_SHORT, ///< Short-length decompression
+			S4_DECOMP_LONG,  ///< Long-length decompression
 			S5_COPY_BYTE,    ///< Copy a literal byte
 			S6_GET_COUNT,    ///< Read the LZS length data
 			S7_COPY_OFFSET,  ///< Copy data from the dictionary

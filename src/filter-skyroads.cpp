@@ -154,8 +154,16 @@ void filter_skyroads_unlzs::transform(uint8_t *out, stream::len *lenOut,
 					break;
 				}
 				this->lzsLength = 2 + code;
-				this->state = S7_COPY_OFFSET;
 
+				if (this->lzsLength > SKYROADS_DICT_SIZE) {
+					std::cerr << "lzs-skyroads: Length is > dict size, data is probably "
+						"corrupt, aborting." << std::endl;
+					throw stream::error("SkyRoads compressed data has backreference "
+						"larger than dictionary length.  Data is probably corrupt or not "
+						"in this compression format.");
+				}
+
+				this->state = S7_COPY_OFFSET;
 				this->lzsDictPos = (SKYROADS_DICT_SIZE + this->dictPos - this->dist) % SKYROADS_DICT_SIZE;
 				break;
 
