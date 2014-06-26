@@ -44,6 +44,7 @@ libgamearchive_la_SOURCES += fmt-resource-tim.cpp
 libgamearchive_la_SOURCES += fmt-rff-blood.cpp
 libgamearchive_la_SOURCES += fmt-roads-skyroads.cpp
 libgamearchive_la_SOURCES += fmt-vol-cosmo.cpp
+libgamearchive_la_SOURCES += fmt-wad-doom.cpp
 libgamearchive_la_SOURCES += util.cpp
 
 EXTRA_libgamearchive_la_SOURCES  = fatarchive.hpp
@@ -87,6 +88,7 @@ EXTRA_libgamearchive_la_SOURCES += fmt-resource-tim.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-rff-blood.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-roads-skyroads.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-vol-cosmo.hpp
+EXTRA_libgamearchive_la_SOURCES += fmt-wad-doom.hpp
 
 WARNINGS = -Wall -Wextra -Wno-unused-parameter
 

@@ -35,6 +35,7 @@ tests_SOURCES += test-fmt-rff-blood.cpp
 tests_SOURCES += test-fmt-rff-blood_encrypted.cpp
 tests_SOURCES += test-fmt-roads-skyroads.cpp
 tests_SOURCES += test-fmt-vol-cosmo.cpp
+tests_SOURCES += test-fmt-wad-doom.cpp
 
 EXTRA_tests_SOURCES = tests.hpp
 EXTRA_tests_SOURCES += test-archive.hpp

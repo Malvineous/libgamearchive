@@ -59,6 +59,7 @@
 #include "fmt-rff-blood.hpp"
 #include "fmt-roads-skyroads.hpp"
 #include "fmt-vol-cosmo.hpp"
+#include "fmt-wad-doom.hpp"
 
 namespace camoto {
 namespace gamearchive {
@@ -126,6 +127,7 @@ ActualManager::ActualManager()
 	this->vcTypes.push_back(ArchiveTypePtr(new TIMResourceFATType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new TIMResourceType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new VOLType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new WADType()));
 
 	// The following formats are difficult to autodetect, so putting them last
 	// means they should only be checked if all the more robust formats above
