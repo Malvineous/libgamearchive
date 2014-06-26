@@ -24,11 +24,8 @@
 #define BOOST_TEST_DYN_LINK
 #endif
 #include <boost/test/unit_test.hpp>
-#include <boost/algorithm/string.hpp> // for case-insensitive string compare
-#include <boost/bind.hpp>
 #include <iomanip>
 
-#include <camoto/gamearchive/manager.hpp>
 #include <camoto/debug.hpp> // for ANSI colours
 #include <camoto/util.hpp>  // createString
 #include "tests.hpp"

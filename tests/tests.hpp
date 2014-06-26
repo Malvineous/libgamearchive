@@ -53,14 +53,14 @@ class suite_test_tmpl {
 
 		suite_test_tmpl(const std::string& basename)
 		{
-			boost::unit_test::test_suite *tsArchive
-				= BOOST_TEST_SUITE("test_arch_" + basename);
+			boost::unit_test::test_suite *ts
+				= BOOST_TEST_SUITE("test_" + basename);
 			this->test_results.reset(new T);
-			test_results->ts = tsArchive;
+			test_results->ts = ts;
 			test_results->basename = basename;
 
 			test_results->addTests();
-			boost::unit_test::framework::master_test_suite().add(tsArchive);
+			boost::unit_test::framework::master_test_suite().add(ts);
 		}
 };
 
