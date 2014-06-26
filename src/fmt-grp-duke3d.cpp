@@ -120,11 +120,11 @@ SuppFilenames GRPType::getRequiredSupps(stream::input_sptr data,
 GRPArchive::GRPArchive(stream::inout_sptr psArchive)
 	:	FATArchive(psArchive, GRP_FIRST_FILE_OFFSET, GRP_MAX_FILENAME_LEN)
 {
-	this->psArchive->seekg(12, stream::start); // skip "KenSilverman" sig
+	this->psArchive->seekg(GRP_FILECOUNT_OFFSET, stream::start); // skip "KenSilverman" sig
 
 	// We still have to perform sanity checks in case the user forced an archive
 	// to open even though it failed the signature check.
-	if (this->psArchive->tellg() != 12) throw stream::error("file too short");
+	if (this->psArchive->tellg() != GRP_FILECOUNT_OFFSET) throw stream::error("file too short");
 
 	uint32_t numFiles;
 	this->psArchive >> u32le(numFiles);
