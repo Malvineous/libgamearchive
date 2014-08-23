@@ -31,6 +31,8 @@
 class test_main
 {
 	public:
+		test_main();
+
 		void printNice(boost::test_tools::predicate_result& res,
 			const std::string& s, const std::string& diff);
 
@@ -43,6 +45,7 @@ class test_main
 	public:
 		boost::unit_test::test_suite *ts; ///< Suite to add tests to
 		std::string basename; ///< Name of final class
+		unsigned int outputWidth; ///< Width of output hexdump, as number of bytes shown per line
 };
 
 /// Template class to add supported tests for each format to the test tree
