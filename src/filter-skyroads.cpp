@@ -2,7 +2,7 @@
  * @file   filter-skyroads-lzs.cpp
  * @brief  Filter implementation for SkyRoads LZS compression.
  *
- * Copyright (C) 2010-2013 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2014 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <iostream>
 #include <boost/bind.hpp>
 #include <camoto/stream_filtered.hpp>
 #include "filter-skyroads.hpp"
