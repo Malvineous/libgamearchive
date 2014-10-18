@@ -26,6 +26,7 @@ tests_SOURCES += test-fmt-glb-raptor.cpp
 tests_SOURCES += test-fmt-grp-duke3d.cpp
 tests_SOURCES += test-fmt-hog-descent.cpp
 tests_SOURCES += test-fmt-lbr-vinyl.cpp
+tests_SOURCES += test-fmt-lib-mythos.cpp
 tests_SOURCES += test-fmt-pcxlib.cpp
 tests_SOURCES += test-fmt-pod-tv.cpp
 tests_SOURCES += test-fmt-res-stellar7.cpp

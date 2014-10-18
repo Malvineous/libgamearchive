@@ -51,6 +51,7 @@
 #include "fmt-grp-duke3d.hpp"
 #include "fmt-hog-descent.hpp"
 #include "fmt-lbr-vinyl.hpp"
+#include "fmt-lib-mythos.hpp"
 #include "fmt-pcxlib.hpp"
 #include "fmt-pod-tv.hpp"
 #include "fmt-res-stellar7.hpp"
@@ -119,6 +120,7 @@ ActualManager::ActualManager()
 	this->vcTypes.push_back(ArchiveTypePtr(new GRPType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new HOGType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new LBRType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new LIB_MythosType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new PCXLibType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new PODType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new RESType()));

@@ -26,6 +26,7 @@ class test_grp_duke3d: public test_archive
 		test_grp_duke3d()
 		{
 			this->type = "grp-duke3d";
+			this->lenMaxFilename = 12;
 		}
 
 		void addTests()
