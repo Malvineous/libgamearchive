@@ -26,6 +26,7 @@ File formats from the following games have been implemented:
   * Duke Nukem 3D (.grp, .rts)
   * God of Thunder (.dat) [no decompression yet]
   * Halloween Harry (.bnk, harry.-0)
+  * Highway Hunter (.dat)
   * Heretic (.wad)
   * Hexen (.wad)
   * Hocus Pocus (.dat)

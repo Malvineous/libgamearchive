@@ -37,6 +37,7 @@
 #include "fmt-da-levels.hpp"
 #include "fmt-dat-bash.hpp"
 #include "fmt-dat-got.hpp"
+#include "fmt-dat-highway.hpp"
 #include "fmt-dat-hocus.hpp"
 #include "fmt-dat-hugo.hpp"
 #include "fmt-dat-lostvikings.hpp"
@@ -109,6 +110,7 @@ ActualManager::ActualManager()
 	this->vcTypes.push_back(ArchiveTypePtr(new BNKType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_BashType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_GoTType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new DAT_HighwayType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_LostVikingsType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_SangoType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_WackyType()));

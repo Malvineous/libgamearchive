@@ -16,6 +16,7 @@ tests_SOURCES += test-fmt-bnk-harry.cpp
 tests_SOURCES += test-fmt-dat-bash-compressed.cpp
 tests_SOURCES += test-fmt-dat-bash.cpp
 tests_SOURCES += test-fmt-dat-got.cpp
+tests_SOURCES += test-fmt-dat-highway.cpp
 tests_SOURCES += test-fmt-dat-hugo.cpp
 tests_SOURCES += test-fmt-dat-lostvikings.cpp
 tests_SOURCES += test-fmt-dat-sango.cpp
