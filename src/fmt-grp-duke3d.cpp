@@ -5,7 +5,7 @@
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/GRP_Format
  *
- * Copyright (C) 2010-2013 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2014 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -83,6 +83,7 @@ ArchiveType::Certainty GRPType::isInstance(stream::input_sptr psArchive) const
 {
 	stream::pos lenArchive = psArchive->size();
 
+	// File too short
 	// TESTED BY: fmt_grp_duke3d_isinstance_c02
 	if (lenArchive < GRP_FAT_ENTRY_LEN) return DefinitelyNo; // too short
 
@@ -90,11 +91,12 @@ ArchiveType::Certainty GRPType::isInstance(stream::input_sptr psArchive) const
 	psArchive->seekg(0, stream::start);
 	psArchive->read(sig, 12);
 
-	// TESTED BY: fmt_grp_duke3d_isinstance_c00
-	if (strncmp(sig, "KenSilverman", 12) == 0) return DefinitelyYes;
-
+	// Bad signature
 	// TESTED BY: fmt_grp_duke3d_isinstance_c01
-	return DefinitelyNo;
+	if (strncmp(sig, "KenSilverman", 12) != 0) return DefinitelyNo;
+
+	// TESTED BY: fmt_grp_duke3d_isinstance_c00
+	return DefinitelyYes;
 }
 
 ArchivePtr GRPType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const

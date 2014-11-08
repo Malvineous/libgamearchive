@@ -1,8 +1,8 @@
 /**
- * @file   test-arch-grp-duke3d.cpp
+ * @file   test-fmt-grp-duke3d.cpp
  * @brief  Test code for Duke Nukem 3D .GRP archives.
  *
- * Copyright (C) 2010-2013 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2014 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@ class test_grp_duke3d: public test_archive
 				"This is two.dat"
 			));
 
-			// c01: File too short
+			// c02: File too short
 			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
 				"KenSilverman\x00\x00"
 			));
