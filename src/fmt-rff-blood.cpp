@@ -137,9 +137,11 @@ RFFArchive::RFFArchive(stream::inout_sptr psArchive)
 	this->psArchive->seekg(4, stream::start); // skip "RFF\x1A" sig
 
 	uint32_t offFAT, numFiles;
+	uint16_t unknown1;
 
 	this->psArchive
-		>> u32le(this->version)
+		>> u16le(this->version)
+		>> u16le(unknown1)
 		>> u32le(offFAT)
 		>> u32le(numFiles);
 
@@ -280,7 +282,8 @@ void RFFArchive::setMetadata(MetadataType item, const std::string& value)
 
 			// Write new version number into file header
 			this->psArchive->seekg(4, stream::start);
-			this->psArchive << u32le(this->version);
+			this->psArchive << u16le(this->version);
+			this->psArchive << u16le(0); // TODO: write 1 here for 0x200?
 			break;
 		}
 		default:
