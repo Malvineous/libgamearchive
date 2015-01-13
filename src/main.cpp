@@ -41,6 +41,7 @@
 #include "fmt-dat-hocus.hpp"
 #include "fmt-dat-hugo.hpp"
 #include "fmt-dat-lostvikings.hpp"
+#include "fmt-dat-mystic.hpp"
 #include "fmt-dat-sango.hpp"
 #include "fmt-dat-wacky.hpp"
 #include "fmt-dlt-stargunner.hpp"
@@ -112,6 +113,7 @@ ActualManager::ActualManager()
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_GoTType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_HighwayType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_LostVikingsType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new DAT_MysticType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_SangoType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DAT_WackyType()));
 	this->vcTypes.push_back(ArchiveTypePtr(new DLTType()));
