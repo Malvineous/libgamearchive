@@ -134,7 +134,7 @@ ArchiveType::Certainty DAT_GoTType::isInstance(stream::input_sptr psArchive) con
 			// TESTED BY: fmt_dat_got_isinstance_c04
 			if (offEntry + lenEntry > lenArchive) return DefinitelyNo;
 		}
-	} catch (const stream::incomplete_read& e) {
+	} catch (const stream::incomplete_read&) {
 		return DefinitelyNo;
 	}
 

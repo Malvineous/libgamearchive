@@ -35,7 +35,7 @@ class filter_bash_unrle: virtual public filter
 			const uint8_t *in, stream::len *lenIn);
 
 	protected:
-		char prev; ///< Previous byte read
+		uint8_t prev; ///< Previous byte read
 		int count; ///< How many times to repeat prev
 };
 
