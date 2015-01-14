@@ -23,6 +23,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/bind.hpp>
+#include <boost/weak_ptr.hpp>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/stream_memory.hpp>
 #include <camoto/util.hpp>
@@ -139,8 +140,11 @@ SuppFilenames GLBType::getRequiredSupps(stream::input_sptr data,
  * extra room, so the underlying data is already of the correct size.  We just
  * have to tell the substream it can now use this extra data.
  */
-void fakeResizeSubstream(stream::output_sub_sptr s, stream::len newSize)
+void fakeResizeSubstream(boost::weak_ptr<stream::output_sub> w_s, stream::len newSize)
 {
+	stream::output_sub_sptr s = w_s.lock();
+	if (!s) return;
+
 	s->resize(newSize);
 	return;
 }
@@ -224,7 +228,8 @@ void GLBArchive::flush()
 {
 	GLBFATFilterType glbFilterType;
 	stream::output_sub_sptr substrFAT(new stream::output_sub);
-	stream::fn_truncate fnTruncateSub = boost::bind<void>(&fakeResizeSubstream, substrFAT, _1);
+	stream::fn_truncate fnTruncateSub = boost::bind<void>(&fakeResizeSubstream,
+		boost::weak_ptr<stream::output_sub>(substrFAT), _1);
 	substrFAT->open(this->psArchive, 0,
 		GLB_HEADER_LEN + this->vcFAT.size() * GLB_FAT_ENTRY_LEN, fnTruncateSub);
 #ifdef GLB_CLEARTEXT
