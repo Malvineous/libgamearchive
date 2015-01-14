@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(rff_crypt_write_filteredstream)
 	f->flush();
 
 	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS("\x00\x01\x03\x02\xFD\xFD\xFC\xFC"),
-		out->str()),
+		*(out->str())),
 		"Encoding data through filteredstream failed");
 }
 

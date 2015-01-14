@@ -393,7 +393,7 @@ boost::test_tools::predicate_result test_archive::is_content_equal(
 		this->pArchive->flush()
 	);
 
-	return this->is_equal(exp, this->base->str());
+	return this->is_equal(exp, *(this->base->str()));
 }
 
 boost::test_tools::predicate_result test_archive::is_supp_equal(
@@ -406,7 +406,7 @@ boost::test_tools::predicate_result test_archive::is_supp_equal(
 	);
 	stream::string_sptr suppBase =
 		boost::dynamic_pointer_cast<stream::string>(this->suppData[type]);
-	return this->is_equal(strExpected, suppBase->str());
+	return this->is_equal(strExpected, *(suppBase->str()));
 }
 
 void test_archive::test_isinstance_others()
@@ -458,7 +458,7 @@ void test_archive::test_open()
 	stream::copy(out, pfsIn);
 
 	BOOST_CHECK_MESSAGE(
-		this->is_equal(this->content[0], out->str()),
+		this->is_equal(this->content[0], *(out->str())),
 		"Error opening file or wrong file opened"
 	);
 }
@@ -895,7 +895,7 @@ void test_archive::test_resize_write()
 	stream::copy(out, pfsIn);
 
 	BOOST_CHECK_MESSAGE(
-		this->is_equal(this->content[1], out->str()),
+		this->is_equal(this->content[1], *(out->str())),
 		"Unrelated file was corrupted after file resize operation"
 	);
 }
@@ -1267,7 +1267,7 @@ void test_archive::test_metadata_get_desc()
 	out << value;
 
 	BOOST_CHECK_MESSAGE(
-		this->is_equal(this->metadataDesc, out->str()),
+		this->is_equal(this->metadataDesc, *(out->str())),
 		"Error getting 'description' metadata field"
 	);
 
@@ -1339,7 +1339,7 @@ void test_archive::test_metadata_get_ver()
 	out << value;
 
 	BOOST_CHECK_MESSAGE(
-		this->is_equal(this->metadataVer, out->str()),
+		this->is_equal(this->metadataVer, *(out->str())),
 		"Error getting 'version' metadata field"
 	);
 }

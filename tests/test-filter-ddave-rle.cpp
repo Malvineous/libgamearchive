@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE(decoder_trail)
 		"Decoding RLE data with trailing incomplete code was not ignored");
 
 	BOOST_CHECK_MESSAGE(this->test_main::is_equal(STRING_WITH_NULLS(DATA_ENCODED
-		DATA_BAD_TRAIL), in->str()),
+		DATA_BAD_TRAIL), *(in->str())),
 		"Decoding RLE data corrupted the source data");
 }
 

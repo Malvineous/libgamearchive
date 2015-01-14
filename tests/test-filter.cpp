@@ -36,7 +36,7 @@ boost::test_tools::predicate_result test_filter::is_equal(const std::string& str
 	stream::copy(out, this->in_filt);
 
 	// See if the stringstream now matches what we expected
-	return this->test_main::is_equal(strExpected, out->str());
+	return this->test_main::is_equal(strExpected, *(out->str()));
 }
 
 boost::test_tools::predicate_result test_filter::is_equal_read(
@@ -54,7 +54,7 @@ boost::test_tools::predicate_result test_filter::is_equal_read(
 	stream::copy(out, s);
 
 	// See if the stringstream now matches what we expected
-	return this->test_main::is_equal(strExpected, out->str());
+	return this->test_main::is_equal(strExpected, *(out->str()));
 }
 
 boost::test_tools::predicate_result test_filter::is_equal_write(
@@ -70,7 +70,7 @@ boost::test_tools::predicate_result test_filter::is_equal_write(
 	s->flush();
 
 	// See if the stringstream now matches what we expected
-	return this->test_main::is_equal(strExpected, this->in->str());
+	return this->test_main::is_equal(strExpected, *(this->in->str()));
 }
 
 boost::test_tools::predicate_result test_filter::should_fail()
