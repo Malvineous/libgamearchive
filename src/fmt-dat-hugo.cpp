@@ -95,7 +95,7 @@ ArchiveType::Certainty DAT_HugoType::isInstance(stream::input_sptr psArchive) co
 
 	uint32_t numFiles = fatEnd / DAT_FAT_ENTRY_LEN;
 
-	uint32_t offEntry, lenEntry;
+	uint32_t offEntry = 0, lenEntry = 0;
 	for (unsigned int i = 1; i < numFiles; i++) {
 		psArchive
 			>> u32le(offEntry)
