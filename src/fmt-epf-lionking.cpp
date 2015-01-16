@@ -76,6 +76,7 @@ std::vector<std::string> EPFType::getGameList() const
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Alien Breed Tower Assault");
 	vcGames.push_back("Arcade Pool");
+	vcGames.push_back("Asterix & Obelix");
 	vcGames.push_back("Jungle Book, The");
 	vcGames.push_back("Lion King, The");
 	vcGames.push_back("Project X");

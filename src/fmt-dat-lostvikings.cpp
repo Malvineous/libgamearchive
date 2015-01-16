@@ -61,7 +61,9 @@ std::vector<std::string> DAT_LostVikingsType::getFileExtensions() const
 std::vector<std::string> DAT_LostVikingsType::getGameList() const
 {
 	std::vector<std::string> vcGames;
+	vcGames.push_back("BlackThorne");
 	vcGames.push_back("The Lost Vikings");
+	vcGames.push_back("WarCraft: Orcs & Humans");
 	return vcGames;
 }
 
