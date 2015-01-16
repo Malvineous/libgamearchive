@@ -5,7 +5,7 @@
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/Zone_66_Compression
  *
- * Copyright (C) 2010-2013 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  * Decompression algorithm by john_doe
  *   <http://forum.xentax.com/memberlist.php?mode=viewprofile&u=1896>
  *
