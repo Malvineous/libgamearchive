@@ -28,6 +28,10 @@
 #include <camoto/stream_seg.hpp>
 #include <camoto/gamearchive/archive.hpp>
 
+#ifndef DLL_EXPORT
+#define DLL_EXPORT
+#endif
+
 namespace camoto {
 namespace gamearchive {
 
@@ -323,7 +327,7 @@ class FATArchive: virtual public Archive {
 		virtual FATEntry *createNewFATEntry();
 
 	/// Test code only, do not use, see below.
-	friend EntryPtr getFileAt(const VC_ENTRYPTR& files, unsigned int index);
+	friend EntryPtr DLL_EXPORT getFileAt(const VC_ENTRYPTR& files, unsigned int index);
 
 	private:
 		/// Remove any substreams from the cached list if they have closed.
@@ -340,7 +344,7 @@ class FATArchive: virtual public Archive {
 /// Function for test code only, do not use.  Searches for files based on the
 /// order/index field as this is the order in the archive, which is different to
 /// the order in the vector.
-Archive::EntryPtr getFileAt(const Archive::VC_ENTRYPTR& files, unsigned int index);
+Archive::EntryPtr DLL_EXPORT getFileAt(const Archive::VC_ENTRYPTR& files, unsigned int index);
 
 } // namespace gamearchive
 } // namespace camoto

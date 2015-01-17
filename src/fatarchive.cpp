@@ -44,7 +44,7 @@ std::string FATArchive::FATEntry::getContent() const
 	return ss.str();
 }
 
-Archive::EntryPtr getFileAt(const Archive::VC_ENTRYPTR& files, unsigned int index)
+Archive::EntryPtr DLL_EXPORT getFileAt(const Archive::VC_ENTRYPTR& files, unsigned int index)
 {
 	for (Archive::VC_ENTRYPTR::const_iterator i = files.begin(); i != files.end(); i++) {
 		FATArchive::FATEntry *pEntry = dynamic_cast<FATArchive::FATEntry *>(i->get());
