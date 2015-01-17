@@ -493,7 +493,8 @@ void test_archive::test_rename_long()
 
 	Archive::EntryPtr ep = this->findFile(0);
 
-	char name[this->lenMaxFilename + 2];
+	assert(this->lenMaxFilename < 256);
+	char name[256 + 2];
 	memset(name, 'A', this->lenMaxFilename + 1);
 	name[this->lenMaxFilename + 1] = 0;
 
@@ -532,7 +533,8 @@ void test_archive::test_insert_long()
 
 	Archive::EntryPtr epb = this->findFile(0);
 
-	char name[this->lenMaxFilename + 2];
+	assert(this->lenMaxFilename < 256);
+	char name[256 + 2];
 	memset(name, 'A', this->lenMaxFilename + 1);
 	name[this->lenMaxFilename + 1] = 0;
 
