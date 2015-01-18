@@ -22,61 +22,48 @@
 #define _CAMOTO_FMT_DAT_BASH_HPP_
 
 #include <camoto/gamearchive/archivetype.hpp>
-
 #include "fatarchive.hpp"
 
 namespace camoto {
 namespace gamearchive {
 
-class DAT_BashType: virtual public ArchiveType {
-
+class DAT_BashType: virtual public ArchiveType
+{
 	public:
-
 		DAT_BashType();
-
 		virtual ~DAT_BashType();
 
 		virtual std::string getArchiveCode() const;
-
 		virtual std::string getFriendlyName() const;
-
 		virtual std::vector<std::string> getFileExtensions() const;
-
 		virtual std::vector<std::string> getGameList() const;
-
-		virtual ArchiveType::Certainty isInstance(stream::input_sptr fsArchive) const;
-
-		virtual ArchivePtr newArchive(stream::inout_sptr psArchive, SuppData& suppData) const;
-
-		virtual ArchivePtr open(stream::inout_sptr fsArchive, SuppData& suppData) const;
-
+		virtual ArchiveType::Certainty isInstance(stream::input_sptr fsArchive)
+			const;
+		virtual ArchivePtr newArchive(stream::inout_sptr psArchive,
+			SuppData& suppData) const;
+		virtual ArchivePtr open(stream::inout_sptr fsArchive, SuppData& suppData)
+			const;
 		virtual SuppFilenames getRequiredSupps(stream::input_sptr data,
 			const std::string& filenameArchive) const;
-
 };
 
-class DAT_BashArchive: virtual public FATArchive {
+class DAT_BashArchive: virtual public FATArchive
+{
 	public:
 		DAT_BashArchive(stream::inout_sptr psArchive);
-
 		virtual ~DAT_BashArchive();
 
 		// As per Archive (see there for docs)
-
 		virtual int getSupportedAttributes() const;
 
 		// As per FATArchive (see there for docs)
-
-		virtual void updateFileName(const FATEntry *pid, const std::string& strNewName);
-
+		virtual void updateFileName(const FATEntry *pid,
+			const std::string& strNewName);
 		virtual void updateFileOffset(const FATEntry *pid, stream::delta offDelta);
-
 		virtual void updateFileSize(const FATEntry *pid, stream::delta sizeDelta);
-
-		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry);
-
+		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis,
+			FATEntry *pNewEntry);
 		virtual void postInsertFile(FATEntry *pNewEntry);
-
 };
 
 } // namespace gamearchive
