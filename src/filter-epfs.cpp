@@ -54,8 +54,8 @@ std::vector<std::string> EPFSFilterType::getGameList() const
 	vcGames.push_back("Arcade Pool");
 	vcGames.push_back("Jungle Book, The");
 	vcGames.push_back("Lion King, The");
-	vcGames.push_back("Project X");
 	vcGames.push_back("Overdrive");
+	vcGames.push_back("Project X");
 	vcGames.push_back("Sensible Golf");
 	vcGames.push_back("Smurfs, The");
 	vcGames.push_back("Spirou");

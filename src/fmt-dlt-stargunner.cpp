@@ -61,7 +61,7 @@ std::string DLTType::getArchiveCode() const
 
 std::string DLTType::getFriendlyName() const
 {
-	return "Star Gunner DLT File";
+	return "Stargunner DLT File";
 }
 
 std::vector<std::string> DLTType::getFileExtensions() const
@@ -74,7 +74,7 @@ std::vector<std::string> DLTType::getFileExtensions() const
 std::vector<std::string> DLTType::getGameList() const
 {
 	std::vector<std::string> vcGames;
-	vcGames.push_back("Star Gunner");
+	vcGames.push_back("Stargunner");
 	return vcGames;
 }
 
