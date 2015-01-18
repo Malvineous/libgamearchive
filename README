@@ -14,6 +14,10 @@ be extracted, added, removed and replaced from supported archive formats.
 
 File formats from the following games have been implemented:
 
+  * Alien Breed Tower Assault (.epf)
+  * Arcade Pool (.epf)
+  * Asterix & Obelix (.epf)
+  * BlackThorne (.dat)
   * Blood (.rff)
   * Cosmo's Cosmic Adventures (.vol, .stn)
   * Crystal Caves (.exe)
@@ -31,38 +35,56 @@ File formats from the following games have been implemented:
   * Hexen (.wad)
   * Hocus Pocus (.dat)
   * Hugo II: Whodunit? and Hugo III: Jungle of Doom! (.dat)
-  * Lion King (.epf)
+  * Incredible Machine, The (resource.*)
+  * Jungle Book, The (.epf)
+  * Lion King, The (.epf)
   * Lost Vikings (.dat)
   * Major Stryker (.ms[123])
   * Monster Bash (.dat)
   * Mystic Towers (.dat)
+  * Overdrive (.epf)
+  * Project X (.epf)
   * Raptor (.glb)
   * Rise of the Triad (.wad, .rts)
   * Redneck Rampage (.grp, .rts)
   * Sango Fighter (.dat, .pcm, and many others)
+  * Sensible Golf (.epf)
   * Sherlock Holmes, The Lost Files of (.lib)
   * SkyRoads (.lzs)
   * Shadow Warrior (.grp, .rts)
+  * Spirou (.epf)
   * Stargunner (.dlt)
   * Stellar 7 (.res)
   * Terminal Velocity (.pod)
-  * The Incredible Machine (resource.*)
+  * Tin Tin in Tibet (.epf)
+  * Universe (.epf)
   * Vinyl Goddess From Mars (.lbr)
   * Wacky Wheels (.dat)
+  * WarCraft: Orcs & Humans (.dat)
   * Word Rescue (.1)
 
 Many more formats are planned.  The library also implements the following
-compression/encryption algorithms used by these formats:
+compression/encryption algorithms used by these games:
 
+  * Alien Breed Tower Assault (decompress only)
+  * Arcade Pool (decompress only)
+  * Blood
   * Dangerous Dave
   * God of Thunder
-  * Lion King (decompress only)
+  * Lion King, The (decompress only)
   * Monster Bash (decompress only)
+  * Overdrive (decompress only)
+  * Project X (decompress only)
   * Raptor
   * Secret Agent
+  * Sensible Golf (decompress only)
   * SkyRoads
+  * Smurfs, The (decompress only)
+  * Spirou (decompress only)
   * Stargunner (decompress only, game works with uncompressed files)
   * Stellar 7 (decompress only)
+  * Tin Tin in Tibet (decompress only)
+  * Universe (decompress only)
   * Zone 66
 
 The library is compiled and installed in the usual way:
@@ -87,7 +109,8 @@ gamearch will automatically decompress files on extraction, gamecomp can be
 used to decompress files that are not contained within an archive (such as
 the Zone 66 data files.)
 
-All supported archive formats are fully documented on the ModdingWiki - see
-http://www.shikadi.net/moddingwiki/
+All supported file formats are fully documented on the ModdingWiki - see:
+
+ * http://www.shikadi.net/moddingwiki/Category:Archive_formats
 
 This library is released under the GPLv3 license.
