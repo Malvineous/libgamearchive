@@ -1,6 +1,6 @@
 /**
- * @file   fmt-exe-ddave.hpp
- * @brief  FixedArchive implementation for Dangerous Dave .exe file.
+ * @file  fmt-exe-ddave.hpp
+ * @brief Dangerous Dave .EXE file.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -26,6 +26,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// Dangerous Dave .EXE file handler.
 class EXE_DDaveType: virtual public ArchiveType
 {
 	public:

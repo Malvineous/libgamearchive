@@ -1,6 +1,6 @@
 /**
- * @file   fmt-lbr-vinyl.hpp
- * @brief  Implementation of Vinyl Goddess From Mars .LBR file reader/writer.
+ * @file  fmt-lbr-vinyl.hpp
+ * @brief Vinyl Goddess From Mars .LBR format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -27,6 +27,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// Vinyl Goddess From Mars .LBR format handler.
 class LBRType: virtual public ArchiveType
 {
 	public:
@@ -47,6 +48,7 @@ class LBRType: virtual public ArchiveType
 			const std::string& filenameArchive) const;
 };
 
+/// Vinyl Goddess From Mars .LBR archive instance.
 class LBRArchive: virtual public FATArchive
 {
 	public:

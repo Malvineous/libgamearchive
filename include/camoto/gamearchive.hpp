@@ -1,6 +1,6 @@
 /**
- * @file   gamearchive.hpp
- * @brief  Main header for libgamearchive (includes everything.)
+ * @file  camoto/gamearchive.hpp
+ * @brief Main header for libgamearchive (includes everything.)
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -36,7 +36,7 @@ squash all their data files together into one big file, and this library
 provides access to those single big files.  Files can be listed and extracted,
 as well as added, removed, renamed and rearranged.
 
-\section structure Structure
+\section libgamearchive_structure Structure
 
 The main interface to the library is the getManager() function, which returns
 an instance of the Manager class.  The Manager is used to query supported
@@ -52,7 +52,7 @@ will again return an Archive instance.
 The Archive class is used to directly manipulate the archive file, such as by
 adding and removing files.
 
-\section example Examples
+\section libgamearchive_example Examples
 
 The libgamearchive distribution comes with example code in the form of the
 <a href="http://github.com/Malvineous/libgamearchive/blob/master/examples/gamearch.cpp">gamearch
@@ -80,10 +80,10 @@ VOL4E1.ANM
 Done.
 @endverbatim
 
-\section info More information
+\section libgamearchive_info More information
 
-Additional information including a mailing list is available from the Camoto
-homepage <http://www.shikadi.net/camoto>.
+Additional information is available from the Camoto homepage
+<http://www.shikadi.net/camoto>.
 
 **/
 }

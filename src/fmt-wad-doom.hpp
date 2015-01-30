@@ -1,6 +1,6 @@
 /**
- * @file   fmt-wad-doom.hpp
- * @brief  Implementation of Doom .WAD file reader/writer.
+ * @file  fmt-wad-doom.hpp
+ * @brief Doom .WAD format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -27,6 +27,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// Doom .WAD format handler.
 class WADType: virtual public ArchiveType
 {
 	public:
@@ -47,6 +48,7 @@ class WADType: virtual public ArchiveType
 			const std::string& filenameArchive) const;
 };
 
+/// Doom .WAD archive instance.
 class WADArchive: virtual public FATArchive
 {
 	public:

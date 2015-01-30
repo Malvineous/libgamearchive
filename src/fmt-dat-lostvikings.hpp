@@ -1,6 +1,6 @@
 /**
- * @file   fmt-dat-lostvikings.hpp
- * @brief  Implementation of The Lost Vikings .DAT file reader/writer.
+ * @file  fmt-dat-lostvikings.hpp
+ * @brief The Lost Vikings .DAT format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -27,6 +27,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// The Lost Vikings .DAT format handler.
 class DAT_LostVikingsType: virtual public ArchiveType
 {
 	public:
@@ -47,6 +48,7 @@ class DAT_LostVikingsType: virtual public ArchiveType
 			const std::string& filenameArchive) const;
 };
 
+/// The Lost Vikings .DAT archive instance.
 class DAT_LostVikingsArchive: virtual public FATArchive
 {
 	public:

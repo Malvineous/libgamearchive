@@ -1,6 +1,6 @@
 /**
- * @file   filter-xor-sagent.cpp
- * @brief  Filter that encrypts and decrypts Secret Agent data files.
+ * @file  filter-xor-sagent.cpp
+ * @brief Filter that encrypts and decrypts Secret Agent data files.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *

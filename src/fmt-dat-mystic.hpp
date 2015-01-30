@@ -1,6 +1,6 @@
 /**
- * @file   fmt-dat-mystic.hpp
- * @brief  Implementation of Mystic Towers .DAT format.
+ * @file  fmt-dat-mystic.hpp
+ * @brief Mystic Towers .DAT format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -29,6 +29,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// Mystic Towers .DAT format handler.
 class DAT_MysticType: virtual public ArchiveType
 {
 	public:
@@ -49,6 +50,7 @@ class DAT_MysticType: virtual public ArchiveType
 			const std::string& filenameArchive) const;
 };
 
+/// Mystic Towers .DAT archive instance.
 class DAT_MysticArchive: virtual public FATArchive
 {
 	public:

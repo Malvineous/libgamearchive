@@ -1,6 +1,6 @@
 /**
- * @file   filter-skyroads-lzs.cpp
- * @brief  Filter implementation for SkyRoads LZS compression.
+ * @file  filter-skyroads.hpp
+ * @brief Filter implementation for SkyRoads LZS compression.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *

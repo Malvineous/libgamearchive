@@ -34,6 +34,7 @@ tests/test-suite.log
 
 # Generated docs
 doc/doxygen/
+doc/*.tag
 doc/game*.1
 doc/game*.html
 

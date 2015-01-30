@@ -1,6 +1,6 @@
 /**
- * @file   gamearchive/util.hpp
- * @brief  Utility functions.
+ * @file  camoto/gamearchive/util.hpp
+ * @brief Utility functions.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *

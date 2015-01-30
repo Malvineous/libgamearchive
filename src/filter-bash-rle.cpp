@@ -1,6 +1,6 @@
 /**
- * @file   filter-bash-rle.cpp
- * @brief  Filter implementation for Monster Bash RLE compression.
+ * @file  filter-bash-rle.cpp
+ * @brief Filter implementation for Monster Bash RLE compression.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *

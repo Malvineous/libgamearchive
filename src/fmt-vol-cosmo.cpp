@@ -1,6 +1,6 @@
 /**
- * @file   fmt-vol-cosmo.cpp
- * @brief  Implementation of Cosmo .VOL file reader/writer.
+ * @file  fmt-vol-cosmo.cpp
+ * @brief Implementation of Cosmo .VOL file reader/writer.
  *
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/VOL_Format

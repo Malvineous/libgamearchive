@@ -1,6 +1,6 @@
 /**
- * @file   filter-bash-rle.hpp
- * @brief  Filter for packing and unpacking data using the RLE
+ * @file  filter-bash-rle.hpp
+ * @brief Filter for packing and unpacking data using the RLE
  *         method employed by Monster Bash.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>

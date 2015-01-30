@@ -1,6 +1,6 @@
 /**
- * @file   fmt-roads-skyroads.hpp
- * @brief  Implementation of Skyroads roads.lzs file reader/writer.
+ * @file  fmt-roads-skyroads.hpp
+ * @brief Skyroads ROADS.LZS format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -27,6 +27,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// Skyroads ROADS.LZS format handler.
 class SkyRoadsRoadsType: virtual public ArchiveType
 {
 	public:
@@ -47,6 +48,7 @@ class SkyRoadsRoadsType: virtual public ArchiveType
 			const std::string& filenameArchive) const;
 };
 
+/// Skyroads ROADS.LZS archive instance.
 class SkyRoadsRoadsArchive: virtual public FATArchive
 {
 	public:

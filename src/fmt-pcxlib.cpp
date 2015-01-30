@@ -1,6 +1,6 @@
 /**
- * @file   fmt-pcxlib.cpp
- * @brief  Implementation of PCX Library reader/writer.
+ * @file  fmt-pcxlib.cpp
+ * @brief Implementation of PCX Library reader/writer.
  *
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/PCX_Format

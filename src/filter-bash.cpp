@@ -1,6 +1,6 @@
 /**
- * @file   filter-bash.cpp
- * @brief  Filter implementation for decompressing Monster Bash files.
+ * @file  filter-bash.cpp
+ * @brief Filter implementation for decompressing Monster Bash files.
  *
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/DAT_Format_(Monster_Bash)

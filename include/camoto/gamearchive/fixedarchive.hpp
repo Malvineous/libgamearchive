@@ -1,7 +1,7 @@
 /**
- * @file   fixedarchive.hpp
- * @brief  Generic archive providing access to "files" at specific offsets and
- *         lengths in a host file (e.g. game levels stored in an .exe file.)
+ * @file  camoto/gamearchive/fixedarchive.hpp
+ * @brief Generic archive providing access to "files" at specific offsets and
+ *        lengths in a host file (e.g. game levels stored in an .exe file.)
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *

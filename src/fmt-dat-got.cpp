@@ -1,6 +1,6 @@
 /**
- * @file   fmt-dat-got.cpp
- * @brief  Implementation of God of Thunder .DAT file reader/writer.
+ * @file  fmt-dat-got.cpp
+ * @brief Implementation of God of Thunder .DAT file reader/writer.
  *
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/DAT_Format_(God_of_Thunder)

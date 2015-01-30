@@ -1,6 +1,6 @@
 /**
- * @file   archive.cpp
- * @brief  Generic functions common to all Archive types.
+ * @file  archive.cpp
+ * @brief Generic functions common to all Archive types.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *

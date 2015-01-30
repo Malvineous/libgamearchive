@@ -1,6 +1,6 @@
 /**
- * @file   filter-epfs.hpp
- * @brief  FilterType for the East Point EPFS compression algorithm.
+ * @file  filter-epfs.hpp
+ * @brief FilterType for the East Point EPFS compression algorithm.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *

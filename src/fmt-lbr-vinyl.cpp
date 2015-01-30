@@ -1,6 +1,6 @@
 /**
- * @file   fmt-lbr-vinyl.cpp
- * @brief  Implementation of Vinyl Goddess From Mars .LBR file reader/writer.
+ * @file  fmt-lbr-vinyl.cpp
+ * @brief Implementation of Vinyl Goddess From Mars .LBR file reader/writer.
  *
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/LBR_Format

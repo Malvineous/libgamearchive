@@ -1,6 +1,6 @@
 /**
- * @file   fmt-epf-lionking.cpp
- * @brief  Implementation of reader/writer for East Point Software's .EPF file
+ * @file  fmt-epf-lionking.cpp
+ * @brief Implementation of reader/writer for East Point Software's .EPF file
  *         format, used in The Lion King among other games.
  *
  * This file format is fully documented on the ModdingWiki:

@@ -1,6 +1,6 @@
 /**
- * @file   fmt-da-levels.cpp
- * @brief  FixedArchive implementation for Dark Ages level file.
+ * @file  fmt-da-levels.cpp
+ * @brief FixedArchive implementation for Dark Ages level file.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *

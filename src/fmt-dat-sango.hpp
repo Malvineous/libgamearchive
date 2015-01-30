@@ -1,6 +1,6 @@
 /**
- * @file   fmt-dat-sango.hpp
- * @brief  Implementation of Sango Fighter archive reader/writer.
+ * @file  fmt-dat-sango.hpp
+ * @brief Sango Fighter .DAT format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -27,6 +27,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// Sango Fighter .DAT format handler.
 class DAT_SangoType: virtual public ArchiveType
 {
 	public:
@@ -47,6 +48,7 @@ class DAT_SangoType: virtual public ArchiveType
 			const std::string& filenameArchive) const;
 };
 
+/// Sango Fighter .DAT archive instance.
 class DAT_SangoArchive: virtual public FATArchive {
 	public:
 		DAT_SangoArchive(stream::inout_sptr psArchive);

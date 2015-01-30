@@ -1,6 +1,6 @@
 /**
- * @file   filter-zone66.cpp
- * @brief  Filter implementation for decompressing Zone 66 files.
+ * @file  filter-zone66.cpp
+ * @brief Filter implementation for decompressing Zone 66 files.
  *
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/Zone_66_Compression

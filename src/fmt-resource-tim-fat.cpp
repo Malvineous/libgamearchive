@@ -1,6 +1,6 @@
 /**
- * @file   fmt-resource-tim-fat.cpp
- * @brief  File reader/writer for The Incredible Machine resource FAT files.
+ * @file  fmt-resource-tim-fat.cpp
+ * @brief File reader/writer for The Incredible Machine resource FAT files.
  *
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/TIM_Resource_Format

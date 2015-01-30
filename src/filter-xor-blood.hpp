@@ -1,6 +1,6 @@
 /**
- * @file   filter-xor-blood.hpp
- * @brief  Filter that encrypts and decrypts data in Blood RFF archives.
+ * @file  filter-xor-blood.hpp
+ * @brief Filter that encrypts and decrypts data in Blood RFF archives.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *

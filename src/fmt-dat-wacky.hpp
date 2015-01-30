@@ -1,6 +1,6 @@
 /**
- * @file   fmt-dat-wacky.hpp
- * @brief  Implementation of Wacky Wheels .DAT file reader/writer.
+ * @file  fmt-dat-wacky.hpp
+ * @brief Wacky Wheels .DAT format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -27,6 +27,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// Wacky Wheels .DAT format handler.
 class DAT_WackyType: virtual public ArchiveType
 {
 	public:
@@ -47,6 +48,7 @@ class DAT_WackyType: virtual public ArchiveType
 			const std::string& filenameArchive) const;
 };
 
+/// Wacky Wheels .DAT archive instance.
 class DAT_WackyArchive: virtual public FATArchive
 {
 	public:

@@ -1,6 +1,6 @@
 /**
- * @file   filter-stargunner.hpp
- * @brief  Filter implementation for decompressing Stargunner files.
+ * @file  filter-stargunner.hpp
+ * @brief Filter implementation for decompressing Stargunner files.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *

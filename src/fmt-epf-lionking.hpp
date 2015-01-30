@@ -1,7 +1,6 @@
 /**
- * @file   fmt-epf-lionking.hpp
- * @brief  Implementation of reader/writer for East Point Software's .EPF file
- *         format, used in The Lion King among other games.
+ * @file  fmt-epf-lionking.hpp
+ * @brief The Lion King .EPF format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -28,6 +27,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// The Lion King .EPF format handler.
 class EPFType: virtual public ArchiveType
 {
 	public:
@@ -48,6 +48,7 @@ class EPFType: virtual public ArchiveType
 			const std::string& filenameArchive) const;
 };
 
+/// The Lion King .EPF format handler.
 class EPFArchive: virtual public FATArchive
 {
 	protected:

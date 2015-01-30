@@ -1,6 +1,6 @@
 /**
- * @file   fmt-dat-hocus.hpp
- * @brief  Hocus Pocus .DAT file reader/writer.
+ * @file  fmt-dat-hocus.hpp
+ * @brief Hocus Pocus .DAT format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -27,6 +27,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// Hocus Pocus .DAT format handler.
 class DAT_HocusType: virtual public ArchiveType
 {
 	public:
@@ -47,6 +48,7 @@ class DAT_HocusType: virtual public ArchiveType
 			const std::string& filenameArchive) const;
 };
 
+/// Hocus Pocus .DAT archive instance.
 class DAT_HocusArchive: virtual public FATArchive
 {
 	protected:

@@ -1,6 +1,6 @@
 /**
- * @file   fmt-pod-tv.hpp
- * @brief  Terminal Velocity .POD file reader/writer.
+ * @file  fmt-pod-tv.hpp
+ * @brief Terminal Velocity .POD format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -27,6 +27,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// Terminal Velocity .POD format handler.
 class PODType: virtual public ArchiveType
 {
 	public:
@@ -47,6 +48,7 @@ class PODType: virtual public ArchiveType
 			const std::string& filenameArchive) const;
 };
 
+/// Terminal Velocity .POD archive instance.
 class PODArchive: virtual public FATArchive
 {
 	public:

@@ -1,6 +1,6 @@
 /**
- * @file   fmt-da-levels.hpp
- * @brief  FixedArchive implementation for Dark Ages level file.
+ * @file  fmt-da-levels.hpp
+ * @brief Dark Ages level format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -26,6 +26,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// Dark Ages level format handler.
 class DA_LevelsType: virtual public ArchiveType
 {
 	public:

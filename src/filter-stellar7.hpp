@@ -1,6 +1,6 @@
 /**
- * @file   filter-stellar7.hpp
- * @brief  FilterType for Stellar 7 compression algorithm.
+ * @file  filter-stellar7.hpp
+ * @brief FilterType for Stellar 7 compression algorithm.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *

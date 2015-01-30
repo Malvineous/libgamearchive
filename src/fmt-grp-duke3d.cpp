@@ -1,6 +1,6 @@
 /**
- * @file   fmt-grp-duke3d.cpp
- * @brief  Implementation of Duke3D .GRP file reader/writer.
+ * @file  fmt-grp-duke3d.cpp
+ * @brief Implementation of Duke3D .GRP file reader/writer.
  *
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/GRP_Format

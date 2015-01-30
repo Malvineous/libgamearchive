@@ -1,6 +1,6 @@
 /**
- * @file   fmt-dlt-stargunner.cpp
- * @brief  Implementation of Star Gunner .DLT file reader/writer.
+ * @file  fmt-dlt-stargunner.cpp
+ * @brief Implementation of Star Gunner .DLT file reader/writer.
  *
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/DLT_Format

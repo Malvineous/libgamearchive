@@ -1,6 +1,6 @@
 /**
- * @file   filter-stargunner.cpp
- * @brief  Filter implementation for decompressing Stargunner files.
+ * @file  filter-stargunner.cpp
+ * @brief Filter implementation for decompressing Stargunner files.
  *
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/DLT_Format

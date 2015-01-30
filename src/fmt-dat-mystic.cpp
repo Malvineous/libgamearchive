@@ -1,6 +1,6 @@
 /**
- * @file   fmt-dat-mystic.cpp
- * @brief  Implementation of Mystic Towers .DAT format.
+ * @file  fmt-dat-mystic.cpp
+ * @brief Implementation of Mystic Towers .DAT format.
  *
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/DAT_Format_%28Mystic_Towers%29

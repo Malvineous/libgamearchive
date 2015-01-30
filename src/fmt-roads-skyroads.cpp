@@ -1,6 +1,6 @@
 /**
- * @file   fmt-roads-skyroads.cpp
- * @brief  Implementation of Skyroads roads.lzs file reader/writer.
+ * @file  fmt-roads-skyroads.cpp
+ * @brief Implementation of Skyroads roads.lzs file reader/writer.
  *
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/SkyRoads_level_format

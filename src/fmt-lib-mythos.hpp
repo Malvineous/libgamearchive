@@ -1,6 +1,6 @@
 /**
- * @file   fmt-lib-mythos.hpp
- * @brief  Implementation of Mythos .LIB archive format.
+ * @file  fmt-lib-mythos.hpp
+ * @brief Mythos .LIB format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -27,6 +27,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// Mythos .LIB format handler.
 class LIB_MythosType: virtual public ArchiveType
 {
 	public:
@@ -47,6 +48,7 @@ class LIB_MythosType: virtual public ArchiveType
 			const std::string& filenameArchive) const;
 };
 
+/// Mythos .LIB archive instance.
 class LIB_MythosArchive: virtual public FATArchive {
 	public:
 		LIB_MythosArchive(stream::inout_sptr psArchive);

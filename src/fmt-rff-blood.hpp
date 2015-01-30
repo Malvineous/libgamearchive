@@ -1,6 +1,6 @@
 /**
- * @file   fmt-rff-blood.hpp
- * @brief  Implementation of reader/writer for Blood's .RFF format.
+ * @file  fmt-rff-blood.hpp
+ * @brief Blood .RFF format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -30,6 +30,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// Blood .RFF format handler.
 class RFFType: virtual public ArchiveType
 {
 	public:
@@ -50,6 +51,7 @@ class RFFType: virtual public ArchiveType
 			const std::string& filenameArchive) const;
 };
 
+/// Blood .RFF archive instance.
 class RFFArchive: virtual public FATArchive
 {
 	public:

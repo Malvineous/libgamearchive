@@ -1,6 +1,6 @@
 /**
- * @file   fmt-bnk-harry.hpp
- * @brief  Halloween Harry .BNK file reader/writer.
+ * @file  fmt-bnk-harry.hpp
+ * @brief Halloween Harry .BNK format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -27,6 +27,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// Halloween Harry .BNK format handler.
 class BNKType: virtual public ArchiveType
 {
 	public:
@@ -47,6 +48,7 @@ class BNKType: virtual public ArchiveType
 			const std::string& filenameArchive) const;
 };
 
+/// Halloween Harry .BNK archive instance.
 class BNKArchive: virtual public FATArchive
 {
 	protected:

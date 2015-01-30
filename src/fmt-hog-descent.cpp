@@ -1,6 +1,6 @@
 /**
- * @file   fmt-hog-descent.cpp
- * @brief  Implementation of Descent .HOG file reader/writer.
+ * @file  fmt-hog-descent.cpp
+ * @brief Implementation of Descent .HOG file reader/writer.
  *
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/HOG_Format

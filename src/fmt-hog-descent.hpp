@@ -1,6 +1,6 @@
 /**
- * @file   fmt-hog-descent.hpp
- * @brief  Implementation of Descent .HOG file reader/writer.
+ * @file  fmt-hog-descent.hpp
+ * @brief Descent .HOG format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -27,6 +27,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// Descent .HOG format handler.
 class HOGType: virtual public ArchiveType
 {
 	public:
@@ -47,6 +48,7 @@ class HOGType: virtual public ArchiveType
 			const std::string& filenameArchive) const;
 };
 
+/// Descent .HOG archive instance.
 class HOGArchive: virtual public FATArchive
 {
 	public:

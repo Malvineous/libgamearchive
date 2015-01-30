@@ -1,6 +1,6 @@
 /**
- * @file   fmt-dat-mythos.cpp
- * @brief  Implementation of Mythos .LIB archive format.
+ * @file  fmt-lib-mythos.cpp
+ * @brief Implementation of Mythos .LIB archive format.
  *
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/LIB_Format_%28Mythos_Software%29

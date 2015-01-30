@@ -1,6 +1,6 @@
 /**
- * @file   fmt-dat-hugo.cpp
- * @brief  Implementation of Hugo scenery .DAT file reader/writer.
+ * @file  fmt-dat-hugo.cpp
+ * @brief Implementation of Hugo scenery .DAT file reader/writer.
  *
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/DAT_Format_%28Hugo%29

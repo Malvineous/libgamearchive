@@ -1,6 +1,6 @@
 /**
- * @file   fmt-dat-lostvikings.cpp
- * @brief  Implementation of The Lost Vikings .DAT file reader/writer.
+ * @file  fmt-dat-lostvikings.cpp
+ * @brief Implementation of The Lost Vikings .DAT file reader/writer.
  *
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/DAT_Format_%28The_Lost_Vikings%29

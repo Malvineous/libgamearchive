@@ -1,6 +1,6 @@
 /**
- * @file   fmt-rff-blood.cpp
- * @brief  Implementation of reader/writer for Blood's .RFF format.
+ * @file  fmt-rff-blood.cpp
+ * @brief Implementation of reader/writer for Blood's .RFF format.
  *
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/RFF_Format

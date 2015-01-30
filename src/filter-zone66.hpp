@@ -1,6 +1,6 @@
 /**
- * @file   filter-zone66.hpp
- * @brief  Filter implementation for decompressing Zone 66 files.
+ * @file  filter-zone66.hpp
+ * @brief Filter implementation for decompressing Zone 66 files.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *

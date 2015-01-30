@@ -1,7 +1,7 @@
 /**
- * @file   gamecomp.cpp
- * @brief  Command-line interface to the compression/encryption filters in
- *         libgamearchive.
+ * @file  gamecomp.cpp
+ * @brief Command-line interface to the compression/encryption filters in
+ *        libgamearchive.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *

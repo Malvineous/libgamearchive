@@ -1,6 +1,6 @@
 /**
- * @file   fmt-resource-tim.hpp
- * @brief  File reader/writer for The Incredible Machine resource files.
+ * @file  fmt-resource-tim.hpp
+ * @brief The Incredible Machine resource format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -27,6 +27,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// The Incredible Machine resource format handler.
 class TIMResourceType: virtual public ArchiveType
 {
 	public:
@@ -47,6 +48,7 @@ class TIMResourceType: virtual public ArchiveType
 			const std::string& filenameArchive) const;
 };
 
+/// The Incredible Machine resource archive instance.
 class TIMResourceArchive: virtual public FATArchive
 {
 	protected:

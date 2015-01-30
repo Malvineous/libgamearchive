@@ -1,6 +1,6 @@
 /**
- * @file   fmt-glb-raptor.hpp
- * @brief  Implementation of Raptor .GLB file reader/writer.
+ * @file  fmt-glb-raptor.hpp
+ * @brief Raptor .GLB format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -27,6 +27,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// Raptor .GLB format handler.
 class GLBType: virtual public ArchiveType
 {
 	public:
@@ -47,6 +48,7 @@ class GLBType: virtual public ArchiveType
 			const std::string& filenameArchive) const;
 };
 
+/// Raptor .GLB archive instance.
 class GLBArchive: virtual public FATArchive
 {
 	public:

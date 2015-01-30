@@ -1,6 +1,6 @@
 /**
- * @file   fmt-res-stellar7.cpp
- * @brief  Implementation of Stellar 7 .RES file reader/writer.
+ * @file  fmt-res-stellar7.cpp
+ * @brief Implementation of Stellar 7 .RES file reader/writer.
  *
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/RES_Format_(Stellar_7)

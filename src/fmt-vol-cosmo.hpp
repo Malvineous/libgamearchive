@@ -1,6 +1,6 @@
 /**
- * @file   fmt-vol-cosmo.hpp
- * @brief  Implementation of Cosmo .VOL file reader/writer.
+ * @file  fmt-vol-cosmo.hpp
+ * @brief Cosmo .VOL format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -27,6 +27,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// Cosmo .VOL format handler.
 class VOLType: virtual public ArchiveType
 {
 	public:
@@ -47,6 +48,7 @@ class VOLType: virtual public ArchiveType
 			const std::string& filenameArchive) const;
 };
 
+/// Cosmo .VOL archive instance.
 class VOLArchive: virtual public FATArchive
 {
 	public:

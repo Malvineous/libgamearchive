@@ -1,8 +1,8 @@
 /**
- * @file   filtertype.hpp
- * @brief  Declaration of top-level FilterType class, for performing certain
- *         processing operations on data streams (compression/decompression,
- *         encryption, etc.)
+ * @file  camoto/gamearchive/filtertype.hpp
+ * @brief Declaration of top-level FilterType class, for performing certain
+ *        processing operations on data streams (compression/decompression,
+ *        encryption, etc.)
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *

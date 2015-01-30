@@ -1,6 +1,6 @@
 /**
- * @file   fmt-dat-highway.cpp
- * @brief  Implementation of Highway Hunder .DAT file reader/writer.
+ * @file  fmt-dat-highway.cpp
+ * @brief Implementation of Highway Hunder .DAT file reader/writer.
  *
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/DAT_Format_%28Highway_Hunter%29

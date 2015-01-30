@@ -38,8 +38,9 @@ namespace gamearchive {
 /// Common value for lenMaxFilename in FATArchive::FATArchive()
 #define ARCH_STD_DOS_FILENAMES  12     // 8.3 + dot
 
-class FATArchive: virtual public Archive {
-
+/// Archive implementation for archives with an associated size/offset table.
+class FATArchive: virtual public Archive
+{
 	public:
 
 		/// FAT-related fields to add to EntryPtr.

@@ -1,6 +1,6 @@
 /**
- * @file   fmt-gd-doofus.hpp
- * @brief  Doofus .G-D file reader/writer.
+ * @file  fmt-gd-doofus.hpp
+ * @brief Doofus .G-D format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -27,6 +27,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// Doofus .G-D format handler.
 class GD_DoofusType: virtual public ArchiveType
 {
 	public:
@@ -47,6 +48,7 @@ class GD_DoofusType: virtual public ArchiveType
 			const std::string& filenameArchive) const;
 };
 
+/// Doofus .G-D archive instance.
 class GD_DoofusArchive: virtual public FATArchive
 {
 	protected:

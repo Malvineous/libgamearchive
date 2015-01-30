@@ -1,7 +1,7 @@
 /**
- * @file   archivetype.hpp
- * @brief  ArchiveType class, used to identify and open an instance of a
- *         particular archive format.
+ * @file  camoto/gamearchive/archivetype.hpp
+ * @brief ArchiveType class, used to identify and open an instance of a
+ *        particular archive format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *

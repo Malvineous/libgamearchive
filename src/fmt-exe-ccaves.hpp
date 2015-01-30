@@ -1,6 +1,6 @@
 /**
- * @file   fmt-exe-ccaves.hpp
- * @brief  FixedArchive implementation for Crystal Caves .exe file.
+ * @file  fmt-exe-ccaves.hpp
+ * @brief Crystal Caves .EXE file.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -26,6 +26,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// Crystal Caves .EXE file handler.
 class EXE_CCavesType: virtual public ArchiveType
 {
 	public:

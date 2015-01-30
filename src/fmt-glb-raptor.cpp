@@ -1,6 +1,6 @@
 /**
- * @file   fmt-glb-raptor.cpp
- * @brief  Implementation of Raptor .GLB file reader/writer.
+ * @file  fmt-glb-raptor.cpp
+ * @brief Implementation of Raptor .GLB file reader/writer.
  *
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/GLB_Format

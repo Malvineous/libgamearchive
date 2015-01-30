@@ -1,6 +1,6 @@
 /**
  * @file  fmt-dat-bash.cpp
- * @brief Implementation of Monster Bash .DAT file reader/writer.
+ * @brief Monster Bash .DAT format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -27,6 +27,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// Monster Bash .DAT format handler.
 class DAT_BashType: virtual public ArchiveType
 {
 	public:
@@ -47,6 +48,7 @@ class DAT_BashType: virtual public ArchiveType
 			const std::string& filenameArchive) const;
 };
 
+/// Monster Bash .DAT archive instance.
 class DAT_BashArchive: virtual public FATArchive
 {
 	public:

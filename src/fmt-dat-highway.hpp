@@ -1,6 +1,6 @@
 /**
- * @file   fmt-dat-highway.hpp
- * @brief  Implementation of Highway Hunter .DAT file reader/writer.
+ * @file  fmt-dat-highway.hpp
+ * @brief Highway Hunter .DAT format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -27,6 +27,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// Highway Hunter .DAT format handler.
 class DAT_HighwayType: virtual public ArchiveType
 {
 	public:
@@ -47,6 +48,7 @@ class DAT_HighwayType: virtual public ArchiveType
 			const std::string& filenameArchive) const;
 };
 
+/// Highway Hunter .DAT archive instance.
 class DAT_HighwayArchive: virtual public FATArchive
 {
 	public:

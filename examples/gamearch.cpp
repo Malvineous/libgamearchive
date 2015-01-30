@@ -1,6 +1,6 @@
 /**
- * @file   gamearch.cpp
- * @brief  Command-line interface to libgamearchive.
+ * @file  gamearch.cpp
+ * @brief Command-line interface to libgamearchive.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *

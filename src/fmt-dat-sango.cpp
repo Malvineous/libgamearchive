@@ -1,6 +1,6 @@
 /**
- * @file   fmt-dat-sango.cpp
- * @brief  Implementation of Sango Fighter archive reader/writer.
+ * @file  fmt-dat-sango.cpp
+ * @brief Implementation of Sango Fighter archive reader/writer.
  *
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/DAT_Format_%28Sango_Fighter%29

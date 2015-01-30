@@ -1,6 +1,6 @@
 /**
- * @file   filter-bitswap.cpp
- * @brief  Filter implementation for swapping the bits in each byte.
+ * @file  filter-bitswap.cpp
+ * @brief Filter implementation for swapping the bits in each byte.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *

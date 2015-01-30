@@ -1,6 +1,6 @@
 /**
- * @file   fmt-bnk-harry.cpp
- * @brief  Halloween Harry .BNK file reader/writer.
+ * @file  fmt-bnk-harry.cpp
+ * @brief Halloween Harry .BNK file reader/writer.
  *
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/BNK_Format_%28Halloween_Harry%29

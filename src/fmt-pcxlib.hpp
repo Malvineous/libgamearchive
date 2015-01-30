@@ -1,6 +1,6 @@
 /**
- * @file   fmt-pcxlib.hpp
- * @brief  Implementation of PCX Library reader/writer.
+ * @file  fmt-pcxlib.hpp
+ * @brief PCX Library format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -27,6 +27,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// PCX Library format handler.
 class PCXLibType: virtual public ArchiveType
 {
 	public:
@@ -47,6 +48,7 @@ class PCXLibType: virtual public ArchiveType
 			const std::string& filenameArchive) const;
 };
 
+/// PCX Library archive instance.
 class PCXLibArchive: virtual public FATArchive
 {
 	public:

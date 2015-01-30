@@ -1,6 +1,6 @@
 /**
- * @file   fmt-exe-ccaves.cpp
- * @brief  FixedArchive implementation for Crystal Caves .exe file.
+ * @file  fmt-exe-ccaves.cpp
+ * @brief FixedArchive implementation for Crystal Caves .exe file.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *

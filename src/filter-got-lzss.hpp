@@ -1,6 +1,6 @@
 /**
- * @file   filter-got-lzss.hpp
- * @brief  Filter implementation for God of Thunder LZSS compression.
+ * @file  filter-got-lzss.hpp
+ * @brief Filter implementation for God of Thunder LZSS compression.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *

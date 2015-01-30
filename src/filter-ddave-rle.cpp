@@ -1,6 +1,6 @@
 /**
- * @file   filter-ddave-rle.cpp
- * @brief  Filter implementation for decompressing Dangerous Dave tilesets.
+ * @file  filter-ddave-rle.cpp
+ * @brief Filter implementation for decompressing Dangerous Dave tilesets.
  *
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/Dangerous_Dave_Graphics_Format

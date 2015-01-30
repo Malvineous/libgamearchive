@@ -1,6 +1,6 @@
 /**
- * @file   filter-glb-raptor.cpp
- * @brief  Filter that encrypts and decrypts files in Raptor GLB archives.
+ * @file  filter-glb-raptor.cpp
+ * @brief Filter that encrypts and decrypts files in Raptor GLB archives.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *

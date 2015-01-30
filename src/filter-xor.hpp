@@ -1,6 +1,6 @@
 /**
- * @file   filter-xor.hpp
- * @brief  Filter implementation for encrypting and decrypting XOR coded files.
+ * @file  filter-xor.hpp
+ * @brief Filter implementation for encrypting and decrypting XOR coded files.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *

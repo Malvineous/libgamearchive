@@ -1,7 +1,7 @@
 /**
- * @file   fixedarchive.cpp
- * @brief  Generic archive providing access to "files" at specific offsets and
- *         lengths in a host file (e.g. game levels stored in an .exe file.)
+ * @file  fixedarchive.cpp
+ * @brief Generic archive providing access to "files" at specific offsets and
+ *        lengths in a host file (e.g. game levels stored in an .exe file.)
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -27,12 +27,18 @@
 namespace camoto {
 namespace gamearchive {
 
+/// Resize function which only throws an exception, preventing resize.
 void preventResize(stream::len len)
 {
 	throw stream::write_error("This file is a fixed size, it cannot be made smaller or larger.");
 }
 
 
+/// Generic archive with fixed offsets and sizes.
+/**
+ * This class provides access to "files" at specific offsets and lengths in a
+ * host file (e.g. game levels stored in an .exe file.)
+ */
 class FixedArchive: virtual public Archive
 {
 	protected:

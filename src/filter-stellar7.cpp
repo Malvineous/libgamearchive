@@ -1,6 +1,6 @@
 /**
- * @file   filter-stellar7.cpp
- * @brief  FilterType for Stellar 7 compression algorithm.
+ * @file  filter-stellar7.cpp
+ * @brief FilterType for Stellar 7 compression algorithm.
  *
  * This algorithm is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/RES_Format_(Stellar_7)

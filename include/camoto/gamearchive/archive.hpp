@@ -1,7 +1,7 @@
 /**
- * @file   archive.hpp
- * @brief  Declaration of top-level Archive class, for accessing file
- *         archives storing game data.
+ * @file  camoto/gamearchive/archive.hpp
+ * @brief Declaration of top-level Archive class, for accessing file
+ *        archives storing game data.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *

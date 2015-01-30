@@ -1,6 +1,6 @@
 /**
- * @file   fmt-dat-got.hpp
- * @brief  Implementation of God of Thunder .DAT file reader/writer.
+ * @file  fmt-dat-got.hpp
+ * @brief God of Thunder .DAT format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -29,6 +29,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// God of Thunder .DAT format handler.
 class DAT_GoTType: virtual public ArchiveType
 {
 	public:
@@ -49,6 +50,7 @@ class DAT_GoTType: virtual public ArchiveType
 			const std::string& filenameArchive) const;
 };
 
+/// God of Thunder .DAT archive instance.
 class DAT_GoTArchive: virtual public FATArchive
 {
 	public:

@@ -1,6 +1,6 @@
 /**
- * @file   fmt-dlt-stargunner.hpp
- * @brief  Implementation of Star Gunner .DLT file reader/writer.
+ * @file  fmt-dlt-stargunner.hpp
+ * @brief Stargunner .DLT format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -27,6 +27,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// Stargunner .DLT format handler.
 class DLTType: virtual public ArchiveType
 {
 	public:
@@ -47,6 +48,7 @@ class DLTType: virtual public ArchiveType
 			const std::string& filenameArchive) const;
 };
 
+/// Stargunner .DLT archive instance.
 class DLTArchive: virtual public FATArchive
 {
 	public:

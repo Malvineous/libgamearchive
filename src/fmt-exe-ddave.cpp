@@ -1,6 +1,6 @@
 /**
- * @file   fmt-exe-ddave.cpp
- * @brief  FixedArchive implementation for Dangerous Dave .exe file.
+ * @file  fmt-exe-ddave.cpp
+ * @brief FixedArchive implementation for Dangerous Dave .exe file.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *

@@ -1,6 +1,6 @@
 /**
- * @file   filter-epfs.cpp
- * @brief  FilterType for EPFS compression algorithm.
+ * @file  filter-epfs.cpp
+ * @brief FilterType for EPFS compression algorithm.
  *
  * This algorithm is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/EPF_Format

@@ -1,6 +1,6 @@
 /**
- * @file   fmt-grp-duke3d.hpp
- * @brief  Implementation of Duke3D .GRP file reader/writer.
+ * @file  fmt-grp-duke3d.hpp
+ * @brief Duke Nukem 3D .GRP format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -27,6 +27,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// Duke Nukem 3D .GRP format handler.
 class GRPType: virtual public ArchiveType
 {
 	public:
@@ -47,6 +48,7 @@ class GRPType: virtual public ArchiveType
 			const std::string& filenameArchive) const;
 };
 
+/// Duke Nukem 3D .GRP archive instance.
 class GRPArchive: virtual public FATArchive
 {
 	public:

@@ -1,6 +1,6 @@
 /**
- * @file   fmt-res-stellar7.hpp
- * @brief  Implementation of Stellar 7 resource files (.res)
+ * @file  fmt-res-stellar7.hpp
+ * @brief Stellar 7 .RES format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -27,6 +27,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// Stellar 7 .RES format handler.
 class RESType: virtual public ArchiveType
 {
 	public:
@@ -37,14 +38,17 @@ class RESType: virtual public ArchiveType
 		virtual std::string getFriendlyName() const;
 		virtual std::vector<std::string> getFileExtensions() const;
 		virtual std::vector<std::string> getGameList() const;
-		virtual ArchiveType::Certainty isInstance(stream::input_sptr fsArchive) const;
+		virtual ArchiveType::Certainty isInstance(stream::input_sptr fsArchive)
+			const;
 		virtual ArchivePtr newArchive(stream::inout_sptr psArchive,
 			SuppData& suppData) const;
-		virtual ArchivePtr open(stream::inout_sptr fsArchive, SuppData& suppData) const;
+		virtual ArchivePtr open(stream::inout_sptr fsArchive, SuppData& suppData)
+			const;
 		virtual SuppFilenames getRequiredSupps(stream::input_sptr data,
 			const std::string& filenameArchive) const;
 };
 
+/// Stellar 7 .RES archive instance.
 class RESArchiveFolder: virtual public FATArchive
 {
 	public:

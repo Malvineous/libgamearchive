@@ -1,6 +1,6 @@
 /**
- * @file   fmt-dat-hugo.cpp
- * @brief  Implementation of Hugo scenery .DAT file reader/writer.
+ * @file  fmt-dat-hugo.cpp
+ * @brief Hugo 2/3 scenery .DAT format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
  *
@@ -27,6 +27,7 @@
 namespace camoto {
 namespace gamearchive {
 
+/// Hugo 2/3 scenery .DAT format handler.
 class DAT_HugoType: virtual public ArchiveType
 {
 	public:
@@ -47,6 +48,7 @@ class DAT_HugoType: virtual public ArchiveType
 			const std::string& filenameArchive) const;
 };
 
+/// Hugo 2/3 scenery .DAT archive instance.
 class DAT_HugoArchive: virtual public FATArchive
 {
 	protected:
