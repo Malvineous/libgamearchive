@@ -28,11 +28,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// Mythos .LIB format handler.
-class LIB_MythosType: virtual public ArchiveType
+class ArchiveType_LIB_Mythos: virtual public ArchiveType
 {
 	public:
-		LIB_MythosType();
-		virtual ~LIB_MythosType();
+		ArchiveType_LIB_Mythos();
+		virtual ~ArchiveType_LIB_Mythos();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;
@@ -49,10 +49,10 @@ class LIB_MythosType: virtual public ArchiveType
 };
 
 /// Mythos .LIB archive instance.
-class LIB_MythosArchive: virtual public FATArchive {
+class Archive_LIB_Mythos: virtual public FATArchive {
 	public:
-		LIB_MythosArchive(stream::inout_sptr psArchive);
-		virtual ~LIB_MythosArchive();
+		Archive_LIB_Mythos(stream::inout_sptr psArchive);
+		virtual ~Archive_LIB_Mythos();
 
 		virtual void updateFileName(const FATEntry *pid,
 			const std::string& strNewName);

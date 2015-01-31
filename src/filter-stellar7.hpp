@@ -27,11 +27,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// Stellar 7 decompression filter.
-class Stellar7FilterType: virtual public FilterType
+class FilterType_Stellar7: virtual public FilterType
 {
 	public:
-		Stellar7FilterType();
-		virtual ~Stellar7FilterType();
+		FilterType_Stellar7();
+		virtual ~FilterType_Stellar7();
 
 		virtual std::string getFilterCode() const;
 		virtual std::string getFriendlyName() const;

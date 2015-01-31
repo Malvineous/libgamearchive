@@ -46,25 +46,25 @@
 namespace camoto {
 namespace gamearchive {
 
-WADType::WADType()
+ArchiveType_WAD_Doom::ArchiveType_WAD_Doom()
 {
 }
 
-WADType::~WADType()
+ArchiveType_WAD_Doom::~ArchiveType_WAD_Doom()
 {
 }
 
-std::string WADType::getArchiveCode() const
+std::string ArchiveType_WAD_Doom::getArchiveCode() const
 {
 	return "wad-doom";
 }
 
-std::string WADType::getFriendlyName() const
+std::string ArchiveType_WAD_Doom::getFriendlyName() const
 {
 	return "Doom WAD File";
 }
 
-std::vector<std::string> WADType::getFileExtensions() const
+std::vector<std::string> ArchiveType_WAD_Doom::getFileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("wad");
@@ -72,7 +72,7 @@ std::vector<std::string> WADType::getFileExtensions() const
 	return vcExtensions;
 }
 
-std::vector<std::string> WADType::getGameList() const
+std::vector<std::string> ArchiveType_WAD_Doom::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Doom");
@@ -85,7 +85,7 @@ std::vector<std::string> WADType::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty WADType::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_WAD_Doom::isInstance(stream::input_sptr psArchive) const
 {
 	stream::pos lenArchive = psArchive->size();
 
@@ -106,19 +106,19 @@ ArchiveType::Certainty WADType::isInstance(stream::input_sptr psArchive) const
 	return DefinitelyNo;
 }
 
-ArchivePtr WADType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_WAD_Doom::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	psArchive->seekp(0, stream::start);
 	psArchive->write("IWAD\x00\x00\x00\x00\x0c\x00\x00\x00", WAD_HEADER_LEN);
-	return ArchivePtr(new WADArchive(psArchive));
+	return ArchivePtr(new Archive_WAD_Doom(psArchive));
 }
 
-ArchivePtr WADType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_WAD_Doom::open(stream::inout_sptr psArchive, SuppData& suppData) const
 {
-	return ArchivePtr(new WADArchive(psArchive));
+	return ArchivePtr(new Archive_WAD_Doom(psArchive));
 }
 
-SuppFilenames WADType::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_WAD_Doom::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -126,7 +126,7 @@ SuppFilenames WADType::getRequiredSupps(stream::input_sptr data,
 }
 
 
-WADArchive::WADArchive(stream::inout_sptr psArchive)
+Archive_WAD_Doom::Archive_WAD_Doom(stream::inout_sptr psArchive)
 	:	FATArchive(psArchive, WAD_FIRST_FILE_OFFSET, WAD_MAX_FILENAME_LEN)
 {
 	this->psArchive->seekg(4, stream::start); // skip sig
@@ -168,11 +168,11 @@ WADArchive::WADArchive(stream::inout_sptr psArchive)
 	}
 }
 
-WADArchive::~WADArchive()
+Archive_WAD_Doom::~Archive_WAD_Doom()
 {
 }
 
-WADArchive::MetadataTypes WADArchive::getMetadataList() const
+Archive_WAD_Doom::MetadataTypes Archive_WAD_Doom::getMetadataList() const
 {
 	// TESTED BY: fmt_wad_doom::test_metadata_get_ver
 	MetadataTypes m;
@@ -180,7 +180,7 @@ WADArchive::MetadataTypes WADArchive::getMetadataList() const
 	return m;
 }
 
-std::string WADArchive::getMetadata(MetadataType item) const
+std::string Archive_WAD_Doom::getMetadata(MetadataType item) const
 {
 	// TESTED BY: fmt_wad_doom::test_metadata_get_ver
 	switch (item) {
@@ -196,7 +196,7 @@ std::string WADArchive::getMetadata(MetadataType item) const
 	}
 }
 
-void WADArchive::setMetadata(MetadataType item, const std::string& value)
+void Archive_WAD_Doom::setMetadata(MetadataType item, const std::string& value)
 {
 	// TESTED BY: test_wad_doom_changemetadata_c01
 	// TESTED BY: fmt_wad_doom_new_to_initialstate
@@ -218,7 +218,7 @@ void WADArchive::setMetadata(MetadataType item, const std::string& value)
 	return;
 }
 
-void WADArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+void Archive_WAD_Doom::updateFileName(const FATEntry *pid, const std::string& strNewName)
 {
 	// TESTED BY: fmt_wad_doom_rename
 	assert(strNewName.length() <= WAD_MAX_FILENAME_LEN);
@@ -227,7 +227,7 @@ void WADArchive::updateFileName(const FATEntry *pid, const std::string& strNewNa
 	return;
 }
 
-void WADArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+void Archive_WAD_Doom::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 {
 	// TESTED BY: fmt_wad_doom_insert*
 	// TESTED BY: fmt_wad_doom_resize*
@@ -236,7 +236,7 @@ void WADArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 	return;
 }
 
-void WADArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+void Archive_WAD_Doom::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 {
 	// TESTED BY: fmt_wad_doom_insert*
 	// TESTED BY: fmt_wad_doom_resize*
@@ -245,7 +245,7 @@ void WADArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 	return;
 }
 
-FATArchive::FATEntry *WADArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+FATArchive::FATEntry *Archive_WAD_Doom::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_wad_doom_insert*
 	assert(pNewEntry->strName.length() <= WAD_MAX_FILENAME_LEN);
@@ -278,7 +278,7 @@ FATArchive::FATEntry *WADArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	return pNewEntry;
 }
 
-void WADArchive::preRemoveFile(const FATEntry *pid)
+void Archive_WAD_Doom::preRemoveFile(const FATEntry *pid)
 {
 	// TESTED BY: fmt_wad_doom_remove*
 
@@ -300,7 +300,7 @@ void WADArchive::preRemoveFile(const FATEntry *pid)
 	return;
 }
 
-void WADArchive::updateFileCount(uint32_t iNewCount)
+void Archive_WAD_Doom::updateFileCount(uint32_t iNewCount)
 {
 	// TESTED BY: fmt_wad_doom_insert*
 	// TESTED BY: fmt_wad_doom_remove*

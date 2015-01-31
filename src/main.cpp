@@ -92,56 +92,56 @@ const ManagerPtr getManager()
 
 ActualManager::ActualManager()
 {
-	this->vcFilters.push_back(FilterTypePtr(new BashFilterType()));
-	this->vcFilters.push_back(FilterTypePtr(new DDaveRLEFilterType()));
-	this->vcFilters.push_back(FilterTypePtr(new EPFSFilterType()));
-	this->vcFilters.push_back(FilterTypePtr(new GLBFATFilterType()));
-	this->vcFilters.push_back(FilterTypePtr(new GLBFileFilterType()));
-	this->vcFilters.push_back(FilterTypePtr(new GOTDatFilterType()));
-	this->vcFilters.push_back(FilterTypePtr(new RFFFilterType()));
-	this->vcFilters.push_back(FilterTypePtr(new SAM16SpriteFilterType()));
-	this->vcFilters.push_back(FilterTypePtr(new SAM8SpriteFilterType()));
-	this->vcFilters.push_back(FilterTypePtr(new SAMMapFilterType()));
-	this->vcFilters.push_back(FilterTypePtr(new SkyRoadsFilterType()));
-	this->vcFilters.push_back(FilterTypePtr(new StargunnerFilterType()));
-	this->vcFilters.push_back(FilterTypePtr(new Stellar7FilterType()));
-	this->vcFilters.push_back(FilterTypePtr(new XORFilterType()));
-	this->vcFilters.push_back(FilterTypePtr(new Zone66FilterType()));
+	this->vcFilters.push_back(FilterTypePtr(new FilterType_Bash()));
+	this->vcFilters.push_back(FilterTypePtr(new FilterType_DDaveRLE()));
+	this->vcFilters.push_back(FilterTypePtr(new FilterType_EPFS()));
+	this->vcFilters.push_back(FilterTypePtr(new FilterType_GLB_Raptor_FAT()));
+	this->vcFilters.push_back(FilterTypePtr(new FilterType_GLB_Raptor_File()));
+	this->vcFilters.push_back(FilterTypePtr(new FilterType_DAT_GOT()));
+	this->vcFilters.push_back(FilterTypePtr(new FilterType_RFF()));
+	this->vcFilters.push_back(FilterTypePtr(new FilterType_SAM_16Sprite()));
+	this->vcFilters.push_back(FilterTypePtr(new FilterType_SAM_8Sprite()));
+	this->vcFilters.push_back(FilterTypePtr(new FilterType_SAM_Map()));
+	this->vcFilters.push_back(FilterTypePtr(new FilterType_SkyRoads()));
+	this->vcFilters.push_back(FilterTypePtr(new FilterType_Stargunner()));
+	this->vcFilters.push_back(FilterTypePtr(new FilterType_Stellar7()));
+	this->vcFilters.push_back(FilterTypePtr(new FilterType_XOR()));
+	this->vcFilters.push_back(FilterTypePtr(new FilterType_Zone66()));
 
-	this->vcTypes.push_back(ArchiveTypePtr(new BNKType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new DAT_BashType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new DAT_GoTType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new DAT_HighwayType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new DAT_LostVikingsType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new DAT_MysticType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new DAT_SangoType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new DAT_WackyType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new DLTType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new EPFType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new EXE_CCavesType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new EXE_DDaveType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new GLBType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new GRPType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new HOGType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new LBRType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new LIB_MythosType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new PCXLibType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new PODType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new RESType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new RFFType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new SkyRoadsRoadsType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new TIMResourceFATType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new TIMResourceType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new VOLType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new WADType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_BNK_Harry()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_DAT_Bash()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_DAT_GoT()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_DAT_Highway()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_DAT_LostVikings()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_DAT_Mystic()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_DAT_Sango()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_DAT_Wacky()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_DLT_Stargunner()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_EPF_LionKing()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_EXE_CCaves()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_EXE_DDave()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_GLB_Raptor()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_GRP_Duke3D()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_HOG_Descent()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_LBR_Vinyl()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_LIB_Mythos()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_PCXLib()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_POD_TV()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_RES_Stellar7()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_RFF_Blood()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_Roads_SkyRoads()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_Resource_TIM_FAT()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_Resource_TIM()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_VOL_Cosmo()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_WAD_Doom()));
 
 	// The following formats are difficult to autodetect, so putting them last
 	// means they should only be checked if all the more robust formats above
 	// have already failed to match.
-	this->vcTypes.push_back(ArchiveTypePtr(new GD_DoofusType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new DAT_HugoType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new DAT_HocusType()));
-	this->vcTypes.push_back(ArchiveTypePtr(new DA_LevelsType()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_GD_Doofus()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_DAT_Hugo()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_DAT_Hocus()));
+	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_DA_Levels()));
 }
 
 ActualManager::~ActualManager()

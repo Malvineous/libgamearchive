@@ -32,46 +32,46 @@
 namespace camoto {
 namespace gamearchive {
 
-GD_DoofusType::GD_DoofusType()
+ArchiveType_GD_Doofus::ArchiveType_GD_Doofus()
 {
 }
 
-GD_DoofusType::~GD_DoofusType()
+ArchiveType_GD_Doofus::~ArchiveType_GD_Doofus()
 {
 }
 
-std::string GD_DoofusType::getArchiveCode() const
+std::string ArchiveType_GD_Doofus::getArchiveCode() const
 {
 	return "gd-doofus";
 }
 
-std::string GD_DoofusType::getFriendlyName() const
+std::string ArchiveType_GD_Doofus::getFriendlyName() const
 {
 	return "Doofus DAT File";
 }
 
-std::vector<std::string> GD_DoofusType::getFileExtensions() const
+std::vector<std::string> ArchiveType_GD_Doofus::getFileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("g-d");
 	return vcExtensions;
 }
 
-std::vector<std::string> GD_DoofusType::getGameList() const
+std::vector<std::string> ArchiveType_GD_Doofus::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Doofus");
 	return vcGames;
 }
 
-ArchiveType::Certainty GD_DoofusType::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_GD_Doofus::isInstance(stream::input_sptr psArchive) const
 {
 	// There is literally no identifying information in this archive format!
 	// TESTED BY: fmt_dat_doofus_isinstance_c00
 	return Unsure;
 }
 
-ArchivePtr GD_DoofusType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_GD_Doofus::open(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	assert(suppData.find(SuppItem::FAT) != suppData.end());
 	stream::pos lenEXE = suppData[SuppItem::FAT]->size();
@@ -86,17 +86,17 @@ ArchivePtr GD_DoofusType::open(stream::inout_sptr psArchive, SuppData& suppData)
 	}
 	stream::sub_sptr fat(new stream::sub());
 	fat->open(suppData[SuppItem::FAT], offFAT, lenFAT, preventResize);
-	return ArchivePtr(new GD_DoofusArchive(psArchive, fat));
+	return ArchivePtr(new Archive_GD_Doofus(psArchive, fat));
 }
 
-ArchivePtr GD_DoofusType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_GD_Doofus::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	// We can't create new archives because the FAT has to go inside a
 	// specific version of an .EXE file, and we wouldn't know where that is!
 	throw stream::error("Cannot create archives from scratch in this format!");
 }
 
-SuppFilenames GD_DoofusType::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_GD_Doofus::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -107,7 +107,7 @@ SuppFilenames GD_DoofusType::getRequiredSupps(stream::input_sptr data,
 }
 
 
-GD_DoofusArchive::GD_DoofusArchive(stream::inout_sptr psArchive, stream::inout_sptr psFAT)
+Archive_GD_Doofus::Archive_GD_Doofus(stream::inout_sptr psArchive, stream::inout_sptr psFAT)
 	:	FATArchive(psArchive, GD_FIRST_FILE_OFFSET, 0),
 		psFAT(new stream::seg()),
 		numFiles(0)
@@ -161,11 +161,11 @@ GD_DoofusArchive::GD_DoofusArchive(stream::inout_sptr psArchive, stream::inout_s
 	}
 }
 
-GD_DoofusArchive::~GD_DoofusArchive()
+Archive_GD_Doofus::~Archive_GD_Doofus()
 {
 }
 
-void GD_DoofusArchive::flush()
+void Archive_GD_Doofus::flush()
 {
 	this->FATArchive::flush();
 
@@ -175,18 +175,18 @@ void GD_DoofusArchive::flush()
 	return;
 }
 
-void GD_DoofusArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+void Archive_GD_Doofus::updateFileName(const FATEntry *pid, const std::string& strNewName)
 {
 	throw stream::error("This archive format does not support filenames.");
 }
 
-void GD_DoofusArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+void Archive_GD_Doofus::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 {
 	// Nothing to do, offsets aren't stored
 	return;
 }
 
-void GD_DoofusArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+void Archive_GD_Doofus::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 {
 	// Update external FAT
 	this->psFAT->seekp(pid->iIndex * GD_FAT_ENTRY_LEN + GD_FAT_FILESIZE_OFFSET, stream::start);
@@ -195,7 +195,7 @@ void GD_DoofusArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDel
 	return;
 }
 
-FATArchive::FATEntry *GD_DoofusArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+FATArchive::FATEntry *Archive_GD_Doofus::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// Make sure FAT hasn't reached maximum size
 	if (this->numFiles + 1 >= this->maxFiles) {
@@ -221,7 +221,7 @@ FATArchive::FATEntry *GD_DoofusArchive::preInsertFile(const FATEntry *idBeforeTh
 	return pNewEntry;
 }
 
-void GD_DoofusArchive::preRemoveFile(const FATEntry *pid)
+void Archive_GD_Doofus::preRemoveFile(const FATEntry *pid)
 {
 	// Remove the FAT entry
 	this->psFAT->seekp(pid->iIndex * GD_FAT_ENTRY_LEN, stream::start);

@@ -250,32 +250,32 @@ void filter_z66_compress::transform(uint8_t *out, stream::len *lenOut,
 	return;
 }
 
-Zone66FilterType::Zone66FilterType()
+FilterType_Zone66::FilterType_Zone66()
 {
 }
 
-Zone66FilterType::~Zone66FilterType()
+FilterType_Zone66::~FilterType_Zone66()
 {
 }
 
-std::string Zone66FilterType::getFilterCode() const
+std::string FilterType_Zone66::getFilterCode() const
 {
 	return "lzw-zone66";
 }
 
-std::string Zone66FilterType::getFriendlyName() const
+std::string FilterType_Zone66::getFriendlyName() const
 {
 	return "Zone 66 compression";
 }
 
-std::vector<std::string> Zone66FilterType::getGameList() const
+std::vector<std::string> FilterType_Zone66::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Zone 66");
 	return vcGames;
 }
 
-stream::inout_sptr Zone66FilterType::apply(stream::inout_sptr target,
+stream::inout_sptr FilterType_Zone66::apply(stream::inout_sptr target,
 	stream::fn_truncate resize) const
 {
 	stream::filtered_sptr st(new stream::filtered());
@@ -285,7 +285,7 @@ stream::inout_sptr Zone66FilterType::apply(stream::inout_sptr target,
 	return st;
 }
 
-stream::input_sptr Zone66FilterType::apply(stream::input_sptr target) const
+stream::input_sptr FilterType_Zone66::apply(stream::input_sptr target) const
 {
 	stream::input_filtered_sptr st(new stream::input_filtered());
 	filter_sptr de(new filter_z66_decompress());
@@ -293,7 +293,7 @@ stream::input_sptr Zone66FilterType::apply(stream::input_sptr target) const
 	return st;
 }
 
-stream::output_sptr Zone66FilterType::apply(stream::output_sptr target,
+stream::output_sptr FilterType_Zone66::apply(stream::output_sptr target,
 	stream::fn_truncate resize) const
 {
 	stream::output_filtered_sptr st(new stream::output_filtered());

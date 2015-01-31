@@ -28,11 +28,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// Stargunner .DLT format handler.
-class DLTType: virtual public ArchiveType
+class ArchiveType_DLT_Stargunner: virtual public ArchiveType
 {
 	public:
-		DLTType();
-		virtual ~DLTType();
+		ArchiveType_DLT_Stargunner();
+		virtual ~ArchiveType_DLT_Stargunner();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;
@@ -49,11 +49,11 @@ class DLTType: virtual public ArchiveType
 };
 
 /// Stargunner .DLT archive instance.
-class DLTArchive: virtual public FATArchive
+class Archive_DLT_Stargunner: virtual public FATArchive
 {
 	public:
-		DLTArchive(stream::inout_sptr psArchive);
-		virtual ~DLTArchive();
+		Archive_DLT_Stargunner(stream::inout_sptr psArchive);
+		virtual ~Archive_DLT_Stargunner();
 
 		virtual void updateFileName(const FATEntry *pid,
 			const std::string& strNewName);

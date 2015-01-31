@@ -28,11 +28,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// Stellar 7 .RES format handler.
-class RESType: virtual public ArchiveType
+class ArchiveType_RES_Stellar7: virtual public ArchiveType
 {
 	public:
-		RESType();
-		virtual ~RESType();
+		ArchiveType_RES_Stellar7();
+		virtual ~ArchiveType_RES_Stellar7();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;
@@ -49,11 +49,11 @@ class RESType: virtual public ArchiveType
 };
 
 /// Stellar 7 .RES archive instance.
-class RESArchiveFolder: virtual public FATArchive
+class Archive_RES_Stellar7_Folder: virtual public FATArchive
 {
 	public:
-		RESArchiveFolder(stream::inout_sptr psArchive);
-		virtual ~RESArchiveFolder();
+		Archive_RES_Stellar7_Folder(stream::inout_sptr psArchive);
+		virtual ~Archive_RES_Stellar7_Folder();
 
 		virtual ArchivePtr openFolder(const EntryPtr id);
 

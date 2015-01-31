@@ -72,11 +72,11 @@ class filter_got_lzss: virtual public filter
 };
 
 /// God of Thunder decompression filter.
-class GOTDatFilterType: virtual public FilterType
+class FilterType_DAT_GOT: virtual public FilterType
 {
 	public:
-		GOTDatFilterType();
-		~GOTDatFilterType();
+		FilterType_DAT_GOT();
+		~FilterType_DAT_GOT();
 
 		virtual std::string getFilterCode() const;
 		virtual std::string getFriendlyName() const;

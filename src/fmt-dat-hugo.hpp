@@ -28,11 +28,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// Hugo 2/3 scenery .DAT format handler.
-class DAT_HugoType: virtual public ArchiveType
+class ArchiveType_DAT_Hugo: virtual public ArchiveType
 {
 	public:
-		DAT_HugoType();
-		virtual ~DAT_HugoType();
+		ArchiveType_DAT_Hugo();
+		virtual ~ArchiveType_DAT_Hugo();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;
@@ -49,17 +49,17 @@ class DAT_HugoType: virtual public ArchiveType
 };
 
 /// Hugo 2/3 scenery .DAT archive instance.
-class DAT_HugoArchive: virtual public FATArchive
+class Archive_DAT_Hugo: virtual public FATArchive
 {
 	protected:
 		stream::seg_sptr psFAT;
-		struct DAT_HugoEntry: virtual public FATEntry {
+		struct FATEntry_Hugo: virtual public FATEntry {
 			int file;
 		};
 
 	public:
-		DAT_HugoArchive(stream::inout_sptr psArchive, stream::inout_sptr psFAT);
-		virtual ~DAT_HugoArchive();
+		Archive_DAT_Hugo(stream::inout_sptr psArchive, stream::inout_sptr psFAT);
+		virtual ~Archive_DAT_Hugo();
 
 		virtual void updateFileName(const FATEntry *pid,
 			const std::string& strNewName);

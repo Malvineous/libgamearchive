@@ -74,39 +74,39 @@ stream::len ddaveResize(stream::inout_sptr arch, unsigned int index,
 	return newRealSize;
 }
 
-EXE_DDaveType::EXE_DDaveType()
+ArchiveType_EXE_DDave::ArchiveType_EXE_DDave()
 {
 }
 
-EXE_DDaveType::~EXE_DDaveType()
+ArchiveType_EXE_DDave::~ArchiveType_EXE_DDave()
 {
 }
 
-std::string EXE_DDaveType::getArchiveCode() const
+std::string ArchiveType_EXE_DDave::getArchiveCode() const
 {
 	return "exe-ddave";
 }
 
-std::string EXE_DDaveType::getFriendlyName() const
+std::string ArchiveType_EXE_DDave::getFriendlyName() const
 {
 	return "Dangerous Dave Executable";
 }
 
-std::vector<std::string> EXE_DDaveType::getFileExtensions() const
+std::vector<std::string> ArchiveType_EXE_DDave::getFileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("exe");
 	return vcExtensions;
 }
 
-std::vector<std::string> EXE_DDaveType::getGameList() const
+std::vector<std::string> ArchiveType_EXE_DDave::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Dangerous Dave");
 	return vcGames;
 }
 
-ArchiveType::Certainty EXE_DDaveType::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_EXE_DDave::isInstance(stream::input_sptr psArchive) const
 {
 	stream::pos lenArchive = psArchive->size();
 
@@ -126,13 +126,13 @@ ArchiveType::Certainty EXE_DDaveType::isInstance(stream::input_sptr psArchive) c
 	return DefinitelyNo;
 }
 
-ArchivePtr EXE_DDaveType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_EXE_DDave::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	// This isn't a true archive so we can't create new versions of it.
 	throw stream::error("Can't create a new archive in this format.");
 }
 
-ArchivePtr EXE_DDaveType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_EXE_DDave::open(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	std::vector<FixedArchiveFile> files;
 	files.reserve(sizeof(ddave_file_list) / sizeof(FixedArchiveFile));
@@ -142,7 +142,7 @@ ArchivePtr EXE_DDaveType::open(stream::inout_sptr psArchive, SuppData& suppData)
 	return createFixedArchive(psArchive, files);
 }
 
-SuppFilenames EXE_DDaveType::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_EXE_DDave::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list

@@ -94,39 +94,39 @@ FixedArchiveFile ccaves_file_list[] = {
 	{OFF_L16, SZ_L16, "e1l16.ccl", FILTER_NONE, RESIZE_NONE},
 };
 
-EXE_CCavesType::EXE_CCavesType()
+ArchiveType_EXE_CCaves::ArchiveType_EXE_CCaves()
 {
 }
 
-EXE_CCavesType::~EXE_CCavesType()
+ArchiveType_EXE_CCaves::~ArchiveType_EXE_CCaves()
 {
 }
 
-std::string EXE_CCavesType::getArchiveCode() const
+std::string ArchiveType_EXE_CCaves::getArchiveCode() const
 {
 	return "exe-ccaves";
 }
 
-std::string EXE_CCavesType::getFriendlyName() const
+std::string ArchiveType_EXE_CCaves::getFriendlyName() const
 {
 	return "Crystal Caves Executable";
 }
 
-std::vector<std::string> EXE_CCavesType::getFileExtensions() const
+std::vector<std::string> ArchiveType_EXE_CCaves::getFileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("exe");
 	return vcExtensions;
 }
 
-std::vector<std::string> EXE_CCavesType::getGameList() const
+std::vector<std::string> ArchiveType_EXE_CCaves::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Crystal Caves");
 	return vcGames;
 }
 
-ArchiveType::Certainty EXE_CCavesType::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_EXE_CCaves::isInstance(stream::input_sptr psArchive) const
 {
 	stream::pos lenArchive = psArchive->size();
 
@@ -147,13 +147,13 @@ ArchiveType::Certainty EXE_CCavesType::isInstance(stream::input_sptr psArchive) 
 	return DefinitelyNo;
 }
 
-ArchivePtr EXE_CCavesType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_EXE_CCaves::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	// This isn't a true archive so we can't create new versions of it.
 	throw stream::error("Can't create a new archive in this format.");
 }
 
-ArchivePtr EXE_CCavesType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_EXE_CCaves::open(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	std::vector<FixedArchiveFile> files;
 	files.reserve(sizeof(ccaves_file_list) / sizeof(FixedArchiveFile));
@@ -163,7 +163,7 @@ ArchivePtr EXE_CCavesType::open(stream::inout_sptr psArchive, SuppData& suppData
 	return createFixedArchive(psArchive, files);
 }
 
-SuppFilenames EXE_CCavesType::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_EXE_CCaves::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list

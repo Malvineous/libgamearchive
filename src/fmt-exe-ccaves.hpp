@@ -27,11 +27,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// Crystal Caves .EXE file handler.
-class EXE_CCavesType: virtual public ArchiveType
+class ArchiveType_EXE_CCaves: virtual public ArchiveType
 {
 	public:
-		EXE_CCavesType();
-		virtual ~EXE_CCavesType();
+		ArchiveType_EXE_CCaves();
+		virtual ~ArchiveType_EXE_CCaves();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;

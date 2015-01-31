@@ -28,11 +28,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// The Lion King .EPF format handler.
-class EPFType: virtual public ArchiveType
+class ArchiveType_EPF_LionKing: virtual public ArchiveType
 {
 	public:
-		EPFType();
-		virtual ~EPFType();
+		ArchiveType_EPF_LionKing();
+		virtual ~ArchiveType_EPF_LionKing();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;
@@ -49,14 +49,14 @@ class EPFType: virtual public ArchiveType
 };
 
 /// The Lion King .EPF format handler.
-class EPFArchive: virtual public FATArchive
+class Archive_EPF_LionKing: virtual public FATArchive
 {
 	protected:
 		stream::pos offFAT;  ///< Offset of the FAT from the start of the file
 
 	public:
-		EPFArchive(stream::inout_sptr psArchive);
-		virtual ~EPFArchive();
+		Archive_EPF_LionKing(stream::inout_sptr psArchive);
+		virtual ~Archive_EPF_LionKing();
 
 		virtual int getSupportedAttributes() const;
 		virtual MetadataTypes getMetadataList() const;

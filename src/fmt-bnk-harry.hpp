@@ -28,11 +28,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// Halloween Harry .BNK format handler.
-class BNKType: virtual public ArchiveType
+class ArchiveType_BNK_Harry: virtual public ArchiveType
 {
 	public:
-		BNKType();
-		virtual ~BNKType();
+		ArchiveType_BNK_Harry();
+		virtual ~ArchiveType_BNK_Harry();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;
@@ -49,15 +49,15 @@ class BNKType: virtual public ArchiveType
 };
 
 /// Halloween Harry .BNK archive instance.
-class BNKArchive: virtual public FATArchive
+class Archive_BNK_Harry: virtual public FATArchive
 {
 	protected:
 		stream::seg_sptr psFAT;
 		bool isAC;  // true == Alien Carnage, false == Halloween Harry
 
 	public:
-		BNKArchive(stream::inout_sptr psArchive, stream::inout_sptr psFAT);
-		virtual ~BNKArchive();
+		Archive_BNK_Harry(stream::inout_sptr psArchive, stream::inout_sptr psFAT);
+		virtual ~Archive_BNK_Harry();
 
 		virtual void flush();
 

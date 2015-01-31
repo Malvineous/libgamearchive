@@ -48,39 +48,39 @@
 namespace camoto {
 namespace gamearchive {
 
-DAT_GoTType::DAT_GoTType()
+ArchiveType_DAT_GoT::ArchiveType_DAT_GoT()
 {
 }
 
-DAT_GoTType::~DAT_GoTType()
+ArchiveType_DAT_GoT::~ArchiveType_DAT_GoT()
 {
 }
 
-std::string DAT_GoTType::getArchiveCode() const
+std::string ArchiveType_DAT_GoT::getArchiveCode() const
 {
 	return "dat-got";
 }
 
-std::string DAT_GoTType::getFriendlyName() const
+std::string ArchiveType_DAT_GoT::getFriendlyName() const
 {
 	return "God of Thunder Resource File";
 }
 
-std::vector<std::string> DAT_GoTType::getFileExtensions() const
+std::vector<std::string> ArchiveType_DAT_GoT::getFileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("dat");
 	return vcExtensions;
 }
 
-std::vector<std::string> DAT_GoTType::getGameList() const
+std::vector<std::string> ArchiveType_DAT_GoT::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("God of Thunder");
 	return vcGames;
 }
 
-ArchiveType::Certainty DAT_GoTType::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_DAT_GoT::isInstance(stream::input_sptr psArchive) const
 {
 	stream::pos lenArchive = psArchive->size();
 
@@ -144,7 +144,7 @@ ArchiveType::Certainty DAT_GoTType::isInstance(stream::input_sptr psArchive) con
 	return DefinitelyYes;
 }
 
-ArchivePtr DAT_GoTType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_DAT_GoT::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	// Create an empty FAT (of 0x00 bytes) and XOR encode it.  We should really
 	// use the XOR filter but it's much quicker to do it directly.
@@ -154,15 +154,15 @@ ArchivePtr DAT_GoTType::newArchive(stream::inout_sptr psArchive, SuppData& suppD
 	}
 	psArchive->seekp(0, stream::start);
 	psArchive->write(emptyFAT, GOT_FAT_LENGTH);
-	return ArchivePtr(new DAT_GoTArchive(psArchive));
+	return ArchivePtr(new Archive_DAT_GoT(psArchive));
 }
 
-ArchivePtr DAT_GoTType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_DAT_GoT::open(stream::inout_sptr psArchive, SuppData& suppData) const
 {
-	return ArchivePtr(new DAT_GoTArchive(psArchive));
+	return ArchivePtr(new Archive_DAT_GoT(psArchive));
 }
 
-SuppFilenames DAT_GoTType::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_DAT_GoT::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -170,7 +170,7 @@ SuppFilenames DAT_GoTType::getRequiredSupps(stream::input_sptr data,
 }
 
 
-DAT_GoTArchive::DAT_GoTArchive(stream::inout_sptr psArchive)
+Archive_DAT_GoT::Archive_DAT_GoT(stream::inout_sptr psArchive)
 	:	FATArchive(psArchive, GOT_FIRST_FILE_OFFSET, GOT_MAX_FILENAME_LEN),
 		fatSubStream(new stream::sub()),
 		fatStream(new stream::seg())
@@ -180,7 +180,7 @@ DAT_GoTArchive::DAT_GoTArchive(stream::inout_sptr psArchive)
 		psArchive,
 		0,
 		GOT_MAX_FILES * GOT_FAT_ENTRY_LEN,
-		boost::bind<void>(&DAT_GoTArchive::truncateFAT, this, _1)
+		boost::bind<void>(&Archive_DAT_GoT::truncateFAT, this, _1)
 	);
 
 	filter_sptr fatCryptR(new filter_xor_crypt(0, 128));
@@ -228,11 +228,11 @@ DAT_GoTArchive::DAT_GoTArchive(stream::inout_sptr psArchive)
 	}
 }
 
-DAT_GoTArchive::~DAT_GoTArchive()
+Archive_DAT_GoT::~Archive_DAT_GoT()
 {
 }
 
-void DAT_GoTArchive::flush()
+void Archive_DAT_GoT::flush()
 {
 	this->fatStream->flush();
 
@@ -241,12 +241,12 @@ void DAT_GoTArchive::flush()
 	return;
 }
 
-int DAT_GoTArchive::getSupportedAttributes() const
+int Archive_DAT_GoT::getSupportedAttributes() const
 {
 	return EA_COMPRESSED;
 }
 
-void DAT_GoTArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+void Archive_DAT_GoT::updateFileName(const FATEntry *pid, const std::string& strNewName)
 {
 	// TESTED BY: fmt_got_dat_rename
 	assert(strNewName.length() <= GOT_MAX_FILENAME_LEN);
@@ -255,7 +255,7 @@ void DAT_GoTArchive::updateFileName(const FATEntry *pid, const std::string& strN
 	return;
 }
 
-void DAT_GoTArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+void Archive_DAT_GoT::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 {
 	// TESTED BY: fmt_got_dat_insert*
 	// TESTED BY: fmt_got_dat_resize*
@@ -264,7 +264,7 @@ void DAT_GoTArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelt
 	return;
 }
 
-void DAT_GoTArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+void Archive_DAT_GoT::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 {
 	// TESTED BY: fmt_got_dat_insert*
 	// TESTED BY: fmt_got_dat_resize*
@@ -276,7 +276,7 @@ void DAT_GoTArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta
 	return;
 }
 
-FATArchive::FATEntry *DAT_GoTArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+FATArchive::FATEntry *Archive_DAT_GoT::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_got_dat_insert*
 	assert(pNewEntry->strName.length() <= GOT_MAX_FILENAME_LEN);
@@ -330,7 +330,7 @@ FATArchive::FATEntry *DAT_GoTArchive::preInsertFile(const FATEntry *idBeforeThis
 	return pNewEntry;
 }
 
-void DAT_GoTArchive::postInsertFile(FATEntry *pNewEntry)
+void Archive_DAT_GoT::postInsertFile(FATEntry *pNewEntry)
 {
 	// Write out the entry into the space we allocated in preInsertFile(),
 	// now that the sizes are set.
@@ -346,7 +346,7 @@ void DAT_GoTArchive::postInsertFile(FATEntry *pNewEntry)
 	return;
 }
 
-void DAT_GoTArchive::preRemoveFile(const FATEntry *pid)
+void Archive_DAT_GoT::preRemoveFile(const FATEntry *pid)
 {
 	// TESTED BY: fmt_got_dat_remove*
 
@@ -362,7 +362,7 @@ void DAT_GoTArchive::preRemoveFile(const FATEntry *pid)
 	return;
 }
 
-void DAT_GoTArchive::truncateFAT(stream::pos newSize)
+void Archive_DAT_GoT::truncateFAT(stream::pos newSize)
 {
 	// Sanity check to make sure the FAT is not actually changing size.
 	assert(newSize == GOT_FAT_LENGTH);

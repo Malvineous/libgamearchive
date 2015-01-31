@@ -43,39 +43,39 @@
 namespace camoto {
 namespace gamearchive {
 
-DAT_MysticType::DAT_MysticType()
+ArchiveType_DAT_Mystic::ArchiveType_DAT_Mystic()
 {
 }
 
-DAT_MysticType::~DAT_MysticType()
+ArchiveType_DAT_Mystic::~ArchiveType_DAT_Mystic()
 {
 }
 
-std::string DAT_MysticType::getArchiveCode() const
+std::string ArchiveType_DAT_Mystic::getArchiveCode() const
 {
 	return "dat-mystic";
 }
 
-std::string DAT_MysticType::getFriendlyName() const
+std::string ArchiveType_DAT_Mystic::getFriendlyName() const
 {
 	return "Mystic Towers DAT File";
 }
 
-std::vector<std::string> DAT_MysticType::getFileExtensions() const
+std::vector<std::string> ArchiveType_DAT_Mystic::getFileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("dat");
 	return vcExtensions;
 }
 
-std::vector<std::string> DAT_MysticType::getGameList() const
+std::vector<std::string> ArchiveType_DAT_Mystic::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Mystic Towers");
 	return vcGames;
 }
 
-ArchiveType::Certainty DAT_MysticType::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_DAT_Mystic::isInstance(stream::input_sptr psArchive) const
 {
 	stream::len lenArchive = psArchive->size();
 
@@ -124,19 +124,19 @@ ArchiveType::Certainty DAT_MysticType::isInstance(stream::input_sptr psArchive) 
 	return DefinitelyYes;
 }
 
-ArchivePtr DAT_MysticType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_DAT_Mystic::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	psArchive->seekp(0, stream::start);
 	psArchive << u16le(0);
-	return ArchivePtr(new DAT_MysticArchive(psArchive));
+	return ArchivePtr(new Archive_DAT_Mystic(psArchive));
 }
 
-ArchivePtr DAT_MysticType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_DAT_Mystic::open(stream::inout_sptr psArchive, SuppData& suppData) const
 {
-	return ArchivePtr(new DAT_MysticArchive(psArchive));
+	return ArchivePtr(new Archive_DAT_Mystic(psArchive));
 }
 
-SuppFilenames DAT_MysticType::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_DAT_Mystic::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -144,7 +144,7 @@ SuppFilenames DAT_MysticType::getRequiredSupps(stream::input_sptr data,
 }
 
 
-DAT_MysticArchive::DAT_MysticArchive(stream::inout_sptr psArchive)
+Archive_DAT_Mystic::Archive_DAT_Mystic(stream::inout_sptr psArchive)
 	:	FATArchive(psArchive, DAT_FIRST_FILE_OFFSET, ARCH_STD_DOS_FILENAMES),
 		uncommittedFiles(0)
 {
@@ -186,11 +186,11 @@ DAT_MysticArchive::DAT_MysticArchive(stream::inout_sptr psArchive)
 	}
 }
 
-DAT_MysticArchive::~DAT_MysticArchive()
+Archive_DAT_Mystic::~Archive_DAT_Mystic()
 {
 }
 
-void DAT_MysticArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+void Archive_DAT_Mystic::updateFileName(const FATEntry *pid, const std::string& strNewName)
 {
 	// TESTED BY: fmt_dat_mystic_rename
 	assert(strNewName.length() <= DAT_MAX_FILENAME_LEN);
@@ -202,7 +202,7 @@ void DAT_MysticArchive::updateFileName(const FATEntry *pid, const std::string& s
 	return;
 }
 
-void DAT_MysticArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+void Archive_DAT_Mystic::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 {
 	// TESTED BY: fmt_dat_mystic_insert*
 	// TESTED BY: fmt_dat_mystic_resize*
@@ -211,7 +211,7 @@ void DAT_MysticArchive::updateFileOffset(const FATEntry *pid, stream::delta offD
 	return;
 }
 
-void DAT_MysticArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+void Archive_DAT_Mystic::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 {
 	// TESTED BY: fmt_dat_mystic_insert*
 	// TESTED BY: fmt_dat_mystic_resize*
@@ -220,7 +220,7 @@ void DAT_MysticArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDe
 	return;
 }
 
-FATArchive::FATEntry *DAT_MysticArchive::preInsertFile(const FATEntry *idBeforeThis,
+FATArchive::FATEntry *Archive_DAT_Mystic::preInsertFile(const FATEntry *idBeforeThis,
 	FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_dat_mystic_insert*
@@ -247,27 +247,27 @@ FATArchive::FATEntry *DAT_MysticArchive::preInsertFile(const FATEntry *idBeforeT
 	return pNewEntry;
 }
 
-void DAT_MysticArchive::postInsertFile(FATEntry *pNewEntry)
+void Archive_DAT_Mystic::postInsertFile(FATEntry *pNewEntry)
 {
 	this->uncommittedFiles--;
 	this->updateFileCount(this->vcFAT.size());
 	return;
 }
 
-void DAT_MysticArchive::preRemoveFile(const FATEntry *pid)
+void Archive_DAT_Mystic::preRemoveFile(const FATEntry *pid)
 {
 	this->psArchive->seekp(DAT_FATENTRY_OFFSET_END(pid), stream::end);
 	this->psArchive->remove(DAT_FAT_ENTRY_LEN);
 	return;
 }
 
-void DAT_MysticArchive::postRemoveFile(const FATEntry *pid)
+void Archive_DAT_Mystic::postRemoveFile(const FATEntry *pid)
 {
 	this->updateFileCount(this->vcFAT.size());
 	return;
 }
 
-void DAT_MysticArchive::updateFileCount(uint32_t newCount)
+void Archive_DAT_Mystic::updateFileCount(uint32_t newCount)
 {
 	this->psArchive->seekp(DAT_FILECOUNT_OFFSET_END, stream::end);
 	this->psArchive << u16le(newCount);

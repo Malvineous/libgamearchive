@@ -28,11 +28,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// Monster Bash .DAT format handler.
-class DAT_BashType: virtual public ArchiveType
+class ArchiveType_DAT_Bash: virtual public ArchiveType
 {
 	public:
-		DAT_BashType();
-		virtual ~DAT_BashType();
+		ArchiveType_DAT_Bash();
+		virtual ~ArchiveType_DAT_Bash();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;
@@ -49,11 +49,11 @@ class DAT_BashType: virtual public ArchiveType
 };
 
 /// Monster Bash .DAT archive instance.
-class DAT_BashArchive: virtual public FATArchive
+class Archive_DAT_Bash: virtual public FATArchive
 {
 	public:
-		DAT_BashArchive(stream::inout_sptr psArchive);
-		virtual ~DAT_BashArchive();
+		Archive_DAT_Bash(stream::inout_sptr psArchive);
+		virtual ~Archive_DAT_Bash();
 
 		// As per Archive (see there for docs)
 		virtual int getSupportedAttributes() const;

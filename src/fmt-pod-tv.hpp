@@ -28,11 +28,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// Terminal Velocity .POD format handler.
-class PODType: virtual public ArchiveType
+class ArchiveType_POD_TV: virtual public ArchiveType
 {
 	public:
-		PODType();
-		virtual ~PODType();
+		ArchiveType_POD_TV();
+		virtual ~ArchiveType_POD_TV();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;
@@ -49,11 +49,11 @@ class PODType: virtual public ArchiveType
 };
 
 /// Terminal Velocity .POD archive instance.
-class PODArchive: virtual public FATArchive
+class Archive_POD_TV: virtual public FATArchive
 {
 	public:
-		PODArchive(stream::inout_sptr psArchive);
-		virtual ~PODArchive();
+		Archive_POD_TV(stream::inout_sptr psArchive);
+		virtual ~Archive_POD_TV();
 
 		virtual MetadataTypes getMetadataList() const;
 		virtual std::string getMetadata(MetadataType item) const;

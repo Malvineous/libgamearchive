@@ -35,25 +35,25 @@
 namespace camoto {
 namespace gamearchive {
 
-DAT_SangoType::DAT_SangoType()
+ArchiveType_DAT_Sango::ArchiveType_DAT_Sango()
 {
 }
 
-DAT_SangoType::~DAT_SangoType()
+ArchiveType_DAT_Sango::~ArchiveType_DAT_Sango()
 {
 }
 
-std::string DAT_SangoType::getArchiveCode() const
+std::string ArchiveType_DAT_Sango::getArchiveCode() const
 {
 	return "dat-sango";
 }
 
-std::string DAT_SangoType::getFriendlyName() const
+std::string ArchiveType_DAT_Sango::getFriendlyName() const
 {
 	return "Sango Archive File";
 }
 
-std::vector<std::string> DAT_SangoType::getFileExtensions() const
+std::vector<std::string> ArchiveType_DAT_Sango::getFileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("dat");
@@ -64,14 +64,14 @@ std::vector<std::string> DAT_SangoType::getFileExtensions() const
 	return vcExtensions;
 }
 
-std::vector<std::string> DAT_SangoType::getGameList() const
+std::vector<std::string> ArchiveType_DAT_Sango::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Sango Fighter");
 	return vcGames;
 }
 
-ArchiveType::Certainty DAT_SangoType::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_DAT_Sango::isInstance(stream::input_sptr psArchive) const
 {
 	stream::pos lenArchive = psArchive->size();
 
@@ -99,19 +99,19 @@ ArchiveType::Certainty DAT_SangoType::isInstance(stream::input_sptr psArchive) c
 	return DefinitelyYes;
 }
 
-ArchivePtr DAT_SangoType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_DAT_Sango::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	psArchive->seekp(0, stream::start);
 	psArchive->write("\x04\0\0\0", 4);
-	return ArchivePtr(new DAT_SangoArchive(psArchive));
+	return ArchivePtr(new Archive_DAT_Sango(psArchive));
 }
 
-ArchivePtr DAT_SangoType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_DAT_Sango::open(stream::inout_sptr psArchive, SuppData& suppData) const
 {
-	return ArchivePtr(new DAT_SangoArchive(psArchive));
+	return ArchivePtr(new Archive_DAT_Sango(psArchive));
 }
 
-SuppFilenames DAT_SangoType::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_DAT_Sango::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -119,7 +119,7 @@ SuppFilenames DAT_SangoType::getRequiredSupps(stream::input_sptr data,
 }
 
 
-DAT_SangoArchive::DAT_SangoArchive(stream::inout_sptr psArchive)
+Archive_DAT_Sango::Archive_DAT_Sango(stream::inout_sptr psArchive)
 	:	FATArchive(psArchive, DAT_FIRST_FILE_OFFSET, 0)
 {
 	psArchive->seekg(0, stream::end);
@@ -155,30 +155,30 @@ DAT_SangoArchive::DAT_SangoArchive(stream::inout_sptr psArchive)
 	}
 }
 
-DAT_SangoArchive::~DAT_SangoArchive()
+Archive_DAT_Sango::~Archive_DAT_Sango()
 {
 }
 
-void DAT_SangoArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+void Archive_DAT_Sango::updateFileName(const FATEntry *pid, const std::string& strNewName)
 {
 	throw stream::error("This archive format does not support filenames.");
 }
 
-void DAT_SangoArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+void Archive_DAT_Sango::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 {
 	this->psArchive->seekp(DAT_FATENTRY_OFFSET(pid), stream::start);
 	this->psArchive << u32le(pid->iOffset);
 	return;
 }
 
-void DAT_SangoArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+void Archive_DAT_Sango::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 {
 	// Update the last FAT entry (the one that points to EOF.)
 	this->updateLastEntry(sizeDelta);
 	return;
 }
 
-FATArchive::FATEntry *DAT_SangoArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+FATArchive::FATEntry *Archive_DAT_Sango::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_dat_sango_insert*
 
@@ -208,7 +208,7 @@ FATArchive::FATEntry *DAT_SangoArchive::preInsertFile(const FATEntry *idBeforeTh
 	return pNewEntry;
 }
 
-void DAT_SangoArchive::preRemoveFile(const FATEntry *pid)
+void Archive_DAT_Sango::preRemoveFile(const FATEntry *pid)
 {
 	// TESTED BY: fmt_dat_sango_remove*
 
@@ -232,7 +232,7 @@ void DAT_SangoArchive::preRemoveFile(const FATEntry *pid)
 	return;
 }
 
-void DAT_SangoArchive::updateLastEntry(stream::delta lenDelta)
+void Archive_DAT_Sango::updateLastEntry(stream::delta lenDelta)
 {
 	this->lenArchive += lenDelta;
 	this->psArchive->seekp(this->vcFAT.size() * DAT_FAT_ENTRY_LEN, stream::start);

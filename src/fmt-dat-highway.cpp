@@ -46,39 +46,39 @@
 namespace camoto {
 namespace gamearchive {
 
-DAT_HighwayType::DAT_HighwayType()
+ArchiveType_DAT_Highway::ArchiveType_DAT_Highway()
 {
 }
 
-DAT_HighwayType::~DAT_HighwayType()
+ArchiveType_DAT_Highway::~ArchiveType_DAT_Highway()
 {
 }
 
-std::string DAT_HighwayType::getArchiveCode() const
+std::string ArchiveType_DAT_Highway::getArchiveCode() const
 {
 	return "dat-highway";
 }
 
-std::string DAT_HighwayType::getFriendlyName() const
+std::string ArchiveType_DAT_Highway::getFriendlyName() const
 {
 	return "Highway Hunter DAT Archive";
 }
 
-std::vector<std::string> DAT_HighwayType::getFileExtensions() const
+std::vector<std::string> ArchiveType_DAT_Highway::getFileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("dat");
 	return vcExtensions;
 }
 
-std::vector<std::string> DAT_HighwayType::getGameList() const
+std::vector<std::string> ArchiveType_DAT_Highway::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Highway Hunter");
 	return vcGames;
 }
 
-ArchiveType::Certainty DAT_HighwayType::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_DAT_Highway::isInstance(stream::input_sptr psArchive) const
 {
 	stream::pos lenArchive = psArchive->size();
 
@@ -127,19 +127,19 @@ ArchiveType::Certainty DAT_HighwayType::isInstance(stream::input_sptr psArchive)
 	return DefinitelyYes;
 }
 
-ArchivePtr DAT_HighwayType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_DAT_Highway::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	psArchive->seekp(0, stream::start);
 	psArchive->write("\x11\x00" "\x00\x00\x00\x00" "\0\0\0\0\0\0\0\0\0\0\0\0\0", 2+4+13);
-	return ArchivePtr(new DAT_HighwayArchive(psArchive));
+	return ArchivePtr(new Archive_DAT_Highway(psArchive));
 }
 
-ArchivePtr DAT_HighwayType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_DAT_Highway::open(stream::inout_sptr psArchive, SuppData& suppData) const
 {
-	return ArchivePtr(new DAT_HighwayArchive(psArchive));
+	return ArchivePtr(new Archive_DAT_Highway(psArchive));
 }
 
-SuppFilenames DAT_HighwayType::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_DAT_Highway::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -147,7 +147,7 @@ SuppFilenames DAT_HighwayType::getRequiredSupps(stream::input_sptr data,
 }
 
 
-DAT_HighwayArchive::DAT_HighwayArchive(stream::inout_sptr psArchive)
+Archive_DAT_Highway::Archive_DAT_Highway(stream::inout_sptr psArchive)
 	:	FATArchive(psArchive, DATHH_FIRST_FILE_OFFSET, DATHH_MAX_FILENAME_LEN)
 {
 	uint16_t lenFAT;
@@ -187,11 +187,11 @@ DAT_HighwayArchive::DAT_HighwayArchive(stream::inout_sptr psArchive)
 	}
 }
 
-DAT_HighwayArchive::~DAT_HighwayArchive()
+Archive_DAT_Highway::~Archive_DAT_Highway()
 {
 }
 
-void DAT_HighwayArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+void Archive_DAT_Highway::updateFileName(const FATEntry *pid, const std::string& strNewName)
 {
 	// TESTED BY: fmt_dat_highway_rename
 	assert(strNewName.length() <= DATHH_MAX_FILENAME_LEN);
@@ -200,7 +200,7 @@ void DAT_HighwayArchive::updateFileName(const FATEntry *pid, const std::string& 
 	return;
 }
 
-void DAT_HighwayArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+void Archive_DAT_Highway::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 {
 	// TESTED BY: fmt_dat_highway_insert*
 	// TESTED BY: fmt_dat_highway_resize*
@@ -209,7 +209,7 @@ void DAT_HighwayArchive::updateFileOffset(const FATEntry *pid, stream::delta off
 	return;
 }
 
-void DAT_HighwayArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+void Archive_DAT_Highway::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 {
 	// This format doesn't have any sizes that need updating.
 	// TESTED BY: fmt_dat_highway_insert*
@@ -219,7 +219,7 @@ void DAT_HighwayArchive::updateFileSize(const FATEntry *pid, stream::delta sizeD
 	return;
 }
 
-FATArchive::FATEntry *DAT_HighwayArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+FATArchive::FATEntry *Archive_DAT_Highway::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_dat_highway_insert*
 	assert(pNewEntry->strName.length() <= DATHH_MAX_FILENAME_LEN);
@@ -274,7 +274,7 @@ FATArchive::FATEntry *DAT_HighwayArchive::preInsertFile(const FATEntry *idBefore
 	return pNewEntry;
 }
 
-void DAT_HighwayArchive::preRemoveFile(const FATEntry *pid)
+void Archive_DAT_Highway::preRemoveFile(const FATEntry *pid)
 {
 	// TESTED BY: fmt_dat_highway_remove*
 
@@ -296,7 +296,7 @@ void DAT_HighwayArchive::preRemoveFile(const FATEntry *pid)
 	return;
 }
 
-void DAT_HighwayArchive::updateFileCount(uint32_t iNewCount)
+void Archive_DAT_Highway::updateFileCount(uint32_t iNewCount)
 {
 	// TESTED BY: fmt_dat_highway_insert*
 	// TESTED BY: fmt_dat_highway_remove*

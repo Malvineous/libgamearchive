@@ -38,32 +38,32 @@ uint8_t filter_rff_crypt::getKey()
 }
 
 
-RFFFilterType::RFFFilterType()
+FilterType_RFF::FilterType_RFF()
 {
 }
 
-RFFFilterType::~RFFFilterType()
+FilterType_RFF::~FilterType_RFF()
 {
 }
 
-std::string RFFFilterType::getFilterCode() const
+std::string FilterType_RFF::getFilterCode() const
 {
 	return "xor-blood";
 }
 
-std::string RFFFilterType::getFriendlyName() const
+std::string FilterType_RFF::getFriendlyName() const
 {
 	return "Blood RFF encryption";
 }
 
-std::vector<std::string> RFFFilterType::getGameList() const
+std::vector<std::string> FilterType_RFF::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Blood");
 	return vcGames;
 }
 
-stream::inout_sptr RFFFilterType::apply(stream::inout_sptr target,
+stream::inout_sptr FilterType_RFF::apply(stream::inout_sptr target,
 	stream::fn_truncate resize) const
 {
 	stream::filtered_sptr st(new stream::filtered());
@@ -75,7 +75,7 @@ stream::inout_sptr RFFFilterType::apply(stream::inout_sptr target,
 	return st;
 }
 
-stream::input_sptr RFFFilterType::apply(stream::input_sptr target) const
+stream::input_sptr FilterType_RFF::apply(stream::input_sptr target) const
 {
 	stream::input_filtered_sptr st(new stream::input_filtered());
 	filter_sptr de(new filter_rff_crypt(RFF_FILE_CRYPT_LEN, 0));
@@ -83,7 +83,7 @@ stream::input_sptr RFFFilterType::apply(stream::input_sptr target) const
 	return st;
 }
 
-stream::output_sptr RFFFilterType::apply(stream::output_sptr target,
+stream::output_sptr FilterType_RFF::apply(stream::output_sptr target,
 	stream::fn_truncate resize) const
 {
 	stream::output_filtered_sptr st(new stream::output_filtered());

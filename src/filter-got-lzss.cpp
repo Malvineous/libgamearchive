@@ -197,32 +197,32 @@ void filter_got_lzss::transform(uint8_t *out, stream::len *lenOut,
 }
 
 
-GOTDatFilterType::GOTDatFilterType()
+FilterType_DAT_GOT::FilterType_DAT_GOT()
 {
 }
 
-GOTDatFilterType::~GOTDatFilterType()
+FilterType_DAT_GOT::~FilterType_DAT_GOT()
 {
 }
 
-std::string GOTDatFilterType::getFilterCode() const
+std::string FilterType_DAT_GOT::getFilterCode() const
 {
 	return "lzss-got";
 }
 
-std::string GOTDatFilterType::getFriendlyName() const
+std::string FilterType_DAT_GOT::getFriendlyName() const
 {
 	return "God of Thunder compression";
 }
 
-std::vector<std::string> GOTDatFilterType::getGameList() const
+std::vector<std::string> FilterType_DAT_GOT::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("God of Thunder");
 	return vcGames;
 }
 
-stream::inout_sptr GOTDatFilterType::apply(stream::inout_sptr target,
+stream::inout_sptr FilterType_DAT_GOT::apply(stream::inout_sptr target,
 	stream::fn_truncate resize) const
 {
 	stream::filtered_sptr st1(new stream::filtered());
@@ -233,7 +233,7 @@ stream::inout_sptr GOTDatFilterType::apply(stream::inout_sptr target,
 	return st1;
 }
 
-stream::input_sptr GOTDatFilterType::apply(stream::input_sptr target) const
+stream::input_sptr FilterType_DAT_GOT::apply(stream::input_sptr target) const
 {
 	stream::input_filtered_sptr st1(new stream::input_filtered());
 	filter_sptr f_delzss(new filter_got_unlzss());
@@ -242,7 +242,7 @@ stream::input_sptr GOTDatFilterType::apply(stream::input_sptr target) const
 	return st1;
 }
 
-stream::output_sptr GOTDatFilterType::apply(stream::output_sptr target,
+stream::output_sptr FilterType_DAT_GOT::apply(stream::output_sptr target,
 	stream::fn_truncate resize) const
 {
 	stream::output_filtered_sptr st1(new stream::output_filtered());

@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(read)
 {
 	BOOST_TEST_MESSAGE("Decode some Secret Agent XOR-encoded data");
 
-	SAMMapFilterType filter;
+	FilterType_SAM_Map filter;
 
 	BOOST_CHECK_MESSAGE(is_equal_read(&filter,
 		STRING_WITH_NULLS("\xC2\x76\x4E\x5E\xB1\x69\x19\xE9"),
@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(write)
 {
 	BOOST_TEST_MESSAGE("Encode some data using Secret Agent XOR cipher");
 
-	SAMMapFilterType filter;
+	FilterType_SAM_Map filter;
 
 	BOOST_CHECK_MESSAGE(is_equal_write(&filter,
 		STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF"),

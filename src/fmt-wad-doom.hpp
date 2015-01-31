@@ -28,11 +28,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// Doom .WAD format handler.
-class WADType: virtual public ArchiveType
+class ArchiveType_WAD_Doom: virtual public ArchiveType
 {
 	public:
-		WADType();
-		virtual ~WADType();
+		ArchiveType_WAD_Doom();
+		virtual ~ArchiveType_WAD_Doom();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;
@@ -49,11 +49,11 @@ class WADType: virtual public ArchiveType
 };
 
 /// Doom .WAD archive instance.
-class WADArchive: virtual public FATArchive
+class Archive_WAD_Doom: virtual public FATArchive
 {
 	public:
-		WADArchive(stream::inout_sptr psArchive);
-		virtual ~WADArchive();
+		Archive_WAD_Doom(stream::inout_sptr psArchive);
+		virtual ~Archive_WAD_Doom();
 
 		virtual MetadataTypes getMetadataList() const;
 		virtual std::string getMetadata(MetadataType item) const;

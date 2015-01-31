@@ -85,11 +85,11 @@ class filter_glb_encrypt: virtual public filter
 };
 
 /// Decrypt .GLB FAT using Raptor's GLB cipher.
-class GLBFATFilterType: virtual public FilterType
+class FilterType_GLB_Raptor_FAT: virtual public FilterType
 {
 	public:
-		GLBFATFilterType();
-		~GLBFATFilterType();
+		FilterType_GLB_Raptor_FAT();
+		~FilterType_GLB_Raptor_FAT();
 
 		virtual std::string getFilterCode() const;
 		virtual std::string getFriendlyName() const;
@@ -102,11 +102,11 @@ class GLBFATFilterType: virtual public FilterType
 };
 
 /// Decrypt a file inside a .GLB archive.
-class GLBFileFilterType: virtual public FilterType
+class FilterType_GLB_Raptor_File: virtual public FilterType
 {
 	public:
-		GLBFileFilterType();
-		~GLBFileFilterType();
+		FilterType_GLB_Raptor_File();
+		~FilterType_GLB_Raptor_File();
 
 		virtual std::string getFilterCode() const;
 		virtual std::string getFriendlyName() const;

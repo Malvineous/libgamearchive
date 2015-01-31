@@ -33,32 +33,32 @@
 namespace camoto {
 namespace gamearchive {
 
-DAT_LostVikingsType::DAT_LostVikingsType()
+ArchiveType_DAT_LostVikings::ArchiveType_DAT_LostVikings()
 {
 }
 
-DAT_LostVikingsType::~DAT_LostVikingsType()
+ArchiveType_DAT_LostVikings::~ArchiveType_DAT_LostVikings()
 {
 }
 
-std::string DAT_LostVikingsType::getArchiveCode() const
+std::string ArchiveType_DAT_LostVikings::getArchiveCode() const
 {
 	return "dat-lostvikings";
 }
 
-std::string DAT_LostVikingsType::getFriendlyName() const
+std::string ArchiveType_DAT_LostVikings::getFriendlyName() const
 {
 	return "The Lost Vikings Data File";
 }
 
-std::vector<std::string> DAT_LostVikingsType::getFileExtensions() const
+std::vector<std::string> ArchiveType_DAT_LostVikings::getFileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("dat");
 	return vcExtensions;
 }
 
-std::vector<std::string> DAT_LostVikingsType::getGameList() const
+std::vector<std::string> ArchiveType_DAT_LostVikings::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("BlackThorne");
@@ -67,7 +67,7 @@ std::vector<std::string> DAT_LostVikingsType::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty DAT_LostVikingsType::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_DAT_LostVikings::isInstance(stream::input_sptr psArchive) const
 {
 	stream::pos lenArchive = psArchive->size();
 
@@ -122,17 +122,17 @@ ArchiveType::Certainty DAT_LostVikingsType::isInstance(stream::input_sptr psArch
 	return DefinitelyYes;
 }
 
-ArchivePtr DAT_LostVikingsType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_DAT_LostVikings::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
 {
-	return ArchivePtr(new DAT_LostVikingsArchive(psArchive));
+	return ArchivePtr(new Archive_DAT_LostVikings(psArchive));
 }
 
-ArchivePtr DAT_LostVikingsType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_DAT_LostVikings::open(stream::inout_sptr psArchive, SuppData& suppData) const
 {
-	return ArchivePtr(new DAT_LostVikingsArchive(psArchive));
+	return ArchivePtr(new Archive_DAT_LostVikings(psArchive));
 }
 
-SuppFilenames DAT_LostVikingsType::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_DAT_LostVikings::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -140,7 +140,7 @@ SuppFilenames DAT_LostVikingsType::getRequiredSupps(stream::input_sptr data,
 }
 
 
-DAT_LostVikingsArchive::DAT_LostVikingsArchive(stream::inout_sptr psArchive)
+Archive_DAT_LostVikings::Archive_DAT_LostVikings(stream::inout_sptr psArchive)
 	:	FATArchive(psArchive, DAT_FIRST_FILE_OFFSET, 0)
 {
 	stream::pos lenArchive = this->psArchive->size();
@@ -177,17 +177,17 @@ DAT_LostVikingsArchive::DAT_LostVikingsArchive(stream::inout_sptr psArchive)
 	} // else empty archive
 }
 
-DAT_LostVikingsArchive::~DAT_LostVikingsArchive()
+Archive_DAT_LostVikings::~Archive_DAT_LostVikings()
 {
 }
 
-void DAT_LostVikingsArchive::updateFileName(const FATEntry *pid,
+void Archive_DAT_LostVikings::updateFileName(const FATEntry *pid,
 	const std::string& strNewName)
 {
 	throw stream::error("This archive format has no filenames to rename!");
 }
 
-void DAT_LostVikingsArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+void Archive_DAT_LostVikings::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 {
 	// TESTED BY: fmt_dat_lostvikings_insert*
 	// TESTED BY: fmt_dat_lostvikings_resize*
@@ -196,13 +196,13 @@ void DAT_LostVikingsArchive::updateFileOffset(const FATEntry *pid, stream::delta
 	return;
 }
 
-void DAT_LostVikingsArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+void Archive_DAT_LostVikings::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 {
 	// No file sizes
 	return;
 }
 
-FATArchive::FATEntry *DAT_LostVikingsArchive::preInsertFile(const FATEntry *idBeforeThis,
+FATArchive::FATEntry *Archive_DAT_LostVikings::preInsertFile(const FATEntry *idBeforeThis,
 	FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_dat_lostvikings_insert*
@@ -232,7 +232,7 @@ FATArchive::FATEntry *DAT_LostVikingsArchive::preInsertFile(const FATEntry *idBe
 	return pNewEntry;
 }
 
-void DAT_LostVikingsArchive::preRemoveFile(const FATEntry *pid)
+void Archive_DAT_LostVikings::preRemoveFile(const FATEntry *pid)
 {
 	// TESTED BY: fmt_dat_lostvikings_remove*
 

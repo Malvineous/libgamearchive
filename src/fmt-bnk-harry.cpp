@@ -52,25 +52,25 @@
 namespace camoto {
 namespace gamearchive {
 
-BNKType::BNKType()
+ArchiveType_BNK_Harry::ArchiveType_BNK_Harry()
 {
 }
 
-BNKType::~BNKType()
+ArchiveType_BNK_Harry::~ArchiveType_BNK_Harry()
 {
 }
 
-std::string BNKType::getArchiveCode() const
+std::string ArchiveType_BNK_Harry::getArchiveCode() const
 {
 	return "bnk-harry";
 }
 
-std::string BNKType::getFriendlyName() const
+std::string ArchiveType_BNK_Harry::getFriendlyName() const
 {
 	return "Halloween Harry BNK File";
 }
 
-std::vector<std::string> BNKType::getFileExtensions() const
+std::vector<std::string> ArchiveType_BNK_Harry::getFileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("bnk");
@@ -78,14 +78,14 @@ std::vector<std::string> BNKType::getFileExtensions() const
 	return vcExtensions;
 }
 
-std::vector<std::string> BNKType::getGameList() const
+std::vector<std::string> ArchiveType_BNK_Harry::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Halloween Harry");
 	return vcGames;
 }
 
-ArchiveType::Certainty BNKType::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_BNK_Harry::isInstance(stream::input_sptr psArchive) const
 {
 	stream::pos lenArchive = psArchive->size();
 	if (lenArchive == 0) return DefinitelyYes; // empty archive
@@ -103,19 +103,19 @@ ArchiveType::Certainty BNKType::isInstance(stream::input_sptr psArchive) const
 	return DefinitelyYes;
 }
 
-ArchivePtr BNKType::newArchive(stream::inout_sptr psArchive, SuppData& suppData)
+ArchivePtr ArchiveType_BNK_Harry::newArchive(stream::inout_sptr psArchive, SuppData& suppData)
 	const
 {
 	return this->open(psArchive, suppData);
 }
 
-ArchivePtr BNKType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_BNK_Harry::open(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	assert(suppData.find(SuppItem::FAT) != suppData.end());
-	return ArchivePtr(new BNKArchive(psArchive, suppData[SuppItem::FAT]));
+	return ArchivePtr(new Archive_BNK_Harry(psArchive, suppData[SuppItem::FAT]));
 }
 
-SuppFilenames BNKType::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_BNK_Harry::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -126,7 +126,7 @@ SuppFilenames BNKType::getRequiredSupps(stream::input_sptr data,
 }
 
 
-BNKArchive::BNKArchive(stream::inout_sptr psArchive, stream::inout_sptr psFAT)
+Archive_BNK_Harry::Archive_BNK_Harry(stream::inout_sptr psArchive, stream::inout_sptr psFAT)
 	:	FATArchive(psArchive, BNK_FIRST_FILE_OFFSET, BNK_MAX_FILENAME_LEN),
 		psFAT(new stream::seg()),
 		isAC(false) // TODO: detect and set this
@@ -170,11 +170,11 @@ BNKArchive::BNKArchive(stream::inout_sptr psArchive, stream::inout_sptr psFAT)
 	}
 }
 
-BNKArchive::~BNKArchive()
+Archive_BNK_Harry::~Archive_BNK_Harry()
 {
 }
 
-void BNKArchive::flush()
+void Archive_BNK_Harry::flush()
 {
 	this->FATArchive::flush();
 
@@ -184,7 +184,7 @@ void BNKArchive::flush()
 	return;
 }
 
-void BNKArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+void Archive_BNK_Harry::updateFileName(const FATEntry *pid, const std::string& strNewName)
 {
 	// TESTED BY: fmt_bnk_harry_rename
 	assert(strNewName.length() <= BNK_MAX_FILENAME_LEN);
@@ -201,7 +201,7 @@ void BNKArchive::updateFileName(const FATEntry *pid, const std::string& strNewNa
 	return;
 }
 
-void BNKArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+void Archive_BNK_Harry::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 {
 	// TESTED BY: fmt_bnk_harry_insert*
 	// TESTED BY: fmt_bnk_harry_resize*
@@ -212,7 +212,7 @@ void BNKArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 	return;
 }
 
-void BNKArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+void Archive_BNK_Harry::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 {
 	// TESTED BY: fmt_bnk_harry_insert*
 	// TESTED BY: fmt_bnk_harry_resize*
@@ -228,7 +228,7 @@ void BNKArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 	return;
 }
 
-FATArchive::FATEntry *BNKArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+FATArchive::FATEntry *Archive_BNK_Harry::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_bnk_harry_insert*
 	int len = pNewEntry->strName.length();
@@ -273,7 +273,7 @@ FATArchive::FATEntry *BNKArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	return pNewEntry;
 }
 
-void BNKArchive::preRemoveFile(const FATEntry *pid)
+void Archive_BNK_Harry::preRemoveFile(const FATEntry *pid)
 {
 	// TESTED BY: fmt_bnk_harry_remove*
 

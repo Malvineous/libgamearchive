@@ -46,32 +46,32 @@
 namespace camoto {
 namespace gamearchive {
 
-EPFType::EPFType()
+ArchiveType_EPF_LionKing::ArchiveType_EPF_LionKing()
 {
 }
 
-EPFType::~EPFType()
+ArchiveType_EPF_LionKing::~ArchiveType_EPF_LionKing()
 {
 }
 
-std::string EPFType::getArchiveCode() const
+std::string ArchiveType_EPF_LionKing::getArchiveCode() const
 {
 	return "epf-lionking";
 }
 
-std::string EPFType::getFriendlyName() const
+std::string ArchiveType_EPF_LionKing::getFriendlyName() const
 {
 	return "East Point Software EPFS File";
 }
 
-std::vector<std::string> EPFType::getFileExtensions() const
+std::vector<std::string> ArchiveType_EPF_LionKing::getFileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("epf");
 	return vcExtensions;
 }
 
-std::vector<std::string> EPFType::getGameList() const
+std::vector<std::string> ArchiveType_EPF_LionKing::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Alien Breed Tower Assault");
@@ -89,7 +89,7 @@ std::vector<std::string> EPFType::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty EPFType::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_EPF_LionKing::isInstance(stream::input_sptr psArchive) const
 {
 	stream::pos lenArchive = psArchive->size();
 
@@ -107,7 +107,7 @@ ArchiveType::Certainty EPFType::isInstance(stream::input_sptr psArchive) const
 	return DefinitelyNo;
 }
 
-ArchivePtr EPFType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_EPF_LionKing::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	psArchive->seekp(0, stream::start);
 	psArchive
@@ -115,15 +115,15 @@ ArchivePtr EPFType::newArchive(stream::inout_sptr psArchive, SuppData& suppData)
 		<< u32le(11) // FAT offset
 		<< u8(0)     // Unknown/flags?
 		<< u16le(0); // File count
-	return ArchivePtr(new EPFArchive(psArchive));
+	return ArchivePtr(new Archive_EPF_LionKing(psArchive));
 }
 
-ArchivePtr EPFType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_EPF_LionKing::open(stream::inout_sptr psArchive, SuppData& suppData) const
 {
-	return ArchivePtr(new EPFArchive(psArchive));
+	return ArchivePtr(new Archive_EPF_LionKing(psArchive));
 }
 
-SuppFilenames EPFType::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_EPF_LionKing::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -131,7 +131,7 @@ SuppFilenames EPFType::getRequiredSupps(stream::input_sptr data,
 }
 
 
-EPFArchive::EPFArchive(stream::inout_sptr psArchive)
+Archive_EPF_LionKing::Archive_EPF_LionKing(stream::inout_sptr psArchive)
 	:	FATArchive(psArchive, EPF_FIRST_FILE_OFFSET, EPF_MAX_FILENAME_LEN)
 {
 	stream::pos lenArchive = this->psArchive->size();
@@ -195,16 +195,16 @@ EPFArchive::EPFArchive(stream::inout_sptr psArchive)
 	// TODO: hidden data after FAT until EOF?
 }
 
-EPFArchive::~EPFArchive()
+Archive_EPF_LionKing::~Archive_EPF_LionKing()
 {
 }
 
-int EPFArchive::getSupportedAttributes() const
+int Archive_EPF_LionKing::getSupportedAttributes() const
 {
 	return EA_COMPRESSED;
 }
 
-EPFArchive::MetadataTypes EPFArchive::getMetadataList() const
+Archive_EPF_LionKing::MetadataTypes Archive_EPF_LionKing::getMetadataList() const
 {
 	// TESTED BY: fmt_epf_lionking_get_metadata_description
 	MetadataTypes m;
@@ -212,7 +212,7 @@ EPFArchive::MetadataTypes EPFArchive::getMetadataList() const
 	return m;
 }
 
-std::string EPFArchive::getMetadata(MetadataType item) const
+std::string Archive_EPF_LionKing::getMetadata(MetadataType item) const
 {
 	// TESTED BY: fmt_epf_lionking_get_metadata_description
 	switch (item) {
@@ -233,7 +233,7 @@ std::string EPFArchive::getMetadata(MetadataType item) const
 	}
 }
 
-void EPFArchive::setMetadata(MetadataType item, const std::string& value)
+void Archive_EPF_LionKing::setMetadata(MetadataType item, const std::string& value)
 {
 	// TESTED BY: fmt_epf_lionking_set_metadata_description
 	// TESTED BY: fmt_epf_lionking_new_to_initialstate
@@ -262,7 +262,7 @@ void EPFArchive::setMetadata(MetadataType item, const std::string& value)
 	return;
 }
 
-void EPFArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+void Archive_EPF_LionKing::updateFileName(const FATEntry *pid, const std::string& strNewName)
 {
 	// TESTED BY: fmt_epf_lionking_rename
 	assert(strNewName.length() <= EPF_MAX_FILENAME_LEN);
@@ -271,12 +271,12 @@ void EPFArchive::updateFileName(const FATEntry *pid, const std::string& strNewNa
 	return;
 }
 
-void EPFArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+void Archive_EPF_LionKing::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 {
 	return;
 }
 
-void EPFArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+void Archive_EPF_LionKing::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 {
 	// TESTED BY: fmt_epf_lionking_insert*
 	// TESTED BY: fmt_epf_lionking_resize*
@@ -293,7 +293,7 @@ void EPFArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 	return;
 }
 
-FATArchive::FATEntry *EPFArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+FATArchive::FATEntry *Archive_EPF_LionKing::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_epf_lionking_insert*
 	assert(pNewEntry->strName.length() <= EPF_MAX_FILENAME_LEN);
@@ -309,7 +309,7 @@ FATArchive::FATEntry *EPFArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	return pNewEntry;
 }
 
-void EPFArchive::postInsertFile(FATEntry *pNewEntry)
+void Archive_EPF_LionKing::postInsertFile(FATEntry *pNewEntry)
 {
 	this->offFAT += pNewEntry->storedSize;
 
@@ -330,7 +330,7 @@ void EPFArchive::postInsertFile(FATEntry *pNewEntry)
 	return;
 }
 
-void EPFArchive::preRemoveFile(const FATEntry *pid)
+void Archive_EPF_LionKing::preRemoveFile(const FATEntry *pid)
 {
 	// TESTED BY: fmt_epf_lionking_remove*
 
@@ -344,7 +344,7 @@ void EPFArchive::preRemoveFile(const FATEntry *pid)
 	return;
 }
 
-void EPFArchive::updateFileCount(uint16_t iNewCount)
+void Archive_EPF_LionKing::updateFileCount(uint16_t iNewCount)
 {
 	// TESTED BY: fmt_epf_lionking_insert*
 	// TESTED BY: fmt_epf_lionking_remove*
@@ -353,7 +353,7 @@ void EPFArchive::updateFileCount(uint16_t iNewCount)
 	return;
 }
 
-void EPFArchive::updateFATOffset()
+void Archive_EPF_LionKing::updateFATOffset()
 {
 	// TESTED BY: fmt_epf_lionking_insert*
 	// TESTED BY: fmt_epf_lionking_remove*
@@ -364,7 +364,7 @@ void EPFArchive::updateFATOffset()
 	return;
 }
 
-stream::pos EPFArchive::getDescOffset() const
+stream::pos Archive_EPF_LionKing::getDescOffset() const
 {
 	stream::pos offDesc;
 	if (this->vcFAT.size()) {

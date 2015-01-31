@@ -28,11 +28,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// Sango Fighter .DAT format handler.
-class DAT_SangoType: virtual public ArchiveType
+class ArchiveType_DAT_Sango: virtual public ArchiveType
 {
 	public:
-		DAT_SangoType();
-		virtual ~DAT_SangoType();
+		ArchiveType_DAT_Sango();
+		virtual ~ArchiveType_DAT_Sango();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;
@@ -49,10 +49,10 @@ class DAT_SangoType: virtual public ArchiveType
 };
 
 /// Sango Fighter .DAT archive instance.
-class DAT_SangoArchive: virtual public FATArchive {
+class Archive_DAT_Sango: virtual public FATArchive {
 	public:
-		DAT_SangoArchive(stream::inout_sptr psArchive);
-		virtual ~DAT_SangoArchive();
+		Archive_DAT_Sango(stream::inout_sptr psArchive);
+		virtual ~Archive_DAT_Sango();
 
 		virtual void updateFileName(const FATEntry *pid,
 			const std::string& strNewName);

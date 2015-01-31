@@ -42,39 +42,39 @@
 namespace camoto {
 namespace gamearchive {
 
-TIMResourceFATType::TIMResourceFATType()
+ArchiveType_Resource_TIM_FAT::ArchiveType_Resource_TIM_FAT()
 {
 }
 
-TIMResourceFATType::~TIMResourceFATType()
+ArchiveType_Resource_TIM_FAT::~ArchiveType_Resource_TIM_FAT()
 {
 }
 
-std::string TIMResourceFATType::getArchiveCode() const
+std::string ArchiveType_Resource_TIM_FAT::getArchiveCode() const
 {
 	return "resource-tim-fat";
 }
 
-std::string TIMResourceFATType::getFriendlyName() const
+std::string ArchiveType_Resource_TIM_FAT::getFriendlyName() const
 {
 	return "FAT for The Incredible Machine Resource File";
 }
 
-std::vector<std::string> TIMResourceFATType::getFileExtensions() const
+std::vector<std::string> ArchiveType_Resource_TIM_FAT::getFileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("map");
 	return vcExtensions;
 }
 
-std::vector<std::string> TIMResourceFATType::getGameList() const
+std::vector<std::string> ArchiveType_Resource_TIM_FAT::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("The Incredible Machine");
 	return vcGames;
 }
 
-ArchiveType::Certainty TIMResourceFATType::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_Resource_TIM_FAT::isInstance(stream::input_sptr psArchive) const
 {
 	try {
 		stream::len lenArchive = psArchive->size();
@@ -109,19 +109,19 @@ ArchiveType::Certainty TIMResourceFATType::isInstance(stream::input_sptr psArchi
 	return DefinitelyYes;
 }
 
-ArchivePtr TIMResourceFATType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_Resource_TIM_FAT::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	psArchive->seekp(0, stream::start);
 	psArchive->write("\x00\x00" "\x00\x00" "\x00\x00", 6);
-	return ArchivePtr(new TIMResourceFATArchive(psArchive));
+	return ArchivePtr(new Archive_Resource_TIM_FAT(psArchive));
 }
 
-ArchivePtr TIMResourceFATType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_Resource_TIM_FAT::open(stream::inout_sptr psArchive, SuppData& suppData) const
 {
-	return ArchivePtr(new TIMResourceFATArchive(psArchive));
+	return ArchivePtr(new Archive_Resource_TIM_FAT(psArchive));
 }
 
-SuppFilenames TIMResourceFATType::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_Resource_TIM_FAT::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -129,7 +129,7 @@ SuppFilenames TIMResourceFATType::getRequiredSupps(stream::input_sptr data,
 }
 
 
-TIMResourceFATArchive::TIMResourceFATArchive(stream::inout_sptr psArchive)
+Archive_Resource_TIM_FAT::Archive_Resource_TIM_FAT(stream::inout_sptr psArchive)
 	:	FATArchive(psArchive, TIM_FIRST_FILE_OFFSET, TIM_MAX_FILENAME_LEN)
 {
 	this->psArchive->seekg(TIM_FILECOUNT_OFFSET, stream::start);
@@ -159,11 +159,11 @@ TIMResourceFATArchive::TIMResourceFATArchive(stream::inout_sptr psArchive)
 	}
 }
 
-TIMResourceFATArchive::~TIMResourceFATArchive()
+Archive_Resource_TIM_FAT::~Archive_Resource_TIM_FAT()
 {
 }
 
-void TIMResourceFATArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+void Archive_Resource_TIM_FAT::updateFileName(const FATEntry *pid, const std::string& strNewName)
 {
 	// TESTED BY: fmt_resource_tim_fat_rename
 	assert(strNewName.length() <= TIM_MAX_FILENAME_LEN);
@@ -174,13 +174,13 @@ void TIMResourceFATArchive::updateFileName(const FATEntry *pid, const std::strin
 	return;
 }
 
-void TIMResourceFATArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+void Archive_Resource_TIM_FAT::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 {
 	// Nothing to do
 	return;
 }
 
-void TIMResourceFATArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+void Archive_Resource_TIM_FAT::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 {
 	// TESTED BY: fmt_resource_tim_fat_insert*
 	// TESTED BY: fmt_resource_tim_fat_resize*
@@ -198,7 +198,7 @@ void TIMResourceFATArchive::updateFileSize(const FATEntry *pid, stream::delta si
 	return;
 }
 
-FATArchive::FATEntry *TIMResourceFATArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+FATArchive::FATEntry *Archive_Resource_TIM_FAT::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_resource_tim_fat_insert*
 	int len = pNewEntry->strName.length();
@@ -238,14 +238,14 @@ FATArchive::FATEntry *TIMResourceFATArchive::preInsertFile(const FATEntry *idBef
 	return pNewEntry;
 }
 
-void TIMResourceFATArchive::preRemoveFile(const FATEntry *pid)
+void Archive_Resource_TIM_FAT::preRemoveFile(const FATEntry *pid)
 {
 	// TESTED BY: fmt_resource_tim_fat_remove*
 	this->updateFileCount(this->vcFAT.size() - 1);
 	return;
 }
 
-void TIMResourceFATArchive::updateFileCount(uint32_t iNewCount)
+void Archive_Resource_TIM_FAT::updateFileCount(uint32_t iNewCount)
 {
 	// TESTED BY: fmt_resource_tim_fat_insert*
 	// TESTED BY: fmt_resource_tim_fat_remove*

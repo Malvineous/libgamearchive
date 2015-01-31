@@ -28,11 +28,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// Highway Hunter .DAT format handler.
-class DAT_HighwayType: virtual public ArchiveType
+class ArchiveType_DAT_Highway: virtual public ArchiveType
 {
 	public:
-		DAT_HighwayType();
-		virtual ~DAT_HighwayType();
+		ArchiveType_DAT_Highway();
+		virtual ~ArchiveType_DAT_Highway();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;
@@ -49,11 +49,11 @@ class DAT_HighwayType: virtual public ArchiveType
 };
 
 /// Highway Hunter .DAT archive instance.
-class DAT_HighwayArchive: virtual public FATArchive
+class Archive_DAT_Highway: virtual public FATArchive
 {
 	public:
-		DAT_HighwayArchive(stream::inout_sptr psArchive);
-		virtual ~DAT_HighwayArchive();
+		Archive_DAT_Highway(stream::inout_sptr psArchive);
+		virtual ~Archive_DAT_Highway();
 
 		virtual void updateFileName(const FATEntry *pid,
 			const std::string& strNewName);

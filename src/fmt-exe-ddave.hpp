@@ -27,11 +27,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// Dangerous Dave .EXE file handler.
-class EXE_DDaveType: virtual public ArchiveType
+class ArchiveType_EXE_DDave: virtual public ArchiveType
 {
 	public:
-		EXE_DDaveType();
-		virtual ~EXE_DDaveType();
+		ArchiveType_EXE_DDave();
+		virtual ~ArchiveType_EXE_DDave();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;

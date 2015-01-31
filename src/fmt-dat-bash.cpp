@@ -43,39 +43,39 @@
 namespace camoto {
 namespace gamearchive {
 
-DAT_BashType::DAT_BashType()
+ArchiveType_DAT_Bash::ArchiveType_DAT_Bash()
 {
 }
 
-DAT_BashType::~DAT_BashType()
+ArchiveType_DAT_Bash::~ArchiveType_DAT_Bash()
 {
 }
 
-std::string DAT_BashType::getArchiveCode() const
+std::string ArchiveType_DAT_Bash::getArchiveCode() const
 {
 	return "dat-bash";
 }
 
-std::string DAT_BashType::getFriendlyName() const
+std::string ArchiveType_DAT_Bash::getFriendlyName() const
 {
 	return "Monster Bash DAT File";
 }
 
-std::vector<std::string> DAT_BashType::getFileExtensions() const
+std::vector<std::string> ArchiveType_DAT_Bash::getFileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("dat");
 	return vcExtensions;
 }
 
-std::vector<std::string> DAT_BashType::getGameList() const
+std::vector<std::string> ArchiveType_DAT_Bash::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Monster Bash");
 	return vcGames;
 }
 
-ArchiveType::Certainty DAT_BashType::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_DAT_Bash::isInstance(stream::input_sptr psArchive) const
 {
 	stream::pos lenArchive = psArchive->size();
 	// TESTED BY: fmt_dat_bash_isinstance_c02
@@ -122,17 +122,17 @@ ArchiveType::Certainty DAT_BashType::isInstance(stream::input_sptr psArchive) co
 	return DefinitelyYes;
 }
 
-ArchivePtr DAT_BashType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_DAT_Bash::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
 {
-	return ArchivePtr(new DAT_BashArchive(psArchive));
+	return ArchivePtr(new Archive_DAT_Bash(psArchive));
 }
 
-ArchivePtr DAT_BashType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_DAT_Bash::open(stream::inout_sptr psArchive, SuppData& suppData) const
 {
-	return ArchivePtr(new DAT_BashArchive(psArchive));
+	return ArchivePtr(new Archive_DAT_Bash(psArchive));
 }
 
-SuppFilenames DAT_BashType::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_DAT_Bash::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -140,7 +140,7 @@ SuppFilenames DAT_BashType::getRequiredSupps(stream::input_sptr data,
 }
 
 
-DAT_BashArchive::DAT_BashArchive(stream::inout_sptr psArchive)
+Archive_DAT_Bash::Archive_DAT_Bash(stream::inout_sptr psArchive)
 	:	FATArchive(psArchive, DAT_FIRST_FILE_OFFSET, DAT_MAX_FILENAME_LEN)
 {
 	stream::pos lenArchive = this->psArchive->size();
@@ -248,16 +248,16 @@ DAT_BashArchive::DAT_BashArchive(stream::inout_sptr psArchive)
 
 }
 
-DAT_BashArchive::~DAT_BashArchive()
+Archive_DAT_Bash::~Archive_DAT_Bash()
 {
 }
 
-int DAT_BashArchive::getSupportedAttributes() const
+int Archive_DAT_Bash::getSupportedAttributes() const
 {
 	return EA_COMPRESSED;
 }
 
-void DAT_BashArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+void Archive_DAT_Bash::updateFileName(const FATEntry *pid, const std::string& strNewName)
 {
 	int typeNum;
 	int newLen = strNewName.length();
@@ -298,14 +298,14 @@ void DAT_BashArchive::updateFileName(const FATEntry *pid, const std::string& str
 	return;
 }
 
-void DAT_BashArchive::updateFileOffset(const FATEntry *pid,
+void Archive_DAT_Bash::updateFileOffset(const FATEntry *pid,
 	stream::delta offDelta
 )
 {
 	return;
 }
 
-void DAT_BashArchive::updateFileSize(const FATEntry *pid,
+void Archive_DAT_Bash::updateFileSize(const FATEntry *pid,
 	stream::delta sizeDelta
 )
 {
@@ -337,7 +337,7 @@ void DAT_BashArchive::updateFileSize(const FATEntry *pid,
 	return;
 }
 
-FATArchive::FATEntry *DAT_BashArchive::preInsertFile(
+FATArchive::FATEntry *Archive_DAT_Bash::preInsertFile(
 	const FATEntry *idBeforeThis, FATEntry *pNewEntry
 )
 {
@@ -389,7 +389,7 @@ FATArchive::FATEntry *DAT_BashArchive::preInsertFile(
 	return pNewEntry;
 }
 
-void DAT_BashArchive::postInsertFile(FATEntry *pNewEntry)
+void Archive_DAT_Bash::postInsertFile(FATEntry *pNewEntry)
 {
 	this->psArchive->seekp(pNewEntry->iOffset, stream::start);
 

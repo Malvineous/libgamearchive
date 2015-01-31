@@ -28,11 +28,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// The Lost Vikings .DAT format handler.
-class DAT_LostVikingsType: virtual public ArchiveType
+class ArchiveType_DAT_LostVikings: virtual public ArchiveType
 {
 	public:
-		DAT_LostVikingsType();
-		virtual ~DAT_LostVikingsType();
+		ArchiveType_DAT_LostVikings();
+		virtual ~ArchiveType_DAT_LostVikings();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;
@@ -49,11 +49,11 @@ class DAT_LostVikingsType: virtual public ArchiveType
 };
 
 /// The Lost Vikings .DAT archive instance.
-class DAT_LostVikingsArchive: virtual public FATArchive
+class Archive_DAT_LostVikings: virtual public FATArchive
 {
 	public:
-		DAT_LostVikingsArchive(stream::inout_sptr psArchive);
-		virtual ~DAT_LostVikingsArchive();
+		Archive_DAT_LostVikings(stream::inout_sptr psArchive);
+		virtual ~Archive_DAT_LostVikings();
 
 		virtual void updateFileName(const FATEntry *pid,
 			const std::string& strNewName);

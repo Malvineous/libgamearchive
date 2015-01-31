@@ -60,11 +60,11 @@ class filter_ddave_rle: virtual public filter
 };
 
 /// Dangerous Dave RLE decompression filter.
-class DDaveRLEFilterType: virtual public FilterType
+class FilterType_DDaveRLE: virtual public FilterType
 {
 	public:
-		DDaveRLEFilterType();
-		~DDaveRLEFilterType();
+		FilterType_DDaveRLE();
+		~FilterType_DDaveRLE();
 
 		virtual std::string getFilterCode() const;
 		virtual std::string getFriendlyName() const;

@@ -212,32 +212,32 @@ void filter_stargunner_decompress::transform(uint8_t *out, stream::len *lenOut,
 }
 
 
-StargunnerFilterType::StargunnerFilterType()
+FilterType_Stargunner::FilterType_Stargunner()
 {
 }
 
-StargunnerFilterType::~StargunnerFilterType()
+FilterType_Stargunner::~FilterType_Stargunner()
 {
 }
 
-std::string StargunnerFilterType::getFilterCode() const
+std::string FilterType_Stargunner::getFilterCode() const
 {
 	return "bpe-stargunner";
 }
 
-std::string StargunnerFilterType::getFriendlyName() const
+std::string FilterType_Stargunner::getFriendlyName() const
 {
 	return "Stargunner compression";
 }
 
-std::vector<std::string> StargunnerFilterType::getGameList() const
+std::vector<std::string> FilterType_Stargunner::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Stargunner");
 	return vcGames;
 }
 
-stream::inout_sptr StargunnerFilterType::apply(stream::inout_sptr target,
+stream::inout_sptr FilterType_Stargunner::apply(stream::inout_sptr target,
 	stream::fn_truncate resize) const
 {
 	stream::filtered_sptr st(new stream::filtered());
@@ -248,7 +248,7 @@ stream::inout_sptr StargunnerFilterType::apply(stream::inout_sptr target,
 	return st;
 }
 
-stream::input_sptr StargunnerFilterType::apply(stream::input_sptr target) const
+stream::input_sptr FilterType_Stargunner::apply(stream::input_sptr target) const
 {
 	stream::input_filtered_sptr st(new stream::input_filtered());
 	filter_sptr de(new filter_stargunner_decompress());
@@ -256,7 +256,7 @@ stream::input_sptr StargunnerFilterType::apply(stream::input_sptr target) const
 	return st;
 }
 
-stream::output_sptr StargunnerFilterType::apply(stream::output_sptr target,
+stream::output_sptr FilterType_Stargunner::apply(stream::output_sptr target,
 	stream::fn_truncate resize) const
 {
 	stream::output_filtered_sptr st(new stream::output_filtered());

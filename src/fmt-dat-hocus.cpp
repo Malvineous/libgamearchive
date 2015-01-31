@@ -33,46 +33,46 @@
 namespace camoto {
 namespace gamearchive {
 
-DAT_HocusType::DAT_HocusType()
+ArchiveType_DAT_Hocus::ArchiveType_DAT_Hocus()
 {
 }
 
-DAT_HocusType::~DAT_HocusType()
+ArchiveType_DAT_Hocus::~ArchiveType_DAT_Hocus()
 {
 }
 
-std::string DAT_HocusType::getArchiveCode() const
+std::string ArchiveType_DAT_Hocus::getArchiveCode() const
 {
 	return "dat-hocus";
 }
 
-std::string DAT_HocusType::getFriendlyName() const
+std::string ArchiveType_DAT_Hocus::getFriendlyName() const
 {
 	return "Hocus Pocus DAT File";
 }
 
-std::vector<std::string> DAT_HocusType::getFileExtensions() const
+std::vector<std::string> ArchiveType_DAT_Hocus::getFileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("dat");
 	return vcExtensions;
 }
 
-std::vector<std::string> DAT_HocusType::getGameList() const
+std::vector<std::string> ArchiveType_DAT_Hocus::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Hocus Pocus");
 	return vcGames;
 }
 
-ArchiveType::Certainty DAT_HocusType::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_DAT_Hocus::isInstance(stream::input_sptr psArchive) const
 {
 	// There is literally no identifying information in this archive format!
 	// TESTED BY: fmt_dat_hocus_isinstance_c00
 	return Unsure;
 }
 
-ArchivePtr DAT_HocusType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_DAT_Hocus::open(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	assert(suppData.find(SuppItem::FAT) != suppData.end());
 	stream::pos lenEXE = suppData[SuppItem::FAT]->size();
@@ -103,17 +103,17 @@ ArchivePtr DAT_HocusType::open(stream::inout_sptr psArchive, SuppData& suppData)
 	}
 	stream::sub_sptr fat(new stream::sub());
 	fat->open(suppData[SuppItem::FAT], offFAT, lenFAT, preventResize);
-	return ArchivePtr(new DAT_HocusArchive(psArchive, fat));
+	return ArchivePtr(new Archive_DAT_Hocus(psArchive, fat));
 }
 
-ArchivePtr DAT_HocusType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_DAT_Hocus::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	// We can't create new archives because the FAT has to go inside a
 	// specific version of an .EXE file, and we wouldn't know where that is!
 	throw stream::error("Cannot create archives from scratch in this format!");
 }
 
-SuppFilenames DAT_HocusType::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_DAT_Hocus::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -124,7 +124,7 @@ SuppFilenames DAT_HocusType::getRequiredSupps(stream::input_sptr data,
 }
 
 
-DAT_HocusArchive::DAT_HocusArchive(stream::inout_sptr psArchive, stream::inout_sptr psFAT)
+Archive_DAT_Hocus::Archive_DAT_Hocus(stream::inout_sptr psArchive, stream::inout_sptr psFAT)
 	:	FATArchive(psArchive, DAT_FIRST_FILE_OFFSET, 0),
 		psFAT(new stream::seg()),
 		numFiles(0)
@@ -163,11 +163,11 @@ DAT_HocusArchive::DAT_HocusArchive(stream::inout_sptr psArchive, stream::inout_s
 	}
 }
 
-DAT_HocusArchive::~DAT_HocusArchive()
+Archive_DAT_Hocus::~Archive_DAT_Hocus()
 {
 }
 
-void DAT_HocusArchive::flush()
+void Archive_DAT_Hocus::flush()
 {
 	this->FATArchive::flush();
 
@@ -177,12 +177,12 @@ void DAT_HocusArchive::flush()
 	return;
 }
 
-void DAT_HocusArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+void Archive_DAT_Hocus::updateFileName(const FATEntry *pid, const std::string& strNewName)
 {
 	throw stream::error("This archive format does not support filenames.");
 }
 
-void DAT_HocusArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+void Archive_DAT_Hocus::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 {
 	// Only the external FAT file has offsets, not the embedded FAT
 	this->psFAT->seekp(pid->iIndex * DAT_FAT_ENTRY_LEN + DAT_FAT_FILEOFFSET_OFFSET, stream::start);
@@ -190,7 +190,7 @@ void DAT_HocusArchive::updateFileOffset(const FATEntry *pid, stream::delta offDe
 	return;
 }
 
-void DAT_HocusArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+void Archive_DAT_Hocus::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 {
 	// Update external FAT
 	this->psFAT->seekp(pid->iIndex * DAT_FAT_ENTRY_LEN + DAT_FAT_FILESIZE_OFFSET, stream::start);
@@ -199,7 +199,7 @@ void DAT_HocusArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDel
 	return;
 }
 
-FATArchive::FATEntry *DAT_HocusArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+FATArchive::FATEntry *Archive_DAT_Hocus::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// Make sure FAT hasn't reached maximum size
 	if (this->numFiles + 1 >= this->maxFiles) {
@@ -226,7 +226,7 @@ FATArchive::FATEntry *DAT_HocusArchive::preInsertFile(const FATEntry *idBeforeTh
 	return pNewEntry;
 }
 
-void DAT_HocusArchive::preRemoveFile(const FATEntry *pid)
+void Archive_DAT_Hocus::preRemoveFile(const FATEntry *pid)
 {
 	// Remove the FAT entry
 	this->psFAT->seekp(pid->iIndex * DAT_FAT_ENTRY_LEN, stream::start);

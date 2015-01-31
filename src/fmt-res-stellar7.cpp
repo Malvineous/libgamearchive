@@ -38,39 +38,39 @@
 namespace camoto {
 namespace gamearchive {
 
-RESType::RESType()
+ArchiveType_RES_Stellar7::ArchiveType_RES_Stellar7()
 {
 }
 
-RESType::~RESType()
+ArchiveType_RES_Stellar7::~ArchiveType_RES_Stellar7()
 {
 }
 
-std::string RESType::getArchiveCode() const
+std::string ArchiveType_RES_Stellar7::getArchiveCode() const
 {
 	return "res-stellar7";
 }
 
-std::string RESType::getFriendlyName() const
+std::string ArchiveType_RES_Stellar7::getFriendlyName() const
 {
 	return "Stellar 7 Resource File";
 }
 
-std::vector<std::string> RESType::getFileExtensions() const
+std::vector<std::string> ArchiveType_RES_Stellar7::getFileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("res");
 	return vcExtensions;
 }
 
-std::vector<std::string> RESType::getGameList() const
+std::vector<std::string> ArchiveType_RES_Stellar7::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Stellar 7");
 	return vcGames;
 }
 
-ArchiveType::Certainty RESType::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_RES_Stellar7::isInstance(stream::input_sptr psArchive) const
 {
 	stream::pos lenArchive = psArchive->size();
 
@@ -111,19 +111,19 @@ ArchiveType::Certainty RESType::isInstance(stream::input_sptr psArchive) const
 	return DefinitelyYes;
 }
 
-ArchivePtr RESType::newArchive(stream::inout_sptr psArchive, SuppData& suppData)
+ArchivePtr ArchiveType_RES_Stellar7::newArchive(stream::inout_sptr psArchive, SuppData& suppData)
 	const
 {
 	return this->open(psArchive, suppData);
 }
 
-ArchivePtr RESType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_RES_Stellar7::open(stream::inout_sptr psArchive, SuppData& suppData) const
 {
-	ArchivePtr root(new RESArchiveFolder(psArchive));
+	ArchivePtr root(new Archive_RES_Stellar7_Folder(psArchive));
 	return root;
 }
 
-SuppFilenames RESType::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_RES_Stellar7::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -131,7 +131,7 @@ SuppFilenames RESType::getRequiredSupps(stream::input_sptr data,
 }
 
 
-RESArchiveFolder::RESArchiveFolder(stream::inout_sptr psArchive)
+Archive_RES_Stellar7_Folder::Archive_RES_Stellar7_Folder(stream::inout_sptr psArchive)
 	:	FATArchive(psArchive, RES_FIRST_FILE_OFFSET, RES_MAX_FILENAME_LEN)
 {
 	stream::pos lenArchive = this->psArchive->size();
@@ -176,20 +176,20 @@ RESArchiveFolder::RESArchiveFolder(stream::inout_sptr psArchive)
 	}
 }
 
-RESArchiveFolder::~RESArchiveFolder()
+Archive_RES_Stellar7_Folder::~Archive_RES_Stellar7_Folder()
 {
 }
 
-ArchivePtr RESArchiveFolder::openFolder(const EntryPtr id)
+ArchivePtr Archive_RES_Stellar7_Folder::openFolder(const EntryPtr id)
 {
 	// Make sure we're opening a folder
 	assert(id->fAttr & EA_FOLDER);
 
 	stream::inout_sptr folderContents = this->open(id);
-	return ArchivePtr(new RESArchiveFolder(folderContents));
+	return ArchivePtr(new Archive_RES_Stellar7_Folder(folderContents));
 }
 
-void RESArchiveFolder::updateFileName(const FATEntry *pid, const std::string& strNewName)
+void Archive_RES_Stellar7_Folder::updateFileName(const FATEntry *pid, const std::string& strNewName)
 {
 	// TESTED BY: fmt_res_stellar7_rename
 	assert(strNewName.length() <= RES_MAX_FILENAME_LEN);
@@ -198,7 +198,7 @@ void RESArchiveFolder::updateFileName(const FATEntry *pid, const std::string& st
 	return;
 }
 
-void RESArchiveFolder::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+void Archive_RES_Stellar7_Folder::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 {
 	// This format doesn't have any offsets that need updating.  As this function
 	// is only called when removing a file, the "offsets" will be sorted out
@@ -206,7 +206,7 @@ void RESArchiveFolder::updateFileOffset(const FATEntry *pid, stream::delta offDe
 	return;
 }
 
-void RESArchiveFolder::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+void Archive_RES_Stellar7_Folder::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 {
 	// TESTED BY: fmt_res_stellar7_insert*
 	// TESTED BY: fmt_res_stellar7_resize*
@@ -215,7 +215,7 @@ void RESArchiveFolder::updateFileSize(const FATEntry *pid, stream::delta sizeDel
 	return;
 }
 
-FATArchive::FATEntry *RESArchiveFolder::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+FATArchive::FATEntry *Archive_RES_Stellar7_Folder::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_res_stellar7_insert*
 	assert(pNewEntry->strName.length() <= RES_MAX_FILENAME_LEN);

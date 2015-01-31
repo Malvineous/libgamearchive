@@ -28,11 +28,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// Skyroads ROADS.LZS format handler.
-class SkyRoadsRoadsType: virtual public ArchiveType
+class ArchiveType_Roads_SkyRoads: virtual public ArchiveType
 {
 	public:
-		SkyRoadsRoadsType();
-		virtual ~SkyRoadsRoadsType();
+		ArchiveType_Roads_SkyRoads();
+		virtual ~ArchiveType_Roads_SkyRoads();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;
@@ -49,11 +49,11 @@ class SkyRoadsRoadsType: virtual public ArchiveType
 };
 
 /// Skyroads ROADS.LZS archive instance.
-class SkyRoadsRoadsArchive: virtual public FATArchive
+class Archive_Roads_SkyRoads: virtual public FATArchive
 {
 	public:
-		SkyRoadsRoadsArchive(stream::inout_sptr psArchive);
-		virtual ~SkyRoadsRoadsArchive();
+		Archive_Roads_SkyRoads(stream::inout_sptr psArchive);
+		virtual ~Archive_Roads_SkyRoads();
 
 		virtual void updateFileName(const FATEntry *pid,
 			const std::string& strNewName);

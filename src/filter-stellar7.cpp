@@ -29,32 +29,32 @@
 namespace camoto {
 namespace gamearchive {
 
-Stellar7FilterType::Stellar7FilterType()
+FilterType_Stellar7::FilterType_Stellar7()
 {
 }
 
-Stellar7FilterType::~Stellar7FilterType()
+FilterType_Stellar7::~FilterType_Stellar7()
 {
 }
 
-std::string Stellar7FilterType::getFilterCode() const
+std::string FilterType_Stellar7::getFilterCode() const
 {
 	return "lzw-stellar7";
 }
 
-std::string Stellar7FilterType::getFriendlyName() const
+std::string FilterType_Stellar7::getFriendlyName() const
 {
 	return "Stellar 7 compression";
 }
 
-std::vector<std::string> Stellar7FilterType::getGameList() const
+std::vector<std::string> FilterType_Stellar7::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Stellar 7");
 	return vcGames;
 }
 
-stream::inout_sptr Stellar7FilterType::apply(stream::inout_sptr target,
+stream::inout_sptr FilterType_Stellar7::apply(stream::inout_sptr target,
 	stream::fn_truncate resize) const
 {
 	stream::filtered_sptr st(new stream::filtered());
@@ -82,7 +82,7 @@ stream::inout_sptr Stellar7FilterType::apply(stream::inout_sptr target,
 	return st;
 }
 
-stream::input_sptr Stellar7FilterType::apply(stream::input_sptr target) const
+stream::input_sptr FilterType_Stellar7::apply(stream::input_sptr target) const
 {
 	stream::input_filtered_sptr st(new stream::input_filtered());
 	filter_sptr de(new filter_lzw_decompress(
@@ -99,7 +99,7 @@ stream::input_sptr Stellar7FilterType::apply(stream::input_sptr target) const
 	return st;
 }
 
-stream::output_sptr Stellar7FilterType::apply(stream::output_sptr target,
+stream::output_sptr FilterType_Stellar7::apply(stream::output_sptr target,
 	stream::fn_truncate resize) const
 {
 	stream::output_filtered_sptr st(new stream::output_filtered());

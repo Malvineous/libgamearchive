@@ -235,32 +235,32 @@ void filter_skyroads_lzs::transform(uint8_t *out, stream::len *lenOut,
 }
 
 
-SkyRoadsFilterType::SkyRoadsFilterType()
+FilterType_SkyRoads::FilterType_SkyRoads()
 {
 }
 
-SkyRoadsFilterType::~SkyRoadsFilterType()
+FilterType_SkyRoads::~FilterType_SkyRoads()
 {
 }
 
-std::string SkyRoadsFilterType::getFilterCode() const
+std::string FilterType_SkyRoads::getFilterCode() const
 {
 	return "lzs-skyroads";
 }
 
-std::string SkyRoadsFilterType::getFriendlyName() const
+std::string FilterType_SkyRoads::getFriendlyName() const
 {
 	return "SkyRoads compression";
 }
 
-std::vector<std::string> SkyRoadsFilterType::getGameList() const
+std::vector<std::string> FilterType_SkyRoads::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("SkyRoads");
 	return vcGames;
 }
 
-stream::inout_sptr SkyRoadsFilterType::apply(stream::inout_sptr target,
+stream::inout_sptr FilterType_SkyRoads::apply(stream::inout_sptr target,
 	stream::fn_truncate resize) const
 {
 	stream::filtered_sptr st1(new stream::filtered());
@@ -271,7 +271,7 @@ stream::inout_sptr SkyRoadsFilterType::apply(stream::inout_sptr target,
 	return st1;
 }
 
-stream::input_sptr SkyRoadsFilterType::apply(stream::input_sptr target) const
+stream::input_sptr FilterType_SkyRoads::apply(stream::input_sptr target) const
 {
 	stream::input_filtered_sptr st1(new stream::input_filtered());
 	filter_sptr f_delzs(new filter_skyroads_unlzs());
@@ -280,7 +280,7 @@ stream::input_sptr SkyRoadsFilterType::apply(stream::input_sptr target) const
 	return st1;
 }
 
-stream::output_sptr SkyRoadsFilterType::apply(stream::output_sptr target,
+stream::output_sptr FilterType_SkyRoads::apply(stream::output_sptr target,
 	stream::fn_truncate resize) const
 {
 	stream::output_filtered_sptr st1(new stream::output_filtered());

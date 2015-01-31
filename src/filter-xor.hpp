@@ -74,11 +74,11 @@ class filter_xor_crypt: virtual public filter
 };
 
 /// Encrypt a stream using XOR encryption.
-class XORFilterType: virtual public FilterType
+class FilterType_XOR: virtual public FilterType
 {
 	public:
-		XORFilterType();
-		~XORFilterType();
+		FilterType_XOR();
+		~FilterType_XOR();
 
 		virtual std::string getFilterCode() const;
 		virtual std::string getFriendlyName() const;

@@ -73,11 +73,11 @@ class filter_skyroads_lzs: virtual public filter
 };
 
 /// SkyRoads decompression filter.
-class SkyRoadsFilterType: virtual public FilterType
+class FilterType_SkyRoads: virtual public FilterType
 {
 	public:
-		SkyRoadsFilterType();
-		~SkyRoadsFilterType();
+		FilterType_SkyRoads();
+		~FilterType_SkyRoads();
 
 		virtual std::string getFilterCode() const;
 		virtual std::string getFriendlyName() const;

@@ -29,10 +29,10 @@ namespace camoto {
 namespace gamearchive {
 
 /// Encrypt a stream using XOR encryption, with a fixed key.
-class sam_crypt_filter: public filter_xor_crypt
+class filter_sam_crypt: public filter_xor_crypt
 {
 	public:
-		sam_crypt_filter(int resetInterval);
+		filter_sam_crypt(int resetInterval);
 		virtual uint8_t getKey();
 
 	protected:
@@ -40,11 +40,11 @@ class sam_crypt_filter: public filter_xor_crypt
 		int resetInterval;
 };
 
-class SAMBaseFilterType: virtual public FilterType
+class FilterType_SAM_Base: virtual public FilterType
 {
 	public:
-		SAMBaseFilterType(int resetInterval);
-		virtual ~SAMBaseFilterType();
+		FilterType_SAM_Base(int resetInterval);
+		virtual ~FilterType_SAM_Base();
 
 		virtual std::string getFilterCode() const;
 		virtual std::string getFriendlyName() const;
@@ -59,31 +59,31 @@ class SAMBaseFilterType: virtual public FilterType
 		int resetInterval;
 };
 
-class SAMMapFilterType: virtual public SAMBaseFilterType
+class FilterType_SAM_Map: virtual public FilterType_SAM_Base
 {
 	public:
-		SAMMapFilterType();
-		virtual ~SAMMapFilterType();
+		FilterType_SAM_Map();
+		virtual ~FilterType_SAM_Map();
 
 		virtual std::string getFilterCode() const;
 		virtual std::string getFriendlyName() const;
 };
 
-class SAM8SpriteFilterType: virtual public SAMBaseFilterType
+class FilterType_SAM_8Sprite: virtual public FilterType_SAM_Base
 {
 	public:
-		SAM8SpriteFilterType();
-		virtual ~SAM8SpriteFilterType();
+		FilterType_SAM_8Sprite();
+		virtual ~FilterType_SAM_8Sprite();
 
 		virtual std::string getFilterCode() const;
 		virtual std::string getFriendlyName() const;
 };
 
-class SAM16SpriteFilterType: virtual public SAMBaseFilterType
+class FilterType_SAM_16Sprite: virtual public FilterType_SAM_Base
 {
 	public:
-		SAM16SpriteFilterType();
-		virtual ~SAM16SpriteFilterType();
+		FilterType_SAM_16Sprite();
+		virtual ~FilterType_SAM_16Sprite();
 
 		virtual std::string getFilterCode() const;
 		virtual std::string getFriendlyName() const;

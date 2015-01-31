@@ -48,39 +48,39 @@
 namespace camoto {
 namespace gamearchive {
 
-RFFType::RFFType()
+ArchiveType_RFF_Blood::ArchiveType_RFF_Blood()
 {
 }
 
-RFFType::~RFFType()
+ArchiveType_RFF_Blood::~ArchiveType_RFF_Blood()
 {
 }
 
-std::string RFFType::getArchiveCode() const
+std::string ArchiveType_RFF_Blood::getArchiveCode() const
 {
 	return "rff-blood";
 }
 
-std::string RFFType::getFriendlyName() const
+std::string ArchiveType_RFF_Blood::getFriendlyName() const
 {
 	return "Monolith Resource File Format";
 }
 
-std::vector<std::string> RFFType::getFileExtensions() const
+std::vector<std::string> ArchiveType_RFF_Blood::getFileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("rff");
 	return vcExtensions;
 }
 
-std::vector<std::string> RFFType::getGameList() const
+std::vector<std::string> ArchiveType_RFF_Blood::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Blood");
 	return vcGames;
 }
 
-ArchiveType::Certainty RFFType::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_RFF_Blood::isInstance(stream::input_sptr psArchive) const
 {
 	stream::pos lenArchive = psArchive->size();
 
@@ -98,7 +98,7 @@ ArchiveType::Certainty RFFType::isInstance(stream::input_sptr psArchive) const
 	return DefinitelyNo;
 }
 
-ArchivePtr RFFType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_RFF_Blood::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	psArchive->seekp(0, stream::start);
 	psArchive
@@ -110,15 +110,15 @@ ArchivePtr RFFType::newArchive(stream::inout_sptr psArchive, SuppData& suppData)
 		<< u32le(0)               // Unknown
 		<< u32le(0)               // Unknown
 		<< u32le(0);              // Unknown
-	return ArchivePtr(new RFFArchive(psArchive));
+	return ArchivePtr(new Archive_RFF_Blood(psArchive));
 }
 
-ArchivePtr RFFType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_RFF_Blood::open(stream::inout_sptr psArchive, SuppData& suppData) const
 {
-	return ArchivePtr(new RFFArchive(psArchive));
+	return ArchivePtr(new Archive_RFF_Blood(psArchive));
 }
 
-SuppFilenames RFFType::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_RFF_Blood::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -126,7 +126,7 @@ SuppFilenames RFFType::getRequiredSupps(stream::input_sptr data,
 }
 
 
-RFFArchive::RFFArchive(stream::inout_sptr psArchive)
+Archive_RFF_Blood::Archive_RFF_Blood(stream::inout_sptr psArchive)
 	:	FATArchive(psArchive, RFF_FIRST_FILE_OFFSET, ARCH_STD_DOS_FILENAMES),
 		modifiedFAT(false)
 {
@@ -221,11 +221,11 @@ RFFArchive::RFFArchive(stream::inout_sptr psArchive)
 	}
 }
 
-RFFArchive::~RFFArchive()
+Archive_RFF_Blood::~Archive_RFF_Blood()
 {
 }
 
-RFFArchive::MetadataTypes RFFArchive::getMetadataList() const
+Archive_RFF_Blood::MetadataTypes Archive_RFF_Blood::getMetadataList() const
 {
 	// TESTED BY: fmt_rff_blood_get_metadata_version
 	MetadataTypes m;
@@ -233,7 +233,7 @@ RFFArchive::MetadataTypes RFFArchive::getMetadataList() const
 	return m;
 }
 
-std::string RFFArchive::getMetadata(MetadataType item) const
+std::string Archive_RFF_Blood::getMetadata(MetadataType item) const
 {
 	// TESTED BY: fmt_rff_blood_get_metadata_version
 	switch (item) {
@@ -248,7 +248,7 @@ std::string RFFArchive::getMetadata(MetadataType item) const
 	}
 }
 
-void RFFArchive::setMetadata(MetadataType item, const std::string& value)
+void Archive_RFF_Blood::setMetadata(MetadataType item, const std::string& value)
 {
 	// TESTED BY: fmt_rff_blood_set_metadata_version
 	// TESTED BY: fmt_rff_blood_new_to_initialstate
@@ -293,7 +293,7 @@ void RFFArchive::setMetadata(MetadataType item, const std::string& value)
 	return;
 }
 
-void RFFArchive::flush()
+void Archive_RFF_Blood::flush()
 {
 	if (this->modifiedFAT) {
 
@@ -371,7 +371,7 @@ void RFFArchive::flush()
 	return;
 }
 
-void RFFArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+void Archive_RFF_Blood::updateFileName(const FATEntry *pid, const std::string& strNewName)
 {
 	// TESTED BY: fmt_rff_blood_rename
 
@@ -390,7 +390,7 @@ void RFFArchive::updateFileName(const FATEntry *pid, const std::string& strNewNa
 	return;
 }
 
-void RFFArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+void Archive_RFF_Blood::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 {
 	// TESTED BY: fmt_rff_blood_insert*
 	// TESTED BY: fmt_rff_blood_resize*
@@ -400,7 +400,7 @@ void RFFArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 	return;
 }
 
-void RFFArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+void Archive_RFF_Blood::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 {
 	// TESTED BY: fmt_rff_blood_insert*
 	// TESTED BY: fmt_rff_blood_resize*
@@ -410,7 +410,7 @@ void RFFArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 	return;
 }
 
-FATArchive::FATEntry *RFFArchive::preInsertFile(const FATEntry *idBeforeThis,
+FATArchive::FATEntry *Archive_RFF_Blood::preInsertFile(const FATEntry *idBeforeThis,
 	FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_rff_blood_insert*
@@ -454,13 +454,13 @@ FATArchive::FATEntry *RFFArchive::preInsertFile(const FATEntry *idBeforeThis,
 	return pNewEntry;
 }
 
-void RFFArchive::postInsertFile(FATEntry *pNewEntry)
+void Archive_RFF_Blood::postInsertFile(FATEntry *pNewEntry)
 {
 	this->updateFileCount(this->vcFAT.size());
 	return;
 }
 
-void RFFArchive::preRemoveFile(const FATEntry *pid)
+void Archive_RFF_Blood::preRemoveFile(const FATEntry *pid)
 {
 	this->fatStream->seekp(RFF_FATENTRY_OFFSET(pid), stream::start);
 	this->fatStream->remove(RFF_FAT_ENTRY_LEN);
@@ -468,20 +468,20 @@ void RFFArchive::preRemoveFile(const FATEntry *pid)
 	return;
 }
 
-void RFFArchive::postRemoveFile(const FATEntry *pid)
+void Archive_RFF_Blood::postRemoveFile(const FATEntry *pid)
 {
 	this->updateFileCount(this->vcFAT.size());
 	return;
 }
 
-void RFFArchive::updateFileCount(uint32_t newCount)
+void Archive_RFF_Blood::updateFileCount(uint32_t newCount)
 {
 	this->psArchive->seekp(RFF_FILECOUNT_OFFSET, stream::start);
 	this->psArchive << u32le(newCount);
 	return;
 }
 
-stream::pos RFFArchive::getDescOffset() const
+stream::pos Archive_RFF_Blood::getDescOffset() const
 {
 	stream::pos offDesc;
 	if (this->vcFAT.size()) {
@@ -495,7 +495,7 @@ stream::pos RFFArchive::getDescOffset() const
 	return offDesc;
 }
 
-void RFFArchive::splitFilename(const std::string& full, std::string *base, std::string *ext)
+void Archive_RFF_Blood::splitFilename(const std::string& full, std::string *base, std::string *ext)
 {
 	std::string::size_type posDot = full.find_last_of('.');
 	if (

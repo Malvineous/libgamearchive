@@ -28,11 +28,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// Vinyl Goddess From Mars .LBR format handler.
-class LBRType: virtual public ArchiveType
+class ArchiveType_LBR_Vinyl: virtual public ArchiveType
 {
 	public:
-		LBRType();
-		virtual ~LBRType();
+		ArchiveType_LBR_Vinyl();
+		virtual ~ArchiveType_LBR_Vinyl();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;
@@ -49,11 +49,11 @@ class LBRType: virtual public ArchiveType
 };
 
 /// Vinyl Goddess From Mars .LBR archive instance.
-class LBRArchive: virtual public FATArchive
+class Archive_LBR_Vinyl: virtual public FATArchive
 {
 	public:
-		LBRArchive(stream::inout_sptr psArchive);
-		virtual ~LBRArchive();
+		Archive_LBR_Vinyl(stream::inout_sptr psArchive);
+		virtual ~Archive_LBR_Vinyl();
 
 		virtual void updateFileName(const FATEntry *pid,
 			const std::string& strNewName);

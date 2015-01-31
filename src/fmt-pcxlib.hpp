@@ -28,11 +28,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// PCX Library format handler.
-class PCXLibType: virtual public ArchiveType
+class ArchiveType_PCXLib: virtual public ArchiveType
 {
 	public:
-		PCXLibType();
-		virtual ~PCXLibType();
+		ArchiveType_PCXLib();
+		virtual ~ArchiveType_PCXLib();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;
@@ -49,11 +49,11 @@ class PCXLibType: virtual public ArchiveType
 };
 
 /// PCX Library archive instance.
-class PCXLibArchive: virtual public FATArchive
+class Archive_PCXLib: virtual public FATArchive
 {
 	public:
-		PCXLibArchive(stream::inout_sptr psArchive);
-		virtual ~PCXLibArchive();
+		Archive_PCXLib(stream::inout_sptr psArchive);
+		virtual ~Archive_PCXLib();
 
 		virtual void updateFileName(const FATEntry *pid,
 			const std::string& strNewName);

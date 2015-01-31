@@ -52,39 +52,39 @@
 namespace camoto {
 namespace gamearchive {
 
-GLBType::GLBType()
+ArchiveType_GLB_Raptor::ArchiveType_GLB_Raptor()
 {
 }
 
-GLBType::~GLBType()
+ArchiveType_GLB_Raptor::~ArchiveType_GLB_Raptor()
 {
 }
 
-std::string GLBType::getArchiveCode() const
+std::string ArchiveType_GLB_Raptor::getArchiveCode() const
 {
 	return "glb-raptor";
 }
 
-std::string GLBType::getFriendlyName() const
+std::string ArchiveType_GLB_Raptor::getFriendlyName() const
 {
 	return "Raptor GLB File";
 }
 
-std::vector<std::string> GLBType::getFileExtensions() const
+std::vector<std::string> ArchiveType_GLB_Raptor::getFileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("glb");
 	return vcExtensions;
 }
 
-std::vector<std::string> GLBType::getGameList() const
+std::vector<std::string> ArchiveType_GLB_Raptor::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Raptor");
 	return vcGames;
 }
 
-ArchiveType::Certainty GLBType::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_GLB_Raptor::isInstance(stream::input_sptr psArchive) const
 {
 	uint8_t sig[4];
 	psArchive->seekg(0, stream::start);
@@ -104,7 +104,7 @@ ArchiveType::Certainty GLBType::isInstance(stream::input_sptr psArchive) const
 	return DefinitelyYes;
 }
 
-ArchivePtr GLBType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_GLB_Raptor::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	psArchive->seekp(0, stream::start);
 	psArchive << nullPadded(
@@ -118,15 +118,15 @@ ArchivePtr GLBType::newArchive(stream::inout_sptr psArchive, SuppData& suppData)
 		"\x22\x59\x8F\xC7\x0E\x5A\x9C\xCF\x01\x38\x6E\xA6"
 #endif
 		, GLB_HEADER_LEN);
-	return ArchivePtr(new GLBArchive(psArchive));
+	return ArchivePtr(new Archive_GLB_Raptor(psArchive));
 }
 
-ArchivePtr GLBType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_GLB_Raptor::open(stream::inout_sptr psArchive, SuppData& suppData) const
 {
-	return ArchivePtr(new GLBArchive(psArchive));
+	return ArchivePtr(new Archive_GLB_Raptor(psArchive));
 }
 
-SuppFilenames GLBType::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_GLB_Raptor::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -155,11 +155,11 @@ void dummyResize(stream::pos newSize)
 }
 
 
-GLBArchive::GLBArchive(stream::inout_sptr psArchive)
+Archive_GLB_Raptor::Archive_GLB_Raptor(stream::inout_sptr psArchive)
 	:	FATArchive(psArchive, GLB_FIRST_FILE_OFFSET, GLB_MAX_FILENAME_LEN),
 		fat(new stream::seg())
 {
-	GLBFATFilterType glbFilterType;
+	FilterType_GLB_Raptor_FAT glbFilterType;
 	uint32_t numFiles;
 	{
 		// Decode just enough of the FAT to get the file count, so we know the size
@@ -220,13 +220,13 @@ GLBArchive::GLBArchive(stream::inout_sptr psArchive)
 	}
 }
 
-GLBArchive::~GLBArchive()
+Archive_GLB_Raptor::~Archive_GLB_Raptor()
 {
 }
 
-void GLBArchive::flush()
+void Archive_GLB_Raptor::flush()
 {
-	GLBFATFilterType glbFilterType;
+	FilterType_GLB_Raptor_FAT glbFilterType;
 	stream::output_sub_sptr substrFAT(new stream::output_sub);
 	stream::fn_truncate fnTruncateSub = boost::bind<void>(&fakeResizeSubstream,
 		boost::weak_ptr<stream::output_sub>(substrFAT), _1);
@@ -247,7 +247,7 @@ void GLBArchive::flush()
 	return;
 }
 
-void GLBArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+void Archive_GLB_Raptor::updateFileName(const FATEntry *pid, const std::string& strNewName)
 {
 	// TESTED BY: fmt_glb_raptor_rename
 	assert(strNewName.length() <= GLB_MAX_FILENAME_LEN);
@@ -256,7 +256,7 @@ void GLBArchive::updateFileName(const FATEntry *pid, const std::string& strNewNa
 	return;
 }
 
-void GLBArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+void Archive_GLB_Raptor::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 {
 	// TESTED BY: fmt_glb_raptor_insert*
 	// TESTED BY: fmt_glb_raptor_resize*
@@ -265,7 +265,7 @@ void GLBArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 	return;
 }
 
-void GLBArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+void Archive_GLB_Raptor::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 {
 	// TESTED BY: fmt_glb_raptor_insert*
 	// TESTED BY: fmt_glb_raptor_resize*
@@ -274,7 +274,7 @@ void GLBArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 	return;
 }
 
-FATArchive::FATEntry *GLBArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+FATArchive::FATEntry *Archive_GLB_Raptor::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_glb_raptor_insert*
 	assert(pNewEntry->strName.length() <= GLB_MAX_FILENAME_LEN);
@@ -314,7 +314,7 @@ FATArchive::FATEntry *GLBArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	return pNewEntry;
 }
 
-void GLBArchive::preRemoveFile(const FATEntry *pid)
+void Archive_GLB_Raptor::preRemoveFile(const FATEntry *pid)
 {
 	// TESTED BY: fmt_glb_raptor_remove*
 
@@ -339,7 +339,7 @@ void GLBArchive::preRemoveFile(const FATEntry *pid)
 	return;
 }
 
-void GLBArchive::updateFileCount(uint32_t iNewCount)
+void Archive_GLB_Raptor::updateFileCount(uint32_t iNewCount)
 {
 	// TESTED BY: fmt_glb_raptor_insert*
 	// TESTED BY: fmt_glb_raptor_remove*

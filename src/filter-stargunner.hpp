@@ -69,11 +69,11 @@ class filter_stargunner_decompress: virtual public filter
 };
 
 /// Stargunner decompression filter.
-class StargunnerFilterType: virtual public FilterType
+class FilterType_Stargunner: virtual public FilterType
 {
 	public:
-		StargunnerFilterType();
-		~StargunnerFilterType();
+		FilterType_Stargunner();
+		~FilterType_Stargunner();
 
 		virtual std::string getFilterCode() const;
 		virtual std::string getFriendlyName() const;

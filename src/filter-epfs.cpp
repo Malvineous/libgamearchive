@@ -29,25 +29,25 @@
 namespace camoto {
 namespace gamearchive {
 
-EPFSFilterType::EPFSFilterType()
+FilterType_EPFS::FilterType_EPFS()
 {
 }
 
-EPFSFilterType::~EPFSFilterType()
+FilterType_EPFS::~FilterType_EPFS()
 {
 }
 
-std::string EPFSFilterType::getFilterCode() const
+std::string FilterType_EPFS::getFilterCode() const
 {
 	return "lzw-epfs";
 }
 
-std::string EPFSFilterType::getFriendlyName() const
+std::string FilterType_EPFS::getFriendlyName() const
 {
 	return "East Point Software EPFS compression";
 }
 
-std::vector<std::string> EPFSFilterType::getGameList() const
+std::vector<std::string> FilterType_EPFS::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Alien Breed Tower Assault");
@@ -64,7 +64,7 @@ std::vector<std::string> EPFSFilterType::getGameList() const
 	return vcGames;
 }
 
-stream::inout_sptr EPFSFilterType::apply(stream::inout_sptr target,
+stream::inout_sptr FilterType_EPFS::apply(stream::inout_sptr target,
 	stream::fn_truncate resize) const
 {
 	stream::filtered_sptr st(new stream::filtered());
@@ -94,7 +94,7 @@ stream::inout_sptr EPFSFilterType::apply(stream::inout_sptr target,
 	return st;
 }
 
-stream::input_sptr EPFSFilterType::apply(stream::input_sptr target) const
+stream::input_sptr FilterType_EPFS::apply(stream::input_sptr target) const
 {
 	stream::input_filtered_sptr st(new stream::input_filtered());
 	filter_sptr de(new filter_lzw_decompress(
@@ -112,7 +112,7 @@ stream::input_sptr EPFSFilterType::apply(stream::input_sptr target) const
 	return st;
 }
 
-stream::output_sptr EPFSFilterType::apply(stream::output_sptr target,
+stream::output_sptr FilterType_EPFS::apply(stream::output_sptr target,
 	stream::fn_truncate resize) const
 {
 	stream::output_filtered_sptr st(new stream::output_filtered());

@@ -46,39 +46,39 @@
 namespace camoto {
 namespace gamearchive {
 
-DLTType::DLTType()
+ArchiveType_DLT_Stargunner::ArchiveType_DLT_Stargunner()
 {
 }
 
-DLTType::~DLTType()
+ArchiveType_DLT_Stargunner::~ArchiveType_DLT_Stargunner()
 {
 }
 
-std::string DLTType::getArchiveCode() const
+std::string ArchiveType_DLT_Stargunner::getArchiveCode() const
 {
 	return "dlt-stargunner";
 }
 
-std::string DLTType::getFriendlyName() const
+std::string ArchiveType_DLT_Stargunner::getFriendlyName() const
 {
 	return "Stargunner DLT File";
 }
 
-std::vector<std::string> DLTType::getFileExtensions() const
+std::vector<std::string> ArchiveType_DLT_Stargunner::getFileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("dlt");
 	return vcExtensions;
 }
 
-std::vector<std::string> DLTType::getGameList() const
+std::vector<std::string> ArchiveType_DLT_Stargunner::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Stargunner");
 	return vcGames;
 }
 
-ArchiveType::Certainty DLTType::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_DLT_Stargunner::isInstance(stream::input_sptr psArchive) const
 {
 	stream::pos lenArchive = psArchive->size();
 
@@ -96,19 +96,19 @@ ArchiveType::Certainty DLTType::isInstance(stream::input_sptr psArchive) const
 	return DefinitelyNo;
 }
 
-ArchivePtr DLTType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_DLT_Stargunner::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	psArchive->seekp(0, stream::start);
 	psArchive->write("DAVE\x00\x01\x00\x00", 8);
-	return ArchivePtr(new DLTArchive(psArchive));
+	return ArchivePtr(new Archive_DLT_Stargunner(psArchive));
 }
 
-ArchivePtr DLTType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_DLT_Stargunner::open(stream::inout_sptr psArchive, SuppData& suppData) const
 {
-	return ArchivePtr(new DLTArchive(psArchive));
+	return ArchivePtr(new Archive_DLT_Stargunner(psArchive));
 }
 
-SuppFilenames DLTType::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_DLT_Stargunner::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -116,7 +116,7 @@ SuppFilenames DLTType::getRequiredSupps(stream::input_sptr data,
 }
 
 
-DLTArchive::DLTArchive(stream::inout_sptr psArchive)
+Archive_DLT_Stargunner::Archive_DLT_Stargunner(stream::inout_sptr psArchive)
 	:	FATArchive(psArchive, DLT_FIRST_FILE_OFFSET, DLT_MAX_FILENAME_LEN)
 {
 	this->psArchive->seekg(4, stream::start); // skip "DAVE" sig
@@ -170,11 +170,11 @@ DLTArchive::DLTArchive(stream::inout_sptr psArchive)
 	}
 }
 
-DLTArchive::~DLTArchive()
+Archive_DLT_Stargunner::~Archive_DLT_Stargunner()
 {
 }
 
-void DLTArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+void Archive_DLT_Stargunner::updateFileName(const FATEntry *pid, const std::string& strNewName)
 {
 	int lenName = strNewName.length();
 	// TESTED BY: fmt_dlt_stargunner_rename
@@ -194,7 +194,7 @@ void DLTArchive::updateFileName(const FATEntry *pid, const std::string& strNewNa
 	return;
 }
 
-void DLTArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+void Archive_DLT_Stargunner::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 {
 	// This format doesn't have any offsets that need updating.  As this function
 	// is only called when removing a file, the "offsets" will be sorted out
@@ -202,7 +202,7 @@ void DLTArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 	return;
 }
 
-void DLTArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+void Archive_DLT_Stargunner::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 {
 	// TESTED BY: fmt_dlt_stargunner_insert*
 	// TESTED BY: fmt_dlt_stargunner_resize*
@@ -211,7 +211,7 @@ void DLTArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 	return;
 }
 
-FATArchive::FATEntry *DLTArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+FATArchive::FATEntry *Archive_DLT_Stargunner::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	int lenName = pNewEntry->strName.length();
 	// TESTED BY: fmt_dlt_stargunner_insert*
@@ -248,7 +248,7 @@ FATArchive::FATEntry *DLTArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	return pNewEntry;
 }
 
-void DLTArchive::preRemoveFile(const FATEntry *pid)
+void Archive_DLT_Stargunner::preRemoveFile(const FATEntry *pid)
 {
 	// TESTED BY: fmt_dlt_stargunner_remove*
 
@@ -256,7 +256,7 @@ void DLTArchive::preRemoveFile(const FATEntry *pid)
 	return;
 }
 
-void DLTArchive::updateFileCount(uint16_t iNewCount)
+void Archive_DLT_Stargunner::updateFileCount(uint16_t iNewCount)
 {
 	// TESTED BY: fmt_dlt_stargunner_insert*
 	// TESTED BY: fmt_dlt_stargunner_remove*

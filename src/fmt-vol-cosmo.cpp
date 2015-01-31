@@ -36,25 +36,25 @@
 namespace camoto {
 namespace gamearchive {
 
-VOLType::VOLType()
+ArchiveType_VOL_Cosmo::ArchiveType_VOL_Cosmo()
 {
 }
 
-VOLType::~VOLType()
+ArchiveType_VOL_Cosmo::~ArchiveType_VOL_Cosmo()
 {
 }
 
-std::string VOLType::getArchiveCode() const
+std::string ArchiveType_VOL_Cosmo::getArchiveCode() const
 {
 	return "vol-cosmo";
 }
 
-std::string VOLType::getFriendlyName() const
+std::string ArchiveType_VOL_Cosmo::getFriendlyName() const
 {
 	return "Cosmo Volume File";
 }
 
-std::vector<std::string> VOLType::getFileExtensions() const
+std::vector<std::string> ArchiveType_VOL_Cosmo::getFileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("vol");
@@ -66,7 +66,7 @@ std::vector<std::string> VOLType::getFileExtensions() const
 	return vcExtensions;
 }
 
-std::vector<std::string> VOLType::getGameList() const
+std::vector<std::string> ArchiveType_VOL_Cosmo::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Cosmo's Cosmic Adventure");
@@ -75,7 +75,7 @@ std::vector<std::string> VOLType::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty VOLType::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_VOL_Cosmo::isInstance(stream::input_sptr psArchive) const
 {
 	stream::pos lenArchive = psArchive->size();
 	if (lenArchive < VOL_FAT_ENTRY_LEN) return DefinitelyNo; // too short
@@ -131,19 +131,19 @@ ArchiveType::Certainty VOLType::isInstance(stream::input_sptr psArchive) const
 	return DefinitelyYes;
 }
 
-ArchivePtr VOLType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_VOL_Cosmo::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	psArchive->seekp(0, stream::start);
 	psArchive->write(std::string(VOL_FAT_LENGTH, '\0'));
-	return ArchivePtr(new VOLArchive(psArchive));
+	return ArchivePtr(new Archive_VOL_Cosmo(psArchive));
 }
 
-ArchivePtr VOLType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_VOL_Cosmo::open(stream::inout_sptr psArchive, SuppData& suppData) const
 {
-	return ArchivePtr(new VOLArchive(psArchive));
+	return ArchivePtr(new Archive_VOL_Cosmo(psArchive));
 }
 
-SuppFilenames VOLType::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_VOL_Cosmo::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -151,7 +151,7 @@ SuppFilenames VOLType::getRequiredSupps(stream::input_sptr data,
 }
 
 
-VOLArchive::VOLArchive(stream::inout_sptr psArchive)
+Archive_VOL_Cosmo::Archive_VOL_Cosmo(stream::inout_sptr psArchive)
 	:	FATArchive(psArchive, VOL_FIRST_FILE_OFFSET, VOL_MAX_FILENAME_LEN)
 {
 	stream::pos lenArchive = this->psArchive->size();
@@ -194,11 +194,11 @@ VOLArchive::VOLArchive(stream::inout_sptr psArchive)
 	} // else empty archive
 }
 
-VOLArchive::~VOLArchive()
+Archive_VOL_Cosmo::~Archive_VOL_Cosmo()
 {
 }
 
-void VOLArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+void Archive_VOL_Cosmo::updateFileName(const FATEntry *pid, const std::string& strNewName)
 {
 	// TESTED BY: fmt_vol_cosmo_rename
 	assert(strNewName.length() <= VOL_MAX_FILENAME_LEN);
@@ -207,7 +207,7 @@ void VOLArchive::updateFileName(const FATEntry *pid, const std::string& strNewNa
 	return;
 }
 
-void VOLArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+void Archive_VOL_Cosmo::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 {
 	// TESTED BY: fmt_vol_cosmo_insert*
 	// TESTED BY: fmt_vol_cosmo_resize*
@@ -216,7 +216,7 @@ void VOLArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 	return;
 }
 
-void VOLArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+void Archive_VOL_Cosmo::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 {
 	// TESTED BY: fmt_vol_cosmo_insert*
 	// TESTED BY: fmt_vol_cosmo_resize*
@@ -225,7 +225,7 @@ void VOLArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 	return;
 }
 
-FATArchive::FATEntry *VOLArchive::preInsertFile(const FATEntry *idBeforeThis,
+FATArchive::FATEntry *Archive_VOL_Cosmo::preInsertFile(const FATEntry *idBeforeThis,
 	FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_vol_cosmo_insert*
@@ -278,7 +278,7 @@ FATArchive::FATEntry *VOLArchive::preInsertFile(const FATEntry *idBeforeThis,
 	return pNewEntry;
 }
 
-void VOLArchive::preRemoveFile(const FATEntry *pid)
+void Archive_VOL_Cosmo::preRemoveFile(const FATEntry *pid)
 {
 	// TESTED BY: fmt_vol_cosmo_remove*
 

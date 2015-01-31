@@ -40,39 +40,39 @@
 namespace camoto {
 namespace gamearchive {
 
-HOGType::HOGType()
+ArchiveType_HOG_Descent::ArchiveType_HOG_Descent()
 {
 }
 
-HOGType::~HOGType()
+ArchiveType_HOG_Descent::~ArchiveType_HOG_Descent()
 {
 }
 
-std::string HOGType::getArchiveCode() const
+std::string ArchiveType_HOG_Descent::getArchiveCode() const
 {
 	return "hog-descent";
 }
 
-std::string HOGType::getFriendlyName() const
+std::string ArchiveType_HOG_Descent::getFriendlyName() const
 {
 	return "Descent HOG file";
 }
 
-std::vector<std::string> HOGType::getFileExtensions() const
+std::vector<std::string> ArchiveType_HOG_Descent::getFileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("hog");
 	return vcExtensions;
 }
 
-std::vector<std::string> HOGType::getGameList() const
+std::vector<std::string> ArchiveType_HOG_Descent::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Descent");
 	return vcGames;
 }
 
-ArchiveType::Certainty HOGType::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_HOG_Descent::isInstance(stream::input_sptr psArchive) const
 {
 	stream::pos lenArchive = psArchive->size();
 
@@ -90,19 +90,19 @@ ArchiveType::Certainty HOGType::isInstance(stream::input_sptr psArchive) const
 	return DefinitelyNo;
 }
 
-ArchivePtr HOGType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_HOG_Descent::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	psArchive->seekp(0, stream::start);
 	psArchive->write("DHF", 3);
-	return ArchivePtr(new HOGArchive(psArchive));
+	return ArchivePtr(new Archive_HOG_Descent(psArchive));
 }
 
-ArchivePtr HOGType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_HOG_Descent::open(stream::inout_sptr psArchive, SuppData& suppData) const
 {
-	return ArchivePtr(new HOGArchive(psArchive));
+	return ArchivePtr(new Archive_HOG_Descent(psArchive));
 }
 
-SuppFilenames HOGType::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_HOG_Descent::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -110,7 +110,7 @@ SuppFilenames HOGType::getRequiredSupps(stream::input_sptr data,
 }
 
 
-HOGArchive::HOGArchive(stream::inout_sptr psArchive)
+Archive_HOG_Descent::Archive_HOG_Descent(stream::inout_sptr psArchive)
 	:	FATArchive(psArchive, HOG_FIRST_FILE_OFFSET, HOG_MAX_FILENAME_LEN)
 {
 	stream::pos lenArchive = this->psArchive->size();
@@ -156,11 +156,11 @@ HOGArchive::HOGArchive(stream::inout_sptr psArchive)
 	}
 }
 
-HOGArchive::~HOGArchive()
+Archive_HOG_Descent::~Archive_HOG_Descent()
 {
 }
 
-void HOGArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+void Archive_HOG_Descent::updateFileName(const FATEntry *pid, const std::string& strNewName)
 {
 	// TESTED BY: fmt_hog_descent_rename
 	assert(strNewName.length() <= HOG_MAX_FILENAME_LEN);
@@ -169,7 +169,7 @@ void HOGArchive::updateFileName(const FATEntry *pid, const std::string& strNewNa
 	return;
 }
 
-void HOGArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+void Archive_HOG_Descent::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 {
 	// This format doesn't have any offsets that need updating.  As this function
 	// is only called when removing a file, the "offsets" will be sorted out
@@ -177,7 +177,7 @@ void HOGArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 	return;
 }
 
-void HOGArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+void Archive_HOG_Descent::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 {
 	// TESTED BY: fmt_hog_descent_insert*
 	// TESTED BY: fmt_hog_descent_resize*
@@ -186,7 +186,7 @@ void HOGArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 	return;
 }
 
-FATArchive::FATEntry *HOGArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+FATArchive::FATEntry *Archive_HOG_Descent::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_hog_descent_insert*
 	assert(pNewEntry->strName.length() <= HOG_MAX_FILENAME_LEN);

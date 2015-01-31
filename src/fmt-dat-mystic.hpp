@@ -30,11 +30,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// Mystic Towers .DAT format handler.
-class DAT_MysticType: virtual public ArchiveType
+class ArchiveType_DAT_Mystic: virtual public ArchiveType
 {
 	public:
-		DAT_MysticType();
-		virtual ~DAT_MysticType();
+		ArchiveType_DAT_Mystic();
+		virtual ~ArchiveType_DAT_Mystic();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;
@@ -51,11 +51,11 @@ class DAT_MysticType: virtual public ArchiveType
 };
 
 /// Mystic Towers .DAT archive instance.
-class DAT_MysticArchive: virtual public FATArchive
+class Archive_DAT_Mystic: virtual public FATArchive
 {
 	public:
-		DAT_MysticArchive(stream::inout_sptr psArchive);
-		virtual ~DAT_MysticArchive();
+		Archive_DAT_Mystic(stream::inout_sptr psArchive);
+		virtual ~Archive_DAT_Mystic();
 
 		virtual void updateFileName(const FATEntry *pid,
 			const std::string& strNewName);

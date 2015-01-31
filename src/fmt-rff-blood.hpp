@@ -31,11 +31,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// Blood .RFF format handler.
-class RFFType: virtual public ArchiveType
+class ArchiveType_RFF_Blood: virtual public ArchiveType
 {
 	public:
-		RFFType();
-		virtual ~RFFType();
+		ArchiveType_RFF_Blood();
+		virtual ~ArchiveType_RFF_Blood();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;
@@ -52,11 +52,11 @@ class RFFType: virtual public ArchiveType
 };
 
 /// Blood .RFF archive instance.
-class RFFArchive: virtual public FATArchive
+class Archive_RFF_Blood: virtual public FATArchive
 {
 	public:
-		RFFArchive(stream::inout_sptr psArchive);
-		virtual ~RFFArchive();
+		Archive_RFF_Blood(stream::inout_sptr psArchive);
+		virtual ~Archive_RFF_Blood();
 
 		virtual MetadataTypes getMetadataList() const;
 		virtual std::string getMetadata(MetadataType item) const;

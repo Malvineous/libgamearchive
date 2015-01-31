@@ -37,25 +37,25 @@ FixedArchiveFile da_file_list[] = {
 	{1152 * 9, 1152, "l10.dal",   FILTER_NONE, RESIZE_NONE},
 };
 
-DA_LevelsType::DA_LevelsType()
+ArchiveType_DA_Levels::ArchiveType_DA_Levels()
 {
 }
 
-DA_LevelsType::~DA_LevelsType()
+ArchiveType_DA_Levels::~ArchiveType_DA_Levels()
 {
 }
 
-std::string DA_LevelsType::getArchiveCode() const
+std::string ArchiveType_DA_Levels::getArchiveCode() const
 {
 	return "da-levels";
 }
 
-std::string DA_LevelsType::getFriendlyName() const
+std::string ArchiveType_DA_Levels::getFriendlyName() const
 {
 	return "Dark Ages levels";
 }
 
-std::vector<std::string> DA_LevelsType::getFileExtensions() const
+std::vector<std::string> ArchiveType_DA_Levels::getFileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("da1");
@@ -64,14 +64,14 @@ std::vector<std::string> DA_LevelsType::getFileExtensions() const
 	return vcExtensions;
 }
 
-std::vector<std::string> DA_LevelsType::getGameList() const
+std::vector<std::string> ArchiveType_DA_Levels::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Dark Ages");
 	return vcGames;
 }
 
-ArchiveType::Certainty DA_LevelsType::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_DA_Levels::isInstance(stream::input_sptr psArchive) const
 {
 	stream::pos lenArchive = psArchive->size();
 	if (lenArchive == 1152 * 10) {
@@ -80,13 +80,13 @@ ArchiveType::Certainty DA_LevelsType::isInstance(stream::input_sptr psArchive) c
 	return DefinitelyNo;
 }
 
-ArchivePtr DA_LevelsType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_DA_Levels::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	// This isn't a true archive so we can't create new versions of it.
 	throw stream::error("Can't create a new archive in this format.");
 }
 
-ArchivePtr DA_LevelsType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_DA_Levels::open(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	std::vector<FixedArchiveFile> files;
 	files.reserve(sizeof(da_file_list) / sizeof(FixedArchiveFile));
@@ -96,7 +96,7 @@ ArchivePtr DA_LevelsType::open(stream::inout_sptr psArchive, SuppData& suppData)
 	return createFixedArchive(psArchive, files);
 }
 
-SuppFilenames DA_LevelsType::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_DA_Levels::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list

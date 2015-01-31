@@ -88,11 +88,11 @@ class filter_z66_compress: virtual public filter
 };
 
 /// Zone 66 compression handler
-class Zone66FilterType: virtual public FilterType
+class FilterType_Zone66: virtual public FilterType
 {
 	public:
-		Zone66FilterType();
-		virtual ~Zone66FilterType();
+		FilterType_Zone66();
+		virtual ~FilterType_Zone66();
 
 		virtual std::string getFilterCode() const;
 		virtual std::string getFriendlyName() const;

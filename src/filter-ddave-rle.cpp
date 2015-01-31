@@ -219,32 +219,32 @@ void filter_ddave_rle::transform(uint8_t *out, stream::len *lenOut,
 }
 
 
-DDaveRLEFilterType::DDaveRLEFilterType()
+FilterType_DDaveRLE::FilterType_DDaveRLE()
 {
 }
 
-DDaveRLEFilterType::~DDaveRLEFilterType()
+FilterType_DDaveRLE::~FilterType_DDaveRLE()
 {
 }
 
-std::string DDaveRLEFilterType::getFilterCode() const
+std::string FilterType_DDaveRLE::getFilterCode() const
 {
 	return "rle-ddave";
 }
 
-std::string DDaveRLEFilterType::getFriendlyName() const
+std::string FilterType_DDaveRLE::getFriendlyName() const
 {
 	return "Dangerous Dave RLE";
 }
 
-std::vector<std::string> DDaveRLEFilterType::getGameList() const
+std::vector<std::string> FilterType_DDaveRLE::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Dangerous Dave");
 	return vcGames;
 }
 
-stream::inout_sptr DDaveRLEFilterType::apply(stream::inout_sptr target,
+stream::inout_sptr FilterType_DDaveRLE::apply(stream::inout_sptr target,
 	stream::fn_truncate resize) const
 {
 	stream::filtered_sptr st(new stream::filtered());
@@ -254,7 +254,7 @@ stream::inout_sptr DDaveRLEFilterType::apply(stream::inout_sptr target,
 	return st;
 }
 
-stream::input_sptr DDaveRLEFilterType::apply(stream::input_sptr target) const
+stream::input_sptr FilterType_DDaveRLE::apply(stream::input_sptr target) const
 {
 	stream::input_filtered_sptr st(new stream::input_filtered());
 	filter_sptr de(new filter_ddave_unrle());
@@ -262,7 +262,7 @@ stream::input_sptr DDaveRLEFilterType::apply(stream::input_sptr target) const
 	return st;
 }
 
-stream::output_sptr DDaveRLEFilterType::apply(stream::output_sptr target,
+stream::output_sptr FilterType_DDaveRLE::apply(stream::output_sptr target,
 	stream::fn_truncate resize) const
 {
 	stream::output_filtered_sptr st(new stream::output_filtered());

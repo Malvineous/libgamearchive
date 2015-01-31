@@ -27,11 +27,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// Monster Bash decompression filter.
-class BashFilterType: virtual public FilterType
+class FilterType_Bash: virtual public FilterType
 {
 	public:
-		BashFilterType();
-		~BashFilterType();
+		FilterType_Bash();
+		~FilterType_Bash();
 
 		virtual std::string getFilterCode() const;
 		virtual std::string getFriendlyName() const;

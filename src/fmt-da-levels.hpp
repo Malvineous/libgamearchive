@@ -27,11 +27,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// Dark Ages level format handler.
-class DA_LevelsType: virtual public ArchiveType
+class ArchiveType_DA_Levels: virtual public ArchiveType
 {
 	public:
-		DA_LevelsType();
-		virtual ~DA_LevelsType();
+		ArchiveType_DA_Levels();
+		virtual ~ArchiveType_DA_Levels();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;

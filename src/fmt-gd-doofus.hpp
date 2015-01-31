@@ -28,11 +28,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// Doofus .G-D format handler.
-class GD_DoofusType: virtual public ArchiveType
+class ArchiveType_GD_Doofus: virtual public ArchiveType
 {
 	public:
-		GD_DoofusType();
-		virtual ~GD_DoofusType();
+		ArchiveType_GD_Doofus();
+		virtual ~ArchiveType_GD_Doofus();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;
@@ -49,7 +49,7 @@ class GD_DoofusType: virtual public ArchiveType
 };
 
 /// Doofus .G-D archive instance.
-class GD_DoofusArchive: virtual public FATArchive
+class Archive_GD_Doofus: virtual public FATArchive
 {
 	protected:
 		stream::seg_sptr psFAT; ///< FAT stream (doofus.exe)
@@ -57,8 +57,8 @@ class GD_DoofusArchive: virtual public FATArchive
 		uint32_t numFiles;    ///< Current number of files in FAT
 
 	public:
-		GD_DoofusArchive(stream::inout_sptr psArchive, stream::inout_sptr psFAT);
-		virtual ~GD_DoofusArchive();
+		Archive_GD_Doofus(stream::inout_sptr psArchive, stream::inout_sptr psFAT);
+		virtual ~Archive_GD_Doofus();
 
 		virtual void flush();
 

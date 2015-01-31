@@ -28,11 +28,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// Hocus Pocus .DAT format handler.
-class DAT_HocusType: virtual public ArchiveType
+class ArchiveType_DAT_Hocus: virtual public ArchiveType
 {
 	public:
-		DAT_HocusType();
-		virtual ~DAT_HocusType();
+		ArchiveType_DAT_Hocus();
+		virtual ~ArchiveType_DAT_Hocus();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;
@@ -49,7 +49,7 @@ class DAT_HocusType: virtual public ArchiveType
 };
 
 /// Hocus Pocus .DAT archive instance.
-class DAT_HocusArchive: virtual public FATArchive
+class Archive_DAT_Hocus: virtual public FATArchive
 {
 	protected:
 		stream::seg_sptr psFAT; ///< FAT stream (hocus.exe)
@@ -57,8 +57,8 @@ class DAT_HocusArchive: virtual public FATArchive
 		uint32_t numFiles;    ///< Current number of files in FAT
 
 	public:
-		DAT_HocusArchive(stream::inout_sptr psArchive, stream::inout_sptr psFAT);
-		virtual ~DAT_HocusArchive();
+		Archive_DAT_Hocus(stream::inout_sptr psArchive, stream::inout_sptr psFAT);
+		virtual ~Archive_DAT_Hocus();
 
 		virtual void flush();
 

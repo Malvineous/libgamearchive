@@ -28,11 +28,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// The Incredible Machine resource format handler.
-class TIMResourceType: virtual public ArchiveType
+class ArchiveType_Resource_TIM: virtual public ArchiveType
 {
 	public:
-		TIMResourceType();
-		virtual ~TIMResourceType();
+		ArchiveType_Resource_TIM();
+		virtual ~ArchiveType_Resource_TIM();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;
@@ -49,14 +49,14 @@ class TIMResourceType: virtual public ArchiveType
 };
 
 /// The Incredible Machine resource archive instance.
-class TIMResourceArchive: virtual public FATArchive
+class Archive_Resource_TIM: virtual public FATArchive
 {
 	protected:
 		stream::seg_sptr psFAT;
 
 	public:
-		TIMResourceArchive(stream::inout_sptr psArchive, stream::inout_sptr psFAT);
-		virtual ~TIMResourceArchive();
+		Archive_Resource_TIM(stream::inout_sptr psArchive, stream::inout_sptr psFAT);
+		virtual ~Archive_Resource_TIM();
 
 		virtual void flush();
 

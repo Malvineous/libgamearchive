@@ -130,32 +130,32 @@ void filter_glb_encrypt::transform(uint8_t *out, stream::len *lenOut,
 }
 
 
-GLBFATFilterType::GLBFATFilterType()
+FilterType_GLB_Raptor_FAT::FilterType_GLB_Raptor_FAT()
 {
 }
 
-GLBFATFilterType::~GLBFATFilterType()
+FilterType_GLB_Raptor_FAT::~FilterType_GLB_Raptor_FAT()
 {
 }
 
-std::string GLBFATFilterType::getFilterCode() const
+std::string FilterType_GLB_Raptor_FAT::getFilterCode() const
 {
 	return "glb-raptor-fat";
 }
 
-std::string GLBFATFilterType::getFriendlyName() const
+std::string FilterType_GLB_Raptor_FAT::getFriendlyName() const
 {
 	return "Raptor GLB FAT encryption";
 }
 
-std::vector<std::string> GLBFATFilterType::getGameList() const
+std::vector<std::string> FilterType_GLB_Raptor_FAT::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Raptor");
 	return vcGames;
 }
 
-stream::inout_sptr GLBFATFilterType::apply(stream::inout_sptr target,
+stream::inout_sptr FilterType_GLB_Raptor_FAT::apply(stream::inout_sptr target,
 	stream::fn_truncate resize) const
 {
 	stream::filtered_sptr st(new stream::filtered());
@@ -167,7 +167,7 @@ stream::inout_sptr GLBFATFilterType::apply(stream::inout_sptr target,
 	return st;
 }
 
-stream::input_sptr GLBFATFilterType::apply(stream::input_sptr target) const
+stream::input_sptr FilterType_GLB_Raptor_FAT::apply(stream::input_sptr target) const
 {
 	stream::input_filtered_sptr st(new stream::input_filtered());
 	filter_sptr de(new filter_glb_decrypt(GLB_KEY, GLB_BLOCKLEN));
@@ -175,7 +175,7 @@ stream::input_sptr GLBFATFilterType::apply(stream::input_sptr target) const
 	return st;
 }
 
-stream::output_sptr GLBFATFilterType::apply(stream::output_sptr target,
+stream::output_sptr FilterType_GLB_Raptor_FAT::apply(stream::output_sptr target,
 	stream::fn_truncate resize) const
 {
 	stream::output_filtered_sptr st(new stream::output_filtered());
@@ -185,32 +185,32 @@ stream::output_sptr GLBFATFilterType::apply(stream::output_sptr target,
 }
 
 
-GLBFileFilterType::GLBFileFilterType()
+FilterType_GLB_Raptor_File::FilterType_GLB_Raptor_File()
 {
 }
 
-GLBFileFilterType::~GLBFileFilterType()
+FilterType_GLB_Raptor_File::~FilterType_GLB_Raptor_File()
 {
 }
 
-std::string GLBFileFilterType::getFilterCode() const
+std::string FilterType_GLB_Raptor_File::getFilterCode() const
 {
 	return "glb-raptor";
 }
 
-std::string GLBFileFilterType::getFriendlyName() const
+std::string FilterType_GLB_Raptor_File::getFriendlyName() const
 {
 	return "Raptor GLB file encryption";
 }
 
-std::vector<std::string> GLBFileFilterType::getGameList() const
+std::vector<std::string> FilterType_GLB_Raptor_File::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Raptor");
 	return vcGames;
 }
 
-stream::inout_sptr GLBFileFilterType::apply(stream::inout_sptr target,
+stream::inout_sptr FilterType_GLB_Raptor_File::apply(stream::inout_sptr target,
 	stream::fn_truncate resize) const
 {
 	stream::filtered_sptr st(new stream::filtered());
@@ -222,7 +222,7 @@ stream::inout_sptr GLBFileFilterType::apply(stream::inout_sptr target,
 	return st;
 }
 
-stream::input_sptr GLBFileFilterType::apply(stream::input_sptr target) const
+stream::input_sptr FilterType_GLB_Raptor_File::apply(stream::input_sptr target) const
 {
 	stream::input_filtered_sptr st(new stream::input_filtered());
 	filter_sptr de(new filter_glb_decrypt(GLB_KEY, 0));
@@ -230,7 +230,7 @@ stream::input_sptr GLBFileFilterType::apply(stream::input_sptr target) const
 	return st;
 }
 
-stream::output_sptr GLBFileFilterType::apply(stream::output_sptr target,
+stream::output_sptr FilterType_GLB_Raptor_File::apply(stream::output_sptr target,
 	stream::fn_truncate resize) const
 {
 	stream::output_filtered_sptr st(new stream::output_filtered());

@@ -91,30 +91,30 @@ uint8_t filter_xor_crypt::getKey()
 }
 
 
-XORFilterType::XORFilterType()
+FilterType_XOR::FilterType_XOR()
 {
 }
 
-XORFilterType::~XORFilterType()
+FilterType_XOR::~FilterType_XOR()
 {
 }
 
-std::string XORFilterType::getFilterCode() const
+std::string FilterType_XOR::getFilterCode() const
 {
 	return "xor-inc";
 }
 
-std::string XORFilterType::getFriendlyName() const
+std::string FilterType_XOR::getFriendlyName() const
 {
 	return "Incremental XOR encryption";
 }
 
-std::vector<std::string> XORFilterType::getGameList() const
+std::vector<std::string> FilterType_XOR::getGameList() const
 {
 	return std::vector<std::string>();
 }
 
-stream::inout_sptr XORFilterType::apply(stream::inout_sptr target,
+stream::inout_sptr FilterType_XOR::apply(stream::inout_sptr target,
 	stream::fn_truncate resize) const
 {
 	stream::filtered_sptr st(new stream::filtered());
@@ -126,7 +126,7 @@ stream::inout_sptr XORFilterType::apply(stream::inout_sptr target,
 	return st;
 }
 
-stream::input_sptr XORFilterType::apply(stream::input_sptr target) const
+stream::input_sptr FilterType_XOR::apply(stream::input_sptr target) const
 {
 	stream::input_filtered_sptr st(new stream::input_filtered());
 	filter_sptr de(new filter_xor_crypt(0, 0));
@@ -134,7 +134,7 @@ stream::input_sptr XORFilterType::apply(stream::input_sptr target) const
 	return st;
 }
 
-stream::output_sptr XORFilterType::apply(stream::output_sptr target,
+stream::output_sptr FilterType_XOR::apply(stream::output_sptr target,
 	stream::fn_truncate resize) const
 {
 	stream::output_filtered_sptr st(new stream::output_filtered());

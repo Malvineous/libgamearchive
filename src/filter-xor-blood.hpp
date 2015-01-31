@@ -40,11 +40,11 @@ class filter_rff_crypt: public filter_xor_crypt
 		virtual uint8_t getKey();
 };
 
-class RFFFilterType: virtual public FilterType
+class FilterType_RFF: virtual public FilterType
 {
 	public:
-		RFFFilterType();
-		~RFFFilterType();
+		FilterType_RFF();
+		~FilterType_RFF();
 
 		virtual std::string getFilterCode() const;
 		virtual std::string getFriendlyName() const;

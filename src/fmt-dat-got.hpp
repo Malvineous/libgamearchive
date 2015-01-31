@@ -30,11 +30,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// God of Thunder .DAT format handler.
-class DAT_GoTType: virtual public ArchiveType
+class ArchiveType_DAT_GoT: virtual public ArchiveType
 {
 	public:
-		DAT_GoTType();
-		virtual ~DAT_GoTType();
+		ArchiveType_DAT_GoT();
+		virtual ~ArchiveType_DAT_GoT();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;
@@ -51,11 +51,11 @@ class DAT_GoTType: virtual public ArchiveType
 };
 
 /// God of Thunder .DAT archive instance.
-class DAT_GoTArchive: virtual public FATArchive
+class Archive_DAT_GoT: virtual public FATArchive
 {
 	public:
-		DAT_GoTArchive(stream::inout_sptr psArchive);
-		virtual ~DAT_GoTArchive();
+		Archive_DAT_GoT(stream::inout_sptr psArchive);
+		virtual ~Archive_DAT_GoT();
 
 		virtual void flush();
 		virtual int getSupportedAttributes() const;

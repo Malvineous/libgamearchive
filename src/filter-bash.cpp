@@ -31,32 +31,32 @@
 namespace camoto {
 namespace gamearchive {
 
-BashFilterType::BashFilterType()
+FilterType_Bash::FilterType_Bash()
 {
 }
 
-BashFilterType::~BashFilterType()
+FilterType_Bash::~FilterType_Bash()
 {
 }
 
-std::string BashFilterType::getFilterCode() const
+std::string FilterType_Bash::getFilterCode() const
 {
 	return "lzw-bash";
 }
 
-std::string BashFilterType::getFriendlyName() const
+std::string FilterType_Bash::getFriendlyName() const
 {
 	return "Monster Bash compression";
 }
 
-std::vector<std::string> BashFilterType::getGameList() const
+std::vector<std::string> FilterType_Bash::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Monster Bash");
 	return vcGames;
 }
 
-stream::inout_sptr BashFilterType::apply(stream::inout_sptr target,
+stream::inout_sptr FilterType_Bash::apply(stream::inout_sptr target,
 	stream::fn_truncate resize) const
 {
 	stream::filtered_sptr st1(new stream::filtered());
@@ -89,7 +89,7 @@ stream::inout_sptr BashFilterType::apply(stream::inout_sptr target,
 	return st2;
 }
 
-stream::input_sptr BashFilterType::apply(stream::input_sptr target) const
+stream::input_sptr FilterType_Bash::apply(stream::input_sptr target) const
 {
 	stream::input_filtered_sptr st1(new stream::input_filtered());
 	filter_sptr f_delzw(new filter_lzw_decompress(
@@ -110,7 +110,7 @@ stream::input_sptr BashFilterType::apply(stream::input_sptr target) const
 	return st2;
 }
 
-stream::output_sptr BashFilterType::apply(stream::output_sptr target,
+stream::output_sptr FilterType_Bash::apply(stream::output_sptr target,
 	stream::fn_truncate resize) const
 {
 	stream::output_filtered_sptr st1(new stream::output_filtered());

@@ -37,32 +37,32 @@
 namespace camoto {
 namespace gamearchive {
 
-DAT_HugoType::DAT_HugoType()
+ArchiveType_DAT_Hugo::ArchiveType_DAT_Hugo()
 {
 }
 
-DAT_HugoType::~DAT_HugoType()
+ArchiveType_DAT_Hugo::~ArchiveType_DAT_Hugo()
 {
 }
 
-std::string DAT_HugoType::getArchiveCode() const
+std::string ArchiveType_DAT_Hugo::getArchiveCode() const
 {
 	return "dat-hugo";
 }
 
-std::string DAT_HugoType::getFriendlyName() const
+std::string ArchiveType_DAT_Hugo::getFriendlyName() const
 {
 	return "Hugo DAT File";
 }
 
-std::vector<std::string> DAT_HugoType::getFileExtensions() const
+std::vector<std::string> ArchiveType_DAT_Hugo::getFileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("dat");
 	return vcExtensions;
 }
 
-std::vector<std::string> DAT_HugoType::getGameList() const
+std::vector<std::string> ArchiveType_DAT_Hugo::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Hugo II, Whodunit?");
@@ -70,7 +70,7 @@ std::vector<std::string> DAT_HugoType::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty DAT_HugoType::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_DAT_Hugo::isInstance(stream::input_sptr psArchive) const
 {
 	stream::pos lenArchive = psArchive->size();
 
@@ -120,21 +120,21 @@ ArchiveType::Certainty DAT_HugoType::isInstance(stream::input_sptr psArchive) co
 	return DefinitelyYes;
 }
 
-ArchivePtr DAT_HugoType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_DAT_Hugo::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	// Return an empty file
-	return ArchivePtr(new DAT_HugoArchive(psArchive, stream::inout_sptr()));
+	return ArchivePtr(new Archive_DAT_Hugo(psArchive, stream::inout_sptr()));
 }
 
-ArchivePtr DAT_HugoType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_DAT_Hugo::open(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	if (suppData.find(SuppItem::FAT) != suppData.end()) {
-		return ArchivePtr(new DAT_HugoArchive(psArchive, suppData[SuppItem::FAT]));
+		return ArchivePtr(new Archive_DAT_Hugo(psArchive, suppData[SuppItem::FAT]));
 	}
-	return ArchivePtr(new DAT_HugoArchive(psArchive, stream::inout_sptr()));
+	return ArchivePtr(new Archive_DAT_Hugo(psArchive, stream::inout_sptr()));
 }
 
-SuppFilenames DAT_HugoType::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_DAT_Hugo::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
 {
 	// If this is 'scenery1.dat' then the rest of its data is in 'scenery2.dat'
@@ -156,7 +156,7 @@ SuppFilenames DAT_HugoType::getRequiredSupps(stream::input_sptr data,
 }
 
 
-DAT_HugoArchive::DAT_HugoArchive(stream::inout_sptr psArchive, stream::inout_sptr psFAT)
+Archive_DAT_Hugo::Archive_DAT_Hugo(stream::inout_sptr psArchive, stream::inout_sptr psFAT)
 	:	FATArchive(psArchive, DAT_FIRST_FILE_OFFSET, 0)
 {
 	stream::inout_sptr fatStream;
@@ -192,7 +192,7 @@ DAT_HugoArchive::DAT_HugoArchive(stream::inout_sptr psArchive, stream::inout_spt
 		int firstIndexInSecondArch = 0;
 		fatStream->seekg(0, stream::start);
 		for (unsigned int i = 0; i < numFiles; i++) {
-			DAT_HugoEntry *fatEntry = new DAT_HugoEntry();
+			FATEntry_Hugo *fatEntry = new FATEntry_Hugo();
 			EntryPtr ep(fatEntry);
 
 			// Read the data in from the FAT entry in the file
@@ -236,16 +236,16 @@ DAT_HugoArchive::DAT_HugoArchive(stream::inout_sptr psArchive, stream::inout_spt
 
 }
 
-DAT_HugoArchive::~DAT_HugoArchive()
+Archive_DAT_Hugo::~Archive_DAT_Hugo()
 {
 }
 
-void DAT_HugoArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+void Archive_DAT_Hugo::updateFileName(const FATEntry *pid, const std::string& strNewName)
 {
 	throw stream::error("This archive format has no filenames to rename!");
 }
 
-void DAT_HugoArchive::updateFileOffset(const FATEntry *pid,
+void Archive_DAT_Hugo::updateFileOffset(const FATEntry *pid,
 	stream::delta offDelta)
 {
 	// TESTED BY: fmt_dat_hugo_insert*
@@ -256,7 +256,7 @@ void DAT_HugoArchive::updateFileOffset(const FATEntry *pid,
 	return;
 }
 
-void DAT_HugoArchive::updateFileSize(const FATEntry *pid,
+void Archive_DAT_Hugo::updateFileSize(const FATEntry *pid,
 	stream::delta sizeDelta)
 {
 	// TESTED BY: fmt_dat_hugo_insert*
@@ -266,7 +266,7 @@ void DAT_HugoArchive::updateFileSize(const FATEntry *pid,
 	return;
 }
 
-FATArchive::FATEntry *DAT_HugoArchive::preInsertFile(
+FATArchive::FATEntry *Archive_DAT_Hugo::preInsertFile(
 	const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_dat_hugo_insert*
@@ -297,7 +297,7 @@ FATArchive::FATEntry *DAT_HugoArchive::preInsertFile(
 	return pNewEntry;
 }
 
-void DAT_HugoArchive::preRemoveFile(const FATEntry *pid)
+void Archive_DAT_Hugo::preRemoveFile(const FATEntry *pid)
 {
 	// TESTED BY: fmt_dat_hugo_remove*
 
@@ -318,9 +318,9 @@ void DAT_HugoArchive::preRemoveFile(const FATEntry *pid)
 	return;
 }
 
-FATArchive::FATEntry *DAT_HugoArchive::createNewFATEntry()
+FATArchive::FATEntry *Archive_DAT_Hugo::createNewFATEntry()
 {
-	return new DAT_HugoEntry();
+	return new FATEntry_Hugo();
 }
 
 } // namespace gamearchive

@@ -28,11 +28,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// Duke Nukem 3D .GRP format handler.
-class GRPType: virtual public ArchiveType
+class ArchiveType_GRP_Duke3D: virtual public ArchiveType
 {
 	public:
-		GRPType();
-		virtual ~GRPType();
+		ArchiveType_GRP_Duke3D();
+		virtual ~ArchiveType_GRP_Duke3D();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;
@@ -49,11 +49,11 @@ class GRPType: virtual public ArchiveType
 };
 
 /// Duke Nukem 3D .GRP archive instance.
-class GRPArchive: virtual public FATArchive
+class Archive_GRP_Duke3D: virtual public FATArchive
 {
 	public:
-		GRPArchive(stream::inout_sptr psArchive);
-		virtual ~GRPArchive();
+		Archive_GRP_Duke3D(stream::inout_sptr psArchive);
+		virtual ~Archive_GRP_Duke3D();
 
 		virtual void updateFileName(const FATEntry *pid,
 			const std::string& strNewName);

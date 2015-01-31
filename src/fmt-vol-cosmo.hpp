@@ -28,11 +28,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// Cosmo .VOL format handler.
-class VOLType: virtual public ArchiveType
+class ArchiveType_VOL_Cosmo: virtual public ArchiveType
 {
 	public:
-		VOLType();
-		virtual ~VOLType();
+		ArchiveType_VOL_Cosmo();
+		virtual ~ArchiveType_VOL_Cosmo();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;
@@ -49,11 +49,11 @@ class VOLType: virtual public ArchiveType
 };
 
 /// Cosmo .VOL archive instance.
-class VOLArchive: virtual public FATArchive
+class Archive_VOL_Cosmo: virtual public FATArchive
 {
 	public:
-		VOLArchive(stream::inout_sptr psArchive);
-		virtual ~VOLArchive();
+		Archive_VOL_Cosmo(stream::inout_sptr psArchive);
+		virtual ~Archive_VOL_Cosmo();
 
 		virtual void updateFileName(const FATEntry *pid,
 			const std::string& strNewName);

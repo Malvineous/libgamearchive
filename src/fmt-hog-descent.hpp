@@ -28,11 +28,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// Descent .HOG format handler.
-class HOGType: virtual public ArchiveType
+class ArchiveType_HOG_Descent: virtual public ArchiveType
 {
 	public:
-		HOGType();
-		virtual ~HOGType();
+		ArchiveType_HOG_Descent();
+		virtual ~ArchiveType_HOG_Descent();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;
@@ -49,11 +49,11 @@ class HOGType: virtual public ArchiveType
 };
 
 /// Descent .HOG archive instance.
-class HOGArchive: virtual public FATArchive
+class Archive_HOG_Descent: virtual public FATArchive
 {
 	public:
-		HOGArchive(stream::inout_sptr psArchive);
-		virtual ~HOGArchive();
+		Archive_HOG_Descent(stream::inout_sptr psArchive);
+		virtual ~Archive_HOG_Descent();
 
 		virtual void updateFileName(const FATEntry *pid,
 			const std::string& strNewName);

@@ -42,39 +42,39 @@
 namespace camoto {
 namespace gamearchive {
 
-PCXLibType::PCXLibType()
+ArchiveType_PCXLib::ArchiveType_PCXLib()
 {
 }
 
-PCXLibType::~PCXLibType()
+ArchiveType_PCXLib::~ArchiveType_PCXLib()
 {
 }
 
-std::string PCXLibType::getArchiveCode() const
+std::string ArchiveType_PCXLib::getArchiveCode() const
 {
 	return "pcxlib";
 }
 
-std::string PCXLibType::getFriendlyName() const
+std::string ArchiveType_PCXLib::getFriendlyName() const
 {
 	return "PCX Library (v2)";
 }
 
-std::vector<std::string> PCXLibType::getFileExtensions() const
+std::vector<std::string> ArchiveType_PCXLib::getFileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("pcl");
 	return vcExtensions;
 }
 
-std::vector<std::string> PCXLibType::getGameList() const
+std::vector<std::string> ArchiveType_PCXLib::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Word Rescue");
 	return vcGames;
 }
 
-ArchiveType::Certainty PCXLibType::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_PCXLib::isInstance(stream::input_sptr psArchive) const
 {
 	stream::pos lenArchive = psArchive->size();
 	// File too short to hold header
@@ -136,7 +136,7 @@ ArchiveType::Certainty PCXLibType::isInstance(stream::input_sptr psArchive) cons
 	return DefinitelyYes;
 }
 
-ArchivePtr PCXLibType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_PCXLib::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	psArchive->seekp(0, stream::start);
 	psArchive->write(
@@ -154,15 +154,15 @@ ArchivePtr PCXLibType::newArchive(stream::inout_sptr psArchive, SuppData& suppDa
 		"\x00\x00\x00\x00\x00\x00\x00\x00",
 		128);
 
-	return ArchivePtr(new PCXLibArchive(psArchive));
+	return ArchivePtr(new Archive_PCXLib(psArchive));
 }
 
-ArchivePtr PCXLibType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_PCXLib::open(stream::inout_sptr psArchive, SuppData& suppData) const
 {
-	return ArchivePtr(new PCXLibArchive(psArchive));
+	return ArchivePtr(new Archive_PCXLib(psArchive));
 }
 
-SuppFilenames PCXLibType::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_PCXLib::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -170,7 +170,7 @@ SuppFilenames PCXLibType::getRequiredSupps(stream::input_sptr data,
 }
 
 
-PCXLibArchive::PCXLibArchive(stream::inout_sptr psArchive)
+Archive_PCXLib::Archive_PCXLib(stream::inout_sptr psArchive)
 	:	FATArchive(psArchive, PCX_FIRST_FILE_OFFSET, PCX_MAX_FILENAME_LEN)
 {
 	stream::pos lenArchive = this->psArchive->size();
@@ -215,11 +215,11 @@ PCXLibArchive::PCXLibArchive(stream::inout_sptr psArchive)
 	}
 }
 
-PCXLibArchive::~PCXLibArchive()
+Archive_PCXLib::~Archive_PCXLib()
 {
 }
 
-void PCXLibArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+void Archive_PCXLib::updateFileName(const FATEntry *pid, const std::string& strNewName)
 {
 	// TESTED BY: fmt_pcxlib_rename
 	assert(strNewName.length() <= PCX_MAX_FILENAME_LEN);
@@ -239,7 +239,7 @@ void PCXLibArchive::updateFileName(const FATEntry *pid, const std::string& strNe
 	return;
 }
 
-void PCXLibArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+void Archive_PCXLib::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 {
 	// TESTED BY: fmt_pcxlib_insert*
 	// TESTED BY: fmt_pcxlib_resize*
@@ -248,7 +248,7 @@ void PCXLibArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta
 	return;
 }
 
-void PCXLibArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+void Archive_PCXLib::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 {
 	// TESTED BY: fmt_pcxlib_insert*
 	// TESTED BY: fmt_pcxlib_resize*
@@ -257,7 +257,7 @@ void PCXLibArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 	return;
 }
 
-FATArchive::FATEntry *PCXLibArchive::preInsertFile(const FATEntry *idBeforeThis,
+FATArchive::FATEntry *Archive_PCXLib::preInsertFile(const FATEntry *idBeforeThis,
 	FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_pcxlib_insert*
@@ -311,7 +311,7 @@ FATArchive::FATEntry *PCXLibArchive::preInsertFile(const FATEntry *idBeforeThis,
 	return pNewEntry;
 }
 
-void PCXLibArchive::preRemoveFile(const FATEntry *pid)
+void Archive_PCXLib::preRemoveFile(const FATEntry *pid)
 {
 	// TESTED BY: fmt_pcxlib_remove*
 
@@ -335,7 +335,7 @@ void PCXLibArchive::preRemoveFile(const FATEntry *pid)
 	return;
 }
 
-void PCXLibArchive::updateFileCount(uint32_t iNewCount)
+void Archive_PCXLib::updateFileCount(uint32_t iNewCount)
 {
 	// TESTED BY: fmt_pcxlib_insert*
 	// TESTED BY: fmt_pcxlib_remove*

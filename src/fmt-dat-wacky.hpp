@@ -28,11 +28,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// Wacky Wheels .DAT format handler.
-class DAT_WackyType: virtual public ArchiveType
+class ArchiveType_DAT_Wacky: virtual public ArchiveType
 {
 	public:
-		DAT_WackyType();
-		virtual ~DAT_WackyType();
+		ArchiveType_DAT_Wacky();
+		virtual ~ArchiveType_DAT_Wacky();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;
@@ -49,11 +49,11 @@ class DAT_WackyType: virtual public ArchiveType
 };
 
 /// Wacky Wheels .DAT archive instance.
-class DAT_WackyArchive: virtual public FATArchive
+class Archive_DAT_Wacky: virtual public FATArchive
 {
 	public:
-		DAT_WackyArchive(stream::inout_sptr psArchive);
-		virtual ~DAT_WackyArchive();
+		Archive_DAT_Wacky(stream::inout_sptr psArchive);
+		virtual ~Archive_DAT_Wacky();
 
 		virtual void updateFileName(const FATEntry *pid,
 			const std::string& strNewName);

@@ -28,11 +28,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// Raptor .GLB format handler.
-class GLBType: virtual public ArchiveType
+class ArchiveType_GLB_Raptor: virtual public ArchiveType
 {
 	public:
-		GLBType();
-		virtual ~GLBType();
+		ArchiveType_GLB_Raptor();
+		virtual ~ArchiveType_GLB_Raptor();
 
 		virtual std::string getArchiveCode() const;
 		virtual std::string getFriendlyName() const;
@@ -49,11 +49,11 @@ class GLBType: virtual public ArchiveType
 };
 
 /// Raptor .GLB archive instance.
-class GLBArchive: virtual public FATArchive
+class Archive_GLB_Raptor: virtual public FATArchive
 {
 	public:
-		GLBArchive(stream::inout_sptr psArchive);
-		virtual ~GLBArchive();
+		Archive_GLB_Raptor(stream::inout_sptr psArchive);
+		virtual ~Archive_GLB_Raptor();
 
 		virtual void flush();
 		virtual void updateFileName(const FATEntry *pid,

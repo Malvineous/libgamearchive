@@ -42,39 +42,39 @@
 namespace camoto {
 namespace gamearchive {
 
-PODType::PODType()
+ArchiveType_POD_TV::ArchiveType_POD_TV()
 {
 }
 
-PODType::~PODType()
+ArchiveType_POD_TV::~ArchiveType_POD_TV()
 {
 }
 
-std::string PODType::getArchiveCode() const
+std::string ArchiveType_POD_TV::getArchiveCode() const
 {
 	return "pod-tv";
 }
 
-std::string PODType::getFriendlyName() const
+std::string ArchiveType_POD_TV::getFriendlyName() const
 {
 	return "Terminal Velocity POD File";
 }
 
-std::vector<std::string> PODType::getFileExtensions() const
+std::vector<std::string> ArchiveType_POD_TV::getFileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("pod");
 	return vcExtensions;
 }
 
-std::vector<std::string> PODType::getGameList() const
+std::vector<std::string> ArchiveType_POD_TV::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Terminal Velocity");
 	return vcGames;
 }
 
-ArchiveType::Certainty PODType::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_POD_TV::isInstance(stream::input_sptr psArchive) const
 {
 	stream::pos lenArchive = psArchive->size();
 
@@ -128,21 +128,21 @@ ArchiveType::Certainty PODType::isInstance(stream::input_sptr psArchive) const
 	return DefinitelyYes;
 }
 
-ArchivePtr PODType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_POD_TV::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	psArchive->seekp(0, stream::start);
 	psArchive
 		<< u32le(0) // File count
 		<< nullPadded("Empty POD file", POD_DESCRIPTION_LEN);
-	return ArchivePtr(new PODArchive(psArchive));
+	return ArchivePtr(new Archive_POD_TV(psArchive));
 }
 
-ArchivePtr PODType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_POD_TV::open(stream::inout_sptr psArchive, SuppData& suppData) const
 {
-	return ArchivePtr(new PODArchive(psArchive));
+	return ArchivePtr(new Archive_POD_TV(psArchive));
 }
 
-SuppFilenames PODType::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_POD_TV::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -150,7 +150,7 @@ SuppFilenames PODType::getRequiredSupps(stream::input_sptr data,
 }
 
 
-PODArchive::PODArchive(stream::inout_sptr psArchive)
+Archive_POD_TV::Archive_POD_TV(stream::inout_sptr psArchive)
 	:	FATArchive(psArchive, POD_FIRST_FILE_OFFSET, POD_MAX_FILENAME_LEN)
 {
 	this->psArchive->seekg(0, stream::start);
@@ -177,11 +177,11 @@ PODArchive::PODArchive(stream::inout_sptr psArchive)
 	}
 }
 
-PODArchive::~PODArchive()
+Archive_POD_TV::~Archive_POD_TV()
 {
 }
 
-PODArchive::MetadataTypes PODArchive::getMetadataList() const
+Archive_POD_TV::MetadataTypes Archive_POD_TV::getMetadataList() const
 {
 	// TESTED BY: fmt_pod_tv_get_metadata_description
 	MetadataTypes m;
@@ -189,7 +189,7 @@ PODArchive::MetadataTypes PODArchive::getMetadataList() const
 	return m;
 }
 
-std::string PODArchive::getMetadata(MetadataType item) const
+std::string Archive_POD_TV::getMetadata(MetadataType item) const
 {
 	// TESTED BY: fmt_pod_tv_get_metadata_description
 	switch (item) {
@@ -208,7 +208,7 @@ std::string PODArchive::getMetadata(MetadataType item) const
 	}
 }
 
-void PODArchive::setMetadata(MetadataType item, const std::string& value)
+void Archive_POD_TV::setMetadata(MetadataType item, const std::string& value)
 {
 	// TESTED BY: fmt_pod_tv_set_metadata_description
 	// TESTED BY: fmt_pod_tv_new_to_initialstate
@@ -227,7 +227,7 @@ void PODArchive::setMetadata(MetadataType item, const std::string& value)
 	return;
 }
 
-void PODArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+void Archive_POD_TV::updateFileName(const FATEntry *pid, const std::string& strNewName)
 {
 	// TESTED BY: fmt_pod_tv_rename
 	assert(strNewName.length() <= POD_MAX_FILENAME_LEN);
@@ -236,7 +236,7 @@ void PODArchive::updateFileName(const FATEntry *pid, const std::string& strNewNa
 	return;
 }
 
-void PODArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+void Archive_POD_TV::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 {
 	// TESTED BY: fmt_pod_tv_insert*
 	// TESTED BY: fmt_pod_tv_resize*
@@ -245,7 +245,7 @@ void PODArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 	return;
 }
 
-void PODArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+void Archive_POD_TV::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 {
 	// TESTED BY: fmt_pod_tv_insert*
 	// TESTED BY: fmt_pod_tv_resize*
@@ -254,7 +254,7 @@ void PODArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 	return;
 }
 
-FATArchive::FATEntry *PODArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+FATArchive::FATEntry *Archive_POD_TV::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_pod_tv_insert*
 	assert(pNewEntry->strName.length() <= POD_MAX_FILENAME_LEN);
@@ -288,7 +288,7 @@ FATArchive::FATEntry *PODArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	return pNewEntry;
 }
 
-void PODArchive::preRemoveFile(const FATEntry *pid)
+void Archive_POD_TV::preRemoveFile(const FATEntry *pid)
 {
 	// TESTED BY: fmt_pod_tv_remove*
 
@@ -312,7 +312,7 @@ void PODArchive::preRemoveFile(const FATEntry *pid)
 	return;
 }
 
-void PODArchive::updateFileCount(uint32_t iNewCount)
+void Archive_POD_TV::updateFileCount(uint32_t iNewCount)
 {
 	// TESTED BY: fmt_pod_tv_insert*
 	// TESTED BY: fmt_pod_tv_remove*

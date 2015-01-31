@@ -27,11 +27,11 @@ namespace camoto {
 namespace gamearchive {
 
 /// EPFS decompression filter.
-class EPFSFilterType: virtual public FilterType
+class FilterType_EPFS: virtual public FilterType
 {
 	public:
-		EPFSFilterType();
-		virtual ~EPFSFilterType();
+		FilterType_EPFS();
+		virtual ~FilterType_EPFS();
 
 		virtual std::string getFilterCode() const;
 		virtual std::string getFriendlyName() const;

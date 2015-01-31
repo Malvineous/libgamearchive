@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(read_fat)
 {
 	BOOST_TEST_MESSAGE("Decode some Raptor GLB-encoded FAT data");
 
-	GLBFATFilterType filter;
+	FilterType_GLB_Raptor_FAT filter;
 
 	BOOST_CHECK_MESSAGE(is_equal_read(&filter,
 		STRING_WITH_NULLS(
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(write_fat)
 {
 	BOOST_TEST_MESSAGE("Encode some FAT data using Raptor's GLB cipher");
 
-	GLBFATFilterType filter;
+	FilterType_GLB_Raptor_FAT filter;
 
 	BOOST_CHECK_MESSAGE(is_equal_write(&filter,
 		STRING_WITH_NULLS(
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE(read_file)
 {
 	BOOST_TEST_MESSAGE("Decode some Raptor GLB-encoded file data");
 
-	GLBFileFilterType filter;
+	FilterType_GLB_Raptor_File filter;
 
 	BOOST_CHECK_MESSAGE(is_equal_read(&filter,
 		STRING_WITH_NULLS(
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(write_file)
 {
 	BOOST_TEST_MESSAGE("Encode some file data using Raptor's GLB cipher");
 
-	GLBFileFilterType filter;
+	FilterType_GLB_Raptor_File filter;
 
 	BOOST_CHECK_MESSAGE(is_equal_write(&filter,
 		STRING_WITH_NULLS(

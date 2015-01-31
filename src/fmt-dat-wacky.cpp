@@ -43,39 +43,39 @@
 namespace camoto {
 namespace gamearchive {
 
-DAT_WackyType::DAT_WackyType()
+ArchiveType_DAT_Wacky::ArchiveType_DAT_Wacky()
 {
 }
 
-DAT_WackyType::~DAT_WackyType()
+ArchiveType_DAT_Wacky::~ArchiveType_DAT_Wacky()
 {
 }
 
-std::string DAT_WackyType::getArchiveCode() const
+std::string ArchiveType_DAT_Wacky::getArchiveCode() const
 {
 	return "dat-wacky";
 }
 
-std::string DAT_WackyType::getFriendlyName() const
+std::string ArchiveType_DAT_Wacky::getFriendlyName() const
 {
 	return "Wacky Wheels DAT File";
 }
 
-std::vector<std::string> DAT_WackyType::getFileExtensions() const
+std::vector<std::string> ArchiveType_DAT_Wacky::getFileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("dat");
 	return vcExtensions;
 }
 
-std::vector<std::string> DAT_WackyType::getGameList() const
+std::vector<std::string> ArchiveType_DAT_Wacky::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Wacky Wheels");
 	return vcGames;
 }
 
-ArchiveType::Certainty DAT_WackyType::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_DAT_Wacky::isInstance(stream::input_sptr psArchive) const
 {
 	stream::pos lenArchive = psArchive->size();
 	// TESTED BY: fmt_dat_wacky_isinstance_c02
@@ -122,19 +122,19 @@ ArchiveType::Certainty DAT_WackyType::isInstance(stream::input_sptr psArchive) c
 	return DefinitelyYes;
 }
 
-ArchivePtr DAT_WackyType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_DAT_Wacky::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	psArchive->seekp(0, stream::start);
 	psArchive << u16le(0); // file count
-	return ArchivePtr(new DAT_WackyArchive(psArchive));
+	return ArchivePtr(new Archive_DAT_Wacky(psArchive));
 }
 
-ArchivePtr DAT_WackyType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_DAT_Wacky::open(stream::inout_sptr psArchive, SuppData& suppData) const
 {
-	return ArchivePtr(new DAT_WackyArchive(psArchive));
+	return ArchivePtr(new Archive_DAT_Wacky(psArchive));
 }
 
-SuppFilenames DAT_WackyType::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_DAT_Wacky::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -142,7 +142,7 @@ SuppFilenames DAT_WackyType::getRequiredSupps(stream::input_sptr data,
 }
 
 
-DAT_WackyArchive::DAT_WackyArchive(stream::inout_sptr psArchive)
+Archive_DAT_Wacky::Archive_DAT_Wacky(stream::inout_sptr psArchive)
 	:	FATArchive(psArchive, DAT_FIRST_FILE_OFFSET, DAT_MAX_FILENAME_LEN)
 {
 	stream::pos lenArchive = this->psArchive->size();
@@ -181,11 +181,11 @@ DAT_WackyArchive::DAT_WackyArchive(stream::inout_sptr psArchive)
 
 }
 
-DAT_WackyArchive::~DAT_WackyArchive()
+Archive_DAT_Wacky::~Archive_DAT_Wacky()
 {
 }
 
-void DAT_WackyArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+void Archive_DAT_Wacky::updateFileName(const FATEntry *pid, const std::string& strNewName)
 {
 	// TESTED BY: fmt_dat_wacky_rename
 	assert(strNewName.length() <= DAT_MAX_FILENAME_LEN);
@@ -194,7 +194,7 @@ void DAT_WackyArchive::updateFileName(const FATEntry *pid, const std::string& st
 	return;
 }
 
-void DAT_WackyArchive::updateFileOffset(const FATEntry *pid,
+void Archive_DAT_Wacky::updateFileOffset(const FATEntry *pid,
 	stream::delta offDelta
 )
 {
@@ -209,7 +209,7 @@ void DAT_WackyArchive::updateFileOffset(const FATEntry *pid,
 	return;
 }
 
-void DAT_WackyArchive::updateFileSize(const FATEntry *pid,
+void Archive_DAT_Wacky::updateFileSize(const FATEntry *pid,
 	stream::delta sizeDelta
 )
 {
@@ -220,7 +220,7 @@ void DAT_WackyArchive::updateFileSize(const FATEntry *pid,
 	return;
 }
 
-FATArchive::FATEntry *DAT_WackyArchive::preInsertFile(
+FATArchive::FATEntry *Archive_DAT_Wacky::preInsertFile(
 	const FATEntry *idBeforeThis, FATEntry *pNewEntry
 )
 {
@@ -258,7 +258,7 @@ FATArchive::FATEntry *DAT_WackyArchive::preInsertFile(
 	return pNewEntry;
 }
 
-void DAT_WackyArchive::preRemoveFile(const FATEntry *pid)
+void Archive_DAT_Wacky::preRemoveFile(const FATEntry *pid)
 {
 	// TESTED BY: fmt_dat_wacky_remove*
 
@@ -280,7 +280,7 @@ void DAT_WackyArchive::preRemoveFile(const FATEntry *pid)
 	return;
 }
 
-void DAT_WackyArchive::updateFileCount(uint32_t iNewCount)
+void Archive_DAT_Wacky::updateFileCount(uint32_t iNewCount)
 {
 	// TESTED BY: fmt_dat_wacky_insert*
 	// TESTED BY: fmt_dat_wacky_remove*

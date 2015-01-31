@@ -45,32 +45,32 @@
 namespace camoto {
 namespace gamearchive {
 
-GRPType::GRPType()
+ArchiveType_GRP_Duke3D::ArchiveType_GRP_Duke3D()
 {
 }
 
-GRPType::~GRPType()
+ArchiveType_GRP_Duke3D::~ArchiveType_GRP_Duke3D()
 {
 }
 
-std::string GRPType::getArchiveCode() const
+std::string ArchiveType_GRP_Duke3D::getArchiveCode() const
 {
 	return "grp-duke3d";
 }
 
-std::string GRPType::getFriendlyName() const
+std::string ArchiveType_GRP_Duke3D::getFriendlyName() const
 {
 	return "Duke Nukem 3D Group File";
 }
 
-std::vector<std::string> GRPType::getFileExtensions() const
+std::vector<std::string> ArchiveType_GRP_Duke3D::getFileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("grp");
 	return vcExtensions;
 }
 
-std::vector<std::string> GRPType::getGameList() const
+std::vector<std::string> ArchiveType_GRP_Duke3D::getGameList() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Duke Nukem 3D");
@@ -79,7 +79,7 @@ std::vector<std::string> GRPType::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty GRPType::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_GRP_Duke3D::isInstance(stream::input_sptr psArchive) const
 {
 	stream::pos lenArchive = psArchive->size();
 
@@ -99,19 +99,19 @@ ArchiveType::Certainty GRPType::isInstance(stream::input_sptr psArchive) const
 	return DefinitelyYes;
 }
 
-ArchivePtr GRPType::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_GRP_Duke3D::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
 {
 	psArchive->seekp(0, stream::start);
 	psArchive->write("KenSilverman\0\0\0\0", 16);
-	return ArchivePtr(new GRPArchive(psArchive));
+	return ArchivePtr(new Archive_GRP_Duke3D(psArchive));
 }
 
-ArchivePtr GRPType::open(stream::inout_sptr psArchive, SuppData& suppData) const
+ArchivePtr ArchiveType_GRP_Duke3D::open(stream::inout_sptr psArchive, SuppData& suppData) const
 {
-	return ArchivePtr(new GRPArchive(psArchive));
+	return ArchivePtr(new Archive_GRP_Duke3D(psArchive));
 }
 
-SuppFilenames GRPType::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_GRP_Duke3D::getRequiredSupps(stream::input_sptr data,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -119,7 +119,7 @@ SuppFilenames GRPType::getRequiredSupps(stream::input_sptr data,
 }
 
 
-GRPArchive::GRPArchive(stream::inout_sptr psArchive)
+Archive_GRP_Duke3D::Archive_GRP_Duke3D(stream::inout_sptr psArchive)
 	:	FATArchive(psArchive, GRP_FIRST_FILE_OFFSET, GRP_MAX_FILENAME_LEN)
 {
 	this->psArchive->seekg(GRP_FILECOUNT_OFFSET, stream::start); // skip "KenSilverman" sig
@@ -158,11 +158,11 @@ GRPArchive::GRPArchive(stream::inout_sptr psArchive)
 	}
 }
 
-GRPArchive::~GRPArchive()
+Archive_GRP_Duke3D::~Archive_GRP_Duke3D()
 {
 }
 
-void GRPArchive::updateFileName(const FATEntry *pid, const std::string& strNewName)
+void Archive_GRP_Duke3D::updateFileName(const FATEntry *pid, const std::string& strNewName)
 {
 	// TESTED BY: fmt_grp_duke3d_rename
 	assert(strNewName.length() <= GRP_MAX_FILENAME_LEN);
@@ -171,7 +171,7 @@ void GRPArchive::updateFileName(const FATEntry *pid, const std::string& strNewNa
 	return;
 }
 
-void GRPArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+void Archive_GRP_Duke3D::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 {
 	// This format doesn't have any offsets that need updating.  As this function
 	// is only called when removing a file, the "offsets" will be sorted out
@@ -179,7 +179,7 @@ void GRPArchive::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 	return;
 }
 
-void GRPArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+void Archive_GRP_Duke3D::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 {
 	// TESTED BY: fmt_grp_duke3d_insert*
 	// TESTED BY: fmt_grp_duke3d_resize*
@@ -188,7 +188,7 @@ void GRPArchive::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 	return;
 }
 
-FATArchive::FATEntry *GRPArchive::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+FATArchive::FATEntry *Archive_GRP_Duke3D::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_grp_duke3d_insert*
 	assert(pNewEntry->strName.length() <= GRP_MAX_FILENAME_LEN);
@@ -219,7 +219,7 @@ FATArchive::FATEntry *GRPArchive::preInsertFile(const FATEntry *idBeforeThis, FA
 	return pNewEntry;
 }
 
-void GRPArchive::preRemoveFile(const FATEntry *pid)
+void Archive_GRP_Duke3D::preRemoveFile(const FATEntry *pid)
 {
 	// TESTED BY: fmt_grp_duke3d_remove*
 
@@ -241,7 +241,7 @@ void GRPArchive::preRemoveFile(const FATEntry *pid)
 	return;
 }
 
-void GRPArchive::updateFileCount(uint32_t iNewCount)
+void Archive_GRP_Duke3D::updateFileCount(uint32_t iNewCount)
 {
 	// TESTED BY: fmt_grp_duke3d_insert*
 	// TESTED BY: fmt_grp_duke3d_remove*
