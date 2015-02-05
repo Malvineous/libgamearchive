@@ -29,6 +29,8 @@
 #define GD_FAT_FILESIZE_OFFSET   0
 #define GD_FAT_ENTRY_LEN         8
 
+#define GD_TYPE_MUSIC_TBSA  0x59EE
+
 namespace camoto {
 namespace gamearchive {
 
@@ -77,8 +79,12 @@ ArchivePtr ArchiveType_GD_Doofus::open(stream::inout_sptr psArchive, SuppData& s
 	stream::pos lenEXE = suppData[SuppItem::FAT]->size();
 	stream::pos offFAT, lenFAT;
 	switch (lenEXE) {
-		case 580994:
+		case 580994: // Only known version
 			offFAT = 0x015372;
+			lenFAT = 8 * 64;
+			break;
+		case 8 * 64:  // Test code
+			offFAT = 0;
 			lenFAT = 8 * 64;
 			break;
 		default:
@@ -117,19 +123,22 @@ Archive_GD_Doofus::Archive_GD_Doofus(stream::inout_sptr psArchive, stream::inout
 
 	stream::pos lenArchive = this->psArchive->size();
 
-	this->psFAT->seekg(0, stream::end);
-	this->maxFiles = this->psFAT->tellg() / GD_FAT_ENTRY_LEN;
+	this->maxFiles = this->psFAT->size() / GD_FAT_ENTRY_LEN;
 	this->psFAT->seekg(0, stream::start);
 
 	stream::len off = 0;
 	uint16_t type;
 	for (unsigned int i = 0; i < this->maxFiles; i++) {
 		FATEntry *pEntry = new FATEntry();
+		EntryPtr ep(pEntry);
+
 		pEntry->iIndex = i;
 		this->psFAT
 			>> u16le(pEntry->storedSize)
 			>> u16le(type)
 		;
+		if (pEntry->storedSize == 0) continue;
+
 		this->psFAT->seekg(4, stream::cur);
 		pEntry->lenHeader = 0;
 		switch (type) {
@@ -140,7 +149,7 @@ Archive_GD_Doofus::Archive_GD_Doofus(stream::inout_sptr psArchive, stream::inout
 			case 0x3F64: pEntry->type = "unknown/doofus-3f64"; break;
 			case 0x48BE: pEntry->type = "unknown/doofus-48be"; break;
 			case 0x43EE: pEntry->type = "unknown/doofus-43ee"; break;
-			case 0x59EE: pEntry->type = "music/tbsa"; break;
+			case GD_TYPE_MUSIC_TBSA: pEntry->type = "music/tbsa"; break;
 			default: pEntry->type = FILETYPE_GENERIC; break;
 		}
 		pEntry->fAttr = 0;
@@ -148,7 +157,7 @@ Archive_GD_Doofus::Archive_GD_Doofus(stream::inout_sptr psArchive, stream::inout
 		pEntry->realSize = pEntry->storedSize;
 		pEntry->iOffset = off;
 		off += pEntry->storedSize;
-		this->vcFAT.push_back(EntryPtr(pEntry));
+		this->vcFAT.push_back(ep);
 
 		if (pEntry->iOffset + pEntry->storedSize > lenArchive) {
 			std::cerr << "G-D file has been truncated, file @" << i
@@ -190,7 +199,7 @@ void Archive_GD_Doofus::updateFileSize(const FATEntry *pid, stream::delta sizeDe
 {
 	// Update external FAT
 	this->psFAT->seekp(pid->iIndex * GD_FAT_ENTRY_LEN + GD_FAT_FILESIZE_OFFSET, stream::start);
-	this->psFAT << u32le(pid->storedSize);
+	this->psFAT << u16le(pid->storedSize);
 
 	return;
 }
@@ -206,15 +215,26 @@ FATArchive::FATEntry *Archive_GD_Doofus::preInsertFile(const FATEntry *idBeforeT
 	pNewEntry->lenHeader = 0;
 
 	// Remove the last (empty) entry in the FAT to keep the size fixed
-	this->psFAT->seekp(GD_FAT_ENTRY_LEN, stream::end);
+	this->psFAT->seekp(-GD_FAT_ENTRY_LEN, stream::end);
 	this->psFAT->remove(GD_FAT_ENTRY_LEN);
 
 	// Insert the new FAT entry
 	this->psFAT->seekp(pNewEntry->iIndex * GD_FAT_ENTRY_LEN, stream::start);
 	this->psFAT->insert(GD_FAT_ENTRY_LEN);
 
+	uint16_t type = 0;
+	if (pNewEntry->type.substr(0, 15).compare("unknown/doofus-") == 0) {
+		type = strtoul(pNewEntry->type.substr(15, 4).c_str(), NULL, 16);
+	} else if (pNewEntry->type.compare("music/tbsa") == 0) {
+		type = GD_TYPE_MUSIC_TBSA;
+	}
+
 	// Write out the file size
-	this->psFAT << u16le(pNewEntry->storedSize);
+	this->psFAT
+		<< u16le(pNewEntry->storedSize)
+		<< u16le(type)
+		<< nullPadded("", 4)
+	;
 
 	this->numFiles++;
 
