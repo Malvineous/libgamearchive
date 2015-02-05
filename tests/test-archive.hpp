@@ -285,6 +285,9 @@ class test_archive: public test_main
 		 */
 		unsigned int insertAttr;
 
+		/// File type of newly inserted files.  Defaults to FILETYPE_GENERIC.
+		std::string insertType;
+
 		/// Content of each file in the archive.
 		std::string content[4];
 

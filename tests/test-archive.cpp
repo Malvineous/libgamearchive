@@ -99,6 +99,7 @@ test_archive::test_archive()
 	this->filename_shortext = "TEST.A";
 	this->lenMaxFilename = 12;
 	this->insertAttr = EA_NONE;
+	this->insertType = FILETYPE_GENERIC;
 
 	this->content[0] = "This is one.dat";
 	this->content[1] = "This is two.dat";
@@ -544,7 +545,7 @@ void test_archive::test_insert_long()
 
 	BOOST_CHECK_THROW(
 		Archive::EntryPtr ep = this->pArchive->insert(epb, name,
-			this->content[0].length(), FILETYPE_GENERIC, this->insertAttr),
+			this->content[0].length(), this->insertType, this->insertAttr),
 		stream::error
 	);
 
@@ -561,7 +562,7 @@ void test_archive::test_insert_long()
 
 	BOOST_CHECK_NO_THROW(
 		Archive::EntryPtr ep = this->pArchive->insert(epb, name,
-			this->content[0].length(), FILETYPE_GENERIC, this->insertAttr)
+			this->content[0].length(), this->insertType, this->insertAttr)
 	);
 
 }
@@ -572,7 +573,7 @@ void test_archive::test_insert_end()
 
 	// Insert the file
 	Archive::EntryPtr ep = this->pArchive->insert(Archive::EntryPtr(),
-		this->filename[2], this->content[2].length(), FILETYPE_GENERIC,
+		this->filename[2], this->content[2].length(), this->insertType,
 		this->insertAttr);
 
 	// Make sure it went in ok
@@ -607,7 +608,7 @@ void test_archive::test_insert_mid()
 
 	// Insert the file
 	Archive::EntryPtr ep = this->pArchive->insert(epBefore, this->filename[2],
-		this->content[2].length(), FILETYPE_GENERIC, this->insertAttr);
+		this->content[2].length(), this->insertType, this->insertAttr);
 
 	// Make sure it went in ok
 	BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(ep),
@@ -638,7 +639,7 @@ void test_archive::test_insert2()
 
 	// Insert the file
 	Archive::EntryPtr ep1 = this->pArchive->insert(epBefore, this->filename[2],
-		this->content[2].length(), FILETYPE_GENERIC, this->insertAttr);
+		this->content[2].length(), this->insertType, this->insertAttr);
 
 	// Make sure it went in ok
 	BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(ep1),
@@ -657,7 +658,7 @@ void test_archive::test_insert2()
 
 	// Insert the file
 	Archive::EntryPtr ep2 = this->pArchive->insert(epBefore, this->filename[3],
-		this->content[3].length(), FILETYPE_GENERIC, this->insertAttr);
+		this->content[3].length(), this->insertType, this->insertAttr);
 
 	// Make sure it went in ok
 	BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(ep2),
@@ -723,7 +724,7 @@ void test_archive::test_insert_remove()
 
 	// Insert the file
 	Archive::EntryPtr ep = this->pArchive->insert(epBefore, this->filename[2],
-		this->content[2].length(), FILETYPE_GENERIC, this->insertAttr);
+		this->content[2].length(), this->insertType, this->insertAttr);
 
 	// Make sure it went in ok
 	BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(ep),
@@ -764,7 +765,7 @@ void test_archive::test_remove_insert()
 
 	// Insert the file
 	Archive::EntryPtr ep = this->pArchive->insert(epBefore, this->filename[2],
-		this->content[2].length(), FILETYPE_GENERIC, this->insertAttr);
+		this->content[2].length(), this->insertType, this->insertAttr);
 
 	// Make sure it went in ok
 	BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(ep),
@@ -925,7 +926,7 @@ void test_archive::test_remove_all_re_add()
 
 	// Add the files back again
 	epOne = this->pArchive->insert(Archive::EntryPtr(), this->filename[0],
-		this->content[0].length(), FILETYPE_GENERIC, this->insertAttr);
+		this->content[0].length(), this->insertType, this->insertAttr);
 
 	BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(epOne),
 		"Couldn't insert new file after removing all files");
@@ -939,7 +940,7 @@ void test_archive::test_remove_all_re_add()
 	pfsNew->flush();
 
 	epTwo = this->pArchive->insert(Archive::EntryPtr(), this->filename[1],
-		this->content[1].length(), FILETYPE_GENERIC, this->insertAttr);
+		this->content[1].length(), this->insertType, this->insertAttr);
 
 	BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(epTwo),
 		"Couldn't insert second new file after removing all files");
@@ -969,7 +970,7 @@ void test_archive::test_insert_zero_then_resize()
 
 	// Insert the file
 	Archive::EntryPtr ep = this->pArchive->insert(Archive::EntryPtr(),
-		this->filename[2], 0, FILETYPE_GENERIC, this->insertAttr);
+		this->filename[2], 0, this->insertType, this->insertAttr);
 
 	// Make sure it went in ok
 	BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(ep),
@@ -1092,7 +1093,7 @@ void test_archive::test_new_to_initialstate()
 
 	// Add the files to the new archive
 	Archive::EntryPtr epOne = this->pArchive->insert(Archive::EntryPtr(),
-		this->filename[0], this->content[0].length(), FILETYPE_GENERIC,
+		this->filename[0], this->content[0].length(), this->insertType,
 		this->insertAttr);
 
 	BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(epOne),
@@ -1105,7 +1106,7 @@ void test_archive::test_new_to_initialstate()
 	pfsNew->flush();
 
 	Archive::EntryPtr epTwo = pArchive->insert(Archive::EntryPtr(),
-		this->filename[1], this->content[1].length(), FILETYPE_GENERIC,
+		this->filename[1], this->content[1].length(), this->insertType,
 		this->insertAttr);
 
 	BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(epTwo),
@@ -1154,7 +1155,7 @@ void test_archive::test_new_manipulate_zero_length_files()
 
 	// Insert the file
 	Archive::EntryPtr ep3 = this->pArchive->insert(Archive::EntryPtr(),
-		this->filename[2], 0, FILETYPE_GENERIC, this->insertAttr);
+		this->filename[2], 0, this->insertType, this->insertAttr);
 
 	// Make sure it went in ok
 	BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(ep3),
@@ -1167,7 +1168,7 @@ void test_archive::test_new_manipulate_zero_length_files()
 	file3 = applyFilter(this->pArchive, ep3, file3);
 
 	Archive::EntryPtr ep1 = pArchive->insert(ep3, this->filename[0], 0,
-		FILETYPE_GENERIC, this->insertAttr);
+		this->insertType, this->insertAttr);
 
 	// Make sure it went in ok
 	BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(ep1),
@@ -1180,7 +1181,7 @@ void test_archive::test_new_manipulate_zero_length_files()
 	file1 = applyFilter(this->pArchive, ep1, file1);
 
 	Archive::EntryPtr ep2 = pArchive->insert(ep3, this->filename[1], 0,
-		FILETYPE_GENERIC, this->insertAttr);
+		this->insertType, this->insertAttr);
 
 	// Make sure it went in ok
 	BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(ep2),
