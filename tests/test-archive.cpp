@@ -411,7 +411,10 @@ boost::test_tools::predicate_result test_archive::is_supp_equal(
 	);
 	stream::string_sptr suppBase =
 		boost::dynamic_pointer_cast<stream::string>(this->suppData[type]);
-	return this->is_equal(strExpected, *(suppBase->str()));
+
+	// Use the supp's test-class' own comparison function, as this will use its
+	// preferred outputWidth value, which might be different to the main file's.
+	return this->suppResult[type]->is_equal(strExpected, *(suppBase->str()));
 }
 
 void test_archive::test_isinstance_others()
