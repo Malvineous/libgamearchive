@@ -98,6 +98,10 @@ ArchivePtr ArchiveType_DAT_Hocus::open(stream::inout_sptr psArchive, SuppData& s
 			offFAT = 0x01F1A4;
 			lenFAT = 8 * 652;
 			break;
+		case 8 * 16: // test code
+			offFAT = 0;
+			lenFAT = 8 * 16;
+			break;
 		default:
 			throw stream::error("Unknown file version");
 	}
@@ -140,17 +144,19 @@ Archive_DAT_Hocus::Archive_DAT_Hocus(stream::inout_sptr psArchive, stream::inout
 
 	for (unsigned int i = 0; i < this->maxFiles; i++) {
 		FATEntry *pEntry = new FATEntry();
+		EntryPtr ep(pEntry);
 		pEntry->iIndex = i;
 		this->psFAT
 			>> u32le(pEntry->iOffset)
 			>> u32le(pEntry->storedSize);
 		;
+		if ((pEntry->iOffset == 0) && (pEntry->storedSize == 0)) continue;
 		pEntry->lenHeader = 0;
 		pEntry->type = FILETYPE_GENERIC;
 		pEntry->fAttr = 0;
 		pEntry->bValid = true;
 		pEntry->realSize = pEntry->storedSize;
-		this->vcFAT.push_back(EntryPtr(pEntry));
+		this->vcFAT.push_back(ep);
 
 		if (pEntry->iOffset + pEntry->storedSize > lenArchive) {
 			std::cerr << "DAT file has been truncated, file @" << i
@@ -210,7 +216,7 @@ FATArchive::FATEntry *Archive_DAT_Hocus::preInsertFile(const FATEntry *idBeforeT
 	pNewEntry->lenHeader = 0;
 
 	// Remove the last (empty) entry in the FAT to keep the size fixed
-	this->psFAT->seekp(DAT_FAT_ENTRY_LEN, stream::end);
+	this->psFAT->seekp(-DAT_FAT_ENTRY_LEN, stream::end);
 	this->psFAT->remove(DAT_FAT_ENTRY_LEN);
 
 	// Insert the new FAT entry
