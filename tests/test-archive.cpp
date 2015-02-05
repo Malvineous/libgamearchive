@@ -90,6 +90,8 @@ test_archive::test_archive()
 		numInvalidContentTests(1),
 		numChangeMetadataTests(1)
 {
+	this->create = true;
+
 	this->filename[0] = "ONE.DAT";
 	this->filename[1] = "TWO.DAT";
 	this->filename[2] = "THREE.DAT";
@@ -160,9 +162,11 @@ void test_archive::addTests()
 	}
 
 	// Tests on new archives (in an empty state)
-	ADD_ARCH_TEST(true, &test_archive::test_new_isinstance);
-	ADD_ARCH_TEST(true, &test_archive::test_new_to_initialstate);
-	ADD_ARCH_TEST(true, &test_archive::test_new_manipulate_zero_length_files);
+	if (this->create) {
+		ADD_ARCH_TEST(true, &test_archive::test_new_isinstance);
+		ADD_ARCH_TEST(true, &test_archive::test_new_to_initialstate);
+		ADD_ARCH_TEST(true, &test_archive::test_new_manipulate_zero_length_files);
+	}
 
 	return;
 }

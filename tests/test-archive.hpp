@@ -244,6 +244,9 @@ class test_archive: public test_main
 		/// File type code for this format.
 		std::string type;
 
+		/// Can new instances of this format be created? (default is true)
+		bool create;
+
 		/// Any formats here identify us as an instance of that type, and it
 		/// cannot be avoided.
 		/**
