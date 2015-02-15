@@ -51,7 +51,7 @@ class ArchiveType_GRP_Duke3D: virtual public ArchiveType
 class Archive_GRP_Duke3D: virtual public FATArchive
 {
 	public:
-		Archive_GRP_Duke3D(std::shared_ptr<stream::inout> content);
+		Archive_GRP_Duke3D(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_GRP_Duke3D();
 
 		virtual void updateFileName(const FATEntry *pid,

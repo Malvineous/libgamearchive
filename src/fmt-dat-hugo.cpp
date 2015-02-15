@@ -160,9 +160,9 @@ SuppFilenames ArchiveType_DAT_Hugo::getRequiredSupps(stream::input& content,
 }
 
 
-Archive_DAT_Hugo::Archive_DAT_Hugo(std::shared_ptr<stream::inout> content,
+Archive_DAT_Hugo::Archive_DAT_Hugo(std::unique_ptr<stream::inout> content,
 	std::shared_ptr<stream::inout> psFAT)
-	:	FATArchive(content, DAT_FIRST_FILE_OFFSET, 0)
+	:	FATArchive(std::move(content), DAT_FIRST_FILE_OFFSET, 0)
 {
 	std::shared_ptr<stream::inout> fatStream;
 	if (psFAT) {

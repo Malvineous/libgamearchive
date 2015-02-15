@@ -51,7 +51,7 @@ class ArchiveType_DAT_Wacky: virtual public ArchiveType
 class Archive_DAT_Wacky: virtual public FATArchive
 {
 	public:
-		Archive_DAT_Wacky(std::shared_ptr<stream::inout> content);
+		Archive_DAT_Wacky(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_DAT_Wacky();
 
 		virtual void updateFileName(const FATEntry *pid,

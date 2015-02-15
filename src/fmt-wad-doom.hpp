@@ -51,7 +51,7 @@ class ArchiveType_WAD_Doom: virtual public ArchiveType
 class Archive_WAD_Doom: virtual public FATArchive
 {
 	public:
-		Archive_WAD_Doom(std::shared_ptr<stream::inout> content);
+		Archive_WAD_Doom(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_WAD_Doom();
 
 		virtual MetadataTypes getMetadataList() const;

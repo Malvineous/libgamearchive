@@ -119,8 +119,8 @@ SuppFilenames ArchiveType_DLT_Stargunner::getRequiredSupps(stream::input& conten
 }
 
 
-Archive_DLT_Stargunner::Archive_DLT_Stargunner(std::shared_ptr<stream::inout> content)
-	:	FATArchive(content, DLT_FIRST_FILE_OFFSET, DLT_MAX_FILENAME_LEN)
+Archive_DLT_Stargunner::Archive_DLT_Stargunner(std::unique_ptr<stream::inout> content)
+	:	FATArchive(std::move(content), DLT_FIRST_FILE_OFFSET, DLT_MAX_FILENAME_LEN)
 {
 	this->content->seekg(4, stream::start); // skip "DAVE" sig
 

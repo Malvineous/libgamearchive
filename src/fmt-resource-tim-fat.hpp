@@ -51,7 +51,7 @@ class ArchiveType_Resource_TIM_FAT: virtual public ArchiveType
 class Archive_Resource_TIM_FAT: virtual public FATArchive
 {
 	public:
-		Archive_Resource_TIM_FAT(std::shared_ptr<stream::inout> content);
+		Archive_Resource_TIM_FAT(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_Resource_TIM_FAT();
 
 		virtual void updateFileName(const FATEntry *pid,

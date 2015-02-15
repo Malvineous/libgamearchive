@@ -55,7 +55,8 @@ class Archive_BNK_Harry: virtual public FATArchive
 		bool isAC;  // true == Alien Carnage, false == Halloween Harry
 
 	public:
-		Archive_BNK_Harry(std::shared_ptr<stream::inout> content, std::shared_ptr<stream::inout> psFAT);
+		Archive_BNK_Harry(std::unique_ptr<stream::inout> content,
+			std::shared_ptr<stream::inout> psFAT);
 		virtual ~Archive_BNK_Harry();
 
 		virtual void flush();

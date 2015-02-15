@@ -51,7 +51,7 @@ class ArchiveType_RES_Stellar7: virtual public ArchiveType
 class Archive_RES_Stellar7_Folder: virtual public FATArchive
 {
 	public:
-		Archive_RES_Stellar7_Folder(std::shared_ptr<stream::inout> content);
+		Archive_RES_Stellar7_Folder(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_RES_Stellar7_Folder();
 
 		virtual std::unique_ptr<Archive> openFolder(const FileHandle& id);

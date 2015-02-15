@@ -53,7 +53,7 @@ class ArchiveType_DAT_Mystic: virtual public ArchiveType
 class Archive_DAT_Mystic: virtual public FATArchive
 {
 	public:
-		Archive_DAT_Mystic(std::shared_ptr<stream::inout> content);
+		Archive_DAT_Mystic(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_DAT_Mystic();
 
 		virtual void updateFileName(const FATEntry *pid,

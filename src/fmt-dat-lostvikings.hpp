@@ -51,7 +51,7 @@ class ArchiveType_DAT_LostVikings: virtual public ArchiveType
 class Archive_DAT_LostVikings: virtual public FATArchive
 {
 	public:
-		Archive_DAT_LostVikings(std::shared_ptr<stream::inout> content);
+		Archive_DAT_LostVikings(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_DAT_LostVikings();
 
 		virtual void updateFileName(const FATEntry *pid,

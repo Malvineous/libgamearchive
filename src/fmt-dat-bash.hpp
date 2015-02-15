@@ -51,7 +51,7 @@ class ArchiveType_DAT_Bash: virtual public ArchiveType
 class Archive_DAT_Bash: virtual public FATArchive
 {
 	public:
-		Archive_DAT_Bash(std::shared_ptr<stream::inout> content);
+		Archive_DAT_Bash(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_DAT_Bash();
 
 		// As per Archive (see there for docs)

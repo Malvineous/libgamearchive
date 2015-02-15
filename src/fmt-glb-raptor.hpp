@@ -51,7 +51,7 @@ class ArchiveType_GLB_Raptor: virtual public ArchiveType
 class Archive_GLB_Raptor: virtual public FATArchive
 {
 	public:
-		Archive_GLB_Raptor(std::shared_ptr<stream::inout> content);
+		Archive_GLB_Raptor(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_GLB_Raptor();
 
 		virtual void flush();

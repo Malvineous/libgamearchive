@@ -54,7 +54,7 @@ class Archive_EPF_LionKing: virtual public FATArchive
 		stream::pos offFAT;  ///< Offset of the FAT from the start of the file
 
 	public:
-		Archive_EPF_LionKing(std::shared_ptr<stream::inout> content);
+		Archive_EPF_LionKing(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_EPF_LionKing();
 
 		virtual int getSupportedAttributes() const;

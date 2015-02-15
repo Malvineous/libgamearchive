@@ -50,7 +50,7 @@ class ArchiveType_DAT_Sango: virtual public ArchiveType
 /// Sango Fighter .DAT archive instance.
 class Archive_DAT_Sango: virtual public FATArchive {
 	public:
-		Archive_DAT_Sango(std::shared_ptr<stream::inout> content);
+		Archive_DAT_Sango(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_DAT_Sango();
 
 		virtual void updateFileName(const FATEntry *pid,

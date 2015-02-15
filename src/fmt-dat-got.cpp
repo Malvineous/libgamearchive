@@ -175,12 +175,12 @@ SuppFilenames ArchiveType_DAT_GoT::getRequiredSupps(stream::input& content,
 }
 
 
-Archive_DAT_GoT::Archive_DAT_GoT(std::shared_ptr<stream::inout> content)
-	:	FATArchive(content, GOT_FIRST_FILE_OFFSET, GOT_MAX_FILENAME_LEN)
+Archive_DAT_GoT::Archive_DAT_GoT(std::unique_ptr<stream::inout> content)
+	:	FATArchive(std::move(content), GOT_FIRST_FILE_OFFSET, GOT_MAX_FILENAME_LEN)
 {
 	// Create a substream to decrypt the FAT
 	this->fatSubStream = std::make_shared<stream::sub>(
-		content,
+		this->content,
 		0,
 		GOT_MAX_FILES * GOT_FAT_ENTRY_LEN,
 		boost::bind<void>(&Archive_DAT_GoT::truncateFAT, this, _2)

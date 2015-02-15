@@ -130,8 +130,8 @@ SuppFilenames ArchiveType_RFF_Blood::getRequiredSupps(stream::input& content,
 }
 
 
-Archive_RFF_Blood::Archive_RFF_Blood(std::shared_ptr<stream::inout> content)
-	:	FATArchive(content, RFF_FIRST_FILE_OFFSET, ARCH_STD_DOS_FILENAMES),
+Archive_RFF_Blood::Archive_RFF_Blood(std::unique_ptr<stream::inout> content)
+	:	FATArchive(std::move(content), RFF_FIRST_FILE_OFFSET, ARCH_STD_DOS_FILENAMES),
 		modifiedFAT(false)
 {
 	stream::pos lenArchive = this->content->size();

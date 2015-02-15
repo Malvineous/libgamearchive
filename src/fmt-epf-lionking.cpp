@@ -134,8 +134,8 @@ SuppFilenames ArchiveType_EPF_LionKing::getRequiredSupps(stream::input& content,
 }
 
 
-Archive_EPF_LionKing::Archive_EPF_LionKing(std::shared_ptr<stream::inout> content)
-	:	FATArchive(content, EPF_FIRST_FILE_OFFSET, EPF_MAX_FILENAME_LEN)
+Archive_EPF_LionKing::Archive_EPF_LionKing(std::unique_ptr<stream::inout> content)
+	:	FATArchive(std::move(content), EPF_FIRST_FILE_OFFSET, EPF_MAX_FILENAME_LEN)
 {
 	stream::pos lenArchive = this->content->size();
 

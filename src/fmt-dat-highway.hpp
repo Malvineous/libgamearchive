@@ -51,7 +51,7 @@ class ArchiveType_DAT_Highway: virtual public ArchiveType
 class Archive_DAT_Highway: virtual public FATArchive
 {
 	public:
-		Archive_DAT_Highway(std::shared_ptr<stream::inout> content);
+		Archive_DAT_Highway(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_DAT_Highway();
 
 		virtual void updateFileName(const FATEntry *pid,

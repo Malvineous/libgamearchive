@@ -53,7 +53,7 @@ class ArchiveType_DAT_GoT: virtual public ArchiveType
 class Archive_DAT_GoT: virtual public FATArchive
 {
 	public:
-		Archive_DAT_GoT(std::shared_ptr<stream::inout> content);
+		Archive_DAT_GoT(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_DAT_GoT();
 
 		virtual void flush();

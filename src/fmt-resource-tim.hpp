@@ -54,7 +54,8 @@ class Archive_Resource_TIM: virtual public FATArchive
 		std::shared_ptr<stream::seg> psFAT;
 
 	public:
-		Archive_Resource_TIM(std::shared_ptr<stream::inout> content, std::shared_ptr<stream::inout> psFAT);
+		Archive_Resource_TIM(std::unique_ptr<stream::inout> content,
+			std::shared_ptr<stream::inout> psFAT);
 		virtual ~Archive_Resource_TIM();
 
 		virtual void flush();

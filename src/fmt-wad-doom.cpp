@@ -128,8 +128,8 @@ SuppFilenames ArchiveType_WAD_Doom::getRequiredSupps(stream::input& content,
 }
 
 
-Archive_WAD_Doom::Archive_WAD_Doom(std::shared_ptr<stream::inout> content)
-	:	FATArchive(content, WAD_FIRST_FILE_OFFSET, WAD_MAX_FILENAME_LEN)
+Archive_WAD_Doom::Archive_WAD_Doom(std::unique_ptr<stream::inout> content)
+	:	FATArchive(std::move(content), WAD_FIRST_FILE_OFFSET, WAD_MAX_FILENAME_LEN)
 {
 	this->content->seekg(4, stream::start); // skip sig
 

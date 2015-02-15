@@ -148,8 +148,8 @@ SuppFilenames ArchiveType_DAT_Mystic::getRequiredSupps(stream::input& content,
 }
 
 
-Archive_DAT_Mystic::Archive_DAT_Mystic(std::shared_ptr<stream::inout> content)
-	:	FATArchive(content, DAT_FIRST_FILE_OFFSET, ARCH_STD_DOS_FILENAMES),
+Archive_DAT_Mystic::Archive_DAT_Mystic(std::unique_ptr<stream::inout> content)
+	:	FATArchive(std::move(content), DAT_FIRST_FILE_OFFSET, ARCH_STD_DOS_FILENAMES),
 		uncommittedFiles(0)
 {
 	stream::pos lenArchive = this->content->size();

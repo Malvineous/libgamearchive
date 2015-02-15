@@ -145,8 +145,8 @@ SuppFilenames ArchiveType_DAT_Wacky::getRequiredSupps(stream::input& content,
 }
 
 
-Archive_DAT_Wacky::Archive_DAT_Wacky(std::shared_ptr<stream::inout> content)
-	:	FATArchive(content, DAT_FIRST_FILE_OFFSET, DAT_MAX_FILENAME_LEN)
+Archive_DAT_Wacky::Archive_DAT_Wacky(std::unique_ptr<stream::inout> content)
+	:	FATArchive(std::move(content), DAT_FIRST_FILE_OFFSET, DAT_MAX_FILENAME_LEN)
 {
 	stream::pos lenArchive = this->content->size();
 	if (lenArchive < DAT_FAT_OFFSET) {

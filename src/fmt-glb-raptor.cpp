@@ -137,8 +137,8 @@ SuppFilenames ArchiveType_GLB_Raptor::getRequiredSupps(stream::input& content,
 }
 
 
-Archive_GLB_Raptor::Archive_GLB_Raptor(std::shared_ptr<stream::inout> content)
-	:	FATArchive(content, GLB_FIRST_FILE_OFFSET, GLB_MAX_FILENAME_LEN)
+Archive_GLB_Raptor::Archive_GLB_Raptor(std::unique_ptr<stream::inout> content)
+	:	FATArchive(std::move(content), GLB_FIRST_FILE_OFFSET, GLB_MAX_FILENAME_LEN)
 {
 	FilterType_GLB_Raptor_FAT glbFilterType;
 	uint32_t numFiles;
@@ -146,7 +146,7 @@ Archive_GLB_Raptor::Archive_GLB_Raptor(std::shared_ptr<stream::inout> content)
 		// Decode just enough of the FAT to get the file count, so we know the size
 		// of the FAT
 		auto substrFAT = std::make_shared<stream::input_sub>(
-			content, 0, GLB_HEADER_LEN
+			this->content, 0, GLB_HEADER_LEN
 		);
 #ifdef GLB_CLEARTEXT
 		auto preFAT = substrFAT;
@@ -159,7 +159,7 @@ Archive_GLB_Raptor::Archive_GLB_Raptor(std::shared_ptr<stream::inout> content)
 
 	// Copy the FAT into memory and decode it
 	auto substrFAT = std::make_shared<stream::input_sub>(
-		content, 0, GLB_HEADER_LEN + numFiles * GLB_FAT_ENTRY_LEN
+		this->content, 0, GLB_HEADER_LEN + numFiles * GLB_FAT_ENTRY_LEN
 	);
 #ifdef GLB_CLEARTEXT
 		auto preFAT = substrFAT;

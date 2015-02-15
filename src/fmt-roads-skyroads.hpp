@@ -51,7 +51,7 @@ class ArchiveType_Roads_SkyRoads: virtual public ArchiveType
 class Archive_Roads_SkyRoads: virtual public FATArchive
 {
 	public:
-		Archive_Roads_SkyRoads(std::shared_ptr<stream::inout> content);
+		Archive_Roads_SkyRoads(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_Roads_SkyRoads();
 
 		virtual void updateFileName(const FATEntry *pid,

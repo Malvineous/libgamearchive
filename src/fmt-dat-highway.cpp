@@ -150,8 +150,8 @@ SuppFilenames ArchiveType_DAT_Highway::getRequiredSupps(stream::input& content,
 }
 
 
-Archive_DAT_Highway::Archive_DAT_Highway(std::shared_ptr<stream::inout> content)
-	:	FATArchive(content, DATHH_FIRST_FILE_OFFSET, DATHH_MAX_FILENAME_LEN)
+Archive_DAT_Highway::Archive_DAT_Highway(std::unique_ptr<stream::inout> content)
+	:	FATArchive(std::move(content), DATHH_FIRST_FILE_OFFSET, DATHH_MAX_FILENAME_LEN)
 {
 	uint16_t lenFAT;
 	this->content->seekg(DATHH_FATLEN_OFFSET, stream::start);

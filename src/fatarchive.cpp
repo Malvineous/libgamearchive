@@ -62,9 +62,9 @@ Archive::FileHandle DLL_EXPORT getFileAt(
 	return std::shared_ptr<Archive::File>();
 }
 
-FATArchive::FATArchive(std::shared_ptr<stream::inout> content,
+FATArchive::FATArchive(std::unique_ptr<stream::inout> content,
 	stream::pos offFirstFile, int lenMaxFilename)
-	:	content(std::make_shared<stream::seg>(content)),
+	:	content(std::make_shared<stream::seg>(std::move(content))),
 		offFirstFile(offFirstFile),
 		lenMaxFilename(lenMaxFilename)
 {

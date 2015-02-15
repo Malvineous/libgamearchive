@@ -50,7 +50,7 @@ class ArchiveType_LIB_Mythos: virtual public ArchiveType
 /// Mythos .LIB archive instance.
 class Archive_LIB_Mythos: virtual public FATArchive {
 	public:
-		Archive_LIB_Mythos(std::shared_ptr<stream::inout> content);
+		Archive_LIB_Mythos(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_LIB_Mythos();
 
 		virtual void updateFileName(const FATEntry *pid,

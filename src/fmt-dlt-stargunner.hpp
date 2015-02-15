@@ -51,7 +51,7 @@ class ArchiveType_DLT_Stargunner: virtual public ArchiveType
 class Archive_DLT_Stargunner: virtual public FATArchive
 {
 	public:
-		Archive_DLT_Stargunner(std::shared_ptr<stream::inout> content);
+		Archive_DLT_Stargunner(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_DLT_Stargunner();
 
 		virtual void updateFileName(const FATEntry *pid,

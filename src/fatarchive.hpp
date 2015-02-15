@@ -129,7 +129,7 @@ class FATArchive: virtual public Archive
 		 *
 		 * @throws stream::error on I/O error.
 		 */
-		FATArchive(std::shared_ptr<stream::inout> content, stream::pos offFirstFile,
+		FATArchive(std::unique_ptr<stream::inout> content, stream::pos offFirstFile,
 			int lenMaxFilename);
 
 	public:

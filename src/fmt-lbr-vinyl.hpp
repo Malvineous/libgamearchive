@@ -51,7 +51,7 @@ class ArchiveType_LBR_Vinyl: virtual public ArchiveType
 class Archive_LBR_Vinyl: virtual public FATArchive
 {
 	public:
-		Archive_LBR_Vinyl(std::shared_ptr<stream::inout> content);
+		Archive_LBR_Vinyl(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_LBR_Vinyl();
 
 		virtual void updateFileName(const FATEntry *pid,

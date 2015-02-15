@@ -128,9 +128,9 @@ SuppFilenames ArchiveType_BNK_Harry::getRequiredSupps(stream::input& content,
 }
 
 
-Archive_BNK_Harry::Archive_BNK_Harry(std::shared_ptr<stream::inout> content,
+Archive_BNK_Harry::Archive_BNK_Harry(std::unique_ptr<stream::inout> content,
 	std::shared_ptr<stream::inout> psFAT)
-	:	FATArchive(content, BNK_FIRST_FILE_OFFSET, BNK_MAX_FILENAME_LEN),
+	:	FATArchive(std::move(content), BNK_FIRST_FILE_OFFSET, BNK_MAX_FILENAME_LEN),
 		psFAT(std::make_shared<stream::seg>(psFAT)),
 		isAC(false) // TODO: detect and set this
 {

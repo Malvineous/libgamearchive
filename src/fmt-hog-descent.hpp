@@ -51,7 +51,7 @@ class ArchiveType_HOG_Descent: virtual public ArchiveType
 class Archive_HOG_Descent: virtual public FATArchive
 {
 	public:
-		Archive_HOG_Descent(std::shared_ptr<stream::inout> content);
+		Archive_HOG_Descent(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_HOG_Descent();
 
 		virtual void updateFileName(const FATEntry *pid,

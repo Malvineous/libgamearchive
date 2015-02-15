@@ -51,7 +51,7 @@ class ArchiveType_VOL_Cosmo: virtual public ArchiveType
 class Archive_VOL_Cosmo: virtual public FATArchive
 {
 	public:
-		Archive_VOL_Cosmo(std::shared_ptr<stream::inout> content);
+		Archive_VOL_Cosmo(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_VOL_Cosmo();
 
 		virtual void updateFileName(const FATEntry *pid,

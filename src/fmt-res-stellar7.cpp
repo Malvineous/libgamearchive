@@ -132,8 +132,9 @@ SuppFilenames ArchiveType_RES_Stellar7::getRequiredSupps(stream::input& content,
 }
 
 
-Archive_RES_Stellar7_Folder::Archive_RES_Stellar7_Folder(std::shared_ptr<stream::inout> content)
-	:	FATArchive(content, RES_FIRST_FILE_OFFSET, RES_MAX_FILENAME_LEN)
+Archive_RES_Stellar7_Folder::Archive_RES_Stellar7_Folder(
+	std::unique_ptr<stream::inout> content)
+	:	FATArchive(std::move(content), RES_FIRST_FILE_OFFSET, RES_MAX_FILENAME_LEN)
 {
 	stream::pos lenArchive = this->content->size();
 
@@ -181,17 +182,28 @@ Archive_RES_Stellar7_Folder::~Archive_RES_Stellar7_Folder()
 {
 }
 
-std::unique_ptr<Archive> Archive_RES_Stellar7_Folder::openFolder(const FileHandle& id)
+std::unique_ptr<Archive> Archive_RES_Stellar7_Folder::openFolder(
+	const FileHandle& id)
 {
 	// Make sure we're opening a folder
 	assert(id->fAttr & EA_FOLDER);
 
-	return std::make_unique<Archive_RES_Stellar7_Folder>(
-		this->open(id)
+	auto s = this->open(id);
+	// We need an std::unique_ptr here, so construct a substream around the
+	// shared pointer and use the substream as the unique_ptr.
+	auto unique = std::make_unique<stream::sub>(
+		s,
+		0,
+		s->size(),
+		[s](stream::output_sub* sub, stream::len newSize) {
+			s->truncate(newSize);
+		}
 	);
+	return std::make_unique<Archive_RES_Stellar7_Folder>(std::move(unique));
 }
 
-void Archive_RES_Stellar7_Folder::updateFileName(const FATEntry *pid, const std::string& strNewName)
+void Archive_RES_Stellar7_Folder::updateFileName(const FATEntry *pid,
+	const std::string& strNewName)
 {
 	// TESTED BY: fmt_res_stellar7_rename
 	assert(strNewName.length() <= RES_MAX_FILENAME_LEN);
@@ -200,7 +212,8 @@ void Archive_RES_Stellar7_Folder::updateFileName(const FATEntry *pid, const std:
 	return;
 }
 
-void Archive_RES_Stellar7_Folder::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+void Archive_RES_Stellar7_Folder::updateFileOffset(const FATEntry *pid,
+	stream::delta offDelta)
 {
 	// This format doesn't have any offsets that need updating.  As this function
 	// is only called when removing a file, the "offsets" will be sorted out
@@ -208,7 +221,8 @@ void Archive_RES_Stellar7_Folder::updateFileOffset(const FATEntry *pid, stream::
 	return;
 }
 
-void Archive_RES_Stellar7_Folder::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+void Archive_RES_Stellar7_Folder::updateFileSize(const FATEntry *pid,
+	stream::delta sizeDelta)
 {
 	// TESTED BY: fmt_res_stellar7_insert*
 	// TESTED BY: fmt_res_stellar7_resize*
@@ -217,7 +231,8 @@ void Archive_RES_Stellar7_Folder::updateFileSize(const FATEntry *pid, stream::de
 	return;
 }
 
-void Archive_RES_Stellar7_Folder::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+void Archive_RES_Stellar7_Folder::preInsertFile(const FATEntry *idBeforeThis,
+	FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_res_stellar7_insert*
 	assert(pNewEntry->strName.length() <= RES_MAX_FILENAME_LEN);

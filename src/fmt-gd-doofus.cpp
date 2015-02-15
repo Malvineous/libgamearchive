@@ -118,9 +118,9 @@ SuppFilenames ArchiveType_GD_Doofus::getRequiredSupps(stream::input& content,
 }
 
 
-Archive_GD_Doofus::Archive_GD_Doofus(std::shared_ptr<stream::inout> content,
+Archive_GD_Doofus::Archive_GD_Doofus(std::unique_ptr<stream::inout> content,
 	std::shared_ptr<stream::inout> psFAT)
-	:	FATArchive(content, GD_FIRST_FILE_OFFSET, 0),
+	:	FATArchive(std::move(content), GD_FIRST_FILE_OFFSET, 0),
 		psFAT(std::make_shared<stream::seg>(psFAT)),
 		numFiles(0)
 {

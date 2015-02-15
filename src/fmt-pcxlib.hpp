@@ -51,7 +51,7 @@ class ArchiveType_PCXLib: virtual public ArchiveType
 class Archive_PCXLib: virtual public FATArchive
 {
 	public:
-		Archive_PCXLib(std::shared_ptr<stream::inout> content);
+		Archive_PCXLib(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_PCXLib();
 
 		virtual void updateFileName(const FATEntry *pid,

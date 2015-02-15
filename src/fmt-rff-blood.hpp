@@ -54,7 +54,7 @@ class ArchiveType_RFF_Blood: virtual public ArchiveType
 class Archive_RFF_Blood: virtual public FATArchive
 {
 	public:
-		Archive_RFF_Blood(std::shared_ptr<stream::inout> content);
+		Archive_RFF_Blood(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_RFF_Blood();
 
 		virtual MetadataTypes getMetadataList() const;

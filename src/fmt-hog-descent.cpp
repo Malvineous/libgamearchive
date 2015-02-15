@@ -113,8 +113,8 @@ SuppFilenames ArchiveType_HOG_Descent::getRequiredSupps(stream::input& content,
 }
 
 
-Archive_HOG_Descent::Archive_HOG_Descent(std::shared_ptr<stream::inout> content)
-	:	FATArchive(content, HOG_FIRST_FILE_OFFSET, HOG_MAX_FILENAME_LEN)
+Archive_HOG_Descent::Archive_HOG_Descent(std::unique_ptr<stream::inout> content)
+	:	FATArchive(std::move(content), HOG_FIRST_FILE_OFFSET, HOG_MAX_FILENAME_LEN)
 {
 	stream::pos lenArchive = this->content->size();
 

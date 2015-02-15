@@ -56,7 +56,8 @@ class Archive_DAT_Hocus: virtual public FATArchive
 		uint32_t numFiles;    ///< Current number of files in FAT
 
 	public:
-		Archive_DAT_Hocus(std::shared_ptr<stream::inout> content, std::shared_ptr<stream::inout> psFAT);
+		Archive_DAT_Hocus(std::unique_ptr<stream::inout> content,
+			std::shared_ptr<stream::inout> psFAT);
 		virtual ~Archive_DAT_Hocus();
 
 		virtual void flush();

@@ -153,8 +153,8 @@ SuppFilenames ArchiveType_POD_TV::getRequiredSupps(stream::input& content,
 }
 
 
-Archive_POD_TV::Archive_POD_TV(std::shared_ptr<stream::inout> content)
-	:	FATArchive(content, POD_FIRST_FILE_OFFSET, POD_MAX_FILENAME_LEN)
+Archive_POD_TV::Archive_POD_TV(std::unique_ptr<stream::inout> content)
+	:	FATArchive(std::move(content), POD_FIRST_FILE_OFFSET, POD_MAX_FILENAME_LEN)
 {
 	this->content->seekg(0, stream::start);
 	uint32_t numFiles;

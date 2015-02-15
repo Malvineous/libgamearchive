@@ -51,7 +51,7 @@ class ArchiveType_POD_TV: virtual public ArchiveType
 class Archive_POD_TV: virtual public FATArchive
 {
 	public:
-		Archive_POD_TV(std::shared_ptr<stream::inout> content);
+		Archive_POD_TV(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_POD_TV();
 
 		virtual MetadataTypes getMetadataList() const;

@@ -56,7 +56,8 @@ class Archive_GD_Doofus: virtual public FATArchive
 		uint32_t numFiles;    ///< Current number of files in FAT
 
 	public:
-		Archive_GD_Doofus(std::shared_ptr<stream::inout> content, std::shared_ptr<stream::inout> psFAT);
+		Archive_GD_Doofus(std::unique_ptr<stream::inout> content,
+			std::shared_ptr<stream::inout> psFAT);
 		virtual ~Archive_GD_Doofus();
 
 		virtual void flush();
