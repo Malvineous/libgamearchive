@@ -21,6 +21,7 @@
 #ifndef _CAMOTO_GAMEARCHIVE_TESTS_HPP_
 #define _CAMOTO_GAMEARCHIVE_TESTS_HPP_
 
+#include <memory>
 #include <boost/test/unit_test.hpp>
 #include <camoto/util.hpp>
 
@@ -52,17 +53,17 @@ class test_main
 template<class T>
 class suite_test_tmpl {
 	public:
-		boost::shared_ptr<T> test_results;
+		std::unique_ptr<T> test_results;
 
 		suite_test_tmpl(const std::string& basename)
+			:	test_results(std::make_unique<T>())
 		{
 			boost::unit_test::test_suite *ts
 				= BOOST_TEST_SUITE("test_" + basename);
-			this->test_results.reset(new T);
-			test_results->ts = ts;
-			test_results->basename = basename;
+			this->test_results->ts = ts;
+			this->test_results->basename = basename;
 
-			test_results->addTests();
+			this->test_results->addTests();
 			boost::unit_test::framework::master_test_suite().add(ts);
 		}
 };

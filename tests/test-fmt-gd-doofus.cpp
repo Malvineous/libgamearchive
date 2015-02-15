@@ -156,7 +156,7 @@ class test_gd_doofus: public test_archive
 			this->create = false;
 			this->lenMaxFilename = -1;
 			this->insertType = "music/tbsa";
-			this->suppResult[SuppItem::FAT].reset(new test_suppfat_gd_doofus());
+			this->suppResult[SuppItem::FAT] = std::make_unique<test_suppfat_gd_doofus>();
 		}
 
 		void addTests()
@@ -291,11 +291,9 @@ class test_gd_doofus: public test_archive
 				"Inserting file with known type wrote wrong filetype code"
 			);
 
+			auto supp = static_cast<test_suppfat_gd_doofus *>(this->suppResult[camoto::SuppItem::FAT].get());
 			BOOST_CHECK_MESSAGE(
-				this->is_supp_equal(camoto::SuppItem::FAT,
-					boost::static_pointer_cast<test_suppfat_gd_doofus>(
-						this->suppResult[camoto::SuppItem::FAT]
-					)->insert_unknown_type()),
+				this->is_supp_equal(camoto::SuppItem::FAT, supp->insert_unknown_type()),
 				"[SuppItem::FAT] Inserting file with known type wrote wrong filetype code"
 			);
 		}

@@ -156,6 +156,27 @@ class test_archive: public test_main
 		 */
 		void runTest(bool empty, boost::function<void()> fnTest);
 
+		/// Populate suppBase with default content.
+		/**
+		 * This may be called mid-test if the suppBase content should be reset to
+		 * the initial state.
+		 */
+		void resetSuppData(bool emptyArchive);
+
+		/// Populate suppData with data loaded from suppBase.
+		/**
+		 * This may be called mid-test if new suppData structures are needed to
+		 * create a new Archive instance, since the original ones have been
+		 * std::move()'d to the original Archive instance and won't be available to
+		 * create a new Archive with.
+		 *
+		 * This repopulates suppData from the existing suppBase content, so it is
+		 * possible to access modified data this way.  If you don't want suppData
+		 * that may have been modified by a previous Archive instance, call
+		 * resetSuppData() first to return everything to the initialstate.
+		 */
+		void populateSuppData();
+
 		/// Add an isInstance check to run later.
 		/**
 		 * @param result
@@ -229,7 +250,11 @@ class test_archive: public test_main
 		/// Pointer to the active archive instance.
 		std::shared_ptr<Archive> pArchive;
 
-		/// Supplementary data for the archive.
+		/// Pointers to the underlying storage used for suppitems.
+		std::map<SuppItem::Type, std::shared_ptr<stream::string>> suppBase;
+
+		/// Supplementary data for the archive, populated by streams sitting on
+		/// top of suppBase.
 		camoto::SuppData suppData;
 
 	private:
@@ -338,7 +363,7 @@ class test_archive: public test_main
 
 		/// Link between supplementary items and the class containing the expected
 		/// content for each test case.
-		std::map<camoto::SuppItem::Type, boost::shared_ptr<test_archive> > suppResult;
+		std::map<camoto::SuppItem::Type, std::unique_ptr<test_archive>> suppResult;
 };
 
 /// Add a test_archive member function to the test suite

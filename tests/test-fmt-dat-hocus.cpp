@@ -148,7 +148,7 @@ class test_dat_hocus: public test_archive
 			this->type = "dat-hocus";
 			this->create = false;
 			this->lenMaxFilename = -1;
-			this->suppResult[SuppItem::FAT].reset(new test_suppfat_dat_hocus());
+			this->suppResult[SuppItem::FAT] = std::make_unique<test_suppfat_dat_hocus>();
 		}
 
 		void addTests()

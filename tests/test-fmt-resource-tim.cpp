@@ -134,7 +134,7 @@ class test_resource_tim: public test_archive
 		{
 			this->type = "resource-tim";
 			this->lenMaxFilename = 12;
-			this->suppResult[SuppItem::FAT].reset(new test_suppfat_resource_tim());
+			this->suppResult[SuppItem::FAT] = std::make_unique<test_suppfat_resource_tim>();
 		}
 
 		void addTests()

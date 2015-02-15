@@ -30,7 +30,7 @@ using namespace camoto::gamearchive;
 
 /// Check whether a supp item is present and if so that the content is correct.
 #define CHECK_SUPP_ITEM(item, check_func, msg) \
-	if (this->suppResult[camoto::SuppItem::item]) { \
+	if (this->suppResult.find(camoto::SuppItem::item) != this->suppResult.end()) { \
 		BOOST_CHECK_MESSAGE( \
 			this->is_supp_equal(camoto::SuppItem::item, \
 				this->suppResult[camoto::SuppItem::item]->check_func()), \
@@ -78,7 +78,6 @@ test_archive::test_archive()
 void test_archive::addTests()
 {
 	// Tests on existing archives (in the initial state)
-
 	ADD_ARCH_TEST(false, &test_archive::test_isinstance_others);
 	ADD_ARCH_TEST(false, &test_archive::test_open);
 	if (this->lenMaxFilename >= 0) {
@@ -123,7 +122,6 @@ void test_archive::addTests()
 		ADD_ARCH_TEST(true, &test_archive::test_new_to_initialstate);
 		ADD_ARCH_TEST(true, &test_archive::test_new_manipulate_zero_length_files);
 	}
-
 	return;
 }
 
@@ -156,14 +154,9 @@ void test_archive::prepareTest(bool emptyArchive)
 		this->init = true;
 	}
 
-	if (this->suppResult[SuppItem::FAT]) {
-		auto suppSS = std::make_unique<stream::string>();
-		if (!emptyArchive) {
-			// Populate the suppitem with its initial state
-			*suppSS << this->suppResult[SuppItem::FAT]->initialstate();
-		}
-		this->suppData[SuppItem::FAT] = std::move(suppSS);
-	}
+	// Make this->suppData valid
+	this->resetSuppData(emptyArchive);
+	this->populateSuppData();
 
 	auto base = std::make_unique<stream::string>();
 	this->archContent = &base->data;
@@ -237,6 +230,49 @@ Archive::FileHandle test_archive::findFile(unsigned int index,
 	return ep;
 }
 
+void test_archive::resetSuppData(bool emptyArchive)
+{
+	this->suppBase.clear();
+	for (auto& i : this->suppResult) {
+		auto& item = i.first;
+		if (!i.second) {
+			std::cout << "Warning: " << this->basename << " sets empty "
+				<< suppToString(item) << " suppitem, ignoring.\n";
+			continue;
+		}
+		auto suppSS = std::make_shared<stream::string>();
+		if (!emptyArchive) {
+			// Populate the suppitem with its initial state
+			*suppSS << i.second->initialstate();
+		}
+		this->suppBase[item] = suppSS;
+	}
+	return;
+}
+
+void test_archive::populateSuppData()
+{
+	this->suppData.clear();
+	for (auto& i : this->suppBase) {
+		auto& item = i.first;
+		auto& suppSS = i.second;
+		// Wrap this in a substream to get a unique pointer, with an independent
+		// seek position.
+		this->suppData[item] = std::make_unique<stream::sub>(
+			suppSS,
+			0,
+			suppSS->size(),
+			[suppSS](stream::output_sub* sub, stream::len newSize) {
+				// Adjust underlying stream
+				suppSS->truncate(newSize);
+				// Update substream
+				sub->resize(newSize);
+			}
+		);
+	}
+	return;
+}
+
 void test_archive::isInstance(ArchiveType::Certainty result,
 	const std::string& content)
 {
@@ -296,6 +332,9 @@ void test_archive::test_invalidContent(const std::string& content,
 
 	// Make sure isInstance reports this is valid
 	BOOST_CHECK_EQUAL(pTestType->isInstance(*ss), ArchiveType::DefinitelyYes);
+
+	// Make this->suppData valid again, reusing previous data
+	this->populateSuppData();
 
 	// But that we get an error when trying to open the file
 	BOOST_CHECK_THROW(
@@ -360,11 +399,11 @@ boost::test_tools::predicate_result test_archive::is_supp_equal(
 	BOOST_CHECK_NO_THROW(
 		this->pArchive->flush()
 	);
-	auto suppBase = dynamic_cast<stream::string *>(this->suppData[type].get());
 
 	// Use the supp's test-class' own comparison function, as this will use its
 	// preferred outputWidth value, which might be different to the main file's.
-	return this->suppResult[type]->is_equal(strExpected, suppBase->data);
+	return this->suppResult[type]->is_equal(strExpected,
+		this->suppBase[type]->data);
 }
 
 void test_archive::test_isinstance_others()
@@ -1007,6 +1046,9 @@ void test_archive::test_shortext()
 	BOOST_REQUIRE_MESSAGE(pTestType,
 		createString("Could not find archive type " << this->type));
 
+	// Make this->suppData valid again, reusing previous data
+	this->populateSuppData();
+
 	auto base = std::make_unique<stream::string>(*this->archContent);
 	this->archContent = &base->data;
 	this->pArchive = pTestType->open(std::move(base), this->suppData);
@@ -1049,10 +1091,13 @@ void test_archive::test_new_isinstance()
 
 	BOOST_TEST_CHECKPOINT("New archive reported valid, trying to open");
 
+	// Make this->suppData valid again, reusing previous data
+	this->populateSuppData();
+
 	// This should really use BOOST_REQUIRE_NO_THROW but the message is more
 	// informative without it.
 	//BOOST_REQUIRE_NO_THROW(
-		auto pArchive = pTestType->open(std::move(base), suppData);
+		auto pArchive = pTestType->open(std::move(base), this->suppData);
 	//);
 
 	// Make sure there are now no files in the archive

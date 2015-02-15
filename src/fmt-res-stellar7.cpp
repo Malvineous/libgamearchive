@@ -196,7 +196,10 @@ std::unique_ptr<Archive> Archive_RES_Stellar7_Folder::openFolder(
 		0,
 		s->size(),
 		[s](stream::output_sub* sub, stream::len newSize) {
+			// Adjust underlying stream
 			s->truncate(newSize);
+			// Update substream
+			sub->resize(newSize);
 		}
 	);
 	return std::make_unique<Archive_RES_Stellar7_Folder>(std::move(unique));

@@ -134,7 +134,7 @@ class test_bnk_harry: public test_archive
 		{
 			this->type = "bnk-harry";
 			this->lenMaxFilename = 12;
-			this->suppResult[SuppItem::FAT].reset(new test_suppfat_bnk_harry());
+			this->suppResult[SuppItem::FAT] = std::make_unique<test_suppfat_bnk_harry>();
 		}
 
 		void addTests()

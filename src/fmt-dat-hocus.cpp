@@ -142,8 +142,6 @@ Archive_DAT_Hocus::Archive_DAT_Hocus(std::unique_ptr<stream::inout> content,
 		psFAT(std::make_unique<stream::seg>(std::move(psFAT))),
 		numFiles(0)
 {
-	assert(psFAT);
-
 	stream::pos lenArchive = this->content->size();
 
 	this->maxFiles = this->psFAT->size() / DAT_FAT_ENTRY_LEN;
