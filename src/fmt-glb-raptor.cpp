@@ -145,30 +145,30 @@ Archive_GLB_Raptor::Archive_GLB_Raptor(std::unique_ptr<stream::inout> content)
 	{
 		// Decode just enough of the FAT to get the file count, so we know the size
 		// of the FAT
-		auto substrFAT = std::make_shared<stream::input_sub>(
+		auto substrFAT = std::make_unique<stream::input_sub>(
 			this->content, 0, GLB_HEADER_LEN
 		);
 #ifdef GLB_CLEARTEXT
-		auto preFAT = substrFAT;
+		auto preFAT = std::move(substrFAT);
 #else
-		auto preFAT = glbFilterType.apply(substrFAT);
+		auto preFAT = glbFilterType.apply(std::move(substrFAT));
 #endif
 		preFAT->seekg(4, stream::start);
 		*preFAT >> u32le(numFiles);
 	}
 
 	// Copy the FAT into memory and decode it
-	auto substrFAT = std::make_shared<stream::input_sub>(
+	auto substrFAT = std::make_unique<stream::input_sub>(
 		this->content, 0, GLB_HEADER_LEN + numFiles * GLB_FAT_ENTRY_LEN
 	);
 #ifdef GLB_CLEARTEXT
-		auto preFAT = substrFAT;
+		auto preFAT = std::move(substrFAT);
 #else
-		auto preFAT = glbFilterType.apply(substrFAT);
+		auto preFAT = glbFilterType.apply(std::move(substrFAT));
 #endif
-	auto mem = std::make_shared<stream::memory>();
+	auto mem = std::make_unique<stream::memory>();
 	stream::copy(*mem, *preFAT);
-	this->fat = std::make_shared<stream::seg>(mem);
+	this->fat = std::make_unique<stream::seg>(std::move(mem));
 
 	if (numFiles >= GLB_SAFETY_MAX_FILECOUNT) {
 		throw stream::error("too many files or corrupted archive");
@@ -209,7 +209,7 @@ Archive_GLB_Raptor::~Archive_GLB_Raptor()
 void Archive_GLB_Raptor::flush()
 {
 	FilterType_GLB_Raptor_FAT glbFilterType;
-	std::shared_ptr<stream::output_sub> substrFAT = std::make_shared<stream::output_sub>(
+	auto substrFAT = std::make_unique<stream::output_sub>(
 		this->content, 0,
 		GLB_HEADER_LEN + this->vcFAT.size() * GLB_FAT_ENTRY_LEN,
 		[](stream::output_sub* sub, stream::len newSize) {
@@ -224,10 +224,10 @@ void Archive_GLB_Raptor::flush()
 		}
 	);
 #ifdef GLB_CLEARTEXT
-	std::shared_ptr<stream::output> bareCrypt = substrFAT;
+	auto bareCrypt = std::move(substrFAT);
 #else
-	std::shared_ptr<stream::output> bareCrypt = glbFilterType.apply(
-		substrFAT,
+	auto bareCrypt = glbFilterType.apply(
+		std::shared_ptr<stream::output>(std::move(substrFAT)),
 		[](stream::output_filtered*, stream::len) {
 			// Dummy resize function - don't do anything
 			return;

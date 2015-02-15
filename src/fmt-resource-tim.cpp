@@ -119,7 +119,10 @@ std::unique_ptr<Archive> ArchiveType_Resource_TIM::open(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	assert(suppData.find(SuppItem::FAT) != suppData.end());
-	return std::make_unique<Archive_Resource_TIM>(std::move(content), suppData[SuppItem::FAT]);
+	return std::make_unique<Archive_Resource_TIM>(
+		std::move(content),
+		std::move(suppData[SuppItem::FAT])
+	);
 }
 
 SuppFilenames ArchiveType_Resource_TIM::getRequiredSupps(stream::input& content,
@@ -133,9 +136,9 @@ SuppFilenames ArchiveType_Resource_TIM::getRequiredSupps(stream::input& content,
 
 
 Archive_Resource_TIM::Archive_Resource_TIM(
-	std::unique_ptr<stream::inout> content, std::shared_ptr<stream::inout> psFAT)
+	std::unique_ptr<stream::inout> content, std::unique_ptr<stream::inout> psFAT)
 	:	FATArchive(std::move(content), TIM_FIRST_FILE_OFFSET, TIM_MAX_FILENAME_LEN),
-		psFAT(std::make_shared<stream::seg>(psFAT))
+		psFAT(std::make_unique<stream::seg>(std::move(psFAT)))
 {
 	stream::len lenArchive = this->content->size();
 	this->content->seekg(0, stream::start);
@@ -174,7 +177,8 @@ void Archive_Resource_TIM::flush()
 	return;
 }
 
-void Archive_Resource_TIM::updateFileName(const FATEntry *pid, const std::string& strNewName)
+void Archive_Resource_TIM::updateFileName(const FATEntry *pid,
+	const std::string& strNewName)
 {
 	// TESTED BY: fmt_resource_tim_rename
 	assert(strNewName.length() <= TIM_MAX_FILENAME_LEN);

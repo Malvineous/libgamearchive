@@ -133,7 +133,9 @@ std::unique_ptr<Archive> ArchiveType_DAT_Hugo::open(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	if (suppData.find(SuppItem::FAT) != suppData.end()) {
-		return std::make_unique<Archive_DAT_Hugo>(std::move(content), suppData[SuppItem::FAT]);
+		return std::make_unique<Archive_DAT_Hugo>(
+			std::move(content), std::move(suppData[SuppItem::FAT])
+		);
 	}
 	return std::make_unique<Archive_DAT_Hugo>(std::move(content), nullptr);
 }
@@ -161,16 +163,16 @@ SuppFilenames ArchiveType_DAT_Hugo::getRequiredSupps(stream::input& content,
 
 
 Archive_DAT_Hugo::Archive_DAT_Hugo(std::unique_ptr<stream::inout> content,
-	std::shared_ptr<stream::inout> psFAT)
+	std::unique_ptr<stream::inout> psFAT)
 	:	FATArchive(std::move(content), DAT_FIRST_FILE_OFFSET, 0)
 {
-	std::shared_ptr<stream::inout> fatStream;
 	if (psFAT) {
-		this->psFAT = std::make_shared<stream::seg>(psFAT);
-		fatStream = this->psFAT;
-	} else fatStream = this->content;
+		this->psFAT = std::make_unique<stream::seg>(std::move(psFAT));
+	} else {
+		this->psFAT = this->content;
+	}
 
-	stream::pos lenFAT = fatStream->size();
+	stream::pos lenFAT = this->psFAT->size();
 	stream::pos lenArchive = this->content->size();
 
 	// Empty files could be empty archives, so only attempt to read if the file
@@ -182,8 +184,8 @@ Archive_DAT_Hugo::Archive_DAT_Hugo(std::unique_ptr<stream::inout> content,
 		}
 
 		uint32_t fatEnd;
-		fatStream->seekg(0, stream::start);
-		*fatStream >> u32le(fatEnd);
+		this->psFAT->seekg(0, stream::start);
+		*this->psFAT >> u32le(fatEnd);
 		if (fatEnd >= lenFAT) {
 			throw stream::error("Archive corrupt - FAT truncated!");
 		}
@@ -193,12 +195,12 @@ Archive_DAT_Hugo::Archive_DAT_Hugo(std::unique_ptr<stream::inout> content,
 		stream::pos lastOffset = 0;
 		int curFile = 1;
 		int firstIndexInSecondArch = 0;
-		fatStream->seekg(0, stream::start);
+		this->psFAT->seekg(0, stream::start);
 		for (unsigned int i = 0; i < numFiles; i++) {
 			auto f = this->createNewFATEntry();
 
 			// Read the data in from the FAT entry in the file
-			*fatStream
+			*this->psFAT
 				>> u32le(f->iOffset)
 				>> u32le(f->storedSize)
 			;

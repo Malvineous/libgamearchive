@@ -51,13 +51,13 @@ class ArchiveType_GD_Doofus: virtual public ArchiveType
 class Archive_GD_Doofus: virtual public FATArchive
 {
 	protected:
-		std::shared_ptr<stream::seg> psFAT; ///< FAT stream (doofus.exe)
+		std::unique_ptr<stream::seg> psFAT; ///< FAT stream (doofus.exe)
 		uint32_t maxFiles;    ///< Maximum number of files in FAT
 		uint32_t numFiles;    ///< Current number of files in FAT
 
 	public:
 		Archive_GD_Doofus(std::unique_ptr<stream::inout> content,
-			std::shared_ptr<stream::inout> psFAT);
+			std::unique_ptr<stream::inout> psFAT);
 		virtual ~Archive_GD_Doofus();
 
 		virtual void flush();

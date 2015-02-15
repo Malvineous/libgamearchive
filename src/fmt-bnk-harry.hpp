@@ -51,12 +51,12 @@ class ArchiveType_BNK_Harry: virtual public ArchiveType
 class Archive_BNK_Harry: virtual public FATArchive
 {
 	protected:
-		std::shared_ptr<stream::seg> psFAT;
+		std::unique_ptr<stream::seg> psFAT;
 		bool isAC;  // true == Alien Carnage, false == Halloween Harry
 
 	public:
 		Archive_BNK_Harry(std::unique_ptr<stream::inout> content,
-			std::shared_ptr<stream::inout> psFAT);
+			std::unique_ptr<stream::inout> psFAT);
 		virtual ~Archive_BNK_Harry();
 
 		virtual void flush();

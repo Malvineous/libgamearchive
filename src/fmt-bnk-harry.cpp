@@ -114,7 +114,10 @@ std::unique_ptr<Archive> ArchiveType_BNK_Harry::open(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	assert(suppData.find(SuppItem::FAT) != suppData.end());
-	return std::make_unique<Archive_BNK_Harry>(std::move(content), suppData[SuppItem::FAT]);
+	return std::make_unique<Archive_BNK_Harry>(
+		std::move(content),
+		std::move(suppData[SuppItem::FAT])
+	);
 }
 
 SuppFilenames ArchiveType_BNK_Harry::getRequiredSupps(stream::input& content,
@@ -129,9 +132,9 @@ SuppFilenames ArchiveType_BNK_Harry::getRequiredSupps(stream::input& content,
 
 
 Archive_BNK_Harry::Archive_BNK_Harry(std::unique_ptr<stream::inout> content,
-	std::shared_ptr<stream::inout> psFAT)
+	std::unique_ptr<stream::inout> psFAT)
 	:	FATArchive(std::move(content), BNK_FIRST_FILE_OFFSET, BNK_MAX_FILENAME_LEN),
-		psFAT(std::make_shared<stream::seg>(psFAT)),
+		psFAT(std::make_unique<stream::seg>(std::move(psFAT))),
 		isAC(false) // TODO: detect and set this
 {
 	stream::pos lenFAT = this->psFAT->size();

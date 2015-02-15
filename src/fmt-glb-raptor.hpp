@@ -64,7 +64,7 @@ class Archive_GLB_Raptor: virtual public FATArchive
 		virtual void preRemoveFile(const FATEntry *pid);
 
 	protected:
-		std::shared_ptr<stream::seg> fat;        ///< Cleartext version of FAT
+		std::unique_ptr<stream::seg> fat;        ///< Cleartext version of FAT
 
 		/// Update the header with the number of files in the archive
 		void updateFileCount(uint32_t iNewCount);

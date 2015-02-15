@@ -90,7 +90,7 @@ ArchiveType::Certainty ArchiveType_DAT_GoT::isInstance(
 	if (lenArchive < GOT_FAT_LENGTH) return DefinitelyNo;
 
 	// Create a substream to decrypt the FAT
-	auto fatSubStream = std::make_shared<stream::input_sub>(
+	auto fatSubStream = std::make_unique<stream::input_sub>(
 		// Create a fake shared_ptr so we can run the content through a decryption
 		// filter.
 		std::shared_ptr<stream::input>(std::shared_ptr<stream::input>(), &content),
@@ -100,11 +100,11 @@ ArchiveType::Certainty ArchiveType_DAT_GoT::isInstance(
 
 #ifdef USE_XOR
 	auto fatStream = std::make_shared<stream::input_filtered>(
-		fatSubStream,
+		std::move(fatSubStream),
 		std::make_shared<filter_xor_crypt>(0, 128)
 	);
 #else
-	auto& fatStream = fatSubStream;
+	auto fatStream = std::move(fatSubStream);
 #endif
 
 	fatStream->seekg(0, stream::start);
@@ -179,7 +179,7 @@ Archive_DAT_GoT::Archive_DAT_GoT(std::unique_ptr<stream::inout> content)
 	:	FATArchive(std::move(content), GOT_FIRST_FILE_OFFSET, GOT_MAX_FILENAME_LEN)
 {
 	// Create a substream to decrypt the FAT
-	this->fatSubStream = std::make_shared<stream::sub>(
+	auto fatSubStream = std::make_unique<stream::sub>(
 		this->content,
 		0,
 		GOT_MAX_FILES * GOT_FAT_ENTRY_LEN,
@@ -187,17 +187,17 @@ Archive_DAT_GoT::Archive_DAT_GoT(std::unique_ptr<stream::inout> content)
 	);
 
 #ifdef USE_XOR
-	auto fatFilter = std::make_shared<stream::filtered>(
-		fatSubStream,
+	auto fatFilter = std::make_unique<stream::filtered>(
+		std::move(fatSubStream),
 		std::make_shared<filter_xor_crypt>(0, 128),
 		std::make_shared<filter_xor_crypt>(0, 128),
 		stream::fn_truncate_filter()
 	);
 #else
-	auto& fatFilter = fatSubStream;
+	auto fatFilter = std::move(fatSubStream);
 #endif
 
-	this->fatStream = std::make_shared<stream::seg>(fatFilter);
+	this->fatStream = std::make_unique<stream::seg>(std::move(fatFilter));
 	this->fatStream->seekg(0, stream::start);
 
 	this->vcFAT.reserve(256);

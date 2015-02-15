@@ -69,8 +69,8 @@ class Archive_DAT_GoT: virtual public FATArchive
 		virtual void preRemoveFile(const FATEntry *pid);
 
 	protected:
-		std::shared_ptr<stream::sub> fatSubStream;   ///< On-disk stream storing the possibly encrypted FAT
-		std::shared_ptr<stream::seg> fatStream;      ///< Segstream wrapper around decrypted fatSubStream
+		/// Segstream wrapper around decrypted fatSubStream
+		std::unique_ptr<stream::seg> fatStream;
 
 		/// Dummy function - does nothing
 		/**

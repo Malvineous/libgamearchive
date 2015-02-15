@@ -624,9 +624,9 @@ finishTesting:
 		for (const auto& s : suppList) {
 			try {
 				std::cout << "Opening supplemental file " << s.second << std::endl;
-				auto suppStream = std::make_shared<stream::file>();
+				auto suppStream = std::make_unique<stream::file>();
 				suppStream->open(s.second);
-				suppData[s.first] = suppStream;
+				suppData[s.first] = std::move(suppStream);
 			} catch (const stream::open_error& e) {
 				std::cerr << "Error opening supplemental file " << s.second
 					<< ": " << e.what() << std::endl;

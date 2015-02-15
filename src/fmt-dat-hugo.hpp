@@ -58,7 +58,7 @@ class Archive_DAT_Hugo: virtual public FATArchive
 
 	public:
 		Archive_DAT_Hugo(std::unique_ptr<stream::inout> content,
-			std::shared_ptr<stream::inout> psFAT);
+			std::unique_ptr<stream::inout> psFAT);
 		virtual ~Archive_DAT_Hugo();
 
 		virtual void updateFileName(const FATEntry *pid,

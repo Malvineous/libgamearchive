@@ -157,12 +157,12 @@ void test_archive::prepareTest(bool emptyArchive)
 	}
 
 	if (this->suppResult[SuppItem::FAT]) {
-		auto suppSS = std::make_shared<stream::string>();
+		auto suppSS = std::make_unique<stream::string>();
 		if (!emptyArchive) {
 			// Populate the suppitem with its initial state
 			*suppSS << this->suppResult[SuppItem::FAT]->initialstate();
 		}
-		this->suppData[SuppItem::FAT] = suppSS;
+		this->suppData[SuppItem::FAT] = std::move(suppSS);
 	}
 
 	auto base = std::make_unique<stream::string>();
@@ -360,8 +360,7 @@ boost::test_tools::predicate_result test_archive::is_supp_equal(
 	BOOST_CHECK_NO_THROW(
 		this->pArchive->flush()
 	);
-	auto suppBase =
-		std::dynamic_pointer_cast<stream::string>(this->suppData[type]);
+	auto suppBase = dynamic_cast<stream::string *>(this->suppData[type].get());
 
 	// Use the supp's test-class' own comparison function, as this will use its
 	// preferred outputWidth value, which might be different to the main file's.

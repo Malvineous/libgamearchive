@@ -51,11 +51,11 @@ class ArchiveType_Resource_TIM: virtual public ArchiveType
 class Archive_Resource_TIM: virtual public FATArchive
 {
 	protected:
-		std::shared_ptr<stream::seg> psFAT;
+		std::unique_ptr<stream::seg> psFAT;
 
 	public:
 		Archive_Resource_TIM(std::unique_ptr<stream::inout> content,
-			std::shared_ptr<stream::inout> psFAT);
+			std::unique_ptr<stream::inout> psFAT);
 		virtual ~Archive_Resource_TIM();
 
 		virtual void flush();

@@ -108,10 +108,12 @@ std::unique_ptr<Archive> ArchiveType_DAT_Hocus::open(
 		default:
 			throw stream::error("Unknown file version");
 	}
-	auto fat = std::make_shared<stream::sub>(
-		suppData[SuppItem::FAT], offFAT, lenFAT, preventResize
+	return std::make_unique<Archive_DAT_Hocus>(
+		std::move(content),
+		std::make_unique<stream::sub>(
+			std::move(suppData[SuppItem::FAT]), offFAT, lenFAT, preventResize
+		)
 	);
-	return std::make_unique<Archive_DAT_Hocus>(std::move(content), fat);
 }
 
 std::unique_ptr<Archive> ArchiveType_DAT_Hocus::create(
@@ -127,16 +129,17 @@ SuppFilenames ArchiveType_DAT_Hocus::getRequiredSupps(stream::input& content,
 {
 	// No supplemental types/empty list
 	SuppFilenames supps;
-	std::string filenameBase = filenameArchive.substr(0, filenameArchive.find_last_of('.'));
+	std::string filenameBase = filenameArchive.substr(0,
+		filenameArchive.find_last_of('.'));
 	supps[SuppItem::FAT] = filenameBase + ".exe";
 	return supps;
 }
 
 
 Archive_DAT_Hocus::Archive_DAT_Hocus(std::unique_ptr<stream::inout> content,
-	std::shared_ptr<stream::inout> psFAT)
+	std::unique_ptr<stream::inout> psFAT)
 	:	FATArchive(std::move(content), DAT_FIRST_FILE_OFFSET, 0),
-		psFAT(std::make_shared<stream::seg>(psFAT)),
+		psFAT(std::make_unique<stream::seg>(std::move(psFAT))),
 		numFiles(0)
 {
 	assert(psFAT);

@@ -155,7 +155,7 @@ Archive_RFF_Blood::Archive_RFF_Blood(std::unique_ptr<stream::inout> content)
 	}
 
 	// Create a substream to decrypt the FAT
-	auto fatSubStream = std::make_shared<stream::sub>(
+	auto fatSubStream = std::make_unique<stream::sub>(
 		this->content,
 		offFAT,
 		numFiles * RFF_FAT_ENTRY_LEN,
@@ -163,20 +163,21 @@ Archive_RFF_Blood::Archive_RFF_Blood(std::unique_ptr<stream::inout> content)
 	);
 
 	// Decrypt the FAT if needed
-	std::shared_ptr<stream::input> fatPlaintext;
+	std::unique_ptr<stream::input> fatPlaintext;
 	if (this->version >= 0x301) {
 		// The FAT is encrypted in this version
-		fatPlaintext = std::make_shared<stream::input_filtered>(
-			fatSubStream,
+		fatPlaintext = std::make_unique<stream::input_filtered>(
+			std::move(fatSubStream),
 			std::make_shared<filter_rff_crypt>(0, offFAT & 0xFF)
 		);
 	} else {
-		fatPlaintext = fatSubStream;
+		fatPlaintext = std::move(fatSubStream);
 	}
 
 	// Copy the decrypted FAT into memory
-	auto tempStorage = std::make_shared<stream::memory>();
-	this->fatStream = std::make_shared<stream::seg>(tempStorage);
+	this->fatStream = std::make_unique<stream::seg>(
+		std::make_unique<stream::memory>()
+	);
 	this->fatStream->seekp(0, stream::start);
 	this->fatStream->insert(numFiles * RFF_FAT_ENTRY_LEN);
 	stream::copy(*this->fatStream, *fatPlaintext);

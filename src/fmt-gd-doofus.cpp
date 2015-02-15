@@ -93,10 +93,12 @@ std::unique_ptr<Archive> ArchiveType_GD_Doofus::open(
 		default:
 			throw stream::error("Unknown file version");
 	}
-	auto fat = std::make_shared<stream::sub>(
-		suppData[SuppItem::FAT], offFAT, lenFAT, preventResize
+	return std::make_unique<Archive_GD_Doofus>(
+		std::move(content),
+		std::make_unique<stream::sub>(
+			std::move(suppData[SuppItem::FAT]), offFAT, lenFAT, preventResize
+		)
 	);
-	return std::make_unique<Archive_GD_Doofus>(std::move(content), fat);
 }
 
 std::unique_ptr<Archive> ArchiveType_GD_Doofus::create(
@@ -112,19 +114,20 @@ SuppFilenames ArchiveType_GD_Doofus::getRequiredSupps(stream::input& content,
 {
 	// No supplemental types/empty list
 	SuppFilenames supps;
-	std::string filenameBase = filenameArchive.substr(0, filenameArchive.find_last_of('.'));
+	std::string filenameBase = filenameArchive.substr(0,
+		filenameArchive.find_last_of('.'));
 	supps[SuppItem::FAT] = "doofus.exe";
 	return supps;
 }
 
 
 Archive_GD_Doofus::Archive_GD_Doofus(std::unique_ptr<stream::inout> content,
-	std::shared_ptr<stream::inout> psFAT)
+	std::unique_ptr<stream::inout> psFAT)
 	:	FATArchive(std::move(content), GD_FIRST_FILE_OFFSET, 0),
-		psFAT(std::make_shared<stream::seg>(psFAT)),
+		psFAT(std::make_unique<stream::seg>(std::move(psFAT))),
 		numFiles(0)
 {
-	assert(psFAT);
+	assert(this->psFAT);
 
 	stream::pos lenArchive = this->content->size();
 

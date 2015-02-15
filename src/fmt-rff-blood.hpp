@@ -75,7 +75,8 @@ class Archive_RFF_Blood: virtual public FATArchive
 		virtual void postRemoveFile(const FATEntry *pid);
 
 	protected:
-		std::shared_ptr<stream::seg> fatStream;  ///< In-memory stream storing the cleartext FAT
+		/// In-memory stream storing the cleartext FAT
+		std::unique_ptr<stream::seg> fatStream;
 		uint32_t version;            ///< File format version
 		bool modifiedFAT;            ///< Has the FAT been changed?
 
