@@ -27,6 +27,7 @@
 #include <boost/bind.hpp>
 #include <camoto/filter.hpp>
 #include <camoto/stream_filtered.hpp>
+#include <camoto/util.hpp> // std::make_unique
 #include <camoto/bitstream.hpp>
 #include <camoto/util.hpp>
 
@@ -220,50 +221,55 @@ FilterType_Stargunner::~FilterType_Stargunner()
 {
 }
 
-std::string FilterType_Stargunner::getFilterCode() const
+std::string FilterType_Stargunner::code() const
 {
 	return "bpe-stargunner";
 }
 
-std::string FilterType_Stargunner::getFriendlyName() const
+std::string FilterType_Stargunner::friendlyName() const
 {
 	return "Stargunner compression";
 }
 
-std::vector<std::string> FilterType_Stargunner::getGameList() const
+std::vector<std::string> FilterType_Stargunner::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Stargunner");
 	return vcGames;
 }
 
-stream::inout_sptr FilterType_Stargunner::apply(stream::inout_sptr target,
-	stream::fn_truncate resize) const
+std::unique_ptr<stream::inout> FilterType_Stargunner::apply(
+	std::shared_ptr<stream::inout> target, stream::fn_truncate_filter resize)
+	const
 {
-	stream::filtered_sptr st(new stream::filtered());
-	filter_sptr de(new filter_stargunner_decompress());
-	/// @todo Implement Stargunner compression
-	filter_sptr en;//(new filter_stargunner_compress());
-	st->open(target, de, en, resize);
-	return st;
+	return std::make_unique<stream::filtered>(
+		target,
+		std::make_shared<filter_stargunner_decompress>(),
+		/// @todo Implement Stargunner compression
+		std::shared_ptr<filter>(),//std::make_shared<filter_stargunner_compress>(),
+		resize
+	);
 }
 
-stream::input_sptr FilterType_Stargunner::apply(stream::input_sptr target) const
+std::unique_ptr<stream::input> FilterType_Stargunner::apply(
+	std::shared_ptr<stream::input> target) const
 {
-	stream::input_filtered_sptr st(new stream::input_filtered());
-	filter_sptr de(new filter_stargunner_decompress());
-	st->open(target, de);
-	return st;
+	return std::make_unique<stream::input_filtered>(
+		target,
+		std::make_shared<filter_stargunner_decompress>()
+	);
 }
 
-stream::output_sptr FilterType_Stargunner::apply(stream::output_sptr target,
-	stream::fn_truncate resize) const
+std::unique_ptr<stream::output> FilterType_Stargunner::apply(
+	std::shared_ptr<stream::output> target,  stream::fn_truncate_filter resize)
+	const
 {
-	stream::output_filtered_sptr st(new stream::output_filtered());
-	/// @todo Implement Stargunner compression
-	filter_sptr en;//(new filter_stargunner_compress());
-	st->open(target, en, resize);
-	return st;
+	return std::make_unique<stream::output_filtered>(
+		target,
+		/// @todo Implement Stargunner compression
+		std::shared_ptr<filter>(),//std::make_shared<filter_stargunner_compress>(),
+		resize
+	);
 }
 
 } // namespace gamearchive

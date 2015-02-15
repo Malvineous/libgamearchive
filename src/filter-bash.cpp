@@ -23,6 +23,7 @@
 
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/stream_filtered.hpp>
+#include <camoto/util.hpp> // std::make_unique
 #include <camoto/lzw.hpp>
 
 #include "filter-bash-rle.hpp"
@@ -39,97 +40,105 @@ FilterType_Bash::~FilterType_Bash()
 {
 }
 
-std::string FilterType_Bash::getFilterCode() const
+std::string FilterType_Bash::code() const
 {
 	return "lzw-bash";
 }
 
-std::string FilterType_Bash::getFriendlyName() const
+std::string FilterType_Bash::friendlyName() const
 {
 	return "Monster Bash compression";
 }
 
-std::vector<std::string> FilterType_Bash::getGameList() const
+std::vector<std::string> FilterType_Bash::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Monster Bash");
 	return vcGames;
 }
 
-stream::inout_sptr FilterType_Bash::apply(stream::inout_sptr target,
-	stream::fn_truncate resize) const
+std::unique_ptr<stream::inout> FilterType_Bash::apply(
+	std::shared_ptr<stream::inout> target, stream::fn_truncate_filter resize)
+	const
 {
-	stream::filtered_sptr st1(new stream::filtered());
-	filter_sptr f_delzw(new filter_lzw_decompress(
-		9,   // initial codeword length (in bits)
-		12,  // maximum codeword length (in bits)
-		257, // first valid codeword
-		256, // EOF codeword is first codeword
-		256, // reset codeword is unused
-		LZW_LITTLE_ENDIAN    | // bits are split into bytes in little-endian order
-		LZW_RESET_PARAM_VALID  // Has codeword reserved for dictionary reset/EOF
-	));
-	filter_sptr f_lzw(new filter_lzw_compress(
-		9,   // initial codeword length (in bits)
-		12,  // maximum codeword length (in bits)
-		257, // first valid codeword
-		256, // EOF codeword is first codeword
-		256, // reset codeword is shared with EOF
-		LZW_LITTLE_ENDIAN    | // bits are split into bytes in little-endian order
-		LZW_EOF_PARAM_VALID  | // Has codeword reserved for EOF
-		LZW_RESET_PARAM_VALID  // Has codeword reserved for dictionary reset
-	));
-	st1->open(target, f_delzw, f_lzw, NULL);
+	auto st1 = std::make_unique<stream::filtered>(
+		target,
+		std::make_shared<filter_lzw_decompress>(
+			9,   // initial codeword length (in bits)
+			12,  // maximum codeword length (in bits)
+			257, // first valid codeword
+			256, // EOF codeword is first codeword
+			256, // reset codeword is unused
+			LZW_LITTLE_ENDIAN    | // bits are split into bytes in little-endian order
+			LZW_RESET_PARAM_VALID  // Has codeword reserved for dictionary reset/EOF
+		),
+		std::make_shared<filter_lzw_compress>(
+			9,   // initial codeword length (in bits)
+			12,  // maximum codeword length (in bits)
+			257, // first valid codeword
+			256, // EOF codeword is first codeword
+			256, // reset codeword is shared with EOF
+			LZW_LITTLE_ENDIAN    | // bits are split into bytes in little-endian order
+			LZW_EOF_PARAM_VALID  | // Has codeword reserved for EOF
+			LZW_RESET_PARAM_VALID  // Has codeword reserved for dictionary reset
+		),
+		stream::fn_truncate_filter()
+	);
 
-	stream::filtered_sptr st2(new stream::filtered());
-	filter_sptr f_unrle(new filter_bash_unrle());
-	filter_sptr f_rle(new filter_bash_rle());
-	st2->open(st1, f_unrle, f_rle, resize);
-
-	return st2;
+	return std::make_unique<stream::filtered>(
+		std::move(st1),
+		std::make_shared<filter_bash_unrle>(),
+		std::make_shared<filter_bash_rle>(),
+		resize
+	);
 }
 
-stream::input_sptr FilterType_Bash::apply(stream::input_sptr target) const
+std::unique_ptr<stream::input> FilterType_Bash::apply(
+	std::shared_ptr<stream::input> target) const
 {
-	stream::input_filtered_sptr st1(new stream::input_filtered());
-	filter_sptr f_delzw(new filter_lzw_decompress(
-		9,   // initial codeword length (in bits)
-		12,  // maximum codeword length (in bits)
-		257, // first valid codeword
-		256, // EOF codeword is first codeword
-		256, // reset codeword is shared with EOF
-		LZW_LITTLE_ENDIAN    | // bits are split into bytes in little-endian order
-		LZW_EOF_PARAM_VALID    // Has codeword reserved for EOF - TODO: confirm
-	));
-	st1->open(target, f_delzw);
+	auto st1 = std::make_unique<stream::input_filtered>(
+		target,
+		std::make_shared<filter_lzw_decompress>(
+			9,   // initial codeword length (in bits)
+			12,  // maximum codeword length (in bits)
+			257, // first valid codeword
+			256, // EOF codeword is first codeword
+			256, // reset codeword is unused
+			LZW_LITTLE_ENDIAN    | // bits are split into bytes in little-endian order
+			LZW_RESET_PARAM_VALID  // Has codeword reserved for dictionary reset/EOF
+		)
+	);
 
-	stream::input_filtered_sptr st2(new stream::input_filtered());
-	filter_sptr f_unrle(new filter_bash_unrle());
-	st2->open(st1, f_unrle);
-
-	return st2;
+	return std::make_unique<stream::input_filtered>(
+		std::move(st1),
+		std::make_shared<filter_bash_unrle>()
+	);
 }
 
-stream::output_sptr FilterType_Bash::apply(stream::output_sptr target,
-	stream::fn_truncate resize) const
+std::unique_ptr<stream::output> FilterType_Bash::apply(
+	std::shared_ptr<stream::output> target, stream::fn_truncate_filter resize)
+	const
 {
-	stream::output_filtered_sptr st1(new stream::output_filtered());
-	filter_sptr f_lzw(new filter_lzw_compress(
-		9,   // initial codeword length (in bits)
-		12,  // maximum codeword length (in bits)
-		257, // first valid codeword
-		256, // EOF codeword is first codeword
-		0,   // reset codeword is unused
-		LZW_LITTLE_ENDIAN    | // bits are split into bytes in little-endian order
-		LZW_EOF_PARAM_VALID    // Has codeword reserved for EOF - TODO: confirm
-	));
-	st1->open(target, f_lzw, NULL);
+	auto st1 = std::make_unique<stream::output_filtered>(
+		target,
+		std::make_shared<filter_lzw_compress>(
+			9,   // initial codeword length (in bits)
+			12,  // maximum codeword length (in bits)
+			257, // first valid codeword
+			256, // EOF codeword is first codeword
+			256, // reset codeword is shared with EOF
+			LZW_LITTLE_ENDIAN    | // bits are split into bytes in little-endian order
+			LZW_EOF_PARAM_VALID  | // Has codeword reserved for EOF
+			LZW_RESET_PARAM_VALID  // Has codeword reserved for dictionary reset
+		),
+		stream::fn_truncate_filter()
+	);
 
-	stream::output_filtered_sptr st2(new stream::output_filtered());
-	filter_sptr f_rle(new filter_bash_rle());
-	st2->open(st1, f_rle, resize);
-
-	return st2;
+	return std::make_unique<stream::output_filtered>(
+		std::move(st1),
+		std::make_shared<filter_bash_rle>(),
+		resize
+	);
 }
 
 } // namespace gamearchive

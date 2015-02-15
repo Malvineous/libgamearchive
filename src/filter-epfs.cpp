@@ -22,6 +22,7 @@
  */
 
 #include <camoto/stream_filtered.hpp>
+#include <camoto/util.hpp> // std::make_unique
 #include <camoto/lzw.hpp>
 
 #include "filter-epfs.hpp"
@@ -37,17 +38,17 @@ FilterType_EPFS::~FilterType_EPFS()
 {
 }
 
-std::string FilterType_EPFS::getFilterCode() const
+std::string FilterType_EPFS::code() const
 {
 	return "lzw-epfs";
 }
 
-std::string FilterType_EPFS::getFriendlyName() const
+std::string FilterType_EPFS::friendlyName() const
 {
 	return "East Point Software EPFS compression";
 }
 
-std::vector<std::string> FilterType_EPFS::getGameList() const
+std::vector<std::string> FilterType_EPFS::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Alien Breed Tower Assault");
@@ -64,71 +65,76 @@ std::vector<std::string> FilterType_EPFS::getGameList() const
 	return vcGames;
 }
 
-stream::inout_sptr FilterType_EPFS::apply(stream::inout_sptr target,
-	stream::fn_truncate resize) const
+std::unique_ptr<stream::inout> FilterType_EPFS::apply(
+	std::shared_ptr<stream::inout> target, stream::fn_truncate_filter resize)
+	const
 {
-	stream::filtered_sptr st(new stream::filtered());
-	filter_sptr de(new filter_lzw_decompress(
-		9,   // initial codeword length (in bits)
-		14,  // maximum codeword length (in bits)
-		256, // first valid codeword
-		0,   // EOF codeword is max codeword
-		-1,  // reset codeword is max-1
-		LZW_BIG_ENDIAN        | // bits are split into bytes in big-endian order
-		LZW_NO_BITSIZE_RESET  | // bitsize doesn't go back to 9 after dict reset
-		LZW_EOF_PARAM_VALID   | // Has codeword reserved for EOF
-		LZW_RESET_PARAM_VALID   // Has codeword reserved for dict reset
-	));
-	filter_sptr en(new filter_lzw_compress(
-		9,   // initial codeword length (in bits)
-		14,  // maximum codeword length (in bits)
-		256, // first valid codeword
-		0,   // EOF codeword is max codeword
-		-1,  // reset codeword is max-1
-		LZW_BIG_ENDIAN        | // bits are split into bytes in big-endian order
-		LZW_NO_BITSIZE_RESET  | // bitsize doesn't go back to 9 after dict reset
-		LZW_EOF_PARAM_VALID   | // Has codeword reserved for EOF
-		LZW_RESET_PARAM_VALID   // Has codeword reserved for dict reset
-	));
-	st->open(target, de, en, resize);
-	return st;
+	return std::make_unique<stream::filtered>(
+		target,
+		std::make_shared<filter_lzw_decompress>(
+			9,   // initial codeword length (in bits)
+			14,  // maximum codeword length (in bits)
+			256, // first valid codeword
+			0,   // EOF codeword is max codeword
+			-1,  // reset codeword is max-1
+			LZW_BIG_ENDIAN        | // bits are split into bytes in big-endian order
+			LZW_NO_BITSIZE_RESET  | // bitsize doesn't go back to 9 after dict reset
+			LZW_EOF_PARAM_VALID   | // Has codeword reserved for EOF
+			LZW_RESET_PARAM_VALID   // Has codeword reserved for dict reset
+		),
+		std::make_shared<filter_lzw_compress>(
+			9,   // initial codeword length (in bits)
+			14,  // maximum codeword length (in bits)
+			256, // first valid codeword
+			0,   // EOF codeword is max codeword
+			-1,  // reset codeword is max-1
+			LZW_BIG_ENDIAN        | // bits are split into bytes in big-endian order
+			LZW_NO_BITSIZE_RESET  | // bitsize doesn't go back to 9 after dict reset
+			LZW_EOF_PARAM_VALID   | // Has codeword reserved for EOF
+			LZW_RESET_PARAM_VALID   // Has codeword reserved for dict reset
+		),
+		resize
+	);
 }
 
-stream::input_sptr FilterType_EPFS::apply(stream::input_sptr target) const
+std::unique_ptr<stream::input> FilterType_EPFS::apply(
+	std::shared_ptr<stream::input> target) const
 {
-	stream::input_filtered_sptr st(new stream::input_filtered());
-	filter_sptr de(new filter_lzw_decompress(
-		9,   // initial codeword length (in bits)
-		14,  // maximum codeword length (in bits)
-		256, // first valid codeword
-		0,   // EOF codeword is max codeword
-		-1,  // reset codeword is max-1
-		LZW_BIG_ENDIAN        | // bits are split into bytes in big-endian order
-		LZW_NO_BITSIZE_RESET  | // bitsize doesn't go back to 9 after dict reset
-		LZW_EOF_PARAM_VALID   | // Has codeword reserved for EOF
-		LZW_RESET_PARAM_VALID   // Has codeword reserved for dict reset
-	));
-	st->open(target, de);
-	return st;
+	return std::make_unique<stream::input_filtered>(
+		target,
+		std::make_shared<filter_lzw_decompress>(
+			9,   // initial codeword length (in bits)
+			14,  // maximum codeword length (in bits)
+			256, // first valid codeword
+			0,   // EOF codeword is max codeword
+			-1,  // reset codeword is max-1
+			LZW_BIG_ENDIAN        | // bits are split into bytes in big-endian order
+			LZW_NO_BITSIZE_RESET  | // bitsize doesn't go back to 9 after dict reset
+			LZW_EOF_PARAM_VALID   | // Has codeword reserved for EOF
+			LZW_RESET_PARAM_VALID   // Has codeword reserved for dict reset
+		)
+	);
 }
 
-stream::output_sptr FilterType_EPFS::apply(stream::output_sptr target,
-	stream::fn_truncate resize) const
+std::unique_ptr<stream::output> FilterType_EPFS::apply(
+	std::shared_ptr<stream::output> target, stream::fn_truncate_filter resize)
+	const
 {
-	stream::output_filtered_sptr st(new stream::output_filtered());
-	filter_sptr en(new filter_lzw_compress(
-		9,   // initial codeword length (in bits)
-		14,  // maximum codeword length (in bits)
-		256, // first valid codeword
-		0,   // EOF codeword is max codeword
-		-1,  // reset codeword is max-1
-		LZW_BIG_ENDIAN        | // bits are split into bytes in big-endian order
-		LZW_NO_BITSIZE_RESET  | // bitsize doesn't go back to 9 after dict reset
-		LZW_EOF_PARAM_VALID   | // Has codeword reserved for EOF
-		LZW_RESET_PARAM_VALID   // Has codeword reserved for dict reset
-	));
-	st->open(target, en, resize);
-	return st;
+	return std::make_unique<stream::output_filtered>(
+		target,
+		std::make_shared<filter_lzw_compress>(
+			9,   // initial codeword length (in bits)
+			14,  // maximum codeword length (in bits)
+			256, // first valid codeword
+			0,   // EOF codeword is max codeword
+			-1,  // reset codeword is max-1
+			LZW_BIG_ENDIAN        | // bits are split into bytes in big-endian order
+			LZW_NO_BITSIZE_RESET  | // bitsize doesn't go back to 9 after dict reset
+			LZW_EOF_PARAM_VALID   | // Has codeword reserved for EOF
+			LZW_RESET_PARAM_VALID   // Has codeword reserved for dict reset
+		),
+		resize
+	);
 }
 
 } // namespace gamearchive

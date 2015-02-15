@@ -24,6 +24,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include <camoto/iostream_helpers.hpp>
+#include <camoto/util.hpp> // std::make_unique
 #include "fmt-dat-hugo.hpp"
 
 #define DAT_FAT_ENTRY_LEN        8  // u32le offset + u32le size
@@ -45,24 +46,24 @@ ArchiveType_DAT_Hugo::~ArchiveType_DAT_Hugo()
 {
 }
 
-std::string ArchiveType_DAT_Hugo::getArchiveCode() const
+std::string ArchiveType_DAT_Hugo::code() const
 {
 	return "dat-hugo";
 }
 
-std::string ArchiveType_DAT_Hugo::getFriendlyName() const
+std::string ArchiveType_DAT_Hugo::friendlyName() const
 {
 	return "Hugo DAT File";
 }
 
-std::vector<std::string> ArchiveType_DAT_Hugo::getFileExtensions() const
+std::vector<std::string> ArchiveType_DAT_Hugo::fileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("dat");
 	return vcExtensions;
 }
 
-std::vector<std::string> ArchiveType_DAT_Hugo::getGameList() const
+std::vector<std::string> ArchiveType_DAT_Hugo::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Hugo II, Whodunit?");
@@ -70,9 +71,10 @@ std::vector<std::string> ArchiveType_DAT_Hugo::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty ArchiveType_DAT_Hugo::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_DAT_Hugo::isInstance(
+	stream::input& content) const
 {
-	stream::pos lenArchive = psArchive->size();
+	stream::pos lenArchive = content.size();
 
 	// Because there's no header, an empty file could be in this format.
 	// TESTED BY: fmt_dat_hugo_isinstance_c04
@@ -81,10 +83,10 @@ ArchiveType::Certainty ArchiveType_DAT_Hugo::isInstance(stream::input_sptr psArc
 	// TESTED BY: fmt_dat_hugo_isinstance_c02
 	if (lenArchive < DAT_FAT_ENTRY_LEN) return DefinitelyNo; // too short
 
-	psArchive->seekg(0, stream::start);
+	content.seekg(0, stream::start);
 
 	uint32_t fatEnd, firstLen;
-	psArchive >> u32le(fatEnd) >> u32le(firstLen);
+	content >> u32le(fatEnd) >> u32le(firstLen);
 
 	// TESTED BY: fmt_dat_hugo_isinstance_c03
 	if (fatEnd + firstLen > lenArchive)
@@ -97,7 +99,7 @@ ArchiveType::Certainty ArchiveType_DAT_Hugo::isInstance(stream::input_sptr psArc
 
 	uint32_t offEntry = 0, lenEntry = 0;
 	for (unsigned int i = 1; i < numFiles; i++) {
-		psArchive
+		content
 			>> u32le(offEntry)
 			>> u32le(lenEntry)
 		;
@@ -120,21 +122,23 @@ ArchiveType::Certainty ArchiveType_DAT_Hugo::isInstance(stream::input_sptr psArc
 	return DefinitelyYes;
 }
 
-ArchivePtr ArchiveType_DAT_Hugo::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_DAT_Hugo::create(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
 	// Return an empty file
-	return ArchivePtr(new Archive_DAT_Hugo(psArchive, stream::inout_sptr()));
+	return std::make_unique<Archive_DAT_Hugo>(content, nullptr);
 }
 
-ArchivePtr ArchiveType_DAT_Hugo::open(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_DAT_Hugo::open(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
 	if (suppData.find(SuppItem::FAT) != suppData.end()) {
-		return ArchivePtr(new Archive_DAT_Hugo(psArchive, suppData[SuppItem::FAT]));
+		return std::make_unique<Archive_DAT_Hugo>(content, suppData[SuppItem::FAT]);
 	}
-	return ArchivePtr(new Archive_DAT_Hugo(psArchive, stream::inout_sptr()));
+	return std::make_unique<Archive_DAT_Hugo>(content, nullptr);
 }
 
-SuppFilenames ArchiveType_DAT_Hugo::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_DAT_Hugo::getRequiredSupps(stream::input& content,
 	const std::string& filenameArchive) const
 {
 	// If this is 'scenery1.dat' then the rest of its data is in 'scenery2.dat'
@@ -156,19 +160,18 @@ SuppFilenames ArchiveType_DAT_Hugo::getRequiredSupps(stream::input_sptr data,
 }
 
 
-Archive_DAT_Hugo::Archive_DAT_Hugo(stream::inout_sptr psArchive, stream::inout_sptr psFAT)
-	:	FATArchive(psArchive, DAT_FIRST_FILE_OFFSET, 0)
+Archive_DAT_Hugo::Archive_DAT_Hugo(std::shared_ptr<stream::inout> content,
+	std::shared_ptr<stream::inout> psFAT)
+	:	FATArchive(content, DAT_FIRST_FILE_OFFSET, 0)
 {
-	stream::inout_sptr fatStream;
+	std::shared_ptr<stream::inout> fatStream;
 	if (psFAT) {
-		this->psFAT.reset(new stream::seg());
-		this->psFAT->open(psFAT);
+		this->psFAT = std::make_shared<stream::seg>(psFAT);
 		fatStream = this->psFAT;
-	} else fatStream = this->psArchive;
+	} else fatStream = this->content;
 
 	stream::pos lenFAT = fatStream->size();
-
-	stream::pos lenArchive = this->psArchive->size();
+	stream::pos lenArchive = this->content->size();
 
 	// Empty files could be empty archives, so only attempt to read if the file
 	// is non-empty.
@@ -180,7 +183,7 @@ Archive_DAT_Hugo::Archive_DAT_Hugo(stream::inout_sptr psArchive, stream::inout_s
 
 		uint32_t fatEnd;
 		fatStream->seekg(0, stream::start);
-		fatStream >> u32le(fatEnd);
+		*fatStream >> u32le(fatEnd);
 		if (fatEnd >= lenFAT) {
 			throw stream::error("Archive corrupt - FAT truncated!");
 		}
@@ -192,36 +195,36 @@ Archive_DAT_Hugo::Archive_DAT_Hugo(stream::inout_sptr psArchive, stream::inout_s
 		int firstIndexInSecondArch = 0;
 		fatStream->seekg(0, stream::start);
 		for (unsigned int i = 0; i < numFiles; i++) {
-			FATEntry_Hugo *fatEntry = new FATEntry_Hugo();
-			EntryPtr ep(fatEntry);
+			auto f = this->createNewFATEntry();
 
 			// Read the data in from the FAT entry in the file
-			fatStream
-				>> u32le(fatEntry->iOffset)
-				>> u32le(fatEntry->storedSize)
+			*fatStream
+				>> u32le(f->iOffset)
+				>> u32le(f->storedSize)
 			;
 
 			// If suddenly the offsets revert back to zero, it means we've reached
 			// the second file (scenery2.dat)
-			if ((fatEntry->iOffset != 0) || (fatEntry->storedSize != 0)) {
-				if (fatEntry->iOffset < lastOffset) {
+			if ((f->iOffset != 0) || (f->storedSize != 0)) {
+				if (f->iOffset < lastOffset) {
 					curFile++;
 					firstIndexInSecondArch = i;
 				}
-				lastOffset = fatEntry->iOffset;
+				lastOffset = f->iOffset;
 			} else {
 				// TODO: mark as spare/unused FAT entry
 			}
 
-			fatEntry->iIndex = i - firstIndexInSecondArch;
-			fatEntry->lenHeader = 0;
-			fatEntry->type = FILETYPE_GENERIC;
-			fatEntry->fAttr = 0;
-			fatEntry->bValid = true;
-			fatEntry->strName = std::string();
-			fatEntry->realSize = fatEntry->storedSize;
+			f->iIndex = i - firstIndexInSecondArch;
+			f->lenHeader = 0;
+			f->type = FILETYPE_GENERIC;
+			f->fAttr = 0;
+			f->bValid = true;
+			f->strName = std::string();
+			f->realSize = f->storedSize;
 
-			fatEntry->file = curFile;
+			auto fd = dynamic_cast<FATEntry_Hugo *>(&*f);
+			fd->file = curFile;
 
 			if (
 				(psFAT && (curFile == 2)) ||
@@ -229,7 +232,7 @@ Archive_DAT_Hugo::Archive_DAT_Hugo(stream::inout_sptr psArchive, stream::inout_s
 			) {
 				// If we have a FAT we're only interested in files in the second FAT,
 				// otherwise we want the first FAT.
-				this->vcFAT.push_back(ep);
+				this->vcFAT.push_back(std::move(f));
 			}
 		}
 	} // else file is blank, treat as empty archive
@@ -251,8 +254,8 @@ void Archive_DAT_Hugo::updateFileOffset(const FATEntry *pid,
 	// TESTED BY: fmt_dat_hugo_insert*
 	// TESTED BY: fmt_dat_hugo_resize*
 
-	this->psArchive->seekp(DAT_FILEOFFSET_OFFSET(pid), stream::start);
-	this->psArchive << u32le(pid->iOffset);
+	this->content->seekp(DAT_FILEOFFSET_OFFSET(pid), stream::start);
+	*this->content << u32le(pid->iOffset);
 	return;
 }
 
@@ -261,12 +264,12 @@ void Archive_DAT_Hugo::updateFileSize(const FATEntry *pid,
 {
 	// TESTED BY: fmt_dat_hugo_insert*
 	// TESTED BY: fmt_dat_hugo_resize*
-	this->psArchive->seekp(DAT_FILESIZE_OFFSET(pid), stream::start);
-	this->psArchive << u32le(pid->storedSize);
+	this->content->seekp(DAT_FILESIZE_OFFSET(pid), stream::start);
+	*this->content << u32le(pid->storedSize);
 	return;
 }
 
-FATArchive::FATEntry *Archive_DAT_Hugo::preInsertFile(
+void Archive_DAT_Hugo::preInsertFile(
 	const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_dat_hugo_insert*
@@ -277,11 +280,11 @@ FATArchive::FATEntry *Archive_DAT_Hugo::preInsertFile(
 	// Because the new entry isn't in the vector yet we need to shift it manually
 	pNewEntry->iOffset += DAT_FAT_ENTRY_LEN;
 
-	this->psArchive->seekp(DAT_FATENTRY_OFFSET(pNewEntry), stream::start);
-	this->psArchive->insert(DAT_FAT_ENTRY_LEN);
+	this->content->seekp(DAT_FATENTRY_OFFSET(pNewEntry), stream::start);
+	this->content->insert(DAT_FAT_ENTRY_LEN);
 
 	// Write out the entry
-	this->psArchive
+	*this->content
 		<< u32le(pNewEntry->iOffset)
 		<< u32le(pNewEntry->storedSize)
 	;
@@ -294,7 +297,7 @@ FATArchive::FATEntry *Archive_DAT_Hugo::preInsertFile(
 		0
 	);
 
-	return pNewEntry;
+	return;
 }
 
 void Archive_DAT_Hugo::preRemoveFile(const FATEntry *pid)
@@ -312,15 +315,15 @@ void Archive_DAT_Hugo::preRemoveFile(const FATEntry *pid)
 		0
 	);
 
-	this->psArchive->seekp(DAT_FATENTRY_OFFSET(pid), stream::start);
-	this->psArchive->remove(DAT_FAT_ENTRY_LEN);
+	this->content->seekp(DAT_FATENTRY_OFFSET(pid), stream::start);
+	this->content->remove(DAT_FAT_ENTRY_LEN);
 
 	return;
 }
 
-FATArchive::FATEntry *Archive_DAT_Hugo::createNewFATEntry()
+std::unique_ptr<FATArchive::FATEntry> Archive_DAT_Hugo::createNewFATEntry()
 {
-	return new FATEntry_Hugo();
+	return std::make_unique<FATEntry_Hugo>();
 }
 
 } // namespace gamearchive

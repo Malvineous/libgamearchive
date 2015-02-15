@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE(xor_read)
 {
 	BOOST_TEST_MESSAGE("Decode some XOR-encoded data");
 
-	in << STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
+	*this->in << STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
 
 	this->filter.reset(new filter_xor_crypt(0, 0));
 
@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(xor_partial_read)
 {
 	BOOST_TEST_MESSAGE("Decode some partially XOR-encoded data");
 
-	in << STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
+	*this->in << STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
 
 	this->filter.reset(new filter_xor_crypt(4, 0));
 
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(xor_altseed_read)
 {
 	BOOST_TEST_MESSAGE("Decode some XOR-encoded data with alternate seed");
 
-	in << STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
+	*this->in << STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
 
 	this->filter.reset(new filter_xor_crypt(0, 0xFE));
 

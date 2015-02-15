@@ -51,37 +51,38 @@ ArchiveType_DAT_Bash::~ArchiveType_DAT_Bash()
 {
 }
 
-std::string ArchiveType_DAT_Bash::getArchiveCode() const
+std::string ArchiveType_DAT_Bash::code() const
 {
 	return "dat-bash";
 }
 
-std::string ArchiveType_DAT_Bash::getFriendlyName() const
+std::string ArchiveType_DAT_Bash::friendlyName() const
 {
 	return "Monster Bash DAT File";
 }
 
-std::vector<std::string> ArchiveType_DAT_Bash::getFileExtensions() const
+std::vector<std::string> ArchiveType_DAT_Bash::fileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("dat");
 	return vcExtensions;
 }
 
-std::vector<std::string> ArchiveType_DAT_Bash::getGameList() const
+std::vector<std::string> ArchiveType_DAT_Bash::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Monster Bash");
 	return vcGames;
 }
 
-ArchiveType::Certainty ArchiveType_DAT_Bash::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_DAT_Bash::isInstance(
+	stream::input& content) const
 {
-	stream::pos lenArchive = psArchive->size();
+	stream::pos lenArchive = content.size();
 	// TESTED BY: fmt_dat_bash_isinstance_c02
 	//if (lenArchive < DAT_FAT_OFFSET) return DefinitelyNo; // too short
 
-	psArchive->seekg(0, stream::start);
+	content.seekg(0, stream::start);
 
 	// Check each FAT entry
 	char fn[DAT_FILENAME_FIELD_LEN];
@@ -93,11 +94,11 @@ ArchiveType::Certainty ArchiveType_DAT_Bash::isInstance(stream::input_sptr psArc
 			// TESTED BY: fmt_dat_bash_isinstance_c04
 			return DefinitelyNo;
 		}
-		psArchive
+		content
 			>> u16le(type)
 			>> u16le(lenEntry)
 		;
-		psArchive->read(fn, DAT_FILENAME_FIELD_LEN);
+		content.read(fn, DAT_FILENAME_FIELD_LEN);
 		// Make sure there aren't any invalid characters in the filename
 		for (int j = 0; j < DAT_MAX_FILENAME_LEN; j++) {
 			if (!fn[j]) break; // stop on terminating null
@@ -113,7 +114,7 @@ ArchiveType::Certainty ArchiveType_DAT_Bash::isInstance(stream::input_sptr psArc
 		// TESTED BY: fmt_dat_bash_isinstance_c03
 		if (pos > lenArchive) return DefinitelyNo;
 
-		psArchive->seekg(pos, stream::start);
+		content.seekg(pos, stream::start);
 	}
 
 	// If we've made it this far, this is almost certainly a DAT file.
@@ -122,17 +123,19 @@ ArchiveType::Certainty ArchiveType_DAT_Bash::isInstance(stream::input_sptr psArc
 	return DefinitelyYes;
 }
 
-ArchivePtr ArchiveType_DAT_Bash::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_DAT_Bash::create(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return ArchivePtr(new Archive_DAT_Bash(psArchive));
+	return std::make_unique<Archive_DAT_Bash>(content);
 }
 
-ArchivePtr ArchiveType_DAT_Bash::open(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_DAT_Bash::open(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return ArchivePtr(new Archive_DAT_Bash(psArchive));
+	return std::make_unique<Archive_DAT_Bash>(content);
 }
 
-SuppFilenames ArchiveType_DAT_Bash::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_DAT_Bash::getRequiredSupps(stream::input& content,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -140,112 +143,110 @@ SuppFilenames ArchiveType_DAT_Bash::getRequiredSupps(stream::input_sptr data,
 }
 
 
-Archive_DAT_Bash::Archive_DAT_Bash(stream::inout_sptr psArchive)
-	:	FATArchive(psArchive, DAT_FIRST_FILE_OFFSET, DAT_MAX_FILENAME_LEN)
+Archive_DAT_Bash::Archive_DAT_Bash(std::shared_ptr<stream::inout> content)
+	:	FATArchive(content, DAT_FIRST_FILE_OFFSET, DAT_MAX_FILENAME_LEN)
 {
-	stream::pos lenArchive = this->psArchive->size();
+	stream::pos lenArchive = this->content->size();
 
-	this->psArchive->seekg(0, stream::start);
+	this->content->seekg(0, stream::start);
 
 	stream::pos pos = 0;
 	uint16_t type;
 	int numFiles = 0;
 	while (pos < lenArchive) {
-		FATEntry *fatEntry = new FATEntry();
-		EntryPtr ep(fatEntry);
+		auto f = this->createNewFATEntry();
 
-		fatEntry->iIndex = numFiles;
-		fatEntry->iOffset = pos;
-		fatEntry->lenHeader = DAT_EFAT_ENTRY_LEN;
-		fatEntry->fAttr = 0;
-		fatEntry->bValid = true;
+		f->iIndex = numFiles;
+		f->iOffset = pos;
+		f->lenHeader = DAT_EFAT_ENTRY_LEN;
+		f->fAttr = 0;
+		f->bValid = true;
 
 		// Read the data in from the FAT entry in the file
-		this->psArchive
+		*this->content
 			>> u16le(type)
-			>> u16le(fatEntry->storedSize)
-			>> nullPadded(fatEntry->strName, DAT_FILENAME_FIELD_LEN)
-			>> u16le(fatEntry->realSize);
+			>> u16le(f->storedSize)
+			>> nullPadded(f->strName, DAT_FILENAME_FIELD_LEN)
+			>> u16le(f->realSize);
 
-		if (fatEntry->realSize) {
-			fatEntry->fAttr |= EA_COMPRESSED;
-			fatEntry->filter = "lzw-bash"; // decompression algorithm
+		if (f->realSize) {
+			f->fAttr |= EA_COMPRESSED;
+			f->filter = "lzw-bash"; // decompression algorithm
 		} else {
-			fatEntry->realSize = fatEntry->storedSize;
+			f->realSize = f->storedSize;
 		}
 
 		switch (type) {
 			case 0:
-				fatEntry->strName += ".mif";
-				fatEntry->type = "map/bash-info";
+				f->strName += ".mif";
+				f->type = "map/bash-info";
 				break;
 			case 1:
-				fatEntry->strName += ".mbg";
-				fatEntry->type = "map/bash-bg";
+				f->strName += ".mbg";
+				f->type = "map/bash-bg";
 				break;
 			case 2:
-				fatEntry->strName += ".mfg";
-				fatEntry->type = "map/bash-fg";
+				f->strName += ".mfg";
+				f->type = "map/bash-fg";
 				break;
 			case 3:
-				fatEntry->strName += ".tbg";
-				fatEntry->type = "image/bash-tiles-bg";
+				f->strName += ".tbg";
+				f->type = "image/bash-tiles-bg";
 				break;
 			case 4:
-				fatEntry->strName += ".tfg";
-				fatEntry->type = "image/bash-tiles-fg";
+				f->strName += ".tfg";
+				f->type = "image/bash-tiles-fg";
 				break;
 			case 5:
-				fatEntry->strName += ".tbn";
-				fatEntry->type = "image/bash-tiles-fg";
+				f->strName += ".tbn";
+				f->type = "image/bash-tiles-fg";
 				break;
 			case 6:
-				fatEntry->strName += ".sgl";
-				fatEntry->type = "data/bash-sprite-graphics-list";
+				f->strName += ".sgl";
+				f->type = "data/bash-sprite-graphics-list";
 				break;
 			case 7:
-				fatEntry->strName += ".msp";
-				fatEntry->type = "map/bash-sprites";
+				f->strName += ".msp";
+				f->type = "map/bash-sprites";
 				break;
 			case 8:
 				// Already has ".snd" extension
-				fatEntry->type = "sound/bash";
+				f->type = "sound/bash";
 				break;
 			case 12:
-				fatEntry->strName += ".pbg";
-				fatEntry->type = "data/bash-tile-properties";
+				f->strName += ".pbg";
+				f->type = "data/bash-tile-properties";
 				break;
 			case 13:
-				fatEntry->strName += ".pfg";
-				fatEntry->type = "data/bash-tile-properties";
+				f->strName += ".pfg";
+				f->type = "data/bash-tile-properties";
 				break;
 			case 14:
-				fatEntry->strName += ".pal";
-				fatEntry->type = "image/pal-ega";
+				f->strName += ".pal";
+				f->type = "image/pal-ega";
 				break;
 			case 16:
-				fatEntry->strName += ".pbn";
-				fatEntry->type = "data/bash-tile-properties";
+				f->strName += ".pbn";
+				f->type = "data/bash-tile-properties";
 				break;
 			case 64:
-				fatEntry->strName += ".spr";
-				fatEntry->type = "image/bash-sprite";
+				f->strName += ".spr";
+				f->type = "image/bash-sprite";
 				break;
 			case 32:
-				fatEntry->type = FILETYPE_GENERIC;
+				f->type = FILETYPE_GENERIC;
 				break;
 			default:
-				fatEntry->strName += createString("." << type);
-				fatEntry->type = createString("unknown/bash-" << type);
+				f->strName += createString("." << type);
+				f->type = createString("unknown/bash-" << type);
 				break;
 		}
-		this->vcFAT.push_back(ep);
+		this->content->seekg(f->storedSize, stream::cur);
+		pos += DAT_EFAT_ENTRY_LEN + f->storedSize;
 
-		this->psArchive->seekg(fatEntry->storedSize, stream::cur);
-		pos += DAT_EFAT_ENTRY_LEN + fatEntry->storedSize;
+		this->vcFAT.push_back(std::move(f));
 		numFiles++;
 	}
-
 }
 
 Archive_DAT_Bash::~Archive_DAT_Bash()
@@ -290,11 +291,11 @@ void Archive_DAT_Bash::updateFileName(const FATEntry *pid, const std::string& st
 	// TESTED BY: fmt_dat_bash_rename
 	assert(newLen <= DAT_MAX_FILENAME_LEN);
 
-	this->psArchive->seekp(DAT_FILETYPE_OFFSET(pid), stream::start);
-	this->psArchive << u16le(typeNum);
+	this->content->seekp(DAT_FILETYPE_OFFSET(pid), stream::start);
+	*this->content << u16le(typeNum);
 
-	this->psArchive->seekp(DAT_FILENAME_OFFSET(pid), stream::start);
-	this->psArchive << nullPadded(strNativeName, DAT_FILENAME_FIELD_LEN);
+	this->content->seekp(DAT_FILENAME_OFFSET(pid), stream::start);
+	*this->content << nullPadded(strNativeName, DAT_FILENAME_FIELD_LEN);
 	return;
 }
 
@@ -324,20 +325,20 @@ void Archive_DAT_Bash::updateFileSize(const FATEntry *pid,
 
 	// TESTED BY: fmt_dat_bash_insert*
 	// TESTED BY: fmt_dat_bash_resize*
-	this->psArchive->seekp(DAT_FILESIZE_OFFSET(pid), stream::start);
-	this->psArchive << u16le(pid->storedSize);
+	this->content->seekp(DAT_FILESIZE_OFFSET(pid), stream::start);
+	*this->content << u16le(pid->storedSize);
 
 	// Write out the decompressed size too
-	this->psArchive->seekp(DAT_FILENAME_FIELD_LEN, stream::cur);
+	this->content->seekp(DAT_FILENAME_FIELD_LEN, stream::cur);
 	if (pid->fAttr & EA_COMPRESSED) {
-		this->psArchive << u16le(pid->realSize);
+		*this->content << u16le(pid->realSize);
 	} else {
-		this->psArchive << u16le(0);
+		*this->content << u16le(0);
 	}
 	return;
 }
 
-FATArchive::FATEntry *Archive_DAT_Bash::preInsertFile(
+void Archive_DAT_Bash::preInsertFile(
 	const FATEntry *idBeforeThis, FATEntry *pNewEntry
 )
 {
@@ -371,8 +372,8 @@ FATArchive::FATEntry *Archive_DAT_Bash::preInsertFile(
 	// Because the new entry isn't in the vector yet we need to shift it manually
 	//pNewEntry->iOffset += DAT_EFAT_ENTRY_LEN;
 
-	this->psArchive->seekp(pNewEntry->iOffset, stream::start);
-	this->psArchive->insert(DAT_EFAT_ENTRY_LEN);
+	this->content->seekp(pNewEntry->iOffset, stream::start);
+	this->content->insert(DAT_EFAT_ENTRY_LEN);
 
 	if (pNewEntry->fAttr & EA_COMPRESSED) {
 		pNewEntry->filter = "lzw-bash";
@@ -386,12 +387,12 @@ FATArchive::FATEntry *Archive_DAT_Bash::preInsertFile(
 	// will go into the correct spot.
 	this->shiftFiles(NULL, pNewEntry->iOffset, pNewEntry->lenHeader, 0);
 
-	return pNewEntry;
+	return;
 }
 
 void Archive_DAT_Bash::postInsertFile(FATEntry *pNewEntry)
 {
-	this->psArchive->seekp(pNewEntry->iOffset, stream::start);
+	this->content->seekp(pNewEntry->iOffset, stream::start);
 
 	int typeNum;
 
@@ -426,7 +427,7 @@ void Archive_DAT_Bash::postInsertFile(FATEntry *pNewEntry)
 	}
 
 	// Write out the entry
-	this->psArchive
+	*this->content
 		<< u16le(typeNum)
 		<< u16le(pNewEntry->storedSize)
 		<< nullPadded(pNewEntry->strName, DAT_FILENAME_FIELD_LEN)

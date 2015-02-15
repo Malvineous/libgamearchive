@@ -18,8 +18,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/iostreams/invert.hpp>
 #include <camoto/stream_filtered.hpp>
+#include <camoto/util.hpp> // std::make_unique
 #include "filter-xor-blood.hpp"
 
 namespace camoto {
@@ -46,50 +46,55 @@ FilterType_RFF::~FilterType_RFF()
 {
 }
 
-std::string FilterType_RFF::getFilterCode() const
+std::string FilterType_RFF::code() const
 {
 	return "xor-blood";
 }
 
-std::string FilterType_RFF::getFriendlyName() const
+std::string FilterType_RFF::friendlyName() const
 {
 	return "Blood RFF encryption";
 }
 
-std::vector<std::string> FilterType_RFF::getGameList() const
+std::vector<std::string> FilterType_RFF::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Blood");
 	return vcGames;
 }
 
-stream::inout_sptr FilterType_RFF::apply(stream::inout_sptr target,
-	stream::fn_truncate resize) const
+std::unique_ptr<stream::inout> FilterType_RFF::apply(
+	std::shared_ptr<stream::inout> target, stream::fn_truncate_filter resize)
+	const
 {
-	stream::filtered_sptr st(new stream::filtered());
-	// We need two separate filters, otherwise reading from one will
-	// affect the XOR key next used when writing to the other.
-	filter_sptr de(new filter_rff_crypt(RFF_FILE_CRYPT_LEN, 0));
-	filter_sptr en(new filter_rff_crypt(RFF_FILE_CRYPT_LEN, 0));
-	st->open(target, de, en, resize);
-	return st;
+	return std::make_unique<stream::filtered>(
+		target,
+		// We need two separate filters, otherwise reading from one will
+		// affect the XOR key next used when writing to the other.
+		std::make_shared<filter_rff_crypt>(RFF_FILE_CRYPT_LEN, 0),
+		std::make_shared<filter_rff_crypt>(RFF_FILE_CRYPT_LEN, 0),
+		resize
+	);
 }
 
-stream::input_sptr FilterType_RFF::apply(stream::input_sptr target) const
+std::unique_ptr<stream::input> FilterType_RFF::apply(
+	std::shared_ptr<stream::input> target) const
 {
-	stream::input_filtered_sptr st(new stream::input_filtered());
-	filter_sptr de(new filter_rff_crypt(RFF_FILE_CRYPT_LEN, 0));
-	st->open(target, de);
-	return st;
+	return std::make_unique<stream::input_filtered>(
+		target,
+		std::make_shared<filter_rff_crypt>(RFF_FILE_CRYPT_LEN, 0)
+	);
 }
 
-stream::output_sptr FilterType_RFF::apply(stream::output_sptr target,
-	stream::fn_truncate resize) const
+std::unique_ptr<stream::output> FilterType_RFF::apply(
+	std::shared_ptr<stream::output> target, stream::fn_truncate_filter resize)
+	const
 {
-	stream::output_filtered_sptr st(new stream::output_filtered());
-	filter_sptr en(new filter_rff_crypt(RFF_FILE_CRYPT_LEN, 0));
-	st->open(target, en, resize);
-	return st;
+	return std::make_unique<stream::output_filtered>(
+		target,
+		std::make_shared<filter_rff_crypt>(RFF_FILE_CRYPT_LEN, 0),
+		resize
+	);
 }
 
 } // namespace gamearchive

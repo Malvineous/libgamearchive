@@ -23,6 +23,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <camoto/iostream_helpers.hpp>
+#include <camoto/util.hpp> // std::make_unique
 #include "fmt-dat-mystic.hpp"
 
 #define DAT_FATOFFSET_OFFSET          8
@@ -51,41 +52,42 @@ ArchiveType_DAT_Mystic::~ArchiveType_DAT_Mystic()
 {
 }
 
-std::string ArchiveType_DAT_Mystic::getArchiveCode() const
+std::string ArchiveType_DAT_Mystic::code() const
 {
 	return "dat-mystic";
 }
 
-std::string ArchiveType_DAT_Mystic::getFriendlyName() const
+std::string ArchiveType_DAT_Mystic::friendlyName() const
 {
 	return "Mystic Towers DAT File";
 }
 
-std::vector<std::string> ArchiveType_DAT_Mystic::getFileExtensions() const
+std::vector<std::string> ArchiveType_DAT_Mystic::fileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("dat");
 	return vcExtensions;
 }
 
-std::vector<std::string> ArchiveType_DAT_Mystic::getGameList() const
+std::vector<std::string> ArchiveType_DAT_Mystic::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Mystic Towers");
 	return vcGames;
 }
 
-ArchiveType::Certainty ArchiveType_DAT_Mystic::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_DAT_Mystic::isInstance(
+	stream::input& content) const
 {
-	stream::len lenArchive = psArchive->size();
+	stream::len lenArchive = content.size();
 
 	// File too short
 	// TESTED BY: fmt_dat_mystic_isinstance_c01
 	if (lenArchive < 2) return DefinitelyNo; // too short
 
 	uint16_t fileCount;
-	psArchive->seekg(DAT_FILECOUNT_OFFSET_END, stream::end);
-	psArchive >> u16le(fileCount);
+	content.seekg(DAT_FILECOUNT_OFFSET_END, stream::end);
+	content >> u16le(fileCount);
 	// Too many files
 	// TESTED BY: fmt_dat_mystic_isinstance_c02
 	if (fileCount >= DAT_SAFETY_MAX_FILECOUNT) return DefinitelyNo;
@@ -100,16 +102,16 @@ ArchiveType::Certainty ArchiveType_DAT_Mystic::isInstance(stream::input_sptr psA
 
 	stream::len totalDataSize = 0;
 
-	psArchive->seekg(DAT_FILECOUNT_OFFSET_END - fileCount * DAT_FAT_ENTRY_LEN, stream::end);
+	content.seekg(DAT_FILECOUNT_OFFSET_END - fileCount * DAT_FAT_ENTRY_LEN, stream::end);
 	for (unsigned int i = 0; i < fileCount; i++) {
 		uint8_t lenFilename;
-		psArchive >> u8(lenFilename);
+		content >> u8(lenFilename);
 		// Filename length longer than field size
 		// TESTED BY: fmt_dat_mystic_isinstance_c04
 		if (lenFilename > 12) return DefinitelyNo;
-		psArchive->seekg(12, stream::cur);
+		content.seekg(12, stream::cur);
 		uint32_t off, len;
-		psArchive >> u32le(off) >> u32le(len);
+		content >> u32le(off) >> u32le(len);
 		// File starts or ends past archive EOF
 		// TESTED BY: fmt_dat_mystic_isinstance_c05
 		if (off + len > lenArchive) return DefinitelyNo;
@@ -124,19 +126,21 @@ ArchiveType::Certainty ArchiveType_DAT_Mystic::isInstance(stream::input_sptr psA
 	return DefinitelyYes;
 }
 
-ArchivePtr ArchiveType_DAT_Mystic::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_DAT_Mystic::create(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	psArchive->seekp(0, stream::start);
-	psArchive << u16le(0);
-	return ArchivePtr(new Archive_DAT_Mystic(psArchive));
+	content->seekp(0, stream::start);
+	*content << u16le(0);
+	return std::make_unique<Archive_DAT_Mystic>(content);
 }
 
-ArchivePtr ArchiveType_DAT_Mystic::open(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_DAT_Mystic::open(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return ArchivePtr(new Archive_DAT_Mystic(psArchive));
+	return std::make_unique<Archive_DAT_Mystic>(content);
 }
 
-SuppFilenames ArchiveType_DAT_Mystic::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_DAT_Mystic::getRequiredSupps(stream::input& content,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -144,45 +148,44 @@ SuppFilenames ArchiveType_DAT_Mystic::getRequiredSupps(stream::input_sptr data,
 }
 
 
-Archive_DAT_Mystic::Archive_DAT_Mystic(stream::inout_sptr psArchive)
-	:	FATArchive(psArchive, DAT_FIRST_FILE_OFFSET, ARCH_STD_DOS_FILENAMES),
+Archive_DAT_Mystic::Archive_DAT_Mystic(std::shared_ptr<stream::inout> content)
+	:	FATArchive(content, DAT_FIRST_FILE_OFFSET, ARCH_STD_DOS_FILENAMES),
 		uncommittedFiles(0)
 {
-	stream::pos lenArchive = this->psArchive->size();
+	stream::pos lenArchive = this->content->size();
 	if (lenArchive < 2) throw stream::error("File too short");
 
 	uint16_t fileCount;
-	this->psArchive->seekg(DAT_FILECOUNT_OFFSET_END, stream::end);
-	this->psArchive >> u16le(fileCount);
+	this->content->seekg(DAT_FILECOUNT_OFFSET_END, stream::end);
+	*this->content >> u16le(fileCount);
 
-	this->psArchive->seekg(DAT_FILECOUNT_OFFSET_END - fileCount * DAT_FAT_ENTRY_LEN, stream::end);
+	this->content->seekg(DAT_FILECOUNT_OFFSET_END - fileCount * DAT_FAT_ENTRY_LEN, stream::end);
 	for (unsigned int i = 0; i < fileCount; i++) {
-		FATEntry *fatEntry = new FATEntry();
-		EntryPtr ep(fatEntry);
+		auto f = this->createNewFATEntry();
 
-		fatEntry->iIndex = i;
-		fatEntry->lenHeader = 0;
-		fatEntry->type = FILETYPE_GENERIC;
-		fatEntry->fAttr = 0;
-		fatEntry->bValid = true;
+		f->iIndex = i;
+		f->lenHeader = 0;
+		f->type = FILETYPE_GENERIC;
+		f->fAttr = 0;
+		f->bValid = true;
 
 		uint8_t lenFilename;
-		this->psArchive
+		*this->content
 			>> u8(lenFilename)
 		;
 		if (lenFilename > 12) lenFilename = 12;
-		this->psArchive
-			>> fixedLength(fatEntry->strName, lenFilename)
+		*this->content
+			>> fixedLength(f->strName, lenFilename)
 		;
 		// Skip over padding chars
-		this->psArchive->seekg(DAT_FILENAME_FIELD_LEN - lenFilename, stream::cur);
-		this->psArchive
-			>> u32le(fatEntry->iOffset)
-			>> u32le(fatEntry->storedSize)
+		this->content->seekg(DAT_FILENAME_FIELD_LEN - lenFilename, stream::cur);
+		*this->content
+			>> u32le(f->iOffset)
+			>> u32le(f->storedSize)
 		;
 
-		fatEntry->realSize = fatEntry->storedSize;
-		this->vcFAT.push_back(ep);
+		f->realSize = f->storedSize;
+		this->vcFAT.push_back(std::move(f));
 	}
 }
 
@@ -194,8 +197,8 @@ void Archive_DAT_Mystic::updateFileName(const FATEntry *pid, const std::string& 
 {
 	// TESTED BY: fmt_dat_mystic_rename
 	assert(strNewName.length() <= DAT_MAX_FILENAME_LEN);
-	this->psArchive->seekp(DAT_FILENAME_OFFSET_END(pid), stream::end);
-	this->psArchive
+	this->content->seekp(DAT_FILENAME_OFFSET_END(pid), stream::end);
+	*this->content
 		<< u8(strNewName.length())
 		<< nullPadded(strNewName, DAT_FILENAME_FIELD_LEN)
 	;
@@ -206,8 +209,8 @@ void Archive_DAT_Mystic::updateFileOffset(const FATEntry *pid, stream::delta off
 {
 	// TESTED BY: fmt_dat_mystic_insert*
 	// TESTED BY: fmt_dat_mystic_resize*
-	this->psArchive->seekp(DAT_FILEOFFSET_OFFSET_END(pid), stream::end);
-	this->psArchive << u32le(pid->iOffset);
+	this->content->seekp(DAT_FILEOFFSET_OFFSET_END(pid), stream::end);
+	*this->content << u32le(pid->iOffset);
 	return;
 }
 
@@ -215,12 +218,12 @@ void Archive_DAT_Mystic::updateFileSize(const FATEntry *pid, stream::delta sizeD
 {
 	// TESTED BY: fmt_dat_mystic_insert*
 	// TESTED BY: fmt_dat_mystic_resize*
-	this->psArchive->seekp(DAT_FILESIZE_OFFSET_END(pid), stream::end);
-	this->psArchive << u32le(pid->storedSize);
+	this->content->seekp(DAT_FILESIZE_OFFSET_END(pid), stream::end);
+	*this->content << u32le(pid->storedSize);
 	return;
 }
 
-FATArchive::FATEntry *Archive_DAT_Mystic::preInsertFile(const FATEntry *idBeforeThis,
+void Archive_DAT_Mystic::preInsertFile(const FATEntry *idBeforeThis,
 	FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_dat_mystic_insert*
@@ -234,17 +237,17 @@ FATArchive::FATEntry *Archive_DAT_Mystic::preInsertFile(const FATEntry *idBefore
 	// than in postInsertFile()) because on return FATArchive will update the
 	// offsets of all FAT entries following this one.  If we don't insert a new
 	// entry now, all the offset changes will be applied to the wrong files.
-	this->psArchive->seekp(DAT_FATENTRY_OFFSET_END(pNewEntry), stream::end);
-	this->psArchive->insert(DAT_FAT_ENTRY_LEN);
+	this->content->seekp(DAT_FATENTRY_OFFSET_END(pNewEntry), stream::end);
+	this->content->insert(DAT_FAT_ENTRY_LEN);
 	this->uncommittedFiles++;
 
-	this->psArchive
+	*this->content
 		<< u8(pNewEntry->strName.length())
 		<< nullPadded(pNewEntry->strName, DAT_FILENAME_FIELD_LEN)
 		<< u32le(pNewEntry->iOffset)
 		<< u32le(pNewEntry->storedSize)
 	;
-	return pNewEntry;
+	return;
 }
 
 void Archive_DAT_Mystic::postInsertFile(FATEntry *pNewEntry)
@@ -256,8 +259,8 @@ void Archive_DAT_Mystic::postInsertFile(FATEntry *pNewEntry)
 
 void Archive_DAT_Mystic::preRemoveFile(const FATEntry *pid)
 {
-	this->psArchive->seekp(DAT_FATENTRY_OFFSET_END(pid), stream::end);
-	this->psArchive->remove(DAT_FAT_ENTRY_LEN);
+	this->content->seekp(DAT_FATENTRY_OFFSET_END(pid), stream::end);
+	this->content->remove(DAT_FAT_ENTRY_LEN);
 	return;
 }
 
@@ -269,8 +272,8 @@ void Archive_DAT_Mystic::postRemoveFile(const FATEntry *pid)
 
 void Archive_DAT_Mystic::updateFileCount(uint32_t newCount)
 {
-	this->psArchive->seekp(DAT_FILECOUNT_OFFSET_END, stream::end);
-	this->psArchive << u16le(newCount);
+	this->content->seekp(DAT_FILECOUNT_OFFSET_END, stream::end);
+	*this->content << u16le(newCount);
 	return;
 }
 

@@ -7,14 +7,11 @@ using namespace camoto::gamearchive;
 
 int main(void)
 {
-	// Get hold of the Manager class
-	ManagerPtr manager = getManager();
-
 	// Use the manager to look up a particular archive format
-	ArchiveTypePtr archiveType = manager->getArchiveTypeByCode("grp-duke3d");
+	auto archiveType = ArchiveManager::byCode("grp-duke3d");
 
 	// Open an archive file on disk
-	stream::file_sptr file(new stream::file());
+	auto file = std::make_shared<stream::file>();
 	file->open("duke3d.grp");
 
 	// We cheat here - we should check and load any supplementary files, but
@@ -23,18 +20,17 @@ int main(void)
 	camoto::SuppData supps;
 
 	// Use the archive format handler to read in the file we opened as an archive
-	ArchivePtr arch = archiveType->open(file, supps);
+	auto arch = archiveType->open(file, supps);
 
 	// Get a list of all the files in the archive
-	const Archive::VC_ENTRYPTR& contents = arch->getFileList();
+	auto& contents = arch->files();
 
 	// Print the size of the list (the number of files in the archive)
 	std::cout << "Found " << contents.size() << " files.\n";
 
 	// Run through the list of files and show the filename
-	for (Archive::VC_ENTRYPTR::const_iterator i = contents.begin(); i != contents.end(); i++) {
-		const Archive::EntryPtr subfile = *i;
-		std::cout << subfile->strName << "\n";
+	for (auto& file : contents) {
+		std::cout << file->strName << "\n";
 	}
 	std::cout << "Done." << std::endl;
 

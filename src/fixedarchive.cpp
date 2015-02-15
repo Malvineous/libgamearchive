@@ -27,13 +27,6 @@
 namespace camoto {
 namespace gamearchive {
 
-/// Resize function which only throws an exception, preventing resize.
-void preventResize(stream::len len)
-{
-	throw stream::write_error("This file is a fixed size, it cannot be made smaller or larger.");
-}
-
-
 /// Generic archive with fixed offsets and sizes.
 /**
  * This class provides access to "files" at specific offsets and lengths in a
@@ -45,13 +38,14 @@ class FixedArchive: virtual public Archive
 		// The archive stream must be mutable, because we need to change it by
 		// seeking and reading data in our get() functions, which don't logically
 		// change the archive's state.
-		mutable stream::inout_sptr psArchive;
+		mutable std::shared_ptr<stream::inout> content;
 
-		struct FixedEntry: virtual public FileEntry {
+		struct FixedEntry: virtual public File {
 			unsigned int index;  ///< Index into FixedArchiveFile array
 		};
 
-		std::vector<FixedArchiveFile> files;  ///< Array of files passed in via the constructor
+		/// Array of files passed in via the constructor.
+		std::vector<FixedArchiveFile> vcFiles;
 
 		// This is a vector of file entries.  Although we have a specific FAT type
 		// for each entry we can't use a vector of them here because getFileList()
@@ -61,30 +55,31 @@ class FixedArchive: virtual public Archive
 		//
 		// The entries in this vector can be in any order (not necessarily the
 		// order on-disk.  Use the iIndex member for that.)
-		VC_ENTRYPTR vcFixedEntries;
+		FileVector vcFixedEntries;
 
-		typedef std::vector<stream::sub_sptr> substream_vc;
+		typedef std::vector<std::shared_ptr<stream::sub>> substream_vc;
 		substream_vc vcSubStream; // List of substreams currently open
 
 	public:
-		FixedArchive(stream::inout_sptr psArchive, std::vector<FixedArchiveFile> files);
+		FixedArchive(std::shared_ptr<stream::inout> content,
+			std::vector<FixedArchiveFile> vcFiles);
 		virtual ~FixedArchive();
 
-		virtual EntryPtr find(const std::string& strFilename) const;
-		virtual const VC_ENTRYPTR& getFileList(void) const;
-		virtual bool isValid(const EntryPtr id) const;
-		virtual stream::inout_sptr open(const EntryPtr id);
+		virtual FileHandle find(const std::string& strFilename) const;
+		virtual const FileVector& files(void) const;
+		virtual bool isValid(const FileHandle& id) const;
+		virtual std::shared_ptr<stream::inout> open(const FileHandle& id);
 
 		/**
 		 * @note Will always throw an exception as there are never any subfolders.
 		 */
-		virtual ArchivePtr openFolder(const EntryPtr id);
+		virtual std::unique_ptr<Archive> openFolder(const FileHandle& id);
 
 		/**
 		 * @note Will always throw an exception as the files are fixed and
 		 *       thus can't be added to.
 		 */
-		virtual EntryPtr insert(const EntryPtr idBeforeThis,
+		virtual FileHandle insert(const FileHandle& idBeforeThis,
 			const std::string& strFilename, stream::pos storedSize, std::string type,
 			int attr
 		);
@@ -93,63 +88,60 @@ class FixedArchive: virtual public Archive
 		 * @note Will always throw an exception as the files are fixed and
 		 *       thus can't be removed.
 		 */
-		virtual void remove(EntryPtr id);
+		virtual void remove(FileHandle& id);
 
 		/**
 		 * @note Will always throw an exception as it makes no sense to rename
 		 *       the made up filenames in this archive format.
 		 */
-		virtual void rename(EntryPtr id, const std::string& strNewName);
+		virtual void rename(FileHandle& id, const std::string& strNewName);
 
 		/**
 		 * @note Will always throw an exception as fixed files can't be moved.
 		 */
-		virtual void move(const EntryPtr idBeforeThis, EntryPtr id);
+		virtual void move(const FileHandle& idBeforeThis, FileHandle& id);
 
 		/**
 		 * @note Will always throw an exception as fixed files can't be resized.
 		 */
-		virtual void resize(EntryPtr id, stream::pos newStoredSize,
+		virtual void resize(FileHandle& id, stream::pos newStoredSize,
 			stream::pos newRealSize);
 
 		virtual void flush();
 		virtual int getSupportedAttributes() const;
-
-		/// Substream truncate callback to resize the substream.
-		void resizeSubstream(EntryPtr id, stream::len newSize);
 };
 
-ArchivePtr createFixedArchive(stream::inout_sptr psArchive,
-	std::vector<FixedArchiveFile> files)
+std::unique_ptr<Archive> createFixedArchive(
+	std::shared_ptr<stream::inout> content, std::vector<FixedArchiveFile> vcFiles)
 {
-	return ArchivePtr(new FixedArchive(psArchive, files));
+	return std::unique_ptr<Archive>(new FixedArchive(content, vcFiles));
 }
 
 
-FixedArchive::FixedArchive(stream::inout_sptr psArchive, std::vector<FixedArchiveFile> files)
-	:	psArchive(psArchive),
-		files(files)
+FixedArchive::FixedArchive(std::shared_ptr<stream::inout> content,
+	std::vector<FixedArchiveFile> vcFiles)
+	:	content(content),
+		vcFiles(vcFiles)
 {
 	int j = 0;
-	for (std::vector<FixedArchiveFile>::iterator i = files.begin(); i != files.end(); i++) {
-		FixedEntry *fe = new FixedEntry();
-		EntryPtr ep(fe);
-		fe->bValid = true;
-		fe->storedSize = i->size;
-		if (i->fnResize) {
-			fe->realSize = i->fnResize(psArchive, j, (stream::len)-1, (stream::len)-1);
+	for (auto& i : this->vcFiles) {
+		auto f = std::make_unique<FixedEntry>();
+		f->bValid = true;
+		f->storedSize = i.size;
+		if (i.fnResize) {
+			f->realSize = i.fnResize(content, j, (stream::len)-1, (stream::len)-1);
 		} else {
-			fe->realSize = i->size;
+			f->realSize = i.size;
 		}
-		fe->strName = i->name;
-		fe->type = FILETYPE_GENERIC;
-		fe->filter = i->filter;
-		fe->fAttr = 0;
-		if (!i->filter.empty()) fe->fAttr |= EA_COMPRESSED;
+		f->strName = i.name;
+		f->type = FILETYPE_GENERIC;
+		f->filter = i.filter;
+		f->fAttr = 0;
+		if (!i.filter.empty()) f->fAttr |= EA_COMPRESSED;
 
-		fe->index = j++;
+		f->index = j++;
 
-		this->vcFixedEntries.push_back(ep);
+		this->vcFixedEntries.push_back(std::move(f));
 	}
 }
 
@@ -157,52 +149,68 @@ FixedArchive::~FixedArchive()
 {
 }
 
-const FixedArchive::VC_ENTRYPTR& FixedArchive::getFileList() const
+const Archive::FileVector& FixedArchive::files() const
 {
 	return this->vcFixedEntries;
 }
 
-FixedArchive::EntryPtr FixedArchive::find(const std::string& strFilename) const
+Archive::FileHandle FixedArchive::find(const std::string& strFilename) const
 {
 	// TESTED BY: TODO
-	for (VC_ENTRYPTR::const_iterator i = this->vcFixedEntries.begin();
-		i != this->vcFixedEntries.end();
-		i++
-	) {
-		const FixedEntry *entry = dynamic_cast<const FixedEntry *>(i->get());
-		const FixedArchiveFile *file = &this->files[entry->index];
+	for (auto& i : this->vcFixedEntries) {
+		const FixedEntry *entry = dynamic_cast<const FixedEntry *>(i.get());
+		const FixedArchiveFile *file = &this->vcFiles[entry->index];
 		if (boost::iequals(file->name, strFilename)) {
-			return *i;  // *i is the original shared_ptr
+			return i;  // i is the original shared_ptr
 		}
 	}
-	return EntryPtr();
+	return nullptr;
 }
 
-bool FixedArchive::isValid(const EntryPtr id) const
+bool FixedArchive::isValid(const FileHandle& id) const
 {
 	const FixedEntry *id2 = dynamic_cast<const FixedEntry *>(id.get());
-	return ((id2) && (id2->index < this->files.size()));
+	return ((id2) && (id2->index < this->vcFiles.size()));
 }
 
-stream::inout_sptr FixedArchive::open(const EntryPtr id)
+std::shared_ptr<stream::inout> FixedArchive::open(const FileHandle& id)
 {
 	// TESTED BY: TODO
 	const FixedEntry *entry = dynamic_cast<const FixedEntry *>(id.get());
-	const FixedArchiveFile *file = &this->files[entry->index];
-	stream::fn_truncate fnTrunc = boost::bind(&FixedArchive::resizeSubstream,
-		this, id, _1);
-	stream::sub_sptr psSub(new stream::sub());
-	psSub->open(
-		this->psArchive,
+	const FixedArchiveFile *file = &this->vcFiles[entry->index];
+	auto psSub = std::make_shared<stream::sub>(
+		this->content,
 		file->offset,
 		file->size,
-		fnTrunc
+		[id, this](stream::output_sub* sub, stream::len newSize) {
+			// An open substream belonging to file entry 'id' wants to be resized.
+
+			stream::len newRealSize;
+			if (id->fAttr & EA_COMPRESSED) {
+				// We're compressed, so the real and stored sizes are both valid
+				newRealSize = id->realSize;
+			} else {
+				// We're not compressed, so the real size won't be updated by a filter,
+				// so we need to update it here.
+				newRealSize = newSize;
+			}
+
+			// Resize the file in the archive.  This function will also tell the
+			// substream it can now write to a larger area.
+			// We are updating both the stored (in-archive) and the real (extracted)
+			// sizes, to handle the case where no filters are used and the sizes are
+			// the same.  When filters are in use, the flush() function that writes
+			// the filtered data out should call us first, then call the archive's
+			// resize() function with the correct real/extracted size.
+			FileHandle& id_noconst = const_cast<FileHandle&>(id);
+			this->resize(id_noconst, newSize, newRealSize);
+		}
 	);
 	this->vcSubStream.push_back(psSub);
 	return psSub;
 }
 
-ArchivePtr FixedArchive::openFolder(const Archive::EntryPtr id)
+std::unique_ptr<Archive> FixedArchive::openFolder(const Archive::FileHandle& id)
 {
 	// This function should only be called for folders (not files)
 	assert(id->fAttr & EA_FOLDER);
@@ -212,7 +220,7 @@ ArchivePtr FixedArchive::openFolder(const Archive::EntryPtr id)
 		"doesn't have any folders.");
 }
 
-FixedArchive::EntryPtr FixedArchive::insert(const EntryPtr idBeforeThis,
+Archive::FileHandle FixedArchive::insert(const FileHandle& idBeforeThis,
 	const std::string& strFilename, stream::pos storedSize, std::string type,
 	int attr
 )
@@ -220,28 +228,28 @@ FixedArchive::EntryPtr FixedArchive::insert(const EntryPtr idBeforeThis,
 	throw stream::error("This is a fixed archive, files cannot be inserted.");
 }
 
-void FixedArchive::remove(EntryPtr id)
+void FixedArchive::remove(FileHandle& id)
 {
 	throw stream::error("This is a fixed archive, files cannot be removed.");
 }
 
-void FixedArchive::rename(EntryPtr id, const std::string& strNewName)
+void FixedArchive::rename(FileHandle& id, const std::string& strNewName)
 {
 	throw stream::error("This is a fixed archive, files cannot be renamed.");
 }
 
-void FixedArchive::move(const EntryPtr idBeforeThis, EntryPtr id)
+void FixedArchive::move(const FileHandle& idBeforeThis, FileHandle& id)
 {
 	throw stream::error("This is a fixed archive, files cannot be moved.");
 }
 
-void FixedArchive::resize(EntryPtr id, stream::pos newStoredSize,
+void FixedArchive::resize(FileHandle& id, stream::pos newStoredSize,
 	stream::pos newRealSize)
 {
 	const FixedEntry *entry = dynamic_cast<const FixedEntry *>(id.get());
-	const FixedArchiveFile *file = &this->files[entry->index];
+	const FixedArchiveFile *file = &this->vcFiles[entry->index];
 	if (file->fnResize) {
-		file->fnResize(this->psArchive, entry->index, newStoredSize, newRealSize);
+		file->fnResize(this->content, entry->index, newStoredSize, newRealSize);
 	} else if (id->storedSize != newStoredSize) {
 		throw stream::error(createString("This is a fixed archive, files "
 			"cannot be resized (tried to resize to " << newStoredSize <<
@@ -260,32 +268,6 @@ void FixedArchive::flush()
 int FixedArchive::getSupportedAttributes() const
 {
 	return 0;
-}
-
-void FixedArchive::resizeSubstream(EntryPtr id, stream::len newSize)
-{
-	// An open substream belonging to file entry 'id' wants to be resized.
-
-	// Resize the file in the archive.  This function will also tell the
-	// substream it can now write to a larger area.
-
-	// We are updating both the stored (in-archive) and the real (extracted)
-	// sizes, to handle the case where no filters are used and the sizes are
-	// the same.  When filters are in use, the flush() function that writes
-	// the filtered data out should call us first, then call the archive's
-	// resize() function with the correct real/extracted size.
-	//this->resize(id, newSize, newSize);
-	stream::len newRealSize;
-	if (id->fAttr & EA_COMPRESSED) {
-		// We're compressed, so the real and stored sizes are both valid
-		newRealSize = id->realSize;
-	} else {
-		// We're not compressed, so the real size won't be updated by a filter,
-		// so we need to update it here.
-		newRealSize = newSize;
-	}
-	this->resize(id, newSize, newRealSize);
-	return;
 }
 
 } // namespace gamearchive

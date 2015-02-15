@@ -23,9 +23,11 @@
 #ifndef _CAMOTO_GAMEARCHIVE_FILTERTYPE_HPP_
 #define _CAMOTO_GAMEARCHIVE_FILTERTYPE_HPP_
 
+#include <memory>
 #include <vector>
 #include <camoto/filter.hpp>
 #include <camoto/stream.hpp>
+#include <camoto/stream_filtered.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -45,19 +47,19 @@ class FilterType
 		 *
 		 * @return The filter's short name/ID.
 		 */
-		virtual std::string getFilterCode() const = 0;
+		virtual std::string code() const = 0;
 
 		/// Get the filter name, e.g. "Zone 66 compression"
 		/**
 		 * @return The filter name.
 		 */
-		virtual std::string getFriendlyName() const = 0;
+		virtual std::string friendlyName() const = 0;
 
 		/// Get a list of games using this format.
 		/**
 		 * @return A vector of game names, such as "Zone 66".
 		 */
-		virtual std::vector<std::string> getGameList() const = 0;
+		virtual std::vector<std::string> games() const = 0;
 
 		/// Apply the algorithm to an iostream.
 		/**
@@ -85,28 +87,22 @@ class FilterType
 		 * @return Clear/plaintext stream providing data from target after
 		 *   processing.
 		 */
-		virtual stream::inout_sptr apply(stream::inout_sptr target,
-			stream::fn_truncate resize) const = 0;
+		virtual std::unique_ptr<stream::inout> apply(std::shared_ptr<stream::inout> target,
+			stream::fn_truncate_filter resize) const = 0;
 
 		/// Apply the algorithm to an input stream.
 		/**
-		 * @sa apply(stream::inout_sptr)
+		 * @sa apply(std::shared_ptr<stream::inout>)
 		 */
-		virtual stream::input_sptr apply(stream::input_sptr target) const = 0;
+		virtual std::unique_ptr<stream::input> apply(std::shared_ptr<stream::input> target) const = 0;
 
 		/// Apply the algorithm to an output stream.
 		/**
-		 * @sa apply(stream::inout_sptr)
+		 * @sa apply(std::shared_ptr<stream::inout>)
 		 */
-		virtual stream::output_sptr apply(stream::output_sptr target,
-			stream::fn_truncate resize) const = 0;
+		virtual std::unique_ptr<stream::output> apply(std::shared_ptr<stream::output> target,
+			stream::fn_truncate_filter resize) const = 0;
 };
-
-/// Shared pointer to an FilterType.
-typedef boost::shared_ptr<FilterType> FilterTypePtr;
-
-/// Vector of FilterType shared pointers.
-typedef std::vector<FilterTypePtr> FilterTypeVector;
 
 } // namespace gamearchive
 } // namespace camoto

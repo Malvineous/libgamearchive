@@ -24,6 +24,7 @@
 #include <boost/algorithm/string.hpp>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/stream_memory.hpp>
+#include <camoto/util.hpp> // std::make_unique
 #include "fmt-rff-blood.hpp"
 #include "filter-xor-blood.hpp"
 
@@ -56,40 +57,41 @@ ArchiveType_RFF_Blood::~ArchiveType_RFF_Blood()
 {
 }
 
-std::string ArchiveType_RFF_Blood::getArchiveCode() const
+std::string ArchiveType_RFF_Blood::code() const
 {
 	return "rff-blood";
 }
 
-std::string ArchiveType_RFF_Blood::getFriendlyName() const
+std::string ArchiveType_RFF_Blood::friendlyName() const
 {
 	return "Monolith Resource File Format";
 }
 
-std::vector<std::string> ArchiveType_RFF_Blood::getFileExtensions() const
+std::vector<std::string> ArchiveType_RFF_Blood::fileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("rff");
 	return vcExtensions;
 }
 
-std::vector<std::string> ArchiveType_RFF_Blood::getGameList() const
+std::vector<std::string> ArchiveType_RFF_Blood::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Blood");
 	return vcGames;
 }
 
-ArchiveType::Certainty ArchiveType_RFF_Blood::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_RFF_Blood::isInstance(
+	stream::input& content) const
 {
-	stream::pos lenArchive = psArchive->size();
+	stream::pos lenArchive = content.size();
 
 	// TESTED BY: fmt_rff_blood_isinstance_c02
 	if (lenArchive < RFF_HEADER_LEN) return DefinitelyNo; // too short
 
 	char sig[4];
-	psArchive->seekg(0, stream::start);
-	psArchive->read(sig, 4);
+	content.seekg(0, stream::start);
+	content.read(sig, 4);
 
 	// TESTED BY: fmt_rff_blood_isinstance_c00
 	if (strncmp(sig, "RFF\x1A", 4) == 0) return DefinitelyYes;
@@ -98,10 +100,11 @@ ArchiveType::Certainty ArchiveType_RFF_Blood::isInstance(stream::input_sptr psAr
 	return DefinitelyNo;
 }
 
-ArchivePtr ArchiveType_RFF_Blood::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_RFF_Blood::create(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	psArchive->seekp(0, stream::start);
-	psArchive
+	content->seekp(0, stream::start);
+	*content
 		<< "RFF\x1A"
 		<< u32le(0x0200)          // Default version
 		<< u32le(RFF_HEADER_LEN)  // FAT offset
@@ -110,15 +113,16 @@ ArchivePtr ArchiveType_RFF_Blood::newArchive(stream::inout_sptr psArchive, SuppD
 		<< u32le(0)               // Unknown
 		<< u32le(0)               // Unknown
 		<< u32le(0);              // Unknown
-	return ArchivePtr(new Archive_RFF_Blood(psArchive));
+	return std::make_unique<Archive_RFF_Blood>(content);
 }
 
-ArchivePtr ArchiveType_RFF_Blood::open(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_RFF_Blood::open(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return ArchivePtr(new Archive_RFF_Blood(psArchive));
+	return std::make_unique<Archive_RFF_Blood>(content);
 }
 
-SuppFilenames ArchiveType_RFF_Blood::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_RFF_Blood::getRequiredSupps(stream::input& content,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -126,20 +130,20 @@ SuppFilenames ArchiveType_RFF_Blood::getRequiredSupps(stream::input_sptr data,
 }
 
 
-Archive_RFF_Blood::Archive_RFF_Blood(stream::inout_sptr psArchive)
-	:	FATArchive(psArchive, RFF_FIRST_FILE_OFFSET, ARCH_STD_DOS_FILENAMES),
+Archive_RFF_Blood::Archive_RFF_Blood(std::shared_ptr<stream::inout> content)
+	:	FATArchive(content, RFF_FIRST_FILE_OFFSET, ARCH_STD_DOS_FILENAMES),
 		modifiedFAT(false)
 {
-	stream::pos lenArchive = this->psArchive->size();
+	stream::pos lenArchive = this->content->size();
 
 	if (lenArchive < 16) throw stream::error("File too short");
 
-	this->psArchive->seekg(4, stream::start); // skip "RFF\x1A" sig
+	this->content->seekg(4, stream::start); // skip "RFF\x1A" sig
 
 	uint32_t offFAT, numFiles;
 	uint16_t unknown1;
 
-	this->psArchive
+	*this->content
 		>> u16le(this->version)
 		>> u16le(unknown1)
 		>> u32le(offFAT)
@@ -151,55 +155,52 @@ Archive_RFF_Blood::Archive_RFF_Blood(stream::inout_sptr psArchive)
 	}
 
 	// Create a substream to decrypt the FAT
-	stream::sub_sptr fatSubStream(new stream::sub());
-	fatSubStream->open(
-		this->psArchive,
+	auto fatSubStream = std::make_shared<stream::sub>(
+		this->content,
 		offFAT,
 		numFiles * RFF_FAT_ENTRY_LEN,
-		NULL
+		stream::fn_truncate_sub()
 	);
 
 	// Decrypt the FAT if needed
-	stream::input_sptr fatPlaintext;
+	std::shared_ptr<stream::input> fatPlaintext;
 	if (this->version >= 0x301) {
 		// The FAT is encrypted in this version
-		filter_sptr fatCrypt(new filter_rff_crypt(0, offFAT & 0xFF));
-		stream::input_filtered_sptr filt(new stream::input_filtered());
-		filt->open(fatSubStream, fatCrypt);
-		fatPlaintext = filt;
+		fatPlaintext = std::make_shared<stream::input_filtered>(
+			fatSubStream,
+			std::make_shared<filter_rff_crypt>(0, offFAT & 0xFF)
+		);
 	} else {
 		fatPlaintext = fatSubStream;
 	}
 
 	// Copy the decrypted FAT into memory
-	stream::memory_sptr tempStorage(new stream::memory());
-	this->fatStream.reset(new stream::seg());
-	this->fatStream->open(tempStorage);
+	auto tempStorage = std::make_shared<stream::memory>();
+	this->fatStream = std::make_shared<stream::seg>(tempStorage);
 	this->fatStream->seekp(0, stream::start);
 	this->fatStream->insert(numFiles * RFF_FAT_ENTRY_LEN);
-	stream::copy(this->fatStream, fatPlaintext);
+	stream::copy(*this->fatStream, *fatPlaintext);
 
 	this->fatStream->seekg(0, stream::start);
 
 	for (unsigned int i = 0; i < numFiles; i++) {
-		FATEntry *fatEntry = new FATEntry();
-		EntryPtr ep(fatEntry);
+		auto f = this->createNewFATEntry();
 
-		fatEntry->iIndex = i;
-		fatEntry->lenHeader = 0;
-		fatEntry->type = FILETYPE_GENERIC;
-		fatEntry->fAttr = 0;
-		fatEntry->bValid = true;
+		f->iIndex = i;
+		f->lenHeader = 0;
+		f->type = FILETYPE_GENERIC;
+		f->fAttr = 0;
+		f->bValid = true;
 
 		uint32_t lastModified, unknown2, unknown3;
 		uint8_t flags;
 		std::string dummy;
 		std::string filename;
 		//fatFilter->seekg(16, stream::cur);
-		this->fatStream
+		*this->fatStream
 			>> fixedLength(dummy, 16)
-			>> u32le(fatEntry->iOffset)
-			>> u32le(fatEntry->storedSize)
+			>> u32le(f->iOffset)
+			>> u32le(f->storedSize)
 			>> u32le(unknown2)
 			>> u32le(lastModified)
 			>> u8(flags)
@@ -207,17 +208,17 @@ Archive_RFF_Blood::Archive_RFF_Blood(stream::inout_sptr psArchive)
 			>> u32le(unknown3);
 
 		if (flags & RFF_FILE_ENCRYPTED) {
-			fatEntry->fAttr |= EA_ENCRYPTED;
-			fatEntry->filter = "xor-blood"; // decryption algorithm
+			f->fAttr |= EA_ENCRYPTED;
+			f->filter = "xor-blood"; // decryption algorithm
 		}
 
 		int lenExt = 0, lenBase = 0;
 		while (lenExt  < 3) { if (!filename[    lenExt ]) break; lenExt++; }
 		while (lenBase < 8) { if (!filename[3 + lenBase]) break; lenBase++; }
-		fatEntry->strName = filename.substr(3, lenBase) + "." + filename.substr(0, lenExt);
+		f->strName = filename.substr(3, lenBase) + "." + filename.substr(0, lenExt);
 
-		fatEntry->realSize = fatEntry->storedSize;
-		this->vcFAT.push_back(ep);
+		f->realSize = f->storedSize;
+		this->vcFAT.push_back(std::move(f));
 	}
 }
 
@@ -269,8 +270,8 @@ void Archive_RFF_Blood::setMetadata(MetadataType item, const std::string& value)
 			if (newVersion < 0x301) {
 				// Moving from a version that supports encryption to one that doesn't,
 				// so make sure there are no encrypted files.
-				for (VC_ENTRYPTR::iterator i = this->vcFAT.begin(); i != this->vcFAT.end(); i++) {
-					FATEntry *pFAT = dynamic_cast<FATEntry *>(i->get());
+				for (auto& i : this->vcFAT) {
+					auto pFAT = dynamic_cast<const FATEntry *>(&*i);
 					if (pFAT->fAttr & EA_ENCRYPTED) {
 						throw stream::error("cannot change to this version while the "
 							"archive contains encrypted files (the target version does not "
@@ -281,9 +282,9 @@ void Archive_RFF_Blood::setMetadata(MetadataType item, const std::string& value)
 			this->version = newVersion;
 
 			// Write new version number into file header
-			this->psArchive->seekg(4, stream::start);
-			this->psArchive << u16le(this->version);
-			this->psArchive << u16le(0); // TODO: write 1 here for 0x200?
+			this->content->seekg(4, stream::start);
+			*this->content << u16le(this->version);
+			*this->content << u16le(0); // TODO: write 1 here for 0x200?
 			break;
 		}
 		default:
@@ -307,66 +308,66 @@ void Archive_RFF_Blood::flush()
 			assert(pLast);
 			offFAT = pLast->iOffset + pLast->lenHeader + pLast->storedSize;
 		}
-		this->psArchive->seekp(RFF_FATOFFSET_OFFSET, stream::start);
-		this->psArchive << u32le(offFAT);
+		this->content->seekp(RFF_FATOFFSET_OFFSET, stream::start);
+		*this->content << u32le(offFAT);
 
 		// Work out how much to add to or remove from the end of the archive so that
 		// it ends immediately following the FAT.
-		stream::pos lenArchive = this->psArchive->size();
+		stream::pos lenArchive = this->content->size();
 		stream::pos offEndFAT = offFAT + this->vcFAT.size() * RFF_FAT_ENTRY_LEN;
 		stream::delta lenDelta = offEndFAT - lenArchive;
 
 		// If we need to make room for a larger FAT, do that now so there's room to
 		// commit it.  If we're removing data we'll do that later.
 		if (lenDelta > 0) {
-			//this->psArchive->seekp(offEndFAT, stream::start);
-			this->psArchive->seekp(offFAT, stream::start);
-			this->psArchive->insert(lenDelta);
+			//this->content->seekp(offEndFAT, stream::start);
+			this->content->seekp(offFAT, stream::start);
+			this->content->insert(lenDelta);
 
 		} else if (lenDelta < 0) {
 			// If there's extra data in the archive following the FAT, remove that now.
 			// This will remove data from the FAT but that's ok because we have it all
 			// in memory and we're about to write it out.
-			//this->psArchive->seekp(offEndFAT, stream::start);
-			this->psArchive->seekp(offFAT, stream::start);
-			this->psArchive->remove(-lenDelta);
+			//this->content->seekp(offEndFAT, stream::start);
+			this->content->seekp(offFAT, stream::start);
+			this->content->remove(-lenDelta);
 		}
 
 		// Write the FAT back out
 
 		// Create a substream to decrypt the FAT
-		stream::sub_sptr fatSubStream(new stream::sub());
-		fatSubStream->open(
-			this->psArchive,
+		auto fatSubStream = std::make_shared<stream::sub>(
+			this->content,
 			offFAT,
 			this->vcFAT.size() * RFF_FAT_ENTRY_LEN,
-			NULL
+			stream::fn_truncate_sub()
 		);
 
-		stream::output_sptr fatPlaintext;
+		std::shared_ptr<stream::output> fatPlaintext;
 		if (this->version >= 0x301) {
 			// The FAT is encrypted in this version
-			filter_sptr fatCrypt(new filter_rff_crypt(0, offFAT & 0xFF));
-			stream::output_filtered_sptr filt(new stream::output_filtered());
-			filt->open(fatSubStream, fatCrypt, NULL);
-			fatPlaintext = filt;
+			fatPlaintext = std::make_shared<stream::output_filtered>(
+				fatSubStream,
+				std::make_shared<filter_rff_crypt>(0, offFAT & 0xFF),
+				stream::fn_truncate_filter()
+			);
 		} else {
 			fatPlaintext = fatSubStream;
 		}
 
 		this->fatStream->seekg(0, stream::start);
-		stream::copy(fatPlaintext, this->fatStream);
+		stream::copy(*fatPlaintext, *this->fatStream);
 		// Need to flush here because we're going to access the underlying stream
 		fatPlaintext->flush();
 
 		// Write the new FAT offset into the file header
-		this->psArchive->seekp(RFF_FATOFFSET_OFFSET, stream::start);
-		this->psArchive << u32le(offFAT);
+		this->content->seekp(RFF_FATOFFSET_OFFSET, stream::start);
+		*this->content << u32le(offFAT);
 
 		this->modifiedFAT = false;
 	}
 
-	// Commit this->psArchive
+	// Commit this->content
 	this->FATArchive::flush();
 	return;
 }
@@ -382,7 +383,7 @@ void Archive_RFF_Blood::updateFileName(const FATEntry *pid, const std::string& s
 	// If we reach here the filename was OK
 
 	this->fatStream->seekp(RFF_FILENAME_OFFSET(pid), stream::start);
-	this->fatStream
+	*this->fatStream
 		<< nullPadded(ext, 3)
 		<< nullPadded(base, 8);
 
@@ -395,7 +396,7 @@ void Archive_RFF_Blood::updateFileOffset(const FATEntry *pid, stream::delta offD
 	// TESTED BY: fmt_rff_blood_insert*
 	// TESTED BY: fmt_rff_blood_resize*
 	this->fatStream->seekp(RFF_FILEOFFSET_OFFSET(pid), stream::start);
-	this->fatStream << u32le(pid->iOffset);
+	*this->fatStream << u32le(pid->iOffset);
 	this->modifiedFAT = true;
 	return;
 }
@@ -405,12 +406,12 @@ void Archive_RFF_Blood::updateFileSize(const FATEntry *pid, stream::delta sizeDe
 	// TESTED BY: fmt_rff_blood_insert*
 	// TESTED BY: fmt_rff_blood_resize*
 	this->fatStream->seekp(RFF_FILESIZE_OFFSET(pid), stream::start);
-	this->fatStream << u32le(pid->storedSize);
+	*this->fatStream << u32le(pid->storedSize);
 	this->modifiedFAT = true;
 	return;
 }
 
-FATArchive::FATEntry *Archive_RFF_Blood::preInsertFile(const FATEntry *idBeforeThis,
+void Archive_RFF_Blood::preInsertFile(const FATEntry *idBeforeThis,
 	FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_rff_blood_insert*
@@ -439,7 +440,7 @@ FATArchive::FATEntry *Archive_RFF_Blood::preInsertFile(const FATEntry *idBeforeT
 	this->fatStream->seekp(RFF_FATENTRY_OFFSET(pNewEntry), stream::start);
 	this->fatStream->insert(RFF_FAT_ENTRY_LEN);
 
-	this->fatStream
+	*this->fatStream
 		<< nullPadded("", 16) // unknown
 		<< u32le(pNewEntry->iOffset)
 		<< u32le(pNewEntry->storedSize)
@@ -451,7 +452,7 @@ FATArchive::FATEntry *Archive_RFF_Blood::preInsertFile(const FATEntry *idBeforeT
 		<< u32le(0); // unknown
 
 	this->modifiedFAT = true;
-	return pNewEntry;
+	return;
 }
 
 void Archive_RFF_Blood::postInsertFile(FATEntry *pNewEntry)
@@ -476,8 +477,8 @@ void Archive_RFF_Blood::postRemoveFile(const FATEntry *pid)
 
 void Archive_RFF_Blood::updateFileCount(uint32_t newCount)
 {
-	this->psArchive->seekp(RFF_FILECOUNT_OFFSET, stream::start);
-	this->psArchive << u32le(newCount);
+	this->content->seekp(RFF_FILECOUNT_OFFSET, stream::start);
+	*this->content << u32le(newCount);
 	return;
 }
 
@@ -485,9 +486,9 @@ stream::pos Archive_RFF_Blood::getDescOffset() const
 {
 	stream::pos offDesc;
 	if (this->vcFAT.size()) {
-		EntryPtr lastFile = this->vcFAT.back();
+		auto lastFile = this->vcFAT.back();
 		assert(lastFile);
-		FATEntry *lastFATEntry = dynamic_cast<FATEntry *>(lastFile.get());
+		auto lastFATEntry = dynamic_cast<const FATEntry *>(lastFile.get());
 		offDesc = lastFATEntry->iOffset + lastFATEntry->storedSize;
 	} else {
 		offDesc = RFF_FIRST_FILE_OFFSET;

@@ -18,31 +18,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/iostreams/copy.hpp>
-#include <camoto/gamearchive/archivetype.hpp>
+#include <camoto/util.hpp>
 #include <camoto/gamearchive/archive.hpp>
 
 namespace camoto {
 namespace gamearchive {
 
-Archive::FileEntry::FileEntry()
+Archive::File::File()
 {
 }
 
-Archive::FileEntry::~FileEntry()
+Archive::File::~File()
 {
 }
 
-std::string Archive::FileEntry::getContent() const
+std::string Archive::File::getContent() const
 {
-	std::ostringstream ss;
-	ss << "name=" << this->strName
-		<< ";size=" << this->storedSize
-		<< ";realSize=" << this->realSize
-		<< ";type=" << this->type
-		<< ";filter=" << this->filter
-		<< ";attr=" << this->fAttr;
-	return ss.str();
+	return createString(
+		std::string("name=") << this->strName << ";"
+		"size=" << this->storedSize << ";"
+		"realSize=" << this->realSize << ";"
+		"type=" << this->type << ";"
+		"filter=" << this->filter << ";"
+		"attr=" << this->fAttr
+	);
 }
 
 } // namespace gamearchive

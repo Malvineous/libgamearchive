@@ -26,7 +26,7 @@ namespace camoto {
 namespace gamearchive {
 
 /// Update the decompressed-size field for RLE-compressed files
-stream::len ddaveResize(stream::inout_sptr arch, unsigned int index,
+stream::len ddaveResize(std::shared_ptr<stream::inout> arch, unsigned int index,
 	stream::len newStoredSize, stream::len newRealSize);
 
 FixedArchiveFile ddave_file_list[] = {
@@ -52,14 +52,14 @@ FixedArchiveFile ddave_file_list[] = {
 	{LEVEL_OFFSET(9), SIZE_LEVEL, "level10.dav", FILTER_NONE, RESIZE_NONE},
 };
 
-stream::len ddaveResize(stream::inout_sptr arch, unsigned int index,
+stream::len ddaveResize(std::shared_ptr<stream::inout> arch, unsigned int index,
 	stream::len newStoredSize, stream::len newRealSize)
 {
 	if ((newStoredSize == (stream::len)-1) && (newRealSize == (stream::len)-1)) {
 		// Not resizing but querying expanded size
 		uint32_t len;
 		arch->seekp(ddave_file_list[index].offset - 4, stream::start);
-		arch >> u32le(len);
+		*arch >> u32le(len);
 		return len;
 	}
 	if (newStoredSize > ddave_file_list[index].size) {
@@ -67,7 +67,7 @@ stream::len ddaveResize(stream::inout_sptr arch, unsigned int index,
 			"file to fit this data.");
 	}
 	arch->seekp(ddave_file_list[index].offset - 4, stream::start);
-	arch << u32le(newRealSize);
+	*arch << u32le(newRealSize);
 	// The stored size is ignored because it's small enough to fit in the existing
 	// slot, and with the decompressed size at the start the game will ignore the
 	// extra data.
@@ -82,39 +82,40 @@ ArchiveType_EXE_DDave::~ArchiveType_EXE_DDave()
 {
 }
 
-std::string ArchiveType_EXE_DDave::getArchiveCode() const
+std::string ArchiveType_EXE_DDave::code() const
 {
 	return "exe-ddave";
 }
 
-std::string ArchiveType_EXE_DDave::getFriendlyName() const
+std::string ArchiveType_EXE_DDave::friendlyName() const
 {
 	return "Dangerous Dave Executable";
 }
 
-std::vector<std::string> ArchiveType_EXE_DDave::getFileExtensions() const
+std::vector<std::string> ArchiveType_EXE_DDave::fileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("exe");
 	return vcExtensions;
 }
 
-std::vector<std::string> ArchiveType_EXE_DDave::getGameList() const
+std::vector<std::string> ArchiveType_EXE_DDave::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Dangerous Dave");
 	return vcGames;
 }
 
-ArchiveType::Certainty ArchiveType_EXE_DDave::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_EXE_DDave::isInstance(
+	stream::input& content) const
 {
-	stream::pos lenArchive = psArchive->size();
+	stream::pos lenArchive = content.size();
 
 	if (lenArchive == 172848) {
 		// TESTED BY: TODO fixed_exe_ddave_isinstance_c00
-		psArchive->seekg(0x26A80, stream::start);
+		content.seekg(0x26A80, stream::start);
 		char buffer[25];
-		psArchive->read(buffer, 25);
+		content.read(buffer, 25);
 		// No version strings, so check some data unlikely to be modded
 		if (strncmp(buffer, "Trouble loading tileset!$", 25) != 0)
 			return DefinitelyNo;
@@ -126,23 +127,25 @@ ArchiveType::Certainty ArchiveType_EXE_DDave::isInstance(stream::input_sptr psAr
 	return DefinitelyNo;
 }
 
-ArchivePtr ArchiveType_EXE_DDave::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_EXE_DDave::create(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
 	// This isn't a true archive so we can't create new versions of it.
 	throw stream::error("Can't create a new archive in this format.");
 }
 
-ArchivePtr ArchiveType_EXE_DDave::open(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_EXE_DDave::open(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
 	std::vector<FixedArchiveFile> files;
 	files.reserve(sizeof(ddave_file_list) / sizeof(FixedArchiveFile));
 	for (unsigned int i = 0; i < sizeof(ddave_file_list) / sizeof(FixedArchiveFile); i++) {
 		files.push_back(ddave_file_list[i]);
 	}
-	return createFixedArchive(psArchive, files);
+	return createFixedArchive(content, files);
 }
 
-SuppFilenames ArchiveType_EXE_DDave::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_EXE_DDave::getRequiredSupps(stream::input& content,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list

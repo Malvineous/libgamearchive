@@ -46,14 +46,14 @@ class FilterType_SAM_Base: virtual public FilterType
 		FilterType_SAM_Base(int resetInterval);
 		virtual ~FilterType_SAM_Base();
 
-		virtual std::string getFilterCode() const;
-		virtual std::string getFriendlyName() const;
-		virtual std::vector<std::string> getGameList() const;
-		virtual stream::inout_sptr apply(stream::inout_sptr target,
-			stream::fn_truncate resize) const;
-		virtual stream::input_sptr apply(stream::input_sptr target) const;
-		virtual stream::output_sptr apply(stream::output_sptr target,
-			stream::fn_truncate resize) const;
+		virtual std::string code() const;
+		virtual std::string friendlyName() const;
+		virtual std::vector<std::string> games() const;
+		virtual std::unique_ptr<stream::inout> apply(std::shared_ptr<stream::inout> target,
+			stream::fn_truncate_filter resize) const;
+		virtual std::unique_ptr<stream::input> apply(std::shared_ptr<stream::input> target) const;
+		virtual std::unique_ptr<stream::output> apply(std::shared_ptr<stream::output> target,
+			stream::fn_truncate_filter resize) const;
 
 	protected:
 		int resetInterval;
@@ -65,8 +65,8 @@ class FilterType_SAM_Map: virtual public FilterType_SAM_Base
 		FilterType_SAM_Map();
 		virtual ~FilterType_SAM_Map();
 
-		virtual std::string getFilterCode() const;
-		virtual std::string getFriendlyName() const;
+		virtual std::string code() const;
+		virtual std::string friendlyName() const;
 };
 
 class FilterType_SAM_8Sprite: virtual public FilterType_SAM_Base
@@ -75,8 +75,8 @@ class FilterType_SAM_8Sprite: virtual public FilterType_SAM_Base
 		FilterType_SAM_8Sprite();
 		virtual ~FilterType_SAM_8Sprite();
 
-		virtual std::string getFilterCode() const;
-		virtual std::string getFriendlyName() const;
+		virtual std::string code() const;
+		virtual std::string friendlyName() const;
 };
 
 class FilterType_SAM_16Sprite: virtual public FilterType_SAM_Base
@@ -85,8 +85,8 @@ class FilterType_SAM_16Sprite: virtual public FilterType_SAM_Base
 		FilterType_SAM_16Sprite();
 		virtual ~FilterType_SAM_16Sprite();
 
-		virtual std::string getFilterCode() const;
-		virtual std::string getFriendlyName() const;
+		virtual std::string code() const;
+		virtual std::string friendlyName() const;
 };
 
 } // namespace gamearchive

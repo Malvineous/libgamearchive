@@ -33,17 +33,16 @@ class ArchiveType_EXE_CCaves: virtual public ArchiveType
 		ArchiveType_EXE_CCaves();
 		virtual ~ArchiveType_EXE_CCaves();
 
-		virtual std::string getArchiveCode() const;
-		virtual std::string getFriendlyName() const;
-		virtual std::vector<std::string> getFileExtensions() const;
-		virtual std::vector<std::string> getGameList() const;
-		virtual ArchiveType::Certainty isInstance(stream::input_sptr fsArchive)
-			const;
-		virtual ArchivePtr newArchive(stream::inout_sptr psArchive,
-			SuppData& suppData) const;
-		virtual ArchivePtr open(stream::inout_sptr fsArchive, SuppData& suppData)
-			const;
-		virtual SuppFilenames getRequiredSupps(stream::input_sptr data,
+		virtual std::string code() const;
+		virtual std::string friendlyName() const;
+		virtual std::vector<std::string> fileExtensions() const;
+		virtual std::vector<std::string> games() const;
+		virtual ArchiveType::Certainty isInstance(stream::input& content) const;
+		virtual std::unique_ptr<Archive> create(
+			std::shared_ptr<stream::inout> content, SuppData& suppData) const;
+		virtual std::unique_ptr<Archive> open(
+			std::shared_ptr<stream::inout> content, SuppData& suppData) const;
+		virtual SuppFilenames getRequiredSupps(stream::input& content,
 			const std::string& filenameArchive) const;
 };
 

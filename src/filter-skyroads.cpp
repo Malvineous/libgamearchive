@@ -21,6 +21,7 @@
 #include <iostream>
 #include <boost/bind.hpp>
 #include <camoto/stream_filtered.hpp>
+#include <camoto/util.hpp> // std::make_unique
 #include "filter-skyroads.hpp"
 
 namespace camoto {
@@ -243,51 +244,53 @@ FilterType_SkyRoads::~FilterType_SkyRoads()
 {
 }
 
-std::string FilterType_SkyRoads::getFilterCode() const
+std::string FilterType_SkyRoads::code() const
 {
 	return "lzs-skyroads";
 }
 
-std::string FilterType_SkyRoads::getFriendlyName() const
+std::string FilterType_SkyRoads::friendlyName() const
 {
 	return "SkyRoads compression";
 }
 
-std::vector<std::string> FilterType_SkyRoads::getGameList() const
+std::vector<std::string> FilterType_SkyRoads::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("SkyRoads");
 	return vcGames;
 }
 
-stream::inout_sptr FilterType_SkyRoads::apply(stream::inout_sptr target,
-	stream::fn_truncate resize) const
+std::unique_ptr<stream::inout> FilterType_SkyRoads::apply(
+	std::shared_ptr<stream::inout> target, stream::fn_truncate_filter resize)
+	const
 {
-	stream::filtered_sptr st1(new stream::filtered());
-	filter_sptr f_delzs(new filter_skyroads_unlzs());
-	filter_sptr f_lzs(new filter_skyroads_lzs());
-	st1->open(target, f_delzs, f_lzs, resize);
-
-	return st1;
+	return std::make_unique<stream::filtered>(
+		target,
+		std::make_shared<filter_skyroads_unlzs>(),
+		std::make_shared<filter_skyroads_lzs>(),
+		resize
+	);
 }
 
-stream::input_sptr FilterType_SkyRoads::apply(stream::input_sptr target) const
+std::unique_ptr<stream::input> FilterType_SkyRoads::apply(
+	std::shared_ptr<stream::input> target) const
 {
-	stream::input_filtered_sptr st1(new stream::input_filtered());
-	filter_sptr f_delzs(new filter_skyroads_unlzs());
-	st1->open(target, f_delzs);
-
-	return st1;
+	return std::make_unique<stream::input_filtered>(
+		target,
+		std::make_shared<filter_skyroads_unlzs>()
+	);
 }
 
-stream::output_sptr FilterType_SkyRoads::apply(stream::output_sptr target,
-	stream::fn_truncate resize) const
+std::unique_ptr<stream::output> FilterType_SkyRoads::apply(
+	std::shared_ptr<stream::output> target, stream::fn_truncate_filter resize)
+	const
 {
-	stream::output_filtered_sptr st1(new stream::output_filtered());
-	filter_sptr f_lzs(new filter_skyroads_lzs());
-	st1->open(target, f_lzs, resize);
-
-	return st1;
+	return std::make_unique<stream::output_filtered>(
+		target,
+		std::make_shared<filter_skyroads_lzs>(),
+		resize
+	);
 }
 
 

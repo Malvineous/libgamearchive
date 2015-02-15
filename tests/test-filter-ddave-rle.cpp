@@ -208,7 +208,7 @@ BOOST_AUTO_TEST_CASE(decode)
 {
 	BOOST_TEST_MESSAGE("Un-RLE some data");
 
-	in << STRING_WITH_NULLS(DATA_ENCODED);
+	*this->in << STRING_WITH_NULLS(DATA_ENCODED);
 
 	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(DATA_DECODED)),
 		"Decoding RLE data failed");
@@ -218,13 +218,13 @@ BOOST_AUTO_TEST_CASE(decoder_trail)
 {
 	BOOST_TEST_MESSAGE("Un-RLE some data, with trailing garbage");
 
-	in << STRING_WITH_NULLS(DATA_ENCODED DATA_BAD_TRAIL);
+	*this->in << STRING_WITH_NULLS(DATA_ENCODED DATA_BAD_TRAIL);
 
 	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(DATA_DECODED)),
 		"Decoding RLE data with trailing incomplete code was not ignored");
 
 	BOOST_CHECK_MESSAGE(this->test_main::is_equal(STRING_WITH_NULLS(DATA_ENCODED
-		DATA_BAD_TRAIL), *(in->str())),
+		DATA_BAD_TRAIL), this->in->data),
 		"Decoding RLE data corrupted the source data");
 }
 
@@ -236,7 +236,7 @@ BOOST_AUTO_TEST_CASE(encode)
 {
 	BOOST_TEST_MESSAGE("RLE some data");
 
-	in << STRING_WITH_NULLS(DATA_DECODED);
+	*this->in << STRING_WITH_NULLS(DATA_DECODED);
 
 	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(DATA_ENCODED)),
 		"Encoding RLE data failed");
@@ -246,7 +246,7 @@ BOOST_AUTO_TEST_CASE(encode_repeat)
 {
 	BOOST_TEST_MESSAGE("RLE some data ending with repeated bytes");
 
-	in << STRING_WITH_NULLS(DATA_DECODED "\x45\x45");
+	*this->in << STRING_WITH_NULLS(DATA_DECODED "\x45\x45");
 
 	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(DATA_ENCODED "\x81\x45\x45")),
 		"Encoding RLE data failed");
@@ -256,7 +256,7 @@ BOOST_AUTO_TEST_CASE(encode_repeat_many)
 {
 	BOOST_TEST_MESSAGE("RLE some data ending with many repeated bytes");
 
-	in << STRING_WITH_NULLS(DATA_DECODED "\x45\x45\x45\x45\x45");
+	*this->in << STRING_WITH_NULLS(DATA_DECODED "\x45\x45\x45\x45\x45");
 
 	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(DATA_ENCODED "\x02\x45")),
 		"Encoding RLE data failed");
@@ -266,7 +266,7 @@ BOOST_AUTO_TEST_CASE(encode_repeat_exact)
 {
 	BOOST_TEST_MESSAGE("RLE some data ending with three repeated bytes");
 
-	in << STRING_WITH_NULLS(DATA_DECODED "\x00\x00\x00\xFF\xFF\xFF");
+	*this->in << STRING_WITH_NULLS(DATA_DECODED "\x00\x00\x00\xFF\xFF\xFF");
 
 	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(DATA_ENCODED "\x00\x00\x00\xFF")),
 		"Encoding RLE data failed");
@@ -276,7 +276,7 @@ BOOST_AUTO_TEST_CASE(encode_escape_double00)
 {
 	BOOST_TEST_MESSAGE("RLE some data with escaped duplicate bytes");
 
-	in << STRING_WITH_NULLS("\x9E\x00\x00\x00\x7C\x02\x00\x00\x7C\x03\x00\x00");
+	*this->in << STRING_WITH_NULLS("\x9E\x00\x00\x00\x7C\x02\x00\x00\x7C\x03\x00\x00");
 
 	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS("\x80\x9E\x00\x00\x87\x7C\x02\x00\x00\x7C\x03\x00\x00")),
 		"Encoding RLE data failed");
@@ -286,7 +286,7 @@ BOOST_AUTO_TEST_CASE(encode_escape_exact)
 {
 	BOOST_TEST_MESSAGE("RLE some data with one full-sized escaped section");
 
-	in << STRING_WITH_NULLS(
+	*this->in << STRING_WITH_NULLS(
 		"\x00\x00\x00\x00"
 		"\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02"
 		"\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02"
@@ -318,7 +318,7 @@ BOOST_AUTO_TEST_CASE(encode_escape_overflow)
 {
 	BOOST_TEST_MESSAGE("RLE some data with large escaped sections");
 
-	in << STRING_WITH_NULLS(
+	*this->in << STRING_WITH_NULLS(
 		"\x00\x00\x00\x00"
 		"\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02"
 		"\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02"
@@ -384,7 +384,7 @@ BOOST_AUTO_TEST_CASE(encode_escape_overflow_shrink)
 {
 	BOOST_TEST_MESSAGE("RLE some data with RLE spanning large escaped sections");
 
-	in << STRING_WITH_NULLS(
+	*this->in << STRING_WITH_NULLS(
 		"\x00\x00\x00\x00"
 		"\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02"
 		"\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02\x01\x02"
@@ -455,7 +455,7 @@ BOOST_AUTO_TEST_CASE(encode_splitbuf_count)
 	BOOST_REQUIRE_MESSAGE(BUFFER_SIZE <= 4096,
 		"This test only works on buffers <= 4096 bytes");
 
-	in << STRING_WITH_NULLS(
+	*this->in << STRING_WITH_NULLS(
 		dat_4030
 		dat_130
 	);
@@ -482,7 +482,7 @@ BOOST_AUTO_TEST_CASE(encode_splitbuf_escape)
 	"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" \
 	"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
 
-	in << STRING_WITH_NULLS(
+	*this->in << STRING_WITH_NULLS(
 		dat_4030
 		dat_48
 		"\xCB\xCB\xCB"
@@ -527,7 +527,7 @@ BOOST_AUTO_TEST_CASE(encode_splitbuf_count2)
 #define rle_120e \
 	"\xF7" dat_120e
 
-	in << STRING_WITH_NULLS(
+	*this->in << STRING_WITH_NULLS(
 		dat_3968e
 		dat_120e
 		"\xCB\xCB\xCB"
@@ -570,7 +570,7 @@ BOOST_AUTO_TEST_CASE(encode_splitbuf_escape2)
 #define rle_94e \
 	"\xDD" dat_94e
 
-	in << STRING_WITH_NULLS(
+	*this->in << STRING_WITH_NULLS(
 		dat_3968e
 		dat_94e
 		"\xCB\xCB\xCB"
@@ -611,7 +611,7 @@ BOOST_AUTO_TEST_CASE(encode_splitbuf_escape3)
 #define rle_62e \
 	"\xBD" dat_62e
 
-	in << STRING_WITH_NULLS(
+	*this->in << STRING_WITH_NULLS(
 		dat_3968e
 		dat_62e
 		"\xCB\xCB\xCB"

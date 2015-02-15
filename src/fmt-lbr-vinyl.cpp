@@ -24,8 +24,9 @@
 #include <string>
 #include <sstream>
 
-#include "fmt-lbr-vinyl.hpp"
 #include <camoto/iostream_helpers.hpp>
+#include <camoto/util.hpp> // std::make_unique
+#include "fmt-lbr-vinyl.hpp"
 
 #define LBR_FILECOUNT_OFFSET    0
 #define LBR_HEADER_LEN          2  // u16le file count
@@ -370,41 +371,42 @@ ArchiveType_LBR_Vinyl::~ArchiveType_LBR_Vinyl()
 {
 }
 
-std::string ArchiveType_LBR_Vinyl::getArchiveCode() const
+std::string ArchiveType_LBR_Vinyl::code() const
 {
 	return "lbr-vinyl";
 }
 
-std::string ArchiveType_LBR_Vinyl::getFriendlyName() const
+std::string ArchiveType_LBR_Vinyl::friendlyName() const
 {
 	return "Vinyl Goddess From Mars Library";
 }
 
-std::vector<std::string> ArchiveType_LBR_Vinyl::getFileExtensions() const
+std::vector<std::string> ArchiveType_LBR_Vinyl::fileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("lbr");
 	return vcExtensions;
 }
 
-std::vector<std::string> ArchiveType_LBR_Vinyl::getGameList() const
+std::vector<std::string> ArchiveType_LBR_Vinyl::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Vinyl Goddess From Mars");
 	return vcGames;
 }
 
-ArchiveType::Certainty ArchiveType_LBR_Vinyl::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_LBR_Vinyl::isInstance(
+	stream::input& content) const
 {
-	stream::pos lenArchive = psArchive->size();
+	stream::pos lenArchive = content.size();
 
 	// TESTED BY: fmt_lbr_vinyl_isinstance_c01
 	if (lenArchive < LBR_HEADER_LEN) return DefinitelyNo; // too short
 
-	psArchive->seekg(0, stream::start);
+	content.seekg(0, stream::start);
 
 	uint32_t numFiles;
-	psArchive >> u16le(numFiles);
+	content >> u16le(numFiles);
 
 	// Since the last file goes from its offset to EOF, it's invalid to have
 	// data after the FAT if there are zero files in the archive (because that
@@ -421,7 +423,7 @@ ArchiveType::Certainty ArchiveType_LBR_Vinyl::isInstance(stream::input_sptr psAr
 	uint16_t hash;
 	uint32_t offset;
 	while (numFiles--) {
-		psArchive
+		content
 			>> u16le(hash)
 			>> u32le(offset)
 		;
@@ -438,19 +440,21 @@ ArchiveType::Certainty ArchiveType_LBR_Vinyl::isInstance(stream::input_sptr psAr
 	return DefinitelyYes;
 }
 
-ArchivePtr ArchiveType_LBR_Vinyl::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_LBR_Vinyl::create(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	psArchive->seekp(0, stream::start);
-	psArchive->write("\x00\x00", 2);
-	return ArchivePtr(new Archive_LBR_Vinyl(psArchive));
+	content->seekp(0, stream::start);
+	content->write("\x00\x00", 2);
+	return std::make_unique<Archive_LBR_Vinyl>(content);
 }
 
-ArchivePtr ArchiveType_LBR_Vinyl::open(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_LBR_Vinyl::open(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return ArchivePtr(new Archive_LBR_Vinyl(psArchive));
+	return std::make_unique<Archive_LBR_Vinyl>(content);
 }
 
-SuppFilenames ArchiveType_LBR_Vinyl::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_LBR_Vinyl::getRequiredSupps(stream::input& content,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -458,17 +462,17 @@ SuppFilenames ArchiveType_LBR_Vinyl::getRequiredSupps(stream::input_sptr data,
 }
 
 
-Archive_LBR_Vinyl::Archive_LBR_Vinyl(stream::inout_sptr psArchive)
-	:	FATArchive(psArchive, LBR_FIRST_FILE_OFFSET, 0 /* no max filename len */)
+Archive_LBR_Vinyl::Archive_LBR_Vinyl(std::shared_ptr<stream::inout> content)
+	:	FATArchive(content, LBR_FIRST_FILE_OFFSET, 0 /* no max filename len */)
 {
-	stream::pos lenArchive = psArchive->size();
+	stream::pos lenArchive = this->content->size();
 
 	if (lenArchive < LBR_HEADER_LEN) throw stream::error("file too short");
 
-	this->psArchive->seekg(0, stream::start);
+	this->content->seekg(0, stream::start);
 
 	uint32_t numFiles;
-	this->psArchive >> u16le(numFiles);
+	*this->content >> u16le(numFiles);
 
 	if (numFiles > 0) {
 
@@ -480,7 +484,7 @@ Archive_LBR_Vinyl::Archive_LBR_Vinyl(stream::inout_sptr psArchive)
 
 		uint32_t offNext, offCur;
 		uint16_t hashNext, hashCur; // TODO: store in new LBREntry class
-		this->psArchive
+		*this->content
 			>> u16le(hashCur)
 			>> u32le(offCur)
 		;
@@ -490,34 +494,33 @@ Archive_LBR_Vinyl::Archive_LBR_Vinyl(stream::inout_sptr psArchive)
 				// Last entry has no 'next' one, so fake it as if next entry is EOF
 				offNext = lenArchive;
 			} else {
-				this->psArchive
+				*this->content
 					>> u16le(hashNext)
 					>> u32le(offNext)
 				;
 			}
 
-			FATEntry *fatEntry = new FATEntry();
-			EntryPtr ep(fatEntry);
+			auto f = this->createNewFATEntry();
 
-			fatEntry->iIndex = i;
-			fatEntry->lenHeader = 0;
-			fatEntry->iOffset = offCur;
-			fatEntry->storedSize = offNext - offCur;
-			fatEntry->realSize = fatEntry->storedSize;
-			fatEntry->type = FILETYPE_GENERIC;
-			fatEntry->fAttr = 0;
-			fatEntry->bValid = true;
+			f->iIndex = i;
+			f->lenHeader = 0;
+			f->iOffset = offCur;
+			f->storedSize = offNext - offCur;
+			f->realSize = f->storedSize;
+			f->type = FILETYPE_GENERIC;
+			f->fAttr = 0;
+			f->bValid = true;
 			std::map<int, const char *>::iterator fnit = fn.find(hashCur);
 			if (fnit != fn.end()) {
-				fatEntry->strName = fnit->second;
+				f->strName = fnit->second;
 			} else {
 				// No match, use the hash as the filename
 				std::stringstream ss;
 				ss << std::hex << hashCur;
-				fatEntry->strName = ss.str();
+				f->strName = ss.str();
 			}
 
-			this->vcFAT.push_back(ep);
+			this->vcFAT.push_back(std::move(f));
 			offCur = offNext;
 			hashCur = hashNext;
 		}
@@ -531,15 +534,15 @@ Archive_LBR_Vinyl::~Archive_LBR_Vinyl()
 void Archive_LBR_Vinyl::updateFileName(const FATEntry *pid, const std::string& strNewName)
 {
 	// TESTED BY: fmt_lbr_vinyl_rename
-	this->psArchive->seekp(LBR_HASH_OFFSET(pid), stream::start);
-	this->psArchive << u16le(calcHash(strNewName));
+	this->content->seekp(LBR_HASH_OFFSET(pid), stream::start);
+	*this->content << u16le(calcHash(strNewName));
 	return;
 }
 
 void Archive_LBR_Vinyl::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 {
-	this->psArchive->seekp(LBR_FILEOFFSET_OFFSET(pid), stream::start);
-	this->psArchive << u32le(pid->iOffset);
+	this->content->seekp(LBR_FILEOFFSET_OFFSET(pid), stream::start);
+	*this->content << u32le(pid->iOffset);
 	return;
 }
 
@@ -548,7 +551,7 @@ void Archive_LBR_Vinyl::updateFileSize(const FATEntry *pid, stream::delta sizeDe
 	return;
 }
 
-FATArchive::FATEntry *Archive_LBR_Vinyl::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+void Archive_LBR_Vinyl::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_lbr_vinyl_insert*
 
@@ -558,10 +561,10 @@ FATArchive::FATEntry *Archive_LBR_Vinyl::preInsertFile(const FATEntry *idBeforeT
 	// Because the new entry isn't in the vector yet we need to shift it manually
 	pNewEntry->iOffset += LBR_FAT_ENTRY_LEN;
 
-	this->psArchive->seekp(LBR_FATENTRY_OFFSET(pNewEntry), stream::start);
-	this->psArchive->insert(LBR_FAT_ENTRY_LEN);
+	this->content->seekp(LBR_FATENTRY_OFFSET(pNewEntry), stream::start);
+	this->content->insert(LBR_FAT_ENTRY_LEN);
 
-	this->psArchive
+	*this->content
 		<< u16le(calcHash(pNewEntry->strName))
 		<< u32le(pNewEntry->iOffset)
 	;
@@ -575,7 +578,7 @@ FATArchive::FATEntry *Archive_LBR_Vinyl::preInsertFile(const FATEntry *idBeforeT
 	);
 
 	this->updateFileCount(this->vcFAT.size() + 1);
-	return pNewEntry;
+	return;
 }
 
 void Archive_LBR_Vinyl::preRemoveFile(const FATEntry *pid)
@@ -593,8 +596,8 @@ void Archive_LBR_Vinyl::preRemoveFile(const FATEntry *pid)
 		0
 	);
 
-	this->psArchive->seekp(LBR_FATENTRY_OFFSET(pid), stream::start);
-	this->psArchive->remove(LBR_FAT_ENTRY_LEN);
+	this->content->seekp(LBR_FATENTRY_OFFSET(pid), stream::start);
+	this->content->remove(LBR_FAT_ENTRY_LEN);
 
 	this->updateFileCount(this->vcFAT.size() - 1);
 	return;
@@ -604,8 +607,8 @@ void Archive_LBR_Vinyl::updateFileCount(uint32_t iNewCount)
 {
 	// TESTED BY: fmt_lbr_vinyl_insert*
 	// TESTED BY: fmt_lbr_vinyl_remove*
-	this->psArchive->seekp(LBR_FILECOUNT_OFFSET, stream::start);
-	this->psArchive << u16le(iNewCount);
+	this->content->seekp(LBR_FILECOUNT_OFFSET, stream::start);
+	*this->content << u16le(iNewCount);
 	return;
 }
 

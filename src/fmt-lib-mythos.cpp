@@ -23,6 +23,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <camoto/iostream_helpers.hpp>
+#include <camoto/util.hpp> // std::make_unique
 
 #include "fmt-lib-mythos.hpp"
 
@@ -51,17 +52,17 @@ ArchiveType_LIB_Mythos::~ArchiveType_LIB_Mythos()
 {
 }
 
-std::string ArchiveType_LIB_Mythos::getArchiveCode() const
+std::string ArchiveType_LIB_Mythos::code() const
 {
 	return "lib-mythos";
 }
 
-std::string ArchiveType_LIB_Mythos::getFriendlyName() const
+std::string ArchiveType_LIB_Mythos::friendlyName() const
 {
 	return "Mythos Library File";
 }
 
-std::vector<std::string> ArchiveType_LIB_Mythos::getFileExtensions() const
+std::vector<std::string> ArchiveType_LIB_Mythos::fileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("lib");
@@ -69,23 +70,24 @@ std::vector<std::string> ArchiveType_LIB_Mythos::getFileExtensions() const
 	return vcExtensions;
 }
 
-std::vector<std::string> ArchiveType_LIB_Mythos::getGameList() const
+std::vector<std::string> ArchiveType_LIB_Mythos::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("The Lost Files of Sherlock Holmes: The Case of the Serrated Scalpel");
 	return vcGames;
 }
 
-ArchiveType::Certainty ArchiveType_LIB_Mythos::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_LIB_Mythos::isInstance(
+	stream::input& content) const
 {
-	stream::pos lenArchive = psArchive->size();
+	stream::pos lenArchive = content.size();
 
 	// TESTED BY: fmt_lib_mythos_isinstance_c02
 	if (lenArchive < LIB_FAT_ENTRY_LEN) return DefinitelyNo; // too short
 
 	char sig[4];
-	psArchive->seekg(0, stream::start);
-	psArchive->read(sig, 4);
+	content.seekg(0, stream::start);
+	content.read(sig, 4);
 
 	// TESTED BY: fmt_lib_mythos_isinstance_c01
 	if (strncmp(sig, "LIB\x1A", 4) != 0) return DefinitelyNo;
@@ -94,19 +96,21 @@ ArchiveType::Certainty ArchiveType_LIB_Mythos::isInstance(stream::input_sptr psA
 	return DefinitelyYes;
 }
 
-ArchivePtr ArchiveType_LIB_Mythos::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_LIB_Mythos::create(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	psArchive->seekp(0, stream::start);
-	psArchive->write("LIB\x1A\x00\x00" "\0\0\0\0\0\0\0\0\0\0\0\0\0\x17\x00\x00\x00", 4+2+13+4);
-	return ArchivePtr(new Archive_LIB_Mythos(psArchive));
+	content->seekp(0, stream::start);
+	content->write("LIB\x1A\x00\x00" "\0\0\0\0\0\0\0\0\0\0\0\0\0\x17\x00\x00\x00", 4+2+13+4);
+	return std::make_unique<Archive_LIB_Mythos>(content);
 }
 
-ArchivePtr ArchiveType_LIB_Mythos::open(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_LIB_Mythos::open(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return ArchivePtr(new Archive_LIB_Mythos(psArchive));
+	return std::make_unique<Archive_LIB_Mythos>(content);
 }
 
-SuppFilenames ArchiveType_LIB_Mythos::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_LIB_Mythos::getRequiredSupps(stream::input& content,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -114,44 +118,43 @@ SuppFilenames ArchiveType_LIB_Mythos::getRequiredSupps(stream::input_sptr data,
 }
 
 
-Archive_LIB_Mythos::Archive_LIB_Mythos(stream::inout_sptr psArchive)
-	:	FATArchive(psArchive, LIB_FIRST_FILE_OFFSET, LIB_MAX_FILENAME_LEN)
+Archive_LIB_Mythos::Archive_LIB_Mythos(std::shared_ptr<stream::inout> content)
+	:	FATArchive(content, LIB_FIRST_FILE_OFFSET, LIB_MAX_FILENAME_LEN)
 {
-	this->lenArchive = psArchive->size();
+	this->lenArchive = this->content->size();
 
 	if (this->lenArchive < LIB_FIRST_FILE_OFFSET) {
 		throw stream::error("file too short");
 	}
 
 	uint16_t numFiles;
-	psArchive->seekg(4, stream::start);
-	psArchive >> u16le(numFiles);
+	this->content->seekg(4, stream::start);
+	*this->content >> u16le(numFiles);
 
 	FATEntry *fatLast = NULL;
 	for (unsigned int i = 0; i <= numFiles; i++) {
-		FATEntry *fatEntry = new FATEntry();
-		EntryPtr ep(fatEntry);
-
-		fatEntry->iIndex = i;
-		fatEntry->lenHeader = 0;
-		fatEntry->type = FILETYPE_GENERIC;
-		fatEntry->fAttr = 0;
-		fatEntry->bValid = true;
-		if (i != numFiles) { // skip the last spacer entry
-			this->vcFAT.push_back(ep);
-		}
 		if (i >= LIB_SAFETY_MAX_FILECOUNT) {
 			throw stream::error("too many files or corrupted archive");
 		}
-		psArchive
-			>> nullPadded(fatEntry->strName, LIB_FILENAME_FIELD_LEN)
-			>> u32le(fatEntry->iOffset)
+		auto f = this->createNewFATEntry();
+
+		f->iIndex = i;
+		f->lenHeader = 0;
+		f->type = FILETYPE_GENERIC;
+		f->fAttr = 0;
+		f->bValid = true;
+		*this->content
+			>> nullPadded(f->strName, LIB_FILENAME_FIELD_LEN)
+			>> u32le(f->iOffset)
 		;
 		if (fatLast) {
-			fatLast->storedSize = fatEntry->iOffset - fatLast->iOffset;
+			fatLast->storedSize = f->iOffset - fatLast->iOffset;
 			fatLast->realSize = fatLast->storedSize;
 		}
-		fatLast = fatEntry;
+		fatLast = &*f;
+		if (i != numFiles) { // skip the last spacer entry
+			this->vcFAT.push_back(std::move(f));
+		}
 	}
 }
 
@@ -163,15 +166,15 @@ void Archive_LIB_Mythos::updateFileName(const FATEntry *pid, const std::string& 
 {
 	// TESTED BY: fmt_lib_mythos_rename
 	assert(strNewName.length() <= LIB_MAX_FILENAME_LEN);
-	this->psArchive->seekp(LIB_FILENAME_OFFSET(pid), stream::start);
-	this->psArchive << nullPadded(strNewName, LIB_FILENAME_FIELD_LEN);
+	this->content->seekp(LIB_FILENAME_OFFSET(pid), stream::start);
+	*this->content << nullPadded(strNewName, LIB_FILENAME_FIELD_LEN);
 	return;
 }
 
 void Archive_LIB_Mythos::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 {
-	this->psArchive->seekp(LIB_FILEOFFSET_OFFSET(pid), stream::start);
-	this->psArchive << u32le(pid->iOffset);
+	this->content->seekp(LIB_FILEOFFSET_OFFSET(pid), stream::start);
+	*this->content << u32le(pid->iOffset);
 	return;
 }
 
@@ -182,7 +185,7 @@ void Archive_LIB_Mythos::updateFileSize(const FATEntry *pid, stream::delta sizeD
 	return;
 }
 
-FATArchive::FATEntry *Archive_LIB_Mythos::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+void Archive_LIB_Mythos::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_lib_mythos_insert*
 	assert(pNewEntry->strName.length() <= LIB_MAX_FILENAME_LEN);
@@ -196,11 +199,11 @@ FATArchive::FATEntry *Archive_LIB_Mythos::preInsertFile(const FATEntry *idBefore
 	// Update the last FAT entry (the one that points to EOF.)
 	this->updateLastEntry(pNewEntry->storedSize + LIB_FAT_ENTRY_LEN);
 
-	this->psArchive->seekp(LIB_FATENTRY_OFFSET(pNewEntry), stream::start);
-	this->psArchive->insert(LIB_FAT_ENTRY_LEN);
+	this->content->seekp(LIB_FATENTRY_OFFSET(pNewEntry), stream::start);
+	this->content->insert(LIB_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
 
-	this->psArchive
+	*this->content
 		<< nullPadded(pNewEntry->strName, LIB_FILENAME_FIELD_LEN)
 		<< u32le(pNewEntry->iOffset)
 	;
@@ -214,7 +217,7 @@ FATArchive::FATEntry *Archive_LIB_Mythos::preInsertFile(const FATEntry *idBefore
 	);
 
 	this->updateFileCount(this->vcFAT.size() + 1);
-	return pNewEntry;
+	return;
 }
 
 void Archive_LIB_Mythos::preRemoveFile(const FATEntry *pid)
@@ -235,8 +238,8 @@ void Archive_LIB_Mythos::preRemoveFile(const FATEntry *pid)
 		0
 	);
 
-	this->psArchive->seekp(LIB_FATENTRY_OFFSET(pid), stream::start);
-	this->psArchive->remove(LIB_FAT_ENTRY_LEN);
+	this->content->seekp(LIB_FATENTRY_OFFSET(pid), stream::start);
+	this->content->remove(LIB_FAT_ENTRY_LEN);
 
 	this->updateFileCount(this->vcFAT.size() - 1);
 	return;
@@ -246,9 +249,9 @@ void Archive_LIB_Mythos::updateLastEntry(stream::delta lenDelta)
 {
 	assert(this->lenArchive >= 0x17); // smallest valid size (sig+fat terminator)
 	this->lenArchive += lenDelta;
-	this->psArchive->seekp(LIB_FAT_OFFSET + this->vcFAT.size() * LIB_FAT_ENTRY_LEN
+	this->content->seekp(LIB_FAT_OFFSET + this->vcFAT.size() * LIB_FAT_ENTRY_LEN
 		+ LIB_FILENAME_FIELD_LEN, stream::start);
-	this->psArchive
+	*this->content
 		<< u32le(this->lenArchive);
 	return;
 }
@@ -257,8 +260,8 @@ void Archive_LIB_Mythos::updateFileCount(uint16_t iNewCount)
 {
 	// TESTED BY: fmt_lib_mythos_insert*
 	// TESTED BY: fmt_lib_mythos_remove*
-	this->psArchive->seekp(LIB_FILECOUNT_OFFSET, stream::start);
-	this->psArchive << u16le(iNewCount);
+	this->content->seekp(LIB_FILECOUNT_OFFSET, stream::start);
+	*this->content << u16le(iNewCount);
 	return;
 }
 

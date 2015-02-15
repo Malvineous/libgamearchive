@@ -28,12 +28,10 @@ namespace fs = boost::filesystem;
 namespace camoto {
 namespace gamearchive {
 
-Archive::EntryPtr findFile(ArchivePtr& archive,
-	const std::string& filename)
+void findFile(std::shared_ptr<Archive> *pArchive,
+	Archive::FileHandle *pFile, const std::string& filename)
 {
-	// Save the original archive pointer in case we get half way through a
-	// subfolder tree and get a file-not-found.
-	ArchivePtr orig = archive;
+	Archive& archive = *pArchive->get();
 
 	// See if it's an index.  This check is performed first so that regardless
 	// of what the filename is, it will always be possible to extract files
@@ -47,52 +45,71 @@ Archive::EntryPtr findFile(ArchivePtr& archive,
 		unsigned long index = strtoul(&(filename.c_str()[1]), &endptr, 10);
 		if (*endptr == '\0') {
 			// The number was entirely valid (no junk at end)
-			Archive::VC_ENTRYPTR files = archive->getFileList();
-			if (index < files.size()) return files[index];
+			const Archive::FileVector& files = archive.files();
+			if (index < files.size()) {
+				*pFile = files[index];
+				return;
+			}
 			throw stream::error("index too large");
 		}
 	}
 
 	// Filename isn't an index, see if it matches a name
-	Archive::EntryPtr id = archive->find(filename);
-	if (archive->isValid(id)) return id;
+	auto id = archive.find(filename);
+	if (archive.isValid(id)) {
+		*pFile = id;
+		return;
+	}
 
 	// The file doesn't exist, it's not an index, see if it can be split up
 	// into subfolders.
-	fs::path p(filename);
-	for (fs::path::iterator i = p.begin(); i != p.end(); i++) {
+	std::shared_ptr<Archive> destArchive = *pArchive;
+	for (const auto& i : fs::path(filename)) {
 
-		if (archive->isValid(id)) {
+		if (destArchive->isValid(id)) {
 			// The ID is valid, which means it was set to a file in the
 			// previous loop iteration, but if we're here then it means
 			// there is another element in the path.  Since this means
 			// a file has been specified like a folder, we have to abort.
-			id = Archive::EntryPtr();
+			id.reset();
 			break;
 		}
 
-		Archive::EntryPtr j = archive->find(i->string());
-		if (!archive->isValid(j)) break;
+		auto j = destArchive->find(i.string());
+		if ((!j) || (!destArchive->isValid(j))) break;
 
 		if (j->fAttr & EA_FOLDER) {
 			// Open the folder and continue with the next path element
-			archive = archive->openFolder(j);
-			if (!archive) {
-				archive = orig; // make sure archive is valid for below
-				break;
-			}
+			destArchive = destArchive->openFolder(j);
+			if (!destArchive) break;
 		} else {
 			// This is a file, it had better be the last one!
 			id = j;
 		}
 
 	}
-	if (archive->isValid(id)) return id;
 
-	// Restore the archive pointer to what it was originally
-	archive = orig;
+	if (destArchive->isValid(id)) {
+		*pArchive = destArchive;
+		*pFile = id;
+	} else {
+		// File not found
+		*pFile = nullptr;
+	}
 
-	return Archive::EntryPtr(); // file not found
+	return;
+}
+
+void preventResize(stream::output_sub* sub, stream::len len)
+{
+	throw stream::write_error("This file is a fixed size, it cannot be made smaller or larger.");
+}
+
+void setRealSize(std::shared_ptr<Archive> arch,
+	Archive::FileHandle id, stream::len newRealSize)
+{
+	arch->resize(id, id->storedSize, newRealSize);
+	return;
 }
 
 } // namespace gamearchive

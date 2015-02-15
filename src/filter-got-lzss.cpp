@@ -19,6 +19,7 @@
  */
 
 #include <camoto/stream_filtered.hpp>
+#include <camoto/util.hpp> // std::make_unique
 #include "filter-got-lzss.hpp"
 
 namespace camoto {
@@ -205,51 +206,53 @@ FilterType_DAT_GOT::~FilterType_DAT_GOT()
 {
 }
 
-std::string FilterType_DAT_GOT::getFilterCode() const
+std::string FilterType_DAT_GOT::code() const
 {
 	return "lzss-got";
 }
 
-std::string FilterType_DAT_GOT::getFriendlyName() const
+std::string FilterType_DAT_GOT::friendlyName() const
 {
 	return "God of Thunder compression";
 }
 
-std::vector<std::string> FilterType_DAT_GOT::getGameList() const
+std::vector<std::string> FilterType_DAT_GOT::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("God of Thunder");
 	return vcGames;
 }
 
-stream::inout_sptr FilterType_DAT_GOT::apply(stream::inout_sptr target,
-	stream::fn_truncate resize) const
+std::unique_ptr<stream::inout> FilterType_DAT_GOT::apply(
+	std::shared_ptr<stream::inout> target, stream::fn_truncate_filter resize)
+	const
 {
-	stream::filtered_sptr st1(new stream::filtered());
-	filter_sptr f_delzss(new filter_got_unlzss());
-	filter_sptr f_lzss(new filter_got_lzss());
-	st1->open(target, f_delzss, f_lzss, resize);
-
-	return st1;
+	return std::make_unique<stream::filtered>(
+		target,
+		std::make_shared<filter_got_unlzss>(),
+		std::make_shared<filter_got_lzss>(),
+		resize
+	);
 }
 
-stream::input_sptr FilterType_DAT_GOT::apply(stream::input_sptr target) const
+std::unique_ptr<stream::input> FilterType_DAT_GOT::apply(
+	std::shared_ptr<stream::input> target) const
 {
-	stream::input_filtered_sptr st1(new stream::input_filtered());
-	filter_sptr f_delzss(new filter_got_unlzss());
-	st1->open(target, f_delzss);
-
-	return st1;
+	return std::make_unique<stream::input_filtered>(
+		target,
+		std::make_shared<filter_got_unlzss>()
+	);
 }
 
-stream::output_sptr FilterType_DAT_GOT::apply(stream::output_sptr target,
-	stream::fn_truncate resize) const
+std::unique_ptr<stream::output> FilterType_DAT_GOT::apply(
+	std::shared_ptr<stream::output> target, stream::fn_truncate_filter resize)
+	const
 {
-	stream::output_filtered_sptr st1(new stream::output_filtered());
-	filter_sptr f_lzss(new filter_got_lzss());
-	st1->open(target, f_lzss, resize);
-
-	return st1;
+	return std::make_unique<stream::output_filtered>(
+		target,
+		std::make_shared<filter_got_lzss>(),
+		resize
+	);
 }
 
 

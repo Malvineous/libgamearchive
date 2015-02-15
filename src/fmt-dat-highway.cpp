@@ -54,41 +54,42 @@ ArchiveType_DAT_Highway::~ArchiveType_DAT_Highway()
 {
 }
 
-std::string ArchiveType_DAT_Highway::getArchiveCode() const
+std::string ArchiveType_DAT_Highway::code() const
 {
 	return "dat-highway";
 }
 
-std::string ArchiveType_DAT_Highway::getFriendlyName() const
+std::string ArchiveType_DAT_Highway::friendlyName() const
 {
 	return "Highway Hunter DAT Archive";
 }
 
-std::vector<std::string> ArchiveType_DAT_Highway::getFileExtensions() const
+std::vector<std::string> ArchiveType_DAT_Highway::fileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("dat");
 	return vcExtensions;
 }
 
-std::vector<std::string> ArchiveType_DAT_Highway::getGameList() const
+std::vector<std::string> ArchiveType_DAT_Highway::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Highway Hunter");
 	return vcGames;
 }
 
-ArchiveType::Certainty ArchiveType_DAT_Highway::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_DAT_Highway::isInstance(
+	stream::input& content) const
 {
-	stream::pos lenArchive = psArchive->size();
+	stream::pos lenArchive = content.size();
 
 	// File too short
 	// TESTED BY: fmt_dat_highway_isinstance_c01
 	if (lenArchive < DATHH_FIRST_FILE_OFFSET) return DefinitelyNo;
 
 	uint16_t lenFAT;
-	psArchive->seekg(0, stream::start);
-	psArchive >> u16le(lenFAT);
+	content.seekg(0, stream::start);
+	content >> u16le(lenFAT);
 
 	// FAT is not a multiple of the FAT entry length
 	// TESTED BY: fmt_dat_highway_isinstance_c02
@@ -102,9 +103,9 @@ ArchiveType::Certainty ArchiveType_DAT_Highway::isInstance(stream::input_sptr ps
 	uint32_t offFile;
 	for (unsigned int i = 0; i < numFiles; i++) {
 		uint8_t c;
-		psArchive >> u32le(offFile);
-		psArchive->seekg(DATHH_FILENAME_FIELD_LEN - 1, stream::cur);
-		psArchive >> u8(c);
+		content >> u32le(offFile);
+		content.seekg(DATHH_FILENAME_FIELD_LEN - 1, stream::cur);
+		content >> u8(c);
 
 		// Offset past EOF
 		// TESTED BY: fmt_dat_highway_isinstance_c03
@@ -127,19 +128,21 @@ ArchiveType::Certainty ArchiveType_DAT_Highway::isInstance(stream::input_sptr ps
 	return DefinitelyYes;
 }
 
-ArchivePtr ArchiveType_DAT_Highway::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_DAT_Highway::create(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	psArchive->seekp(0, stream::start);
-	psArchive->write("\x11\x00" "\x00\x00\x00\x00" "\0\0\0\0\0\0\0\0\0\0\0\0\0", 2+4+13);
-	return ArchivePtr(new Archive_DAT_Highway(psArchive));
+	content->seekp(0, stream::start);
+	content->write("\x11\x00" "\x00\x00\x00\x00" "\0\0\0\0\0\0\0\0\0\0\0\0\0", 2+4+13);
+	return std::make_unique<Archive_DAT_Highway>(content);
 }
 
-ArchivePtr ArchiveType_DAT_Highway::open(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_DAT_Highway::open(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return ArchivePtr(new Archive_DAT_Highway(psArchive));
+	return std::make_unique<Archive_DAT_Highway>(content);
 }
 
-SuppFilenames ArchiveType_DAT_Highway::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_DAT_Highway::getRequiredSupps(stream::input& content,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -147,42 +150,41 @@ SuppFilenames ArchiveType_DAT_Highway::getRequiredSupps(stream::input_sptr data,
 }
 
 
-Archive_DAT_Highway::Archive_DAT_Highway(stream::inout_sptr psArchive)
-	:	FATArchive(psArchive, DATHH_FIRST_FILE_OFFSET, DATHH_MAX_FILENAME_LEN)
+Archive_DAT_Highway::Archive_DAT_Highway(std::shared_ptr<stream::inout> content)
+	:	FATArchive(content, DATHH_FIRST_FILE_OFFSET, DATHH_MAX_FILENAME_LEN)
 {
 	uint16_t lenFAT;
-	this->psArchive->seekg(DATHH_FATLEN_OFFSET, stream::start);
-	this->psArchive >> u16le(lenFAT);
+	this->content->seekg(DATHH_FATLEN_OFFSET, stream::start);
+	*this->content >> u16le(lenFAT);
 
 	unsigned int numFiles = (lenFAT / DATHH_FAT_ENTRY_LEN) - 1;
 	FATEntry *lastFATEntry = NULL;
 	for (unsigned int i = 0; i < numFiles; i++) {
-		this->psArchive->seekg(DATHH_HEADER_LEN + i * DATHH_FAT_ENTRY_LEN, stream::start);
-		FATEntry *fatEntry = new FATEntry();
-		EntryPtr ep(fatEntry);
+		this->content->seekg(DATHH_HEADER_LEN + i * DATHH_FAT_ENTRY_LEN, stream::start);
+		auto f = this->createNewFATEntry();
 
-		fatEntry->iIndex = i;
-		fatEntry->lenHeader = DATHH_EFAT_ENTRY_LEN;;
-		fatEntry->type = FILETYPE_GENERIC;
-		fatEntry->fAttr = 0;
-		fatEntry->bValid = true;
-		this->psArchive
-			>> u32le(fatEntry->iOffset)
-			>> nullPadded(fatEntry->strName, DATHH_FILENAME_FIELD_LEN)
+		f->iIndex = i;
+		f->lenHeader = DATHH_EFAT_ENTRY_LEN;;
+		f->type = FILETYPE_GENERIC;
+		f->fAttr = 0;
+		f->bValid = true;
+		*this->content
+			>> u32le(f->iOffset)
+			>> nullPadded(f->strName, DATHH_FILENAME_FIELD_LEN)
 		;
-		this->psArchive->seekg(fatEntry->iOffset, stream::start);
-		this->psArchive
-			>> u32le(fatEntry->realSize)
+		this->content->seekg(f->iOffset, stream::start);
+		*this->content
+			>> u32le(f->realSize)
 		;
 		if (lastFATEntry) {
-			lastFATEntry->storedSize = fatEntry->iOffset - lastFATEntry->iOffset - DATHH_EFAT_ENTRY_LEN;
+			lastFATEntry->storedSize = f->iOffset - lastFATEntry->iOffset - DATHH_EFAT_ENTRY_LEN;
 		}
-		lastFATEntry = fatEntry;
+		lastFATEntry = &*f;
 
-		this->vcFAT.push_back(ep);
+		this->vcFAT.push_back(std::move(f));
 	}
 	if (lastFATEntry) {
-		stream::pos lenArchive = this->psArchive->size();
+		stream::pos lenArchive = this->content->size();
 		lastFATEntry->storedSize = lenArchive - lastFATEntry->iOffset - DATHH_EFAT_ENTRY_LEN;
 	}
 }
@@ -195,8 +197,8 @@ void Archive_DAT_Highway::updateFileName(const FATEntry *pid, const std::string&
 {
 	// TESTED BY: fmt_dat_highway_rename
 	assert(strNewName.length() <= DATHH_MAX_FILENAME_LEN);
-	this->psArchive->seekp(DATHH_FILENAME_OFFSET(pid), stream::start);
-	this->psArchive << nullPadded(strNewName, DATHH_FILENAME_FIELD_LEN);
+	this->content->seekp(DATHH_FILENAME_OFFSET(pid), stream::start);
+	*this->content << nullPadded(strNewName, DATHH_FILENAME_FIELD_LEN);
 	return;
 }
 
@@ -204,8 +206,8 @@ void Archive_DAT_Highway::updateFileOffset(const FATEntry *pid, stream::delta of
 {
 	// TESTED BY: fmt_dat_highway_insert*
 	// TESTED BY: fmt_dat_highway_resize*
-	this->psArchive->seekp(DATHH_FILEOFFSET_OFFSET(pid), stream::start);
-	this->psArchive << u32le(pid->iOffset);
+	this->content->seekp(DATHH_FILEOFFSET_OFFSET(pid), stream::start);
+	*this->content << u32le(pid->iOffset);
 	return;
 }
 
@@ -214,12 +216,12 @@ void Archive_DAT_Highway::updateFileSize(const FATEntry *pid, stream::delta size
 	// This format doesn't have any sizes that need updating.
 	// TESTED BY: fmt_dat_highway_insert*
 	// TESTED BY: fmt_dat_highway_resize*
-	this->psArchive->seekp(DATHH_FILESIZE_OFFSET(pid), stream::start);
-	this->psArchive << u32le(pid->realSize);
+	this->content->seekp(DATHH_FILESIZE_OFFSET(pid), stream::start);
+	*this->content << u32le(pid->realSize);
 	return;
 }
 
-FATArchive::FATEntry *Archive_DAT_Highway::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+void Archive_DAT_Highway::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_dat_highway_insert*
 	assert(pNewEntry->strName.length() <= DATHH_MAX_FILENAME_LEN);
@@ -228,8 +230,8 @@ FATArchive::FATEntry *Archive_DAT_Highway::preInsertFile(const FATEntry *idBefor
 		throw stream::error("Maximum number of files in this archive has been reached.");
 	}
 
-	this->psArchive->seekp(DATHH_FATENTRY_OFFSET(pNewEntry), stream::start);
-	this->psArchive->insert(DATHH_FAT_ENTRY_LEN);
+	this->content->seekp(DATHH_FATENTRY_OFFSET(pNewEntry), stream::start);
+	this->content->insert(DATHH_FAT_ENTRY_LEN);
 	boost::to_lower(pNewEntry->strName);
 
 	// Update the offsets now there's a new FAT entry taking up space.
@@ -244,8 +246,8 @@ FATArchive::FATEntry *Archive_DAT_Highway::preInsertFile(const FATEntry *idBefor
 	pNewEntry->iOffset += DATHH_FAT_ENTRY_LEN;
 
 	pNewEntry->lenHeader = DATHH_EFAT_ENTRY_LEN;
-	this->psArchive->seekp(pNewEntry->iOffset, stream::start);
-	this->psArchive->insert(DATHH_EFAT_ENTRY_LEN);
+	this->content->seekp(pNewEntry->iOffset, stream::start);
+	this->content->insert(DATHH_EFAT_ENTRY_LEN);
 
 	// Since we've inserted some data for the embedded header, we need to update
 	// the other file offsets accordingly.  This call updates the offset of the
@@ -258,20 +260,20 @@ FATArchive::FATEntry *Archive_DAT_Highway::preInsertFile(const FATEntry *idBefor
 	// Now write all the fields in.  We can't do this earlier like normal, because
 	// the calls to shiftFiles() overwrite anything we have written, because this
 	// file entry isn't in the FAT vector yet.
-	this->psArchive->seekp(DATHH_FATENTRY_OFFSET(pNewEntry), stream::start);
-	this->psArchive
+	this->content->seekp(DATHH_FATENTRY_OFFSET(pNewEntry), stream::start);
+	*this->content
 		<< u32le(pNewEntry->iOffset)
 		<< nullPadded(pNewEntry->strName, DATHH_FILENAME_FIELD_LEN)
 	;
 
-	this->psArchive->seekp(pNewEntry->iOffset, stream::start);
-	this->psArchive
+	this->content->seekp(pNewEntry->iOffset, stream::start);
+	*this->content
 		<< u32le(pNewEntry->realSize)
 	;
 
 	// Set the format-specific variables
 	this->updateFileCount(this->vcFAT.size() + 1);
-	return pNewEntry;
+	return;
 }
 
 void Archive_DAT_Highway::preRemoveFile(const FATEntry *pid)
@@ -289,8 +291,8 @@ void Archive_DAT_Highway::preRemoveFile(const FATEntry *pid)
 		0
 	);
 
-	this->psArchive->seekp(DATHH_FATENTRY_OFFSET(pid), stream::start);
-	this->psArchive->remove(DATHH_FAT_ENTRY_LEN);
+	this->content->seekp(DATHH_FATENTRY_OFFSET(pid), stream::start);
+	this->content->remove(DATHH_FAT_ENTRY_LEN);
 
 	this->updateFileCount(this->vcFAT.size() - 1);
 	return;
@@ -302,8 +304,8 @@ void Archive_DAT_Highway::updateFileCount(uint32_t iNewCount)
 	// TESTED BY: fmt_dat_highway_remove*
 	uint32_t lenFAT = (iNewCount + 1) * DATHH_FAT_ENTRY_LEN;
 	assert(lenFAT < 65536);
-	this->psArchive->seekp(DATHH_FATLEN_OFFSET, stream::start);
-	this->psArchive << u16le(lenFAT);
+	this->content->seekp(DATHH_FATLEN_OFFSET, stream::start);
+	*this->content << u16le(lenFAT);
 	return;
 }
 

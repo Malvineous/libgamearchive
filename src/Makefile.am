@@ -107,7 +107,7 @@ AM_CXXFLAGS  = $(DEBUG_CXXFLAGS)
 AM_CXXFLAGS += $(libgamecommon_CFLAGS)
 
 libgamearchive_la_LDFLAGS = $(AM_LDFLAGS)
-libgamearchive_la_LDFLAGS += -version-info 1:0:0
+libgamearchive_la_LDFLAGS += -version-info 2:0:0
 
 libgamearchive_la_LIBADD  = $(BOOST_SYSTEM_LIBS)
 libgamearchive_la_LIBADD += $(BOOST_FILESYSTEM_LIBS)

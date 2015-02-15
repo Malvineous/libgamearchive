@@ -21,8 +21,8 @@
 #ifndef _CAMOTO_FATARCHIVE_HPP_
 #define _CAMOTO_FATARCHIVE_HPP_
 
+#include <memory>
 #include <map>
-#include <boost/weak_ptr.hpp>
 
 #include <camoto/stream_sub.hpp>
 #include <camoto/stream_seg.hpp>
@@ -43,12 +43,12 @@ class FATArchive: virtual public Archive
 {
 	public:
 
-		/// FAT-related fields to add to EntryPtr.
+		/// FAT-related fields to add to fe_const_iterator.
 		/**
 		 * This shouldn't really be public, but sometimes it is handy to access the
 		 * FAT fields (especially from within the unit tests.)
 		 */
-		struct FATEntry: virtual public FileEntry {
+		struct FATEntry: virtual public File {
 			/// Index of file in archive.
 			/**
 			 * We can't use the index into the vector as entries are passed around
@@ -72,14 +72,11 @@ class FATArchive: virtual public Archive
 				FATEntry(const FATEntry&);
 		};
 
-		/// Shared pointer of FAT-specific file entry.
-		typedef boost::shared_ptr<FATEntry> FATEntryPtr;
-
 	protected:
 		/// The archive stream must be mutable, because we need to change it by
 		/// seeking and reading data in our get() functions, which don't logically
 		/// change the archive's state.
-		mutable stream::seg_sptr psArchive;
+		mutable std::shared_ptr<stream::seg> content;
 
 		/// Offset of the first file in an empty archive.
 		stream::pos offFirstFile;
@@ -94,7 +91,7 @@ class FATArchive: virtual public Archive
 		 * The entries in this vector can be in any order (not necessarily the
 		 * order on-disk.  Use the iIndex member for that.)
 		 */
-		VC_ENTRYPTR vcFAT;
+		FileVector vcFAT;
 
 		/// Vector of substream references.
 		/**
@@ -102,20 +99,21 @@ class FATArchive: virtual public Archive
 		 * we're keeping track of it.  We need to keep track of it so that open
 		 * files can be moved around as other files are inserted, resized, etc.
 		 */
-		typedef std::multimap< FATEntryPtr, boost::weak_ptr<stream::sub> > OPEN_FILES;
+		//typedef std::multimap< FATEntry, boost::weak_ptr<stream::sub> > OPEN_FILES;
+		typedef std::multimap<std::shared_ptr<FATEntry>, std::weak_ptr<stream::sub>> OpenFilesVector;
 
 		/// Helper type when inserting elements into openFiles.
-		typedef std::pair< FATEntryPtr, boost::weak_ptr<stream::sub> > OPEN_FILE;
+		//typedef std::pair< FATfe_const_iterator, boost::weak_ptr<stream::sub> > OPEN_FILE;
 
 		/// List of substreams currently open.
-		OPEN_FILES openFiles;
+		OpenFilesVector openFiles;
 
 		/// Maximum length of filenames in this archive format.
 		unsigned int lenMaxFilename;
 
 		/// Create a new FATArchive.
 		/**
-		 * @param psArchive
+		 * @param content
 		 *   Archive data stream, in whatever format the class descended from this
 		 *   can handle.
 		 *
@@ -131,25 +129,25 @@ class FATArchive: virtual public Archive
 		 *
 		 * @throws stream::error on I/O error.
 		 */
-		FATArchive(stream::inout_sptr psArchive, stream::pos offFirstFile,
+		FATArchive(std::shared_ptr<stream::inout> content, stream::pos offFirstFile,
 			int lenMaxFilename);
 
 	public:
 		virtual ~FATArchive();
 
-		virtual EntryPtr find(const std::string& strFilename) const;
-		virtual const VC_ENTRYPTR& getFileList(void) const;
-		virtual bool isValid(const EntryPtr id) const;
-		virtual stream::inout_sptr open(const EntryPtr id);
-		virtual ArchivePtr openFolder(const EntryPtr id);
-		virtual EntryPtr insert(const EntryPtr idBeforeThis,
-			const std::string& strFilename, stream::pos storedSize, std::string type,
+		virtual FileHandle find(const std::string& strFilename) const;
+		virtual const FileVector& files(void) const;
+		virtual bool isValid(const FileHandle& id) const;
+		virtual std::shared_ptr<stream::inout> open(const FileHandle& id);
+		virtual std::unique_ptr<Archive> openFolder(const FileHandle& id);
+		virtual FileHandle insert(const FileHandle& idBeforeThis,
+			const std::string& strFilename, stream::len storedSize, std::string type,
 			int attr);
-		virtual void remove(EntryPtr id);
-		virtual void rename(EntryPtr id, const std::string& strNewName);
-		virtual void move(const EntryPtr idBeforeThis, EntryPtr id);
-		virtual void resize(EntryPtr id, stream::pos newStoredSize,
-			stream::pos newRealSize);
+		virtual void remove(FileHandle& id);
+		virtual void rename(FileHandle& id, const std::string& strNewName);
+		virtual void move(const FileHandle& idBeforeThis, FileHandle& id);
+		virtual void resize(FileHandle& id, stream::len newStoredSize,
+			stream::len newRealSize);
 		virtual void flush();
 		virtual int getSupportedAttributes() const;
 
@@ -253,21 +251,21 @@ class FATArchive: virtual public Archive
 		 * particular format, this is where the custom class should be created,
 		 * have pNewEntry copied into it, then be returned.
 		 *
-		 * @note Invalidates existing EntryPtrs. TODO - does it?
+		 * @note Invalidates existing fe_const_iterators. TODO - does it?
 		 *
 		 * @param idBeforeThis
 		 *   The new file is to be inserted before this.  If it is invalid the new
 		 *   file should be appended to the end of the archive.
 		 *
 		 * @param pNewEntry
-		 *   Initial details about the new entry.
-		 *
-		 * @return Real entry to use.  Will usually (but not always) be the same as
-		 *   pNewEntry.
+		 *   Initial details about the new entry.  Populate these as required.  This
+		 *   instance is created by createNewFATEntry() so if you override that
+		 *   function to generate a custom type, you can cast this value to obtain
+		 *   the custom type within this function.
 		 *
 		 * @throws stream::error on I/O error.
 		 */
-		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis,
+		virtual void preInsertFile(const FATEntry *idBeforeThis,
 			FATEntry *pNewEntry);
 
 		/// Called after the file data has been inserted.
@@ -297,7 +295,7 @@ class FATArchive: virtual public Archive
 		 * resulting from the FAT changing size, which must be handled by this
 		 * function.
 		 *
-		 * Invalidates existing EntryPtrs.
+		 * Invalidates existing fe_const_iterators.
 		 *
 		 * @throws stream::error on I/O error.
 		 */
@@ -321,31 +319,30 @@ class FATArchive: virtual public Archive
 		 * is provided which creates a new FATEntry instance.  If you are
 		 * implementing a new archive format and you need to extend FATEntry to hold
 		 * additional information, you will need to replace this function with one
-		 * that allocates your extended class instead, otherwise the EntryPtrs
+		 * that allocates your extended class instead, otherwise the fe_const_iterators
 		 * passed to the other functions will be a mixture of FATEntry and whatever
 		 * your extended class is.  See fmt-dat-hugo.cpp for an example.
 		 */
-		virtual FATEntry *createNewFATEntry();
+		virtual std::unique_ptr<FATEntry> createNewFATEntry();
 
 	/// Test code only, do not use, see below.
-	friend EntryPtr DLL_EXPORT getFileAt(const VC_ENTRYPTR& files, unsigned int index);
+	friend FileHandle DLL_EXPORT getFileAt(const FileVector& files,
+		unsigned int index);
 
 	private:
-		/// Remove any substreams from the cached list if they have closed.
-		void cleanOpenSubstreams();
-
 		/// Should the given entry be moved during an insert/resize operation?
 		bool entryInRange(const FATEntry *fat, stream::pos offStart,
 			const FATEntry *fatSkip);
 
 		/// Substream truncate callback to resize the substream.
-		void resizeSubstream(FATEntryPtr id, stream::len newSize);
+		void resizeSubstream(FATEntry *id, stream::len newSize);
 };
 
 /// Function for test code only, do not use.  Searches for files based on the
 /// order/index field as this is the order in the archive, which is different to
 /// the order in the vector.
-Archive::EntryPtr DLL_EXPORT getFileAt(const Archive::VC_ENTRYPTR& files, unsigned int index);
+Archive::FileHandle DLL_EXPORT getFileAt(const Archive::FileVector& files,
+	unsigned int index);
 
 } // namespace gamearchive
 } // namespace camoto

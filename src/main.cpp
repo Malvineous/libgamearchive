@@ -64,123 +64,74 @@
 #include "fmt-vol-cosmo.hpp"
 #include "fmt-wad-doom.hpp"
 
+using namespace camoto::gamearchive;
+
 namespace camoto {
-namespace gamearchive {
 
-class ActualManager: virtual public Manager
+template <>
+const std::vector<std::shared_ptr<const ArchiveType> > FormatEnumerator<ArchiveType>::formats()
 {
-	private:
-		ArchiveTypeVector vcTypes;   ///< List of available archive types
-		FilterTypeVector vcFilters;  ///< List of available filter types
-
-	public:
-		ActualManager();
-		~ActualManager();
-
-		virtual const ArchiveTypePtr getArchiveType(unsigned int iIndex) const;
-		virtual const ArchiveTypePtr getArchiveTypeByCode(
-			const std::string& strCode) const;
-		virtual const FilterTypePtr getFilterType(unsigned int iIndex) const;
-		virtual const FilterTypePtr getFilterTypeByCode(const std::string& strCode)
-			const;
-};
-
-const ManagerPtr getManager()
-{
-	return ManagerPtr(new ActualManager());
+	std::vector<std::shared_ptr<const ArchiveType> > list;
+	FormatEnumerator<ArchiveType>::addFormat<
+		ArchiveType_BNK_Harry,
+		ArchiveType_DAT_Bash,
+		ArchiveType_DAT_GoT,
+		ArchiveType_DAT_Highway,
+		ArchiveType_DAT_LostVikings,
+		ArchiveType_DAT_Mystic,
+		ArchiveType_DAT_Sango,
+		ArchiveType_DAT_Wacky,
+		ArchiveType_DLT_Stargunner,
+		ArchiveType_EPF_LionKing,
+		ArchiveType_EXE_CCaves,
+		ArchiveType_EXE_DDave,
+		ArchiveType_GLB_Raptor,
+		ArchiveType_GRP_Duke3D,
+		ArchiveType_HOG_Descent,
+		ArchiveType_LBR_Vinyl,
+		ArchiveType_LIB_Mythos,
+		ArchiveType_PCXLib,
+		ArchiveType_POD_TV,
+		ArchiveType_RES_Stellar7,
+		ArchiveType_RFF_Blood,
+		ArchiveType_Roads_SkyRoads,
+		ArchiveType_Resource_TIM_FAT,
+		ArchiveType_Resource_TIM,
+		ArchiveType_VOL_Cosmo,
+		ArchiveType_WAD_Doom,
+		// The following formats are difficult to autodetect, so putting them last
+		// means they should only be checked if all the more robust formats above
+		// have already failed to match.
+		ArchiveType_GD_Doofus,
+		ArchiveType_DAT_Hugo,
+		ArchiveType_DAT_Hocus,
+		ArchiveType_DA_Levels
+	>(list);
+	return list;
 }
 
-ActualManager::ActualManager()
+template <>
+const std::vector<std::shared_ptr<const FilterType> > FormatEnumerator<FilterType>::formats()
 {
-	this->vcFilters.push_back(FilterTypePtr(new FilterType_Bash()));
-	this->vcFilters.push_back(FilterTypePtr(new FilterType_DDaveRLE()));
-	this->vcFilters.push_back(FilterTypePtr(new FilterType_EPFS()));
-	this->vcFilters.push_back(FilterTypePtr(new FilterType_GLB_Raptor_FAT()));
-	this->vcFilters.push_back(FilterTypePtr(new FilterType_GLB_Raptor_File()));
-	this->vcFilters.push_back(FilterTypePtr(new FilterType_DAT_GOT()));
-	this->vcFilters.push_back(FilterTypePtr(new FilterType_RFF()));
-	this->vcFilters.push_back(FilterTypePtr(new FilterType_SAM_16Sprite()));
-	this->vcFilters.push_back(FilterTypePtr(new FilterType_SAM_8Sprite()));
-	this->vcFilters.push_back(FilterTypePtr(new FilterType_SAM_Map()));
-	this->vcFilters.push_back(FilterTypePtr(new FilterType_SkyRoads()));
-	this->vcFilters.push_back(FilterTypePtr(new FilterType_Stargunner()));
-	this->vcFilters.push_back(FilterTypePtr(new FilterType_Stellar7()));
-	this->vcFilters.push_back(FilterTypePtr(new FilterType_XOR()));
-	this->vcFilters.push_back(FilterTypePtr(new FilterType_Zone66()));
-
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_BNK_Harry()));
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_DAT_Bash()));
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_DAT_GoT()));
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_DAT_Highway()));
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_DAT_LostVikings()));
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_DAT_Mystic()));
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_DAT_Sango()));
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_DAT_Wacky()));
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_DLT_Stargunner()));
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_EPF_LionKing()));
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_EXE_CCaves()));
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_EXE_DDave()));
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_GLB_Raptor()));
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_GRP_Duke3D()));
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_HOG_Descent()));
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_LBR_Vinyl()));
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_LIB_Mythos()));
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_PCXLib()));
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_POD_TV()));
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_RES_Stellar7()));
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_RFF_Blood()));
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_Roads_SkyRoads()));
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_Resource_TIM_FAT()));
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_Resource_TIM()));
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_VOL_Cosmo()));
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_WAD_Doom()));
-
-	// The following formats are difficult to autodetect, so putting them last
-	// means they should only be checked if all the more robust formats above
-	// have already failed to match.
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_GD_Doofus()));
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_DAT_Hugo()));
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_DAT_Hocus()));
-	this->vcTypes.push_back(ArchiveTypePtr(new ArchiveType_DA_Levels()));
+	std::vector<std::shared_ptr<const FilterType> > list;
+	FormatEnumerator<FilterType>::addFormat<
+		FilterType_Bash,
+		FilterType_DDaveRLE,
+		FilterType_EPFS,
+		FilterType_GLB_Raptor_FAT,
+		FilterType_GLB_Raptor_File,
+		FilterType_DAT_GOT,
+		FilterType_RFF,
+		FilterType_SAM_16Sprite,
+		FilterType_SAM_8Sprite,
+		FilterType_SAM_Map,
+		FilterType_SkyRoads,
+		FilterType_Stargunner,
+		FilterType_Stellar7,
+		FilterType_XOR,
+		FilterType_Zone66
+	>(list);
+	return list;
 }
 
-ActualManager::~ActualManager()
-{
-}
-
-const ArchiveTypePtr ActualManager::getArchiveType(unsigned int iIndex) const
-{
-	if (iIndex >= this->vcTypes.size()) return ArchiveTypePtr();
-	return this->vcTypes[iIndex];
-}
-
-const ArchiveTypePtr ActualManager::getArchiveTypeByCode(
-	const std::string& strCode) const
-{
-	for (ArchiveTypeVector::const_iterator i = this->vcTypes.begin();
-		i != this->vcTypes.end(); i++
-	) {
-		if ((*i)->getArchiveCode().compare(strCode) == 0) return *i;
-	}
-	return ArchiveTypePtr();
-}
-
-const FilterTypePtr ActualManager::getFilterType(unsigned int iIndex) const
-{
-	if (iIndex >= this->vcFilters.size()) return FilterTypePtr();
-	return this->vcFilters[iIndex];
-}
-
-const FilterTypePtr ActualManager::getFilterTypeByCode(
-	const std::string& strCode) const
-{
-	for (FilterTypeVector::const_iterator i = this->vcFilters.begin();
-		i != this->vcFilters.end(); i++
-	) {
-		if ((*i)->getFilterCode().compare(strCode) == 0) return *i;
-	}
-	return FilterTypePtr();
-}
-
-} // namespace gamearchive
 } // namespace camoto

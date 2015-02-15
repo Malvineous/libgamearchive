@@ -60,35 +60,36 @@ ArchiveType_GLB_Raptor::~ArchiveType_GLB_Raptor()
 {
 }
 
-std::string ArchiveType_GLB_Raptor::getArchiveCode() const
+std::string ArchiveType_GLB_Raptor::code() const
 {
 	return "glb-raptor";
 }
 
-std::string ArchiveType_GLB_Raptor::getFriendlyName() const
+std::string ArchiveType_GLB_Raptor::friendlyName() const
 {
 	return "Raptor GLB File";
 }
 
-std::vector<std::string> ArchiveType_GLB_Raptor::getFileExtensions() const
+std::vector<std::string> ArchiveType_GLB_Raptor::fileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("glb");
 	return vcExtensions;
 }
 
-std::vector<std::string> ArchiveType_GLB_Raptor::getGameList() const
+std::vector<std::string> ArchiveType_GLB_Raptor::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Raptor");
 	return vcGames;
 }
 
-ArchiveType::Certainty ArchiveType_GLB_Raptor::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_GLB_Raptor::isInstance(
+	stream::input& content) const
 {
 	uint8_t sig[4];
-	psArchive->seekg(0, stream::start);
-	psArchive->read(sig, 4);
+	content.seekg(0, stream::start);
+	content.read(sig, 4);
 	uint8_t sig_match[] = {0x64, 0x9B, 0xD1, 0x09};
 	for (unsigned int i = 0; i < sizeof(sig_match); i++) {
 		if (sig[i] != sig_match[i]) {
@@ -104,10 +105,11 @@ ArchiveType::Certainty ArchiveType_GLB_Raptor::isInstance(stream::input_sptr psA
 	return DefinitelyYes;
 }
 
-ArchivePtr ArchiveType_GLB_Raptor::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_GLB_Raptor::create(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	psArchive->seekp(0, stream::start);
-	psArchive << nullPadded(
+	content->seekp(0, stream::start);
+	*content << nullPadded(
 #ifdef GLB_CLEARTEXT
 		"\x00\x00\x00\x00\x00\x00\x00\x00"
 		"\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -118,15 +120,16 @@ ArchivePtr ArchiveType_GLB_Raptor::newArchive(stream::inout_sptr psArchive, Supp
 		"\x22\x59\x8F\xC7\x0E\x5A\x9C\xCF\x01\x38\x6E\xA6"
 #endif
 		, GLB_HEADER_LEN);
-	return ArchivePtr(new Archive_GLB_Raptor(psArchive));
+	return std::make_unique<Archive_GLB_Raptor>(content);
 }
 
-ArchivePtr ArchiveType_GLB_Raptor::open(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_GLB_Raptor::open(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return ArchivePtr(new Archive_GLB_Raptor(psArchive));
+	return std::make_unique<Archive_GLB_Raptor>(content);
 }
 
-SuppFilenames ArchiveType_GLB_Raptor::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_GLB_Raptor::getRequiredSupps(stream::input& content,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -134,58 +137,38 @@ SuppFilenames ArchiveType_GLB_Raptor::getRequiredSupps(stream::input_sptr data,
 }
 
 
-/// Resize the substream without regard to the underlying data
-/**
- * This is possible because every time we expand or shrink the FAT, we also make
- * extra room, so the underlying data is already of the correct size.  We just
- * have to tell the substream it can now use this extra data.
- */
-void fakeResizeSubstream(boost::weak_ptr<stream::output_sub> w_s, stream::len newSize)
-{
-	stream::output_sub_sptr s = w_s.lock();
-	if (!s) return;
-
-	s->resize(newSize);
-	return;
-}
-
-void dummyResize(stream::pos newSize)
-{
-	return;
-}
-
-
-Archive_GLB_Raptor::Archive_GLB_Raptor(stream::inout_sptr psArchive)
-	:	FATArchive(psArchive, GLB_FIRST_FILE_OFFSET, GLB_MAX_FILENAME_LEN),
-		fat(new stream::seg())
+Archive_GLB_Raptor::Archive_GLB_Raptor(std::shared_ptr<stream::inout> content)
+	:	FATArchive(content, GLB_FIRST_FILE_OFFSET, GLB_MAX_FILENAME_LEN)
 {
 	FilterType_GLB_Raptor_FAT glbFilterType;
 	uint32_t numFiles;
 	{
 		// Decode just enough of the FAT to get the file count, so we know the size
 		// of the FAT
-		stream::input_sub_sptr substrFAT(new stream::input_sub());
-		substrFAT->open(psArchive, 0, GLB_HEADER_LEN);
+		auto substrFAT = std::make_shared<stream::input_sub>(
+			content, 0, GLB_HEADER_LEN
+		);
 #ifdef GLB_CLEARTEXT
-		stream::input_sptr preFAT = substrFAT;
+		auto preFAT = substrFAT;
 #else
-		stream::input_sptr preFAT = glbFilterType.apply(substrFAT);
+		auto preFAT = glbFilterType.apply(substrFAT);
 #endif
 		preFAT->seekg(4, stream::start);
-		preFAT >> u32le(numFiles);
+		*preFAT >> u32le(numFiles);
 	}
 
 	// Copy the FAT into memory and decode it
-	stream::input_sub_sptr substrFAT(new stream::input_sub());
-	substrFAT->open(psArchive, 0, GLB_HEADER_LEN + numFiles * GLB_FAT_ENTRY_LEN);
+	auto substrFAT = std::make_shared<stream::input_sub>(
+		content, 0, GLB_HEADER_LEN + numFiles * GLB_FAT_ENTRY_LEN
+	);
 #ifdef GLB_CLEARTEXT
-		stream::input_sptr preFAT = substrFAT;
+		auto preFAT = substrFAT;
 #else
-		stream::input_sptr preFAT = glbFilterType.apply(substrFAT);
+		auto preFAT = glbFilterType.apply(substrFAT);
 #endif
-	stream::memory_sptr mem(new stream::memory());
-	stream::copy(mem, preFAT);
-	this->fat->open(mem);
+	auto mem = std::make_shared<stream::memory>();
+	stream::copy(*mem, *preFAT);
+	this->fat = std::make_shared<stream::seg>(mem);
 
 	if (numFiles >= GLB_SAFETY_MAX_FILECOUNT) {
 		throw stream::error("too many files or corrupted archive");
@@ -193,30 +176,29 @@ Archive_GLB_Raptor::Archive_GLB_Raptor(stream::inout_sptr psArchive)
 
 	this->fat->seekg(GLB_FAT_OFFSET, stream::start);
 	for (unsigned int i = 0; i < numFiles; i++) {
-		FATEntry *fatEntry = new FATEntry();
-		EntryPtr ep(fatEntry);
+		auto f = this->createNewFATEntry();
 
-		fatEntry->iIndex = i;
-		fatEntry->lenHeader = 0;
-		fatEntry->type = FILETYPE_GENERIC;
-		fatEntry->fAttr = EA_NONE;
-		fatEntry->bValid = true;
+		f->iIndex = i;
+		f->lenHeader = 0;
+		f->type = FILETYPE_GENERIC;
+		f->fAttr = EA_NONE;
+		f->bValid = true;
 
 		uint32_t glbFlags;
 
 		// Read the data in from the FAT entry in the file
-		this->fat
+		*this->fat
 			>> u32le(glbFlags)
-			>> u32le(fatEntry->iOffset)
-			>> u32le(fatEntry->storedSize)
-			>> nullPadded(fatEntry->strName, GLB_FILENAME_FIELD_LEN)
+			>> u32le(f->iOffset)
+			>> u32le(f->storedSize)
+			>> nullPadded(f->strName, GLB_FILENAME_FIELD_LEN)
 		;
 		if (glbFlags == 0x01) {
-			fatEntry->fAttr = EA_ENCRYPTED;
-			fatEntry->filter = "glb-raptor";
+			f->fAttr = EA_ENCRYPTED;
+			f->filter = "glb-raptor";
 		}
-		fatEntry->realSize = fatEntry->storedSize;
-		this->vcFAT.push_back(ep);
+		f->realSize = f->storedSize;
+		this->vcFAT.push_back(std::move(f));
 	}
 }
 
@@ -227,20 +209,34 @@ Archive_GLB_Raptor::~Archive_GLB_Raptor()
 void Archive_GLB_Raptor::flush()
 {
 	FilterType_GLB_Raptor_FAT glbFilterType;
-	stream::output_sub_sptr substrFAT(new stream::output_sub);
-	stream::fn_truncate fnTruncateSub = boost::bind<void>(&fakeResizeSubstream,
-		boost::weak_ptr<stream::output_sub>(substrFAT), _1);
-	substrFAT->open(this->psArchive, 0,
-		GLB_HEADER_LEN + this->vcFAT.size() * GLB_FAT_ENTRY_LEN, fnTruncateSub);
+	std::shared_ptr<stream::output_sub> substrFAT = std::make_shared<stream::output_sub>(
+		this->content, 0,
+		GLB_HEADER_LEN + this->vcFAT.size() * GLB_FAT_ENTRY_LEN,
+		[](stream::output_sub* sub, stream::len newSize) {
+			/// Resize the substream without regard to the underlying data
+			/**
+			 * This is possible because every time we expand or shrink the FAT, we also make
+			 * extra room, so the underlying data is already of the correct size.  We just
+			 * have to tell the substream it can now use this extra data.
+			 */
+			sub->resize(newSize);
+			return;
+		}
+	);
 #ifdef GLB_CLEARTEXT
-	stream::output_sptr bareCrypt = substrFAT;
+	std::shared_ptr<stream::output> bareCrypt = substrFAT;
 #else
-	stream::fn_truncate fnTruncate = boost::bind<void>(&dummyResize, _1);
-	stream::output_sptr bareCrypt = glbFilterType.apply((stream::output_sptr)substrFAT, fnTruncate);
+	std::shared_ptr<stream::output> bareCrypt = glbFilterType.apply(
+		substrFAT,
+		[](stream::output_filtered*, stream::len) {
+			// Dummy resize function - don't do anything
+			return;
+		}
+	);
 #endif
 	this->fat->seekg(0, stream::start);
 	bareCrypt->seekp(0, stream::start);
-	stream::copy(bareCrypt, this->fat);
+	stream::copy(*bareCrypt, *this->fat);
 	bareCrypt->flush();
 
 	this->FATArchive::flush();
@@ -252,7 +248,7 @@ void Archive_GLB_Raptor::updateFileName(const FATEntry *pid, const std::string& 
 	// TESTED BY: fmt_glb_raptor_rename
 	assert(strNewName.length() <= GLB_MAX_FILENAME_LEN);
 	this->fat->seekp(GLB_FILENAME_OFFSET(pid), stream::start);
-	this->fat << nullPadded(strNewName, GLB_FILENAME_FIELD_LEN);
+	*this->fat << nullPadded(strNewName, GLB_FILENAME_FIELD_LEN);
 	return;
 }
 
@@ -261,7 +257,7 @@ void Archive_GLB_Raptor::updateFileOffset(const FATEntry *pid, stream::delta off
 	// TESTED BY: fmt_glb_raptor_insert*
 	// TESTED BY: fmt_glb_raptor_resize*
 	this->fat->seekp(GLB_FILEOFFSET_OFFSET(pid), stream::start);
-	this->fat << u32le(pid->iOffset);
+	*this->fat << u32le(pid->iOffset);
 	return;
 }
 
@@ -270,11 +266,11 @@ void Archive_GLB_Raptor::updateFileSize(const FATEntry *pid, stream::delta sizeD
 	// TESTED BY: fmt_glb_raptor_insert*
 	// TESTED BY: fmt_glb_raptor_resize*
 	this->fat->seekp(GLB_FILESIZE_OFFSET(pid), stream::start);
-	this->fat << u32le(pid->storedSize);
+	*this->fat << u32le(pid->storedSize);
 	return;
 }
 
-FATArchive::FATEntry *Archive_GLB_Raptor::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+void Archive_GLB_Raptor::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_glb_raptor_insert*
 	assert(pNewEntry->strName.length() <= GLB_MAX_FILENAME_LEN);
@@ -287,15 +283,15 @@ FATArchive::FATEntry *Archive_GLB_Raptor::preInsertFile(const FATEntry *idBefore
 
 	this->fat->seekp(GLB_FATENTRY_OFFSET(pNewEntry), stream::start);
 	this->fat->insert(GLB_FAT_ENTRY_LEN);
-	this->psArchive->seekp(GLB_FATENTRY_OFFSET(pNewEntry), stream::start);
-	this->psArchive->insert(GLB_FAT_ENTRY_LEN);
+	this->content->seekp(GLB_FATENTRY_OFFSET(pNewEntry), stream::start);
+	this->content->insert(GLB_FAT_ENTRY_LEN);
 
 	boost::to_upper(pNewEntry->strName);
 
 	uint32_t flags = 0;
 	if (pNewEntry->fAttr & EA_COMPRESSED) flags = 1;
 
-	this->fat
+	*this->fat
 		<< u32le(flags)
 		<< u32le(pNewEntry->iOffset)
 		<< u32le(pNewEntry->storedSize)
@@ -311,7 +307,7 @@ FATArchive::FATEntry *Archive_GLB_Raptor::preInsertFile(const FATEntry *idBefore
 	);
 
 	this->updateFileCount(this->vcFAT.size() + 1);
-	return pNewEntry;
+	return;
 }
 
 void Archive_GLB_Raptor::preRemoveFile(const FATEntry *pid)
@@ -332,8 +328,8 @@ void Archive_GLB_Raptor::preRemoveFile(const FATEntry *pid)
 	this->fat->seekp(GLB_FATENTRY_OFFSET(pid), stream::start);
 	this->fat->remove(GLB_FAT_ENTRY_LEN);
 
-	this->psArchive->seekp(GLB_FATENTRY_OFFSET(pid), stream::start);
-	this->psArchive->remove(GLB_FAT_ENTRY_LEN);
+	this->content->seekp(GLB_FATENTRY_OFFSET(pid), stream::start);
+	this->content->remove(GLB_FAT_ENTRY_LEN);
 
 	this->updateFileCount(this->vcFAT.size() - 1);
 	return;
@@ -344,7 +340,7 @@ void Archive_GLB_Raptor::updateFileCount(uint32_t iNewCount)
 	// TESTED BY: fmt_glb_raptor_insert*
 	// TESTED BY: fmt_glb_raptor_remove*
 	this->fat->seekp(GLB_FILECOUNT_OFFSET, stream::start);
-	this->fat << u32le(iNewCount);
+	*this->fat << u32le(iNewCount);
 	return;
 }
 

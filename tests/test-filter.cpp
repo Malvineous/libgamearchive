@@ -21,64 +21,60 @@
 #include <boost/bind.hpp>
 #include "test-filter.hpp"
 
-using namespace camoto;
-
 test_filter::test_filter()
-	:	in(new stream::string()),
-		in_filt(new stream::input_filtered())
+	:	in(std::make_shared<stream::string>())
 {
 }
 
 boost::test_tools::predicate_result test_filter::is_equal(const std::string& strExpected)
 {
-	stream::string_sptr out(new stream::string());
-	this->in_filt->open(this->in, this->filter);
-	stream::copy(out, this->in_filt);
+	this->in_filt = std::make_shared<stream::input_filtered>(this->in,
+		this->filter);
+
+	stream::string out;
+	stream::copy(out, *this->in_filt);
 
 	// See if the stringstream now matches what we expected
-	return this->test_main::is_equal(strExpected, *(out->str()));
+	return this->test_main::is_equal(strExpected, out.data);
 }
 
 boost::test_tools::predicate_result test_filter::is_equal_read(
-	camoto::gamearchive::FilterType *ft, const std::string& strInput,
-	const std::string& strExpected)
+	FilterType *ft, const std::string& strInput, const std::string& strExpected)
 {
 	this->in->write(strInput);
 
-	stream::inout_sptr in2 = this->in;
-	stream::fn_truncate fnTruncate = boost::bind(&stream::string::truncate,
-		this->in.get(), _1);
-	stream::inout_sptr s = ft->apply(in2, fnTruncate);
+	auto s = ft->apply(this->in);
 
-	stream::string_sptr out(new stream::string());
-	stream::copy(out, s);
+	stream::string out;
+	stream::copy(out, *s);
 
 	// See if the stringstream now matches what we expected
-	return this->test_main::is_equal(strExpected, *(out->str()));
+	return this->test_main::is_equal(strExpected, out.data);
 }
 
 boost::test_tools::predicate_result test_filter::is_equal_write(
 	camoto::gamearchive::FilterType *ft, const std::string& strInput,
 	const std::string& strExpected)
 {
-	stream::inout_sptr in2 = this->in;
-	stream::fn_truncate fnTruncate = boost::bind(&stream::string::truncate,
-		this->in.get(), _1);
-	stream::inout_sptr s = ft->apply(in2, fnTruncate);
+	std::shared_ptr<stream::inout> in2 = this->in;
+	stream::fn_truncate_filter fnTruncate = boost::bind(&stream::string::truncate,
+		this->in.get(), _2);
+	std::shared_ptr<stream::inout> s = ft->apply(in2, fnTruncate);
 
 	s->write(strInput);
 	s->flush();
 
 	// See if the stringstream now matches what we expected
-	return this->test_main::is_equal(strExpected, *(this->in->str()));
+	return this->test_main::is_equal(strExpected, this->in->data);
 }
 
 boost::test_tools::predicate_result test_filter::should_fail()
 {
-	stream::string_sptr out(new stream::string());
 	try {
-		this->in_filt->open(this->in, this->filter);
-		stream::copy(out, this->in_filt);
+		this->in_filt = std::make_shared<stream::input_filtered>(this->in,
+			this->filter);
+		stream::string out;
+		stream::copy(out, *this->in_filt);
 	} catch (filter_error) {
 		// If we made it this far all is good
 		return boost::test_tools::predicate_result(true);

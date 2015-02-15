@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(bitswap_read)
 {
 	BOOST_TEST_MESSAGE("Decode some bitswapped data");
 
-	in << STRING_WITH_NULLS("\x00\x01\x03\x0F\x1E\x55\xAA\xFF");
+	*this->in << STRING_WITH_NULLS("\x00\x01\x03\x0F\x1E\x55\xAA\xFF");
 
 	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS("\x00\x80\xC0\xF0\x78\xAA\x55\xFF")),
 		"Decoding bitswapped data failed");

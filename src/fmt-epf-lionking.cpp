@@ -54,24 +54,24 @@ ArchiveType_EPF_LionKing::~ArchiveType_EPF_LionKing()
 {
 }
 
-std::string ArchiveType_EPF_LionKing::getArchiveCode() const
+std::string ArchiveType_EPF_LionKing::code() const
 {
 	return "epf-lionking";
 }
 
-std::string ArchiveType_EPF_LionKing::getFriendlyName() const
+std::string ArchiveType_EPF_LionKing::friendlyName() const
 {
 	return "East Point Software EPFS File";
 }
 
-std::vector<std::string> ArchiveType_EPF_LionKing::getFileExtensions() const
+std::vector<std::string> ArchiveType_EPF_LionKing::fileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("epf");
 	return vcExtensions;
 }
 
-std::vector<std::string> ArchiveType_EPF_LionKing::getGameList() const
+std::vector<std::string> ArchiveType_EPF_LionKing::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Alien Breed Tower Assault");
@@ -89,16 +89,17 @@ std::vector<std::string> ArchiveType_EPF_LionKing::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty ArchiveType_EPF_LionKing::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_EPF_LionKing::isInstance(
+	stream::input& content) const
 {
-	stream::pos lenArchive = psArchive->size();
+	stream::pos lenArchive = content.size();
 
 	// TESTED BY: fmt_epf_lionking_isinstance_c02
 	if (lenArchive < EPF_HEADER_LEN) return DefinitelyNo; // too short
 
 	char sig[4];
-	psArchive->seekg(0, stream::start);
-	psArchive->read(sig, 4);
+	content.seekg(0, stream::start);
+	content.read(sig, 4);
 
 	// TESTED BY: fmt_epf_lionking_isinstance_c00
 	if (strncmp(sig, "EPFS", 4) == 0) return DefinitelyYes;
@@ -107,23 +108,25 @@ ArchiveType::Certainty ArchiveType_EPF_LionKing::isInstance(stream::input_sptr p
 	return DefinitelyNo;
 }
 
-ArchivePtr ArchiveType_EPF_LionKing::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_EPF_LionKing::create(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	psArchive->seekp(0, stream::start);
-	psArchive
+	content->seekp(0, stream::start);
+	*content
 		<< nullPadded("EPFS", 4)
 		<< u32le(11) // FAT offset
 		<< u8(0)     // Unknown/flags?
 		<< u16le(0); // File count
-	return ArchivePtr(new Archive_EPF_LionKing(psArchive));
+	return std::make_unique<Archive_EPF_LionKing>(content);
 }
 
-ArchivePtr ArchiveType_EPF_LionKing::open(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_EPF_LionKing::open(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return ArchivePtr(new Archive_EPF_LionKing(psArchive));
+	return std::make_unique<Archive_EPF_LionKing>(content);
 }
 
-SuppFilenames ArchiveType_EPF_LionKing::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_EPF_LionKing::getRequiredSupps(stream::input& content,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -131,20 +134,20 @@ SuppFilenames ArchiveType_EPF_LionKing::getRequiredSupps(stream::input_sptr data
 }
 
 
-Archive_EPF_LionKing::Archive_EPF_LionKing(stream::inout_sptr psArchive)
-	:	FATArchive(psArchive, EPF_FIRST_FILE_OFFSET, EPF_MAX_FILENAME_LEN)
+Archive_EPF_LionKing::Archive_EPF_LionKing(std::shared_ptr<stream::inout> content)
+	:	FATArchive(content, EPF_FIRST_FILE_OFFSET, EPF_MAX_FILENAME_LEN)
 {
-	stream::pos lenArchive = this->psArchive->size();
+	stream::pos lenArchive = this->content->size();
 
 	// We still have to perform sanity checks in case the user forced an archive
 	// to open even though it failed the signature check.
 	if (lenArchive < EPF_HEADER_LEN) throw stream::error("file too short");
 
-	this->psArchive->seekg(4, stream::start); // skip "EPFS" sig
+	this->content->seekg(4, stream::start); // skip "EPFS" sig
 
 	uint8_t unknown;
 	uint16_t numFiles;
-	this->psArchive
+	*this->content
 		>> u32le(this->offFAT)
 		>> u8(unknown)
 		>> u16le(numFiles);
@@ -162,35 +165,34 @@ Archive_EPF_LionKing::Archive_EPF_LionKing(stream::inout_sptr psArchive)
 	) {
 		throw stream::error("header corrupted or file truncated");
 	}
-	this->psArchive->seekg(this->offFAT, stream::start);
+	this->content->seekg(this->offFAT, stream::start);
 
 	stream::pos offNext = EPF_FIRST_FILE_OFFSET;
 	uint8_t flags;
 	for (int i = 0; i < numFiles; i++) {
-		FATEntry *fatEntry = new FATEntry();
-		EntryPtr ep(fatEntry);
+		auto f = this->createNewFATEntry();
 
-		fatEntry->iIndex = i;
-		fatEntry->iOffset = offNext;
-		fatEntry->lenHeader = 0;
-		fatEntry->type = FILETYPE_GENERIC;
-		fatEntry->fAttr = 0;
-		fatEntry->bValid = true;
+		f->iIndex = i;
+		f->iOffset = offNext;
+		f->lenHeader = 0;
+		f->type = FILETYPE_GENERIC;
+		f->fAttr = 0;
+		f->bValid = true;
 
 		// Read the data in from the FAT entry in the file
-		this->psArchive
-			>> nullPadded(fatEntry->strName, EPF_FILENAME_FIELD_LEN)
+		*this->content
+			>> nullPadded(f->strName, EPF_FILENAME_FIELD_LEN)
 			>> u8(flags)
-			>> u32le(fatEntry->storedSize)
-			>> u32le(fatEntry->realSize);
+			>> u32le(f->storedSize)
+			>> u32le(f->realSize);
 
 		if (flags & EPF_FAT_FLAG_COMPRESSED) {
-			fatEntry->fAttr |= EA_COMPRESSED;
-			fatEntry->filter = "lzw-epfs";
+			f->fAttr |= EA_COMPRESSED;
+			f->filter = "lzw-epfs";
 		}
 
-		this->vcFAT.push_back(ep);
-		offNext += fatEntry->storedSize;
+		offNext += f->storedSize;
+		this->vcFAT.push_back(std::move(f));
 	}
 	// TODO: hidden data after FAT until EOF?
 }
@@ -221,9 +223,9 @@ std::string Archive_EPF_LionKing::getMetadata(MetadataType item) const
 			stream::len sizeDesc = this->offFAT - offDesc;
 			std::string strDesc;
 			if (sizeDesc) {
-				this->psArchive->seekg(offDesc, stream::start);
-				this->psArchive >> fixedLength(strDesc, sizeDesc);
-				//psArchive->read(strDesc.c_str(), sizeDesc);
+				this->content->seekg(offDesc, stream::start);
+				*this->content >> fixedLength(strDesc, sizeDesc);
+				//content->read(strDesc.c_str(), sizeDesc);
 			}
 			return strDesc;
 		}
@@ -242,15 +244,15 @@ void Archive_EPF_LionKing::setMetadata(MetadataType item, const std::string& val
 			stream::pos offDesc = this->getDescOffset();
 			stream::len sizeDesc = this->offFAT - offDesc;
 			stream::delta sizeDelta = value.length() - sizeDesc;
-			this->psArchive->seekp(offDesc, stream::start);
+			this->content->seekp(offDesc, stream::start);
 			if (sizeDelta < 0) {
 				// TESTED BY: ?
-				this->psArchive->remove(-sizeDelta);
+				this->content->remove(-sizeDelta);
 			} else {
 				// TESTED BY: ?
-				this->psArchive->insert(sizeDelta);
+				this->content->insert(sizeDelta);
 			}
-			this->psArchive << value; // TODO: confirm no terminating null
+			*this->content << value; // TODO: confirm no terminating null
 			this->offFAT += sizeDelta;
 			this->updateFATOffset();
 			break;
@@ -266,8 +268,8 @@ void Archive_EPF_LionKing::updateFileName(const FATEntry *pid, const std::string
 {
 	// TESTED BY: fmt_epf_lionking_rename
 	assert(strNewName.length() <= EPF_MAX_FILENAME_LEN);
-	this->psArchive->seekp(this->offFAT + pid->iIndex * EPF_FAT_ENTRY_LEN, stream::start);
-	this->psArchive << nullPadded(strNewName, EPF_FILENAME_FIELD_LEN);
+	this->content->seekp(this->offFAT + pid->iIndex * EPF_FAT_ENTRY_LEN, stream::start);
+	*this->content << nullPadded(strNewName, EPF_FILENAME_FIELD_LEN);
 	return;
 }
 
@@ -281,8 +283,8 @@ void Archive_EPF_LionKing::updateFileSize(const FATEntry *pid, stream::delta siz
 	// TESTED BY: fmt_epf_lionking_insert*
 	// TESTED BY: fmt_epf_lionking_resize*
 
-	this->psArchive->seekp(this->offFAT + pid->iIndex * EPF_FAT_ENTRY_LEN + EPF_FAT_FILESIZE_OFFSET, stream::start);
-	this->psArchive
+	this->content->seekp(this->offFAT + pid->iIndex * EPF_FAT_ENTRY_LEN + EPF_FAT_FILESIZE_OFFSET, stream::start);
+	*this->content
 		<< u32le(pid->storedSize)
 		<< u32le(pid->realSize)
 	;
@@ -293,7 +295,7 @@ void Archive_EPF_LionKing::updateFileSize(const FATEntry *pid, stream::delta siz
 	return;
 }
 
-FATArchive::FATEntry *Archive_EPF_LionKing::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+void Archive_EPF_LionKing::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_epf_lionking_insert*
 	assert(pNewEntry->strName.length() <= EPF_MAX_FILENAME_LEN);
@@ -306,19 +308,19 @@ FATArchive::FATEntry *Archive_EPF_LionKing::preInsertFile(const FATEntry *idBefo
 		pNewEntry->filter = "lzw-epfs";
 	}
 
-	return pNewEntry;
+	return;
 }
 
 void Archive_EPF_LionKing::postInsertFile(FATEntry *pNewEntry)
 {
 	this->offFAT += pNewEntry->storedSize;
 
-	this->psArchive->seekp(this->offFAT + pNewEntry->iIndex * EPF_FAT_ENTRY_LEN, stream::start);
-	this->psArchive->insert(EPF_FAT_ENTRY_LEN);
+	this->content->seekp(this->offFAT + pNewEntry->iIndex * EPF_FAT_ENTRY_LEN, stream::start);
+	this->content->insert(EPF_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
 	uint8_t flags = 0;
 	if (pNewEntry->fAttr & EA_COMPRESSED) flags = 1;
-	this->psArchive
+	*this->content
 		<< nullPadded(pNewEntry->strName, EPF_FILENAME_FIELD_LEN)
 		<< u8(flags)  // 0 == uncompressed, 1 == compressed
 		<< u32le(pNewEntry->storedSize)  // compressed
@@ -334,8 +336,8 @@ void Archive_EPF_LionKing::preRemoveFile(const FATEntry *pid)
 {
 	// TESTED BY: fmt_epf_lionking_remove*
 
-	this->psArchive->seekp(this->offFAT + pid->iIndex * EPF_FAT_ENTRY_LEN, stream::start);
-	this->psArchive->remove(EPF_FAT_ENTRY_LEN);
+	this->content->seekp(this->offFAT + pid->iIndex * EPF_FAT_ENTRY_LEN, stream::start);
+	this->content->remove(EPF_FAT_ENTRY_LEN);
 
 	this->offFAT -= pid->storedSize;
 	this->updateFATOffset();
@@ -348,8 +350,8 @@ void Archive_EPF_LionKing::updateFileCount(uint16_t iNewCount)
 {
 	// TESTED BY: fmt_epf_lionking_insert*
 	// TESTED BY: fmt_epf_lionking_remove*
-	this->psArchive->seekp(EPF_FILECOUNT_POS, stream::start);
-	this->psArchive << u16le(iNewCount);
+	this->content->seekp(EPF_FILECOUNT_POS, stream::start);
+	*this->content << u16le(iNewCount);
 	return;
 }
 
@@ -358,8 +360,8 @@ void Archive_EPF_LionKing::updateFATOffset()
 	// TESTED BY: fmt_epf_lionking_insert*
 	// TESTED BY: fmt_epf_lionking_remove*
 
-	this->psArchive->seekp(EPF_FAT_OFFSET_POS, stream::start);
-	this->psArchive << u32le(this->offFAT);
+	this->content->seekp(EPF_FAT_OFFSET_POS, stream::start);
+	*this->content << u32le(this->offFAT);
 
 	return;
 }
@@ -368,9 +370,9 @@ stream::pos Archive_EPF_LionKing::getDescOffset() const
 {
 	stream::pos offDesc;
 	if (this->vcFAT.size()) {
-		EntryPtr lastFile = this->vcFAT.back();
+		auto lastFile = this->vcFAT.back();
 		assert(lastFile);
-		FATEntry *lastFATEntry = dynamic_cast<FATEntry *>(lastFile.get());
+		auto lastFATEntry = dynamic_cast<const FATEntry *>(lastFile.get());
 		offDesc = lastFATEntry->iOffset + lastFATEntry->storedSize;
 	} else {
 		offDesc = EPF_FIRST_FILE_OFFSET;

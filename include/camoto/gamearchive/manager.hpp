@@ -22,7 +22,7 @@
 #define _CAMOTO_GAMEARCHIVE_MANAGER_HPP_
 
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include <camoto/formatenum.hpp>
 #include <camoto/gamearchive/archivetype.hpp>
 #include <camoto/gamearchive/filtertype.hpp>
 
@@ -31,7 +31,14 @@
 #endif
 
 namespace camoto {
+
+template class FormatEnumerator<gamearchive::ArchiveType>;
+template class FormatEnumerator<gamearchive::FilterType>;
+
 namespace gamearchive {
+
+typedef FormatEnumerator<ArchiveType> ArchiveManager;
+typedef FormatEnumerator<FilterType> FilterManager;
 
 /// Top-level class to manage archive types.
 /**
@@ -46,11 +53,12 @@ namespace gamearchive {
  * @note Use the free function getManager() to obtain a pointer to an instance
  *   of an object implementing the Manager interface.
  */
+/*
 class Manager
 {
 	public:
 		/// Get an ArchiveType instance for a supported file format.
-		/**
+		/ **
 		 * This can be used to enumerate all available file formats.
 		 *
 		 * @param iIndex
@@ -58,22 +66,22 @@ class Manager
 		 *
 		 * @return A shared pointer to an ArchiveType for the given index, or
 		 *   an empty pointer once iIndex goes out of range.
-		 */
+		 * /
 		virtual const ArchiveTypePtr getArchiveType(unsigned int iIndex) const = 0;
 
 		/// Get an ArchiveType instance by its code.
-		/**
+		/ **
 		 * @param strCode
 		 *   %Archive code (e.g. "grp-duke3d")
 		 *
 		 * @return A shared pointer to an ArchiveType for the given code, or
 		 *         an empty pointer on an invalid code.
-		 */
+		 * /
 		virtual const ArchiveTypePtr getArchiveTypeByCode(
 			const std::string& strCode) const = 0;
 
 		/// Get a FilterType instance for a supported filtering algorithm.
-		/**
+		/ **
 		 * This can be used to enumerate all available filters.
 		 *
 		 * @param iIndex
@@ -81,32 +89,43 @@ class Manager
 		 *
 		 * @return A shared pointer to a FilterType for the given index, or
 		 *   an empty pointer once iIndex goes out of range.
-		 */
+		 * /
 		virtual const FilterTypePtr getFilterType(unsigned int iIndex) const = 0;
 
 		/// Get a FilterType instance by its code.
-		/**
+		/ **
 		 * @param strCode
 		 *   Filter code (e.g. "lzw-bash")
 		 *
 		 * @return A shared pointer to a FilterType for the given code, or
 		 *   an empty pointer on an invalid code.
-		 */
+		 * /
 		virtual const FilterTypePtr getFilterTypeByCode(const std::string& strCode)
 			const = 0;
 };
-
-/// Shared pointer to a Manager.
-typedef boost::shared_ptr<Manager> ManagerPtr;
+*/
 
 /// Library entry point.
 /**
  * All further functionality is provided by calling functions in the Manager
  * class.
  *
- * @return A shared pointer to a Manager instance.
+ * @return A Manager instance.
  */
-const ManagerPtr DLL_EXPORT getManager(void);
+//const std::unique_ptr<Manager> DLL_EXPORT getManager(void);
+/*
+template <class T>
+std::unique_ptr<FormatEnumerator<T> > DLL_EXPORT createFormatEnumerator()
+{
+	return std::unique_ptr<FormatEnumerator<T> >();
+}
+
+template <>
+const std::unique_ptr<FormatEnumerator<ArchiveType> > DLL_EXPORT createFormatEnumerator();
+
+template <>
+const std::unique_ptr<FormatEnumerator<FilterType> > DLL_EXPORT createFormatEnumerator();
+*/
 
 } // namespace gamearchive
 } // namespace camoto

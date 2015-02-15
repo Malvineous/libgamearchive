@@ -50,43 +50,44 @@ ArchiveType_POD_TV::~ArchiveType_POD_TV()
 {
 }
 
-std::string ArchiveType_POD_TV::getArchiveCode() const
+std::string ArchiveType_POD_TV::code() const
 {
 	return "pod-tv";
 }
 
-std::string ArchiveType_POD_TV::getFriendlyName() const
+std::string ArchiveType_POD_TV::friendlyName() const
 {
 	return "Terminal Velocity POD File";
 }
 
-std::vector<std::string> ArchiveType_POD_TV::getFileExtensions() const
+std::vector<std::string> ArchiveType_POD_TV::fileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("pod");
 	return vcExtensions;
 }
 
-std::vector<std::string> ArchiveType_POD_TV::getGameList() const
+std::vector<std::string> ArchiveType_POD_TV::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Terminal Velocity");
 	return vcGames;
 }
 
-ArchiveType::Certainty ArchiveType_POD_TV::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_POD_TV::isInstance(
+	stream::input& content) const
 {
-	stream::pos lenArchive = psArchive->size();
+	stream::pos lenArchive = content.size();
 
 	// Must have filecount + description
 	if (lenArchive < POD_FAT_OFFSET) return DefinitelyNo;
 
-	psArchive->seekg(0, stream::start);
+	content.seekg(0, stream::start);
 	uint32_t numFiles;
-	psArchive >> u32le(numFiles);
+	content >> u32le(numFiles);
 
 	char description[POD_DESCRIPTION_LEN + 1];
-	psArchive->read(description, POD_DESCRIPTION_LEN);
+	content.read(description, POD_DESCRIPTION_LEN);
 	description[POD_DESCRIPTION_LEN] = 0;
 
 	for (int j = 0; j < POD_DESCRIPTION_LEN; j++) {
@@ -103,9 +104,9 @@ ArchiveType::Certainty ArchiveType_POD_TV::isInstance(stream::input_sptr psArchi
 
 	// Check each FAT entry
 	char fn[POD_MAX_FILENAME_LEN];
-	psArchive->seekg(POD_FAT_OFFSET, stream::start);
+	content.seekg(POD_FAT_OFFSET, stream::start);
 	for (unsigned int i = 0; i < numFiles; i++) {
-		psArchive->read(fn, POD_MAX_FILENAME_LEN);
+		content.read(fn, POD_MAX_FILENAME_LEN);
 		// Make sure there aren't any invalid characters in the filename
 		for (int j = 0; j < POD_MAX_FILENAME_LEN; j++) {
 			if (!fn[j]) break; // stop on terminating null
@@ -115,7 +116,7 @@ ArchiveType::Certainty ArchiveType_POD_TV::isInstance(stream::input_sptr psArchi
 		}
 
 		uint32_t offEntry, lenEntry;
-		psArchive >> u32le(offEntry) >> u32le(lenEntry);
+		content >> u32le(offEntry) >> u32le(lenEntry);
 
 		// If a file entry points past the end of the archive then it's an invalid
 		// format.
@@ -128,21 +129,23 @@ ArchiveType::Certainty ArchiveType_POD_TV::isInstance(stream::input_sptr psArchi
 	return DefinitelyYes;
 }
 
-ArchivePtr ArchiveType_POD_TV::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_POD_TV::create(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	psArchive->seekp(0, stream::start);
-	psArchive
+	content->seekp(0, stream::start);
+	*content
 		<< u32le(0) // File count
 		<< nullPadded("Empty POD file", POD_DESCRIPTION_LEN);
-	return ArchivePtr(new Archive_POD_TV(psArchive));
+	return std::make_unique<Archive_POD_TV>(content);
 }
 
-ArchivePtr ArchiveType_POD_TV::open(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_POD_TV::open(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return ArchivePtr(new Archive_POD_TV(psArchive));
+	return std::make_unique<Archive_POD_TV>(content);
 }
 
-SuppFilenames ArchiveType_POD_TV::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_POD_TV::getRequiredSupps(stream::input& content,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -150,30 +153,30 @@ SuppFilenames ArchiveType_POD_TV::getRequiredSupps(stream::input_sptr data,
 }
 
 
-Archive_POD_TV::Archive_POD_TV(stream::inout_sptr psArchive)
-	:	FATArchive(psArchive, POD_FIRST_FILE_OFFSET, POD_MAX_FILENAME_LEN)
+Archive_POD_TV::Archive_POD_TV(std::shared_ptr<stream::inout> content)
+	:	FATArchive(content, POD_FIRST_FILE_OFFSET, POD_MAX_FILENAME_LEN)
 {
-	this->psArchive->seekg(0, stream::start);
+	this->content->seekg(0, stream::start);
 	uint32_t numFiles;
-	this->psArchive >> u32le(numFiles);
+	*this->content >> u32le(numFiles);
 	this->vcFAT.reserve(numFiles);
 
-	this->psArchive->seekg(POD_FAT_OFFSET, stream::start);
+	this->content->seekg(POD_FAT_OFFSET, stream::start);
 
 	for (unsigned int i = 0; i < numFiles; i++) {
-		FATEntry *pEntry = new FATEntry();
-		pEntry->iIndex = i;
-		this->psArchive
-			>> nullPadded(pEntry->strName, POD_MAX_FILENAME_LEN)
-			>> u32le(pEntry->storedSize)
-			>> u32le(pEntry->iOffset)
+		auto f = this->createNewFATEntry();
+		f->iIndex = i;
+		*this->content
+			>> nullPadded(f->strName, POD_MAX_FILENAME_LEN)
+			>> u32le(f->storedSize)
+			>> u32le(f->iOffset)
 		;
-		pEntry->lenHeader = 0;
-		pEntry->type = FILETYPE_GENERIC;
-		pEntry->fAttr = 0;
-		pEntry->bValid = true;
-		pEntry->realSize = pEntry->storedSize;
-		this->vcFAT.push_back(EntryPtr(pEntry));
+		f->lenHeader = 0;
+		f->type = FILETYPE_GENERIC;
+		f->fAttr = 0;
+		f->bValid = true;
+		f->realSize = f->storedSize;
+		this->vcFAT.push_back(std::move(f));
 	}
 }
 
@@ -196,9 +199,9 @@ std::string Archive_POD_TV::getMetadata(MetadataType item) const
 		case Description: {
 			// TODO: see whether description can span two file entries (80 bytes) or
 			// whether the offsets have to be null
-			psArchive->seekg(POD_DESCRIPTION_OFFSET, stream::start);
+			this->content->seekg(POD_DESCRIPTION_OFFSET, stream::start);
 			char description[POD_DESCRIPTION_LEN + 1];
-			psArchive->read(description, POD_DESCRIPTION_LEN);
+			this->content->read(description, POD_DESCRIPTION_LEN);
 			description[POD_DESCRIPTION_LEN] = 0;
 			return std::string(description);
 		}
@@ -217,8 +220,8 @@ void Archive_POD_TV::setMetadata(MetadataType item, const std::string& value)
 			if (value.length() > POD_DESCRIPTION_LEN) {
 				throw stream::error("description too long");
 			}
-			this->psArchive->seekp(POD_DESCRIPTION_OFFSET, stream::start);
-			this->psArchive << nullPadded(value, POD_DESCRIPTION_LEN);
+			this->content->seekp(POD_DESCRIPTION_OFFSET, stream::start);
+			*this->content << nullPadded(value, POD_DESCRIPTION_LEN);
 			break;
 		default:
 			assert(false);
@@ -231,8 +234,8 @@ void Archive_POD_TV::updateFileName(const FATEntry *pid, const std::string& strN
 {
 	// TESTED BY: fmt_pod_tv_rename
 	assert(strNewName.length() <= POD_MAX_FILENAME_LEN);
-	this->psArchive->seekp(POD_FILENAME_OFFSET(pid), stream::start);
-	this->psArchive << nullPadded(strNewName, POD_MAX_FILENAME_LEN);
+	this->content->seekp(POD_FILENAME_OFFSET(pid), stream::start);
+	*this->content << nullPadded(strNewName, POD_MAX_FILENAME_LEN);
 	return;
 }
 
@@ -240,8 +243,8 @@ void Archive_POD_TV::updateFileOffset(const FATEntry *pid, stream::delta offDelt
 {
 	// TESTED BY: fmt_pod_tv_insert*
 	// TESTED BY: fmt_pod_tv_resize*
-	this->psArchive->seekp(POD_FILEOFFSET_OFFSET(pid), stream::start);
-	this->psArchive << u32le(pid->iOffset);
+	this->content->seekp(POD_FILEOFFSET_OFFSET(pid), stream::start);
+	*this->content << u32le(pid->iOffset);
 	return;
 }
 
@@ -249,12 +252,12 @@ void Archive_POD_TV::updateFileSize(const FATEntry *pid, stream::delta sizeDelta
 {
 	// TESTED BY: fmt_pod_tv_insert*
 	// TESTED BY: fmt_pod_tv_resize*
-	this->psArchive->seekp(POD_FILESIZE_OFFSET(pid), stream::start);
-	this->psArchive << u32le(pid->storedSize);
+	this->content->seekp(POD_FILESIZE_OFFSET(pid), stream::start);
+	*this->content << u32le(pid->storedSize);
 	return;
 }
 
-FATArchive::FATEntry *Archive_POD_TV::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+void Archive_POD_TV::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_pod_tv_insert*
 	assert(pNewEntry->strName.length() <= POD_MAX_FILENAME_LEN);
@@ -265,12 +268,12 @@ FATArchive::FATEntry *Archive_POD_TV::preInsertFile(const FATEntry *idBeforeThis
 	// Because the new entry isn't in the vector yet we need to shift it manually
 	pNewEntry->iOffset += POD_FAT_ENTRY_LEN;
 
-	this->psArchive->seekp(POD_FATENTRY_OFFSET(pNewEntry), stream::start);
-	this->psArchive->insert(POD_FAT_ENTRY_LEN);
+	this->content->seekp(POD_FATENTRY_OFFSET(pNewEntry), stream::start);
+	this->content->insert(POD_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
 
 	// Write out the entry
-	this->psArchive
+	*this->content
 		<< nullPadded(pNewEntry->strName, POD_MAX_FILENAME_LEN)
 		<< u32le(pNewEntry->storedSize)
 		<< u32le(pNewEntry->iOffset);
@@ -285,7 +288,7 @@ FATArchive::FATEntry *Archive_POD_TV::preInsertFile(const FATEntry *idBeforeThis
 
 	this->updateFileCount(this->vcFAT.size() + 1);
 
-	return pNewEntry;
+	return;
 }
 
 void Archive_POD_TV::preRemoveFile(const FATEntry *pid)
@@ -304,8 +307,8 @@ void Archive_POD_TV::preRemoveFile(const FATEntry *pid)
 	);
 
 	// Remove the FAT entry
-	this->psArchive->seekp(POD_FATENTRY_OFFSET(pid), stream::start);
-	this->psArchive->remove(POD_FAT_ENTRY_LEN);
+	this->content->seekp(POD_FATENTRY_OFFSET(pid), stream::start);
+	this->content->remove(POD_FAT_ENTRY_LEN);
 
 	this->updateFileCount(this->vcFAT.size() - 1);
 
@@ -316,8 +319,8 @@ void Archive_POD_TV::updateFileCount(uint32_t iNewCount)
 {
 	// TESTED BY: fmt_pod_tv_insert*
 	// TESTED BY: fmt_pod_tv_remove*
-	this->psArchive->seekp(0, stream::start);
-	this->psArchive << u32le(iNewCount);
+	this->content->seekp(0, stream::start);
+	*this->content << u32le(iNewCount);
 	return;
 }
 

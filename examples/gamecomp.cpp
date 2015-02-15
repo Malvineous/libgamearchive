@@ -85,11 +85,9 @@ int main(int iArgC, char *cArgV[])
 	poComplete.add(poOptions).add(poHidden);
 	po::variables_map mpArgs;
 
-	ga::ManagerPtr pManager(ga::getManager());
-
-	stream::output_sptr pstdout = stream::open_stdout();
-	stream::input_sptr pstdin = stream::open_stdin();
-	ga::FilterTypePtr pFilterType;
+	auto pstdout = stream::open_stdout();
+	auto pstdin = stream::open_stdin();
+	ga::FilterManager::handler_t pFilterType;
 	bool bApply = false;   // default is to reverse the algorithm (decompress)
 	try {
 		po::parsed_options pa = po::parse_command_line(iArgC, cArgV, poComplete);
@@ -124,7 +122,7 @@ int main(int iArgC, char *cArgV[])
 						<< std::endl;
 					return RET_BADARGS;
 				}
-				pFilterType = pManager->getFilterTypeByCode(i->value[0]);
+				pFilterType = ga::FilterManager::byCode(i->value[0]);
 				if (!pFilterType) {
 					std::cerr << PROGNAME ": Unknown filter code given by --type (-t) - "
 						"use -l for a list." << std::endl;
@@ -139,11 +137,10 @@ int main(int iArgC, char *cArgV[])
 				(i->string_key.compare("l") == 0) ||
 				(i->string_key.compare("list") == 0)
 			) {
-				for (int i = 0; ; i++) {
-					ga::FilterTypePtr pFilterType(pManager->getFilterType(i));
-					if (!pFilterType) break;
-					std::cout << pFilterType->getFilterCode() << std::endl;
+				for (const auto& i : ga::FilterManager::formats()) {
+					std::cout << i->code() << "\n";
 				}
+				std::cout << std::flush;
 				return RET_OK;
 			}
 		}
@@ -156,24 +153,27 @@ int main(int iArgC, char *cArgV[])
 
 		if (bApply) {
 			// Apply the filter
-			camoto::stream::output_sptr out(pFilterType->apply(pstdout, NULL));
+			auto out = pFilterType->apply(
+				std::shared_ptr<stream::output>(std::move(pstdout)),
+				camoto::stream::fn_truncate_filter()
+			);
 
 			// Copy filtered data to stdout
-			stream::copy(out, pstdin);
+			stream::copy(*out, *pstdin);
 			out->flush();
 
 		} else {
 			// Apply the filter
-			camoto::stream::input_sptr in(pFilterType->apply(pstdin));
+			auto in = pFilterType->apply(std::move(pstdin));
 
 			// Copy filtered data to stdout
-			stream::copy(pstdout, in);
+			stream::copy(*pstdout, *in);
 			pstdout->flush();
 		}
 
 	} catch (const camoto::filter_error& e) {
 		pstdout->flush(); // keep as much data as we could process
-		std::cerr << PROGNAME ": Decompression failed.  " << e.what() << std::endl;
+		std::cerr << PROGNAME ": Filtering failed.  " << e.what() << std::endl;
 		return RET_SHOWSTOPPER;
 	} catch (const stream::error& e) {
 		std::cerr << PROGNAME ": I/O error - " << e.what() << std::endl;

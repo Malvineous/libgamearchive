@@ -91,14 +91,14 @@ class FilterType_GLB_Raptor_FAT: virtual public FilterType
 		FilterType_GLB_Raptor_FAT();
 		~FilterType_GLB_Raptor_FAT();
 
-		virtual std::string getFilterCode() const;
-		virtual std::string getFriendlyName() const;
-		virtual std::vector<std::string> getGameList() const;
-		virtual stream::inout_sptr apply(stream::inout_sptr target,
-			stream::fn_truncate resize) const;
-		virtual stream::input_sptr apply(stream::input_sptr target) const;
-		virtual stream::output_sptr apply(stream::output_sptr target,
-			stream::fn_truncate resize) const;
+		virtual std::string code() const;
+		virtual std::string friendlyName() const;
+		virtual std::vector<std::string> games() const;
+		virtual std::unique_ptr<stream::inout> apply(std::shared_ptr<stream::inout> target,
+			stream::fn_truncate_filter resize) const;
+		virtual std::unique_ptr<stream::input> apply(std::shared_ptr<stream::input> target) const;
+		virtual std::unique_ptr<stream::output> apply(std::shared_ptr<stream::output> target,
+			stream::fn_truncate_filter resize) const;
 };
 
 /// Decrypt a file inside a .GLB archive.
@@ -108,14 +108,14 @@ class FilterType_GLB_Raptor_File: virtual public FilterType
 		FilterType_GLB_Raptor_File();
 		~FilterType_GLB_Raptor_File();
 
-		virtual std::string getFilterCode() const;
-		virtual std::string getFriendlyName() const;
-		virtual std::vector<std::string> getGameList() const;
-		virtual stream::inout_sptr apply(stream::inout_sptr target,
-			stream::fn_truncate resize) const;
-		virtual stream::input_sptr apply(stream::input_sptr target) const;
-		virtual stream::output_sptr apply(stream::output_sptr target,
-			stream::fn_truncate resize) const;
+		virtual std::string code() const;
+		virtual std::string friendlyName() const;
+		virtual std::vector<std::string> games() const;
+		virtual std::unique_ptr<stream::inout> apply(std::shared_ptr<stream::inout> target,
+			stream::fn_truncate_filter resize) const;
+		virtual std::unique_ptr<stream::input> apply(std::shared_ptr<stream::input> target) const;
+		virtual std::unique_ptr<stream::output> apply(std::shared_ptr<stream::output> target,
+			stream::fn_truncate_filter resize) const;
 };
 
 } // namespace gamearchive

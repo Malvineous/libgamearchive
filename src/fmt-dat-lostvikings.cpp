@@ -41,24 +41,24 @@ ArchiveType_DAT_LostVikings::~ArchiveType_DAT_LostVikings()
 {
 }
 
-std::string ArchiveType_DAT_LostVikings::getArchiveCode() const
+std::string ArchiveType_DAT_LostVikings::code() const
 {
 	return "dat-lostvikings";
 }
 
-std::string ArchiveType_DAT_LostVikings::getFriendlyName() const
+std::string ArchiveType_DAT_LostVikings::friendlyName() const
 {
 	return "The Lost Vikings Data File";
 }
 
-std::vector<std::string> ArchiveType_DAT_LostVikings::getFileExtensions() const
+std::vector<std::string> ArchiveType_DAT_LostVikings::fileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("dat");
 	return vcExtensions;
 }
 
-std::vector<std::string> ArchiveType_DAT_LostVikings::getGameList() const
+std::vector<std::string> ArchiveType_DAT_LostVikings::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("BlackThorne");
@@ -67,9 +67,10 @@ std::vector<std::string> ArchiveType_DAT_LostVikings::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty ArchiveType_DAT_LostVikings::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_DAT_LostVikings::isInstance(
+	stream::input& content) const
 {
-	stream::pos lenArchive = psArchive->size();
+	stream::pos lenArchive = content.size();
 
 	// Empty files could be empty archives
 	// TESTED BY: fmt_dat_lostvikings_isinstance_c01
@@ -79,9 +80,9 @@ ArchiveType::Certainty ArchiveType_DAT_LostVikings::isInstance(stream::input_spt
 	// TESTED BY: fmt_dat_lostvikings_isinstance_c02
 	if (lenArchive < DAT_FAT_ENTRY_LEN) return DefinitelyNo;
 
-	psArchive->seekg(0, stream::start);
+	content.seekg(0, stream::start);
 	uint32_t offEntry;
-	psArchive >> u32le(offEntry);
+	content >> u32le(offEntry);
 
 	// If the FAT is smaller than a single entry then it's not a valid file.
 	// TESTED BY: fmt_dat_lostvikings_isinstance_c03
@@ -107,7 +108,7 @@ ArchiveType::Certainty ArchiveType_DAT_LostVikings::isInstance(stream::input_spt
 		if (i < numFiles - 1) {
 			// Don't want to read past EOF in case archive contents are a single
 			// empty file.
-			psArchive >> u32le(offEntry);
+			content >> u32le(offEntry);
 		}
 	}
 
@@ -122,17 +123,19 @@ ArchiveType::Certainty ArchiveType_DAT_LostVikings::isInstance(stream::input_spt
 	return DefinitelyYes;
 }
 
-ArchivePtr ArchiveType_DAT_LostVikings::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_DAT_LostVikings::create(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return ArchivePtr(new Archive_DAT_LostVikings(psArchive));
+	return std::make_unique<Archive_DAT_LostVikings>(content);
 }
 
-ArchivePtr ArchiveType_DAT_LostVikings::open(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_DAT_LostVikings::open(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return ArchivePtr(new Archive_DAT_LostVikings(psArchive));
+	return std::make_unique<Archive_DAT_LostVikings>(content);
 }
 
-SuppFilenames ArchiveType_DAT_LostVikings::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_DAT_LostVikings::getRequiredSupps(stream::input& content,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -140,39 +143,38 @@ SuppFilenames ArchiveType_DAT_LostVikings::getRequiredSupps(stream::input_sptr d
 }
 
 
-Archive_DAT_LostVikings::Archive_DAT_LostVikings(stream::inout_sptr psArchive)
-	:	FATArchive(psArchive, DAT_FIRST_FILE_OFFSET, 0)
+Archive_DAT_LostVikings::Archive_DAT_LostVikings(std::shared_ptr<stream::inout> content)
+	:	FATArchive(content, DAT_FIRST_FILE_OFFSET, 0)
 {
-	stream::pos lenArchive = this->psArchive->size();
+	stream::pos lenArchive = this->content->size();
 	if (lenArchive > 0) {
-		this->psArchive->seekg(0, stream::start);
+		this->content->seekg(0, stream::start);
 		uint32_t offNext;
-		this->psArchive
+		*this->content
 			>> u32le(offNext)
 		;
 		uint32_t numFiles = offNext / DAT_FAT_ENTRY_LEN;
 		this->vcFAT.reserve(numFiles);
 		for (unsigned int i = 0; i < numFiles; i++) {
-			FATEntry *fatEntry = new FATEntry();
-			EntryPtr ep(fatEntry);
+			auto f = this->createNewFATEntry();
 
-			fatEntry->iOffset = offNext;
+			f->iOffset = offNext;
 			if (i == numFiles - 1) {
 				offNext = lenArchive;
 			} else {
-				this->psArchive
+				*this->content
 					>> u32le(offNext)
 				;
 			}
 
-			fatEntry->iIndex = i;
-			fatEntry->lenHeader = 0;
-			fatEntry->type = FILETYPE_GENERIC;
-			fatEntry->fAttr = 0;
-			fatEntry->storedSize = offNext - fatEntry->iOffset;
-			fatEntry->realSize = fatEntry->storedSize;
-			fatEntry->bValid = true;
-			this->vcFAT.push_back(ep);
+			f->iIndex = i;
+			f->lenHeader = 0;
+			f->type = FILETYPE_GENERIC;
+			f->fAttr = 0;
+			f->storedSize = offNext - f->iOffset;
+			f->realSize = f->storedSize;
+			f->bValid = true;
+			this->vcFAT.push_back(std::move(f));
 		}
 	} // else empty archive
 }
@@ -191,8 +193,8 @@ void Archive_DAT_LostVikings::updateFileOffset(const FATEntry *pid, stream::delt
 {
 	// TESTED BY: fmt_dat_lostvikings_insert*
 	// TESTED BY: fmt_dat_lostvikings_resize*
-	this->psArchive->seekp(pid->iIndex * DAT_FAT_ENTRY_LEN, stream::start);
-	this->psArchive << u32le(pid->iOffset);
+	this->content->seekp(pid->iIndex * DAT_FAT_ENTRY_LEN, stream::start);
+	*this->content << u32le(pid->iOffset);
 	return;
 }
 
@@ -202,7 +204,7 @@ void Archive_DAT_LostVikings::updateFileSize(const FATEntry *pid, stream::delta 
 	return;
 }
 
-FATArchive::FATEntry *Archive_DAT_LostVikings::preInsertFile(const FATEntry *idBeforeThis,
+void Archive_DAT_LostVikings::preInsertFile(const FATEntry *idBeforeThis,
 	FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_dat_lostvikings_insert*
@@ -213,11 +215,11 @@ FATArchive::FATEntry *Archive_DAT_LostVikings::preInsertFile(const FATEntry *idB
 	// Because the new entry isn't in the vector yet we need to shift it manually
 	pNewEntry->iOffset += DAT_FAT_ENTRY_LEN;
 
-	this->psArchive->seekp(pNewEntry->iIndex * DAT_FAT_ENTRY_LEN, stream::start);
-	this->psArchive->insert(DAT_FAT_ENTRY_LEN);
+	this->content->seekp(pNewEntry->iIndex * DAT_FAT_ENTRY_LEN, stream::start);
+	this->content->insert(DAT_FAT_ENTRY_LEN);
 
 	// Write out the entry
-	this->psArchive
+	*this->content
 		<< u32le(pNewEntry->iOffset)
 	;
 
@@ -229,7 +231,7 @@ FATArchive::FATEntry *Archive_DAT_LostVikings::preInsertFile(const FATEntry *idB
 		0
 	);
 
-	return pNewEntry;
+	return;
 }
 
 void Archive_DAT_LostVikings::preRemoveFile(const FATEntry *pid)
@@ -248,8 +250,8 @@ void Archive_DAT_LostVikings::preRemoveFile(const FATEntry *pid)
 	);
 
 	// Remove the FAT entry
-	this->psArchive->seekp(pid->iIndex * DAT_FAT_ENTRY_LEN, stream::start);
-	this->psArchive->remove(DAT_FAT_ENTRY_LEN);
+	this->content->seekp(pid->iIndex * DAT_FAT_ENTRY_LEN, stream::start);
+	this->content->remove(DAT_FAT_ENTRY_LEN);
 
 	return;
 }

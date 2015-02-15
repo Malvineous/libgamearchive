@@ -18,18 +18,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <memory>
 #include <camoto/stream_string.hpp>
 #include <camoto/stream_filtered.hpp>
 #include <camoto/gamearchive/filtertype.hpp>
 #include "tests.hpp"
 
+// This header will only be used by test implementations.
+using namespace camoto;
+using namespace camoto::gamearchive;
+
 class test_filter: public test_main
 {
 	public:
-
-		camoto::stream::string_sptr in;
-		camoto::stream::input_filtered_sptr in_filt;
-		camoto::filter_sptr filter;
+		std::shared_ptr<stream::string> in;
+		std::shared_ptr<stream::input_filtered> in_filt;
+		std::shared_ptr<camoto::filter> filter;
 
 		test_filter();
 

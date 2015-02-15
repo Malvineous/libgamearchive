@@ -22,7 +22,7 @@
  */
 
 #include <camoto/iostream_helpers.hpp>
-
+#include <camoto/util.hpp> // std::make_unique
 #include "fmt-roads-skyroads.hpp"
 
 #define SRR_FAT_ENTRY_LEN     4  // u16le offset + u16le size
@@ -39,41 +39,42 @@ ArchiveType_Roads_SkyRoads::~ArchiveType_Roads_SkyRoads()
 {
 }
 
-std::string ArchiveType_Roads_SkyRoads::getArchiveCode() const
+std::string ArchiveType_Roads_SkyRoads::code() const
 {
 	return "roads-skyroads";
 }
 
-std::string ArchiveType_Roads_SkyRoads::getFriendlyName() const
+std::string ArchiveType_Roads_SkyRoads::friendlyName() const
 {
 	return "SkyRoads Roads File";
 }
 
-std::vector<std::string> ArchiveType_Roads_SkyRoads::getFileExtensions() const
+std::vector<std::string> ArchiveType_Roads_SkyRoads::fileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("lzs");
 	return vcExtensions;
 }
 
-std::vector<std::string> ArchiveType_Roads_SkyRoads::getGameList() const
+std::vector<std::string> ArchiveType_Roads_SkyRoads::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("SkyRoads");
 	return vcGames;
 }
 
-ArchiveType::Certainty ArchiveType_Roads_SkyRoads::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_Roads_SkyRoads::isInstance(
+	stream::input& content) const
 {
-	stream::pos lenArchive = psArchive->size();
+	stream::pos lenArchive = content.size();
 	// An empty file is valid as an archive with no files (since this format
 	// lacks a header.)
 	// TESTED BY: fmt_skyroads_roads_isinstance_c01
 	if (lenArchive == 0) return DefinitelyYes;
 
-	psArchive->seekg(0, stream::start);
+	content.seekg(0, stream::start);
 	uint16_t lenFAT;
-	psArchive >> u16le(lenFAT);
+	content >> u16le(lenFAT);
 
 	// If the FAT is larger than the entire archive then it's not a SkyRoads roads file
 	// TESTED BY: fmt_skyroads_roads_isinstance_c02
@@ -88,12 +89,12 @@ ArchiveType::Certainty ArchiveType_Roads_SkyRoads::isInstance(stream::input_sptr
 	if (lenFAT % SRR_FAT_ENTRY_LEN) return DefinitelyNo;
 
 	// Check each FAT entry
-	psArchive->seekg(0, stream::start);
+	content.seekg(0, stream::start);
 	uint16_t offPrev = 0;
 	for (int i = 0; i < lenFAT / SRR_FAT_ENTRY_LEN; i++) {
 
 		uint16_t offEntry, lenDecomp;
-		psArchive >> u16le(offEntry) >> u16le(lenDecomp);
+		content >> u16le(offEntry) >> u16le(lenDecomp);
 
 		// If a file entry points past the end of the archive then it's an invalid
 		// format.
@@ -118,17 +119,19 @@ ArchiveType::Certainty ArchiveType_Roads_SkyRoads::isInstance(stream::input_sptr
 	return DefinitelyYes;
 }
 
-ArchivePtr ArchiveType_Roads_SkyRoads::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_Roads_SkyRoads::create(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return ArchivePtr(new Archive_Roads_SkyRoads(psArchive));
+	return std::make_unique<Archive_Roads_SkyRoads>(content);
 }
 
-ArchivePtr ArchiveType_Roads_SkyRoads::open(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_Roads_SkyRoads::open(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return ArchivePtr(new Archive_Roads_SkyRoads(psArchive));
+	return std::make_unique<Archive_Roads_SkyRoads>(content);
 }
 
-SuppFilenames ArchiveType_Roads_SkyRoads::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_Roads_SkyRoads::getRequiredSupps(stream::input& content,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -136,40 +139,39 @@ SuppFilenames ArchiveType_Roads_SkyRoads::getRequiredSupps(stream::input_sptr da
 }
 
 
-Archive_Roads_SkyRoads::Archive_Roads_SkyRoads(stream::inout_sptr psArchive)
-	:	FATArchive(psArchive, SRR_FIRST_FILE_OFFSET, 0)
+Archive_Roads_SkyRoads::Archive_Roads_SkyRoads(std::shared_ptr<stream::inout> content)
+	:	FATArchive(content, SRR_FIRST_FILE_OFFSET, 0)
 {
-	stream::pos lenArchive = this->psArchive->size();
+	stream::pos lenArchive = this->content->size();
 	if (lenArchive > 0) {
-		this->psArchive->seekg(0, stream::start);
+		this->content->seekg(0, stream::start);
 		uint16_t offCur;
-		this->psArchive >> u16le(offCur);
+		*this->content >> u16le(offCur);
 
 		int numFiles = offCur / SRR_FAT_ENTRY_LEN;
 		this->vcFAT.reserve(numFiles);
 
 		for (int i = 0; i < numFiles; i++) {
-			FATEntry *fatEntry = new FATEntry();
-			EntryPtr ep(fatEntry);
+			auto f = this->createNewFATEntry();
 
 			uint16_t lenDecomp, offNext;
-			this->psArchive >> u16le(lenDecomp);
+			*this->content >> u16le(lenDecomp);
 			if (i < numFiles - 1) {
-				this->psArchive >> u16le(offNext);
+				*this->content >> u16le(offNext);
 			} else {
 				offNext = lenArchive;
 			}
 
-			fatEntry->iOffset = offCur;
-			fatEntry->storedSize = offNext - offCur;
-			fatEntry->realSize = lenDecomp;
-			fatEntry->iIndex = i;
-			fatEntry->lenHeader = 0;
-			fatEntry->type = "map/skyroads";
-			fatEntry->fAttr = 0;
-			fatEntry->filter = "";
-			fatEntry->bValid = true;
-			this->vcFAT.push_back(ep);
+			f->iOffset = offCur;
+			f->storedSize = offNext - offCur;
+			f->realSize = lenDecomp;
+			f->iIndex = i;
+			f->lenHeader = 0;
+			f->type = "map/skyroads";
+			f->fAttr = 0;
+			f->filter = "";
+			f->bValid = true;
+			this->vcFAT.push_back(std::move(f));
 
 			offCur = offNext;
 		}
@@ -189,8 +191,8 @@ void Archive_Roads_SkyRoads::updateFileOffset(const FATEntry *pid, stream::delta
 {
 	// TESTED BY: fmt_skyroads_roads_insert*
 	// TESTED BY: fmt_skyroads_roads_resize*
-	this->psArchive->seekp(pid->iIndex * SRR_FAT_ENTRY_LEN, stream::start);
-	this->psArchive << u16le(pid->iOffset);
+	this->content->seekp(pid->iIndex * SRR_FAT_ENTRY_LEN, stream::start);
+	*this->content << u16le(pid->iOffset);
 	return;
 }
 
@@ -198,12 +200,12 @@ void Archive_Roads_SkyRoads::updateFileSize(const FATEntry *pid, stream::delta s
 {
 	// TESTED BY: fmt_skyroads_roads_insert*
 	// TESTED BY: fmt_skyroads_roads_resize*
-	this->psArchive->seekp(pid->iIndex * SRR_FAT_ENTRY_LEN + 2, stream::start);
-	this->psArchive << u16le(pid->storedSize);
+	this->content->seekp(pid->iIndex * SRR_FAT_ENTRY_LEN + 2, stream::start);
+	*this->content << u16le(pid->storedSize);
 	return;
 }
 
-FATArchive::FATEntry *Archive_Roads_SkyRoads::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+void Archive_Roads_SkyRoads::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_skyroads_roads_insert*
 
@@ -213,11 +215,11 @@ FATArchive::FATEntry *Archive_Roads_SkyRoads::preInsertFile(const FATEntry *idBe
 	// Because the new entry isn't in the vector yet we need to shift it manually
 	pNewEntry->iOffset += SRR_FAT_ENTRY_LEN;
 
-	this->psArchive->seekp(pNewEntry->iIndex * SRR_FAT_ENTRY_LEN, stream::start);
-	this->psArchive->insert(SRR_FAT_ENTRY_LEN);
+	this->content->seekp(pNewEntry->iIndex * SRR_FAT_ENTRY_LEN, stream::start);
+	this->content->insert(SRR_FAT_ENTRY_LEN);
 
 	// Write out the entry
-	this->psArchive
+	*this->content
 		<< u16le(pNewEntry->iOffset)
 		<< u16le(pNewEntry->storedSize)
 	;
@@ -230,7 +232,7 @@ FATArchive::FATEntry *Archive_Roads_SkyRoads::preInsertFile(const FATEntry *idBe
 		0
 	);
 
-	return pNewEntry;
+	return;
 }
 
 void Archive_Roads_SkyRoads::preRemoveFile(const FATEntry *pid)
@@ -248,8 +250,8 @@ void Archive_Roads_SkyRoads::preRemoveFile(const FATEntry *pid)
 		0
 	);
 
-	this->psArchive->seekp(pid->iIndex * SRR_FAT_ENTRY_LEN, stream::start);
-	this->psArchive->remove(SRR_FAT_ENTRY_LEN);
+	this->content->seekp(pid->iIndex * SRR_FAT_ENTRY_LEN, stream::start);
+	this->content->remove(SRR_FAT_ENTRY_LEN);
 	return;
 }
 

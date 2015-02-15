@@ -53,24 +53,24 @@ ArchiveType_GRP_Duke3D::~ArchiveType_GRP_Duke3D()
 {
 }
 
-std::string ArchiveType_GRP_Duke3D::getArchiveCode() const
+std::string ArchiveType_GRP_Duke3D::code() const
 {
 	return "grp-duke3d";
 }
 
-std::string ArchiveType_GRP_Duke3D::getFriendlyName() const
+std::string ArchiveType_GRP_Duke3D::friendlyName() const
 {
 	return "Duke Nukem 3D Group File";
 }
 
-std::vector<std::string> ArchiveType_GRP_Duke3D::getFileExtensions() const
+std::vector<std::string> ArchiveType_GRP_Duke3D::fileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("grp");
 	return vcExtensions;
 }
 
-std::vector<std::string> ArchiveType_GRP_Duke3D::getGameList() const
+std::vector<std::string> ArchiveType_GRP_Duke3D::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Duke Nukem 3D");
@@ -79,17 +79,18 @@ std::vector<std::string> ArchiveType_GRP_Duke3D::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty ArchiveType_GRP_Duke3D::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_GRP_Duke3D::isInstance(
+	stream::input& content) const
 {
-	stream::pos lenArchive = psArchive->size();
+	stream::pos lenArchive = content.size();
 
 	// File too short
 	// TESTED BY: fmt_grp_duke3d_isinstance_c02
 	if (lenArchive < GRP_FAT_ENTRY_LEN) return DefinitelyNo; // too short
 
 	char sig[12];
-	psArchive->seekg(0, stream::start);
-	psArchive->read(sig, 12);
+	content.seekg(0, stream::start);
+	content.read(sig, 12);
 
 	// Bad signature
 	// TESTED BY: fmt_grp_duke3d_isinstance_c01
@@ -99,19 +100,21 @@ ArchiveType::Certainty ArchiveType_GRP_Duke3D::isInstance(stream::input_sptr psA
 	return DefinitelyYes;
 }
 
-ArchivePtr ArchiveType_GRP_Duke3D::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_GRP_Duke3D::create(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	psArchive->seekp(0, stream::start);
-	psArchive->write("KenSilverman\0\0\0\0", 16);
-	return ArchivePtr(new Archive_GRP_Duke3D(psArchive));
+	content->seekp(0, stream::start);
+	content->write("KenSilverman\0\0\0\0", 16);
+	return std::make_unique<Archive_GRP_Duke3D>(content);
 }
 
-ArchivePtr ArchiveType_GRP_Duke3D::open(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_GRP_Duke3D::open(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return ArchivePtr(new Archive_GRP_Duke3D(psArchive));
+	return std::make_unique<Archive_GRP_Duke3D>(content);
 }
 
-SuppFilenames ArchiveType_GRP_Duke3D::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_GRP_Duke3D::getRequiredSupps(stream::input& data,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -119,17 +122,17 @@ SuppFilenames ArchiveType_GRP_Duke3D::getRequiredSupps(stream::input_sptr data,
 }
 
 
-Archive_GRP_Duke3D::Archive_GRP_Duke3D(stream::inout_sptr psArchive)
-	:	FATArchive(psArchive, GRP_FIRST_FILE_OFFSET, GRP_MAX_FILENAME_LEN)
+Archive_GRP_Duke3D::Archive_GRP_Duke3D(std::shared_ptr<stream::inout> content)
+	:	FATArchive(content, GRP_FIRST_FILE_OFFSET, GRP_MAX_FILENAME_LEN)
 {
-	this->psArchive->seekg(GRP_FILECOUNT_OFFSET, stream::start); // skip "KenSilverman" sig
+	this->content->seekg(GRP_FILECOUNT_OFFSET, stream::start); // skip "KenSilverman" sig
 
 	// We still have to perform sanity checks in case the user forced an archive
 	// to open even though it failed the signature check.
-	if (this->psArchive->tellg() != GRP_FILECOUNT_OFFSET) throw stream::error("file too short");
+	if (this->content->tellg() != GRP_FILECOUNT_OFFSET) throw stream::error("file too short");
 
 	uint32_t numFiles;
-	this->psArchive >> u32le(numFiles);
+	*this->content >> u32le(numFiles);
 
 	if (numFiles >= GRP_SAFETY_MAX_FILECOUNT) {
 		throw stream::error("too many files or corrupted archive");
@@ -137,24 +140,23 @@ Archive_GRP_Duke3D::Archive_GRP_Duke3D(stream::inout_sptr psArchive)
 
 	stream::pos offNext = GRP_HEADER_LEN + (numFiles * GRP_FAT_ENTRY_LEN);
 	for (unsigned int i = 0; i < numFiles; i++) {
-		FATEntry *fatEntry = new FATEntry();
-		EntryPtr ep(fatEntry);
+		auto f = std::make_unique<FATEntry>();
 
-		fatEntry->iIndex = i;
-		fatEntry->iOffset = offNext;
-		fatEntry->lenHeader = 0;
-		fatEntry->type = FILETYPE_GENERIC;
-		fatEntry->fAttr = 0;
-		fatEntry->bValid = true;
+		f->iIndex = i;
+		f->iOffset = offNext;
+		f->lenHeader = 0;
+		f->type = FILETYPE_GENERIC;
+		f->fAttr = 0;
+		f->bValid = true;
 
 		// Read the data in from the FAT entry in the file
-		this->psArchive
-			>> nullPadded(fatEntry->strName, GRP_FILENAME_FIELD_LEN)
-			>> u32le(fatEntry->storedSize);
+		*this->content
+			>> nullPadded(f->strName, GRP_FILENAME_FIELD_LEN)
+			>> u32le(f->storedSize);
 
-		fatEntry->realSize = fatEntry->storedSize;
-		this->vcFAT.push_back(ep);
-		offNext += fatEntry->storedSize;
+		f->realSize = f->storedSize;
+		offNext += f->storedSize;
+		this->vcFAT.push_back(std::move(f));
 	}
 }
 
@@ -162,16 +164,18 @@ Archive_GRP_Duke3D::~Archive_GRP_Duke3D()
 {
 }
 
-void Archive_GRP_Duke3D::updateFileName(const FATEntry *pid, const std::string& strNewName)
+void Archive_GRP_Duke3D::updateFileName(const FATEntry *pid,
+	const std::string& strNewName)
 {
 	// TESTED BY: fmt_grp_duke3d_rename
 	assert(strNewName.length() <= GRP_MAX_FILENAME_LEN);
-	this->psArchive->seekp(GRP_FILENAME_OFFSET(pid), stream::start);
-	this->psArchive << nullPadded(strNewName, GRP_FILENAME_FIELD_LEN);
+	this->content->seekp(GRP_FILENAME_OFFSET(pid), stream::start);
+	*this->content << nullPadded(strNewName, GRP_FILENAME_FIELD_LEN);
 	return;
 }
 
-void Archive_GRP_Duke3D::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+void Archive_GRP_Duke3D::updateFileOffset(const FATEntry *pid,
+	stream::delta offDelta)
 {
 	// This format doesn't have any offsets that need updating.  As this function
 	// is only called when removing a file, the "offsets" will be sorted out
@@ -179,16 +183,18 @@ void Archive_GRP_Duke3D::updateFileOffset(const FATEntry *pid, stream::delta off
 	return;
 }
 
-void Archive_GRP_Duke3D::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+void Archive_GRP_Duke3D::updateFileSize(const FATEntry *pid,
+	stream::delta sizeDelta)
 {
 	// TESTED BY: fmt_grp_duke3d_insert*
 	// TESTED BY: fmt_grp_duke3d_resize*
-	this->psArchive->seekp(GRP_FILESIZE_OFFSET(pid), stream::start);
-	this->psArchive << u32le(pid->storedSize);
+	this->content->seekp(GRP_FILESIZE_OFFSET(pid), stream::start);
+	*this->content << u32le(pid->storedSize);
 	return;
 }
 
-FATArchive::FATEntry *Archive_GRP_Duke3D::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+void Archive_GRP_Duke3D::preInsertFile(const FATEntry *idBeforeThis,
+	FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_grp_duke3d_insert*
 	assert(pNewEntry->strName.length() <= GRP_MAX_FILENAME_LEN);
@@ -199,11 +205,11 @@ FATArchive::FATEntry *Archive_GRP_Duke3D::preInsertFile(const FATEntry *idBefore
 	// Because the new entry isn't in the vector yet we need to shift it manually
 	pNewEntry->iOffset += GRP_FAT_ENTRY_LEN;
 
-	this->psArchive->seekp(GRP_FATENTRY_OFFSET(pNewEntry), stream::start);
-	this->psArchive->insert(GRP_FAT_ENTRY_LEN);
+	this->content->seekp(GRP_FATENTRY_OFFSET(pNewEntry), stream::start);
+	this->content->insert(GRP_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
 
-	this->psArchive
+	*this->content
 		<< nullPadded(pNewEntry->strName, GRP_FILENAME_FIELD_LEN)
 		<< u32le(pNewEntry->storedSize);
 
@@ -216,7 +222,7 @@ FATArchive::FATEntry *Archive_GRP_Duke3D::preInsertFile(const FATEntry *idBefore
 	);
 
 	this->updateFileCount(this->vcFAT.size() + 1);
-	return pNewEntry;
+	return;
 }
 
 void Archive_GRP_Duke3D::preRemoveFile(const FATEntry *pid)
@@ -234,8 +240,8 @@ void Archive_GRP_Duke3D::preRemoveFile(const FATEntry *pid)
 		0
 	);
 
-	this->psArchive->seekp(GRP_FATENTRY_OFFSET(pid), stream::start);
-	this->psArchive->remove(GRP_FAT_ENTRY_LEN);
+	this->content->seekp(GRP_FATENTRY_OFFSET(pid), stream::start);
+	this->content->remove(GRP_FAT_ENTRY_LEN);
 
 	this->updateFileCount(this->vcFAT.size() - 1);
 	return;
@@ -245,8 +251,8 @@ void Archive_GRP_Duke3D::updateFileCount(uint32_t iNewCount)
 {
 	// TESTED BY: fmt_grp_duke3d_insert*
 	// TESTED BY: fmt_grp_duke3d_remove*
-	this->psArchive->seekp(GRP_FILECOUNT_OFFSET, stream::start);
-	this->psArchive << u32le(iNewCount);
+	this->content->seekp(GRP_FILECOUNT_OFFSET, stream::start);
+	*this->content << u32le(iNewCount);
 	return;
 }
 

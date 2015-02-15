@@ -56,52 +56,55 @@ ArchiveType_DAT_GoT::~ArchiveType_DAT_GoT()
 {
 }
 
-std::string ArchiveType_DAT_GoT::getArchiveCode() const
+std::string ArchiveType_DAT_GoT::code() const
 {
 	return "dat-got";
 }
 
-std::string ArchiveType_DAT_GoT::getFriendlyName() const
+std::string ArchiveType_DAT_GoT::friendlyName() const
 {
 	return "God of Thunder Resource File";
 }
 
-std::vector<std::string> ArchiveType_DAT_GoT::getFileExtensions() const
+std::vector<std::string> ArchiveType_DAT_GoT::fileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("dat");
 	return vcExtensions;
 }
 
-std::vector<std::string> ArchiveType_DAT_GoT::getGameList() const
+std::vector<std::string> ArchiveType_DAT_GoT::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("God of Thunder");
 	return vcGames;
 }
 
-ArchiveType::Certainty ArchiveType_DAT_GoT::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_DAT_GoT::isInstance(
+	stream::input& content) const
 {
-	stream::pos lenArchive = psArchive->size();
+	stream::pos lenArchive = content.size();
 
 	// Make sure the archive is large enough to hold a FAT
 	// TESTED BY: fmt_dat_got_isinstance_c02
 	if (lenArchive < GOT_FAT_LENGTH) return DefinitelyNo;
 
 	// Create a substream to decrypt the FAT
-	stream::input_sub_sptr fatSubStream(new stream::sub());
-	fatSubStream->open(
-		psArchive,
+	auto fatSubStream = std::make_shared<stream::input_sub>(
+		// Create a fake shared_ptr so we can run the content through a decryption
+		// filter.
+		std::shared_ptr<stream::input>(std::shared_ptr<stream::input>(), &content),
 		0,
 		GOT_MAX_FILES * GOT_FAT_ENTRY_LEN
 	);
 
-	filter_sptr fatCrypt(new filter_xor_crypt(0, 128));
 #ifdef USE_XOR
-	stream::input_filtered_sptr fatStream(new stream::input_filtered());
-	fatStream->open(fatSubStream, fatCrypt);
+	auto fatStream = std::make_shared<stream::input_filtered>(
+		fatSubStream,
+		std::make_shared<filter_xor_crypt>(0, 128)
+	);
 #else
-	stream::input_sptr fatStream = fatSubStream;
+	auto& fatStream = fatSubStream;
 #endif
 
 	fatStream->seekg(0, stream::start);
@@ -121,7 +124,7 @@ ArchiveType::Certainty ArchiveType_DAT_GoT::isInstance(stream::input_sptr psArch
 
 			uint32_t offEntry, lenEntry, lenDecomp;
 			uint16_t flags;
-			fatStream
+			*fatStream
 				>> u32le(offEntry)
 				>> u32le(lenEntry)
 				>> u32le(lenDecomp)
@@ -144,7 +147,8 @@ ArchiveType::Certainty ArchiveType_DAT_GoT::isInstance(stream::input_sptr psArch
 	return DefinitelyYes;
 }
 
-ArchivePtr ArchiveType_DAT_GoT::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_DAT_GoT::create(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
 	// Create an empty FAT (of 0x00 bytes) and XOR encode it.  We should really
 	// use the XOR filter but it's much quicker to do it directly.
@@ -152,17 +156,18 @@ ArchivePtr ArchiveType_DAT_GoT::newArchive(stream::inout_sptr psArchive, SuppDat
 	for (int i = 0, j = 128; i < GOT_FAT_LENGTH; i++, j++) {
 		emptyFAT[i] = (uint8_t)j;
 	}
-	psArchive->seekp(0, stream::start);
-	psArchive->write(emptyFAT, GOT_FAT_LENGTH);
-	return ArchivePtr(new Archive_DAT_GoT(psArchive));
+	content->seekp(0, stream::start);
+	content->write(emptyFAT, GOT_FAT_LENGTH);
+	return std::make_unique<Archive_DAT_GoT>(content);
 }
 
-ArchivePtr ArchiveType_DAT_GoT::open(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_DAT_GoT::open(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return ArchivePtr(new Archive_DAT_GoT(psArchive));
+	return std::make_unique<Archive_DAT_GoT>(content);
 }
 
-SuppFilenames ArchiveType_DAT_GoT::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_DAT_GoT::getRequiredSupps(stream::input& content,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -170,60 +175,57 @@ SuppFilenames ArchiveType_DAT_GoT::getRequiredSupps(stream::input_sptr data,
 }
 
 
-Archive_DAT_GoT::Archive_DAT_GoT(stream::inout_sptr psArchive)
-	:	FATArchive(psArchive, GOT_FIRST_FILE_OFFSET, GOT_MAX_FILENAME_LEN),
-		fatSubStream(new stream::sub()),
-		fatStream(new stream::seg())
+Archive_DAT_GoT::Archive_DAT_GoT(std::shared_ptr<stream::inout> content)
+	:	FATArchive(content, GOT_FIRST_FILE_OFFSET, GOT_MAX_FILENAME_LEN)
 {
 	// Create a substream to decrypt the FAT
-	this->fatSubStream->open(
-		psArchive,
+	this->fatSubStream = std::make_shared<stream::sub>(
+		content,
 		0,
 		GOT_MAX_FILES * GOT_FAT_ENTRY_LEN,
-		boost::bind(&Archive_DAT_GoT::truncateFAT, this, _1)
+		boost::bind<void>(&Archive_DAT_GoT::truncateFAT, this, _2)
 	);
 
-	filter_sptr fatCryptR(new filter_xor_crypt(0, 128));
-	filter_sptr fatCryptW(new filter_xor_crypt(0, 128));
 #ifdef USE_XOR
-	stream::filtered_sptr fatFilter(new stream::filtered());
-	fatFilter->open(fatSubStream, fatCryptR, fatCryptW, NULL);
+	auto fatFilter = std::make_shared<stream::filtered>(
+		fatSubStream,
+		std::make_shared<filter_xor_crypt>(0, 128),
+		std::make_shared<filter_xor_crypt>(0, 128),
+		stream::fn_truncate_filter()
+	);
 #else
-	stream::inout_sptr fatFilter = fatSubStream;
+	auto& fatFilter = fatSubStream;
 #endif
 
-	this->fatStream->open(fatFilter);
-
+	this->fatStream = std::make_shared<stream::seg>(fatFilter);
 	this->fatStream->seekg(0, stream::start);
 
 	this->vcFAT.reserve(256);
-
 	for (int i = 0; i < GOT_MAX_FILES; i++) {
-		FATEntry *fatEntry = new FATEntry();
-		EntryPtr ep(fatEntry);
+		auto f = this->createNewFATEntry();
 
 		uint16_t flags;
-		this->fatStream
-			>> nullPadded(fatEntry->strName, GOT_FILENAME_FIELD_LEN)
-			>> u32le(fatEntry->iOffset)
-			>> u32le(fatEntry->storedSize)
-			>> u32le(fatEntry->realSize)
+		*this->fatStream
+			>> nullPadded(f->strName, GOT_FILENAME_FIELD_LEN)
+			>> u32le(f->iOffset)
+			>> u32le(f->storedSize)
+			>> u32le(f->realSize)
 			>> u16le(flags)
 		;
 
-		fatEntry->iIndex = i;
-		fatEntry->lenHeader = 0;
-		fatEntry->type = FILETYPE_GENERIC;
+		f->iIndex = i;
+		f->lenHeader = 0;
+		f->type = FILETYPE_GENERIC;
 		if (flags & 1) {
-			fatEntry->fAttr = EA_COMPRESSED;
-			fatEntry->filter = "lzss-got";
+			f->fAttr = EA_COMPRESSED;
+			f->filter = "lzss-got";
 		} else {
-			fatEntry->fAttr = 0;
+			f->fAttr = 0;
 		}
-		fatEntry->bValid = true;
+		f->bValid = true;
 		// Blank FAT entries have an offset of zero
-		if (fatEntry->iOffset > 0) {
-			this->vcFAT.push_back(ep);
+		if (f->iOffset > 0) {
+			this->vcFAT.push_back(std::move(f));
 		}
 	}
 }
@@ -236,7 +238,7 @@ void Archive_DAT_GoT::flush()
 {
 	this->fatStream->flush();
 
-	// Commit this->psArchive
+	// Commit this->content
 	this->FATArchive::flush();
 	return;
 }
@@ -251,7 +253,7 @@ void Archive_DAT_GoT::updateFileName(const FATEntry *pid, const std::string& str
 	// TESTED BY: fmt_got_dat_rename
 	assert(strNewName.length() <= GOT_MAX_FILENAME_LEN);
 	this->fatStream->seekp(GOT_FILENAME_OFFSET(pid), stream::start);
-	this->fatStream << nullPadded(strNewName, GOT_FILENAME_FIELD_LEN);
+	*this->fatStream << nullPadded(strNewName, GOT_FILENAME_FIELD_LEN);
 	return;
 }
 
@@ -260,7 +262,7 @@ void Archive_DAT_GoT::updateFileOffset(const FATEntry *pid, stream::delta offDel
 	// TESTED BY: fmt_got_dat_insert*
 	// TESTED BY: fmt_got_dat_resize*
 	this->fatStream->seekp(GOT_FILEOFFSET_OFFSET(pid), stream::start);
-	this->fatStream << u32le(pid->iOffset);
+	*this->fatStream << u32le(pid->iOffset);
 	return;
 }
 
@@ -269,14 +271,14 @@ void Archive_DAT_GoT::updateFileSize(const FATEntry *pid, stream::delta sizeDelt
 	// TESTED BY: fmt_got_dat_insert*
 	// TESTED BY: fmt_got_dat_resize*
 	this->fatStream->seekp(GOT_FILESIZE_OFFSET(pid), stream::start);
-	this->fatStream
+	*this->fatStream
 		<< u32le(pid->storedSize)
 		<< u32le(pid->realSize)
 	;
 	return;
 }
 
-FATArchive::FATEntry *Archive_DAT_GoT::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+void Archive_DAT_GoT::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_got_dat_insert*
 	assert(pNewEntry->strName.length() <= GOT_MAX_FILENAME_LEN);
@@ -304,8 +306,8 @@ FATArchive::FATEntry *Archive_DAT_GoT::preInsertFile(const FATEntry *idBeforeThi
 	// compensate for the entry we just added.
 	if (this->vcFAT.size() > 0) {
 		unsigned int indexLast = GOT_MAX_FILES - 1;
-		for (VC_ENTRYPTR::reverse_iterator i = this->vcFAT.rbegin(); i != this->vcFAT.rend(); i++) {
-			FATEntry *pFAT = dynamic_cast<FATEntry *>(i->get());
+		for (FileVector::reverse_iterator i = this->vcFAT.rbegin(); i != this->vcFAT.rend(); i++) {
+			const FATEntry *pFAT = dynamic_cast<const FATEntry *>(i->get());
 			if (pFAT->iIndex != indexLast) {
 				// The previous slot is free, so delete it
 				this->fatStream->seekp(indexLast * GOT_FAT_ENTRY_LEN, stream::start);
@@ -327,7 +329,7 @@ FATArchive::FATEntry *Archive_DAT_GoT::preInsertFile(const FATEntry *idBeforeThi
 		this->fatStream->remove(GOT_FAT_ENTRY_LEN);
 	}
 
-	return pNewEntry;
+	return;
 }
 
 void Archive_DAT_GoT::postInsertFile(FATEntry *pNewEntry)
@@ -336,7 +338,7 @@ void Archive_DAT_GoT::postInsertFile(FATEntry *pNewEntry)
 	// now that the sizes are set.
 	this->fatStream->seekp(GOT_FATENTRY_OFFSET(pNewEntry), stream::start);
 	uint16_t flags = (pNewEntry->fAttr & EA_COMPRESSED) ? 1 : 0; // 0 == not compressed
-	this->fatStream
+	*this->fatStream
 		<< nullPadded(pNewEntry->strName, GOT_FILENAME_FIELD_LEN)
 		<< u32le(pNewEntry->iOffset)
 		<< u32le(pNewEntry->storedSize)

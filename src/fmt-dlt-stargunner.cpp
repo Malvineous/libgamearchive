@@ -54,40 +54,41 @@ ArchiveType_DLT_Stargunner::~ArchiveType_DLT_Stargunner()
 {
 }
 
-std::string ArchiveType_DLT_Stargunner::getArchiveCode() const
+std::string ArchiveType_DLT_Stargunner::code() const
 {
 	return "dlt-stargunner";
 }
 
-std::string ArchiveType_DLT_Stargunner::getFriendlyName() const
+std::string ArchiveType_DLT_Stargunner::friendlyName() const
 {
 	return "Stargunner DLT File";
 }
 
-std::vector<std::string> ArchiveType_DLT_Stargunner::getFileExtensions() const
+std::vector<std::string> ArchiveType_DLT_Stargunner::fileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("dlt");
 	return vcExtensions;
 }
 
-std::vector<std::string> ArchiveType_DLT_Stargunner::getGameList() const
+std::vector<std::string> ArchiveType_DLT_Stargunner::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Stargunner");
 	return vcGames;
 }
 
-ArchiveType::Certainty ArchiveType_DLT_Stargunner::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_DLT_Stargunner::isInstance(
+	stream::input& content) const
 {
-	stream::pos lenArchive = psArchive->size();
+	stream::pos lenArchive = content.size();
 
 	// TESTED BY: fmt_dlt_stargunner_isinstance_c02
 	if (lenArchive < DLT_HEADER_LEN) return DefinitelyNo; // too short
 
 	char sig[4];
-	psArchive->seekg(0, stream::start);
-	psArchive->read(sig, 4);
+	content.seekg(0, stream::start);
+	content.read(sig, 4);
 
 	// TESTED BY: fmt_dlt_stargunner_isinstance_c00
 	if (strncmp(sig, "DAVE", 4) == 0) return DefinitelyYes;
@@ -96,19 +97,21 @@ ArchiveType::Certainty ArchiveType_DLT_Stargunner::isInstance(stream::input_sptr
 	return DefinitelyNo;
 }
 
-ArchivePtr ArchiveType_DLT_Stargunner::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_DLT_Stargunner::create(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	psArchive->seekp(0, stream::start);
-	psArchive->write("DAVE\x00\x01\x00\x00", 8);
-	return ArchivePtr(new Archive_DLT_Stargunner(psArchive));
+	content->seekp(0, stream::start);
+	content->write("DAVE\x00\x01\x00\x00", 8);
+	return std::make_unique<Archive_DLT_Stargunner>(content);
 }
 
-ArchivePtr ArchiveType_DLT_Stargunner::open(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_DLT_Stargunner::open(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return ArchivePtr(new Archive_DLT_Stargunner(psArchive));
+	return std::make_unique<Archive_DLT_Stargunner>(content);
 }
 
-SuppFilenames ArchiveType_DLT_Stargunner::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_DLT_Stargunner::getRequiredSupps(stream::input& content,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -116,18 +119,18 @@ SuppFilenames ArchiveType_DLT_Stargunner::getRequiredSupps(stream::input_sptr da
 }
 
 
-Archive_DLT_Stargunner::Archive_DLT_Stargunner(stream::inout_sptr psArchive)
-	:	FATArchive(psArchive, DLT_FIRST_FILE_OFFSET, DLT_MAX_FILENAME_LEN)
+Archive_DLT_Stargunner::Archive_DLT_Stargunner(std::shared_ptr<stream::inout> content)
+	:	FATArchive(content, DLT_FIRST_FILE_OFFSET, DLT_MAX_FILENAME_LEN)
 {
-	this->psArchive->seekg(4, stream::start); // skip "DAVE" sig
+	this->content->seekg(4, stream::start); // skip "DAVE" sig
 
 	// We still have to perform sanity checks in case the user forced an archive
 	// to open even though it failed the signature check.
-	if (this->psArchive->tellg() != 4) throw stream::error("file too short");
+	if (this->content->tellg() != 4) throw stream::error("file too short");
 
 	uint16_t unk;
 	uint16_t numFiles;
-	this->psArchive
+	*this->content
 		>> u16le(unk)
 		>> u16le(numFiles)
 	;
@@ -138,35 +141,34 @@ Archive_DLT_Stargunner::Archive_DLT_Stargunner(stream::inout_sptr psArchive)
 
 	stream::pos offNext = DLT_HEADER_LEN;
 	for (unsigned int i = 0; i < numFiles; i++) {
-		FATEntry *fatEntry = new FATEntry();
-		EntryPtr ep(fatEntry);
+		auto f = this->createNewFATEntry();
 
-		fatEntry->iIndex = i;
-		fatEntry->iOffset = offNext;
-		fatEntry->lenHeader = DLT_EFAT_ENTRY_LEN;
-		fatEntry->type = FILETYPE_GENERIC;
-		fatEntry->fAttr = 0;
-		fatEntry->bValid = true;
+		f->iIndex = i;
+		f->iOffset = offNext;
+		f->lenHeader = DLT_EFAT_ENTRY_LEN;
+		f->type = FILETYPE_GENERIC;
+		f->fAttr = 0;
+		f->bValid = true;
 
 		uint32_t unk;
 
 		// Read the data in from the FAT entry in the file
 		uint8_t name[DLT_FILENAME_FIELD_LEN + 1];
-		this->psArchive->read(name, DLT_FILENAME_FIELD_LEN);
-		this->psArchive
+		this->content->read(name, DLT_FILENAME_FIELD_LEN);
+		*this->content
 			>> u32le(unk)
-			>> u32le(fatEntry->storedSize)
+			>> u32le(f->storedSize)
 		;
 
 		// Decrypt the filename
 		for (int i = 1; i < DLT_FILENAME_FIELD_LEN; i++) name[i] ^= name[i - 1] + i;
 		name[DLT_FILENAME_FIELD_LEN] = 0; // just in case
-		fatEntry->strName = (char *)name;
+		f->strName = (char *)name;
 
-		fatEntry->realSize = fatEntry->storedSize;
-		this->vcFAT.push_back(ep);
-		offNext += fatEntry->storedSize + DLT_EFAT_ENTRY_LEN;
-		this->psArchive->seekg(fatEntry->storedSize, stream::cur);
+		f->realSize = f->storedSize;
+		offNext += f->storedSize + DLT_EFAT_ENTRY_LEN;
+		this->content->seekg(f->storedSize, stream::cur);
+		this->vcFAT.push_back(std::move(f));
 	}
 }
 
@@ -189,8 +191,8 @@ void Archive_DLT_Stargunner::updateFileName(const FATEntry *pid, const std::stri
 	for (i = 1; i < lenName; i++) encName[i] = clearName[i] ^ (clearName[i - 1] + i);
 	for (; i < DLT_FILENAME_FIELD_LEN; i++) encName[i] = i; // decodes to '\0'
 
-	this->psArchive->seekp(DLT_FILENAME_OFFSET(pid), stream::start);
-	this->psArchive->write(encName, DLT_FILENAME_FIELD_LEN);
+	this->content->seekp(DLT_FILENAME_OFFSET(pid), stream::start);
+	this->content->write(encName, DLT_FILENAME_FIELD_LEN);
 	return;
 }
 
@@ -206,12 +208,12 @@ void Archive_DLT_Stargunner::updateFileSize(const FATEntry *pid, stream::delta s
 {
 	// TESTED BY: fmt_dlt_stargunner_insert*
 	// TESTED BY: fmt_dlt_stargunner_resize*
-	this->psArchive->seekp(DLT_FILESIZE_OFFSET(pid), stream::start);
-	this->psArchive << u32le(pid->storedSize);
+	this->content->seekp(DLT_FILESIZE_OFFSET(pid), stream::start);
+	*this->content << u32le(pid->storedSize);
 	return;
 }
 
-FATArchive::FATEntry *Archive_DLT_Stargunner::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+void Archive_DLT_Stargunner::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	int lenName = pNewEntry->strName.length();
 	// TESTED BY: fmt_dlt_stargunner_insert*
@@ -229,10 +231,10 @@ FATArchive::FATEntry *Archive_DLT_Stargunner::preInsertFile(const FATEntry *idBe
 	// Set the format-specific variables
 	pNewEntry->lenHeader = DLT_EFAT_ENTRY_LEN;
 
-	this->psArchive->seekp(pNewEntry->iOffset, stream::start);
-	this->psArchive->insert(DLT_EFAT_ENTRY_LEN);
-	this->psArchive->write(encName, DLT_FILENAME_FIELD_LEN);
-	this->psArchive
+	this->content->seekp(pNewEntry->iOffset, stream::start);
+	this->content->insert(DLT_EFAT_ENTRY_LEN);
+	this->content->write(encName, DLT_FILENAME_FIELD_LEN);
+	*this->content
 		<< u32le(0) // unknown
 		<< u32le(pNewEntry->storedSize);
 
@@ -245,7 +247,7 @@ FATArchive::FATEntry *Archive_DLT_Stargunner::preInsertFile(const FATEntry *idBe
 	this->shiftFiles(NULL, pNewEntry->iOffset, pNewEntry->lenHeader, 0);
 
 	this->updateFileCount(this->vcFAT.size() + 1);
-	return pNewEntry;
+	return;
 }
 
 void Archive_DLT_Stargunner::preRemoveFile(const FATEntry *pid)
@@ -260,8 +262,8 @@ void Archive_DLT_Stargunner::updateFileCount(uint16_t iNewCount)
 {
 	// TESTED BY: fmt_dlt_stargunner_insert*
 	// TESTED BY: fmt_dlt_stargunner_remove*
-	this->psArchive->seekp(DLT_FILECOUNT_OFFSET, stream::start);
-	this->psArchive << u16le(iNewCount);
+	this->content->seekp(DLT_FILECOUNT_OFFSET, stream::start);
+	*this->content << u16le(iNewCount);
 	return;
 }
 

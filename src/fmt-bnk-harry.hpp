@@ -34,17 +34,16 @@ class ArchiveType_BNK_Harry: virtual public ArchiveType
 		ArchiveType_BNK_Harry();
 		virtual ~ArchiveType_BNK_Harry();
 
-		virtual std::string getArchiveCode() const;
-		virtual std::string getFriendlyName() const;
-		virtual std::vector<std::string> getFileExtensions() const;
-		virtual std::vector<std::string> getGameList() const;
-		virtual ArchiveType::Certainty isInstance(stream::input_sptr fsArchive)
-			const;
-		virtual ArchivePtr newArchive(stream::inout_sptr psArchive,
-			SuppData& suppData) const;
-		virtual ArchivePtr open(stream::inout_sptr psArchive, SuppData& suppData)
-			const;
-		virtual SuppFilenames getRequiredSupps(stream::input_sptr data,
+		virtual std::string code() const;
+		virtual std::string friendlyName() const;
+		virtual std::vector<std::string> fileExtensions() const;
+		virtual std::vector<std::string> games() const;
+		virtual ArchiveType::Certainty isInstance(stream::input& content) const;
+		virtual std::unique_ptr<Archive> create(
+			std::shared_ptr<stream::inout> content, SuppData& suppData) const;
+		virtual std::unique_ptr<Archive> open(
+			std::shared_ptr<stream::inout> content, SuppData& suppData) const;
+		virtual SuppFilenames getRequiredSupps(stream::input& content,
 			const std::string& filenameArchive) const;
 };
 
@@ -52,11 +51,11 @@ class ArchiveType_BNK_Harry: virtual public ArchiveType
 class Archive_BNK_Harry: virtual public FATArchive
 {
 	protected:
-		stream::seg_sptr psFAT;
+		std::shared_ptr<stream::seg> psFAT;
 		bool isAC;  // true == Alien Carnage, false == Halloween Harry
 
 	public:
-		Archive_BNK_Harry(stream::inout_sptr psArchive, stream::inout_sptr psFAT);
+		Archive_BNK_Harry(std::shared_ptr<stream::inout> content, std::shared_ptr<stream::inout> psFAT);
 		virtual ~Archive_BNK_Harry();
 
 		virtual void flush();
@@ -65,7 +64,7 @@ class Archive_BNK_Harry: virtual public FATArchive
 			const std::string& strNewName);
 		virtual void updateFileOffset(const FATEntry *pid, stream::delta offDelta);
 		virtual void updateFileSize(const FATEntry *pid, stream::delta sizeDelta);
-		virtual FATEntry *preInsertFile(const FATEntry *idBeforeThis,
+		virtual void preInsertFile(const FATEntry *idBeforeThis,
 			FATEntry *pNewEntry);
 		virtual void preRemoveFile(const FATEntry *pid);
 

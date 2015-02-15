@@ -280,10 +280,10 @@ class test_gd_doofus: public test_archive
 		{
 			BOOST_TEST_MESSAGE("Inserting file with unknown file type");
 
-			Archive::EntryPtr epb = this->findFile(0);
+			Archive::FileHandle epb = this->findFile(0);
 
 			// Insert a file with a numeric typecode ("unknown/doofus-1234")
-			Archive::EntryPtr ep =
+			Archive::FileHandle ep =
 				this->pArchive->insert(epb, "", 0x0f, "unknown/doofus-1234", EA_NONE);
 
 			BOOST_CHECK_MESSAGE(

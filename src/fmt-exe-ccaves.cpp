@@ -102,39 +102,40 @@ ArchiveType_EXE_CCaves::~ArchiveType_EXE_CCaves()
 {
 }
 
-std::string ArchiveType_EXE_CCaves::getArchiveCode() const
+std::string ArchiveType_EXE_CCaves::code() const
 {
 	return "exe-ccaves";
 }
 
-std::string ArchiveType_EXE_CCaves::getFriendlyName() const
+std::string ArchiveType_EXE_CCaves::friendlyName() const
 {
 	return "Crystal Caves Executable";
 }
 
-std::vector<std::string> ArchiveType_EXE_CCaves::getFileExtensions() const
+std::vector<std::string> ArchiveType_EXE_CCaves::fileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("exe");
 	return vcExtensions;
 }
 
-std::vector<std::string> ArchiveType_EXE_CCaves::getGameList() const
+std::vector<std::string> ArchiveType_EXE_CCaves::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Crystal Caves");
 	return vcGames;
 }
 
-ArchiveType::Certainty ArchiveType_EXE_CCaves::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_EXE_CCaves::isInstance(
+	stream::input& content) const
 {
-	stream::pos lenArchive = psArchive->size();
+	stream::pos lenArchive = content.size();
 
 	if (lenArchive == 191984) {
 		// TESTED BY: TODO fixed_exe_ccaves_isinstance_c00
-		psArchive->seekg(0x1E00, stream::start);
+		content.seekg(0x1E00, stream::start);
 		char buffer[8];
-		psArchive->read(buffer, 8);
+		content.read(buffer, 8);
 		// Unfortunately no version strings, so check some data I
 		// selected at random...
 		if (strncmp(buffer, "\x55\x89\xE5\x8B\x46\x06\xBA\xA0", 8) != 0)
@@ -147,23 +148,25 @@ ArchiveType::Certainty ArchiveType_EXE_CCaves::isInstance(stream::input_sptr psA
 	return DefinitelyNo;
 }
 
-ArchivePtr ArchiveType_EXE_CCaves::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_EXE_CCaves::create(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
 	// This isn't a true archive so we can't create new versions of it.
 	throw stream::error("Can't create a new archive in this format.");
 }
 
-ArchivePtr ArchiveType_EXE_CCaves::open(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_EXE_CCaves::open(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
 	std::vector<FixedArchiveFile> files;
 	files.reserve(sizeof(ccaves_file_list) / sizeof(FixedArchiveFile));
 	for (unsigned int i = 0; i < sizeof(ccaves_file_list) / sizeof(FixedArchiveFile); i++) {
 		files.push_back(ccaves_file_list[i]);
 	}
-	return createFixedArchive(psArchive, files);
+	return createFixedArchive(content, files);
 }
 
-SuppFilenames ArchiveType_EXE_CCaves::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_EXE_CCaves::getRequiredSupps(stream::input& content,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list

@@ -307,12 +307,12 @@ class test_rff_blood: public test_archive
 		{
 			BOOST_TEST_MESSAGE("Inserting file with basename too long");
 
-			Archive::EntryPtr epb = this->findFile(0);
+			Archive::FileHandle epb = this->findFile(0);
 
 			const char *name = "123456789.A";
 
 			BOOST_CHECK_THROW(
-				Archive::EntryPtr ep =
+				Archive::FileHandle ep =
 					this->pArchive->insert(epb, name, 5, FILETYPE_GENERIC, EA_NONE),
 				stream::error
 			);
@@ -327,12 +327,12 @@ class test_rff_blood: public test_archive
 		{
 			BOOST_TEST_MESSAGE("Inserting file with no dot and name too long");
 
-			Archive::EntryPtr epb = this->findFile(0);
+			Archive::FileHandle epb = this->findFile(0);
 
 			const char *name = "123456789";
 
 			BOOST_CHECK_THROW(
-				Archive::EntryPtr ep =
+				Archive::FileHandle ep =
 					this->pArchive->insert(epb, name, 5, FILETYPE_GENERIC, EA_NONE),
 				stream::error
 			);
@@ -347,12 +347,12 @@ class test_rff_blood: public test_archive
 		{
 			BOOST_TEST_MESSAGE("Inserting file with extension too long");
 
-			Archive::EntryPtr epb = this->findFile(0);
+			Archive::FileHandle epb = this->findFile(0);
 
 			const char *name = "12345.ABCD";
 
 			BOOST_CHECK_THROW(
-				Archive::EntryPtr ep =
+				Archive::FileHandle ep =
 					this->pArchive->insert(epb, name, 5, FILETYPE_GENERIC, EA_NONE),
 				stream::error
 			);

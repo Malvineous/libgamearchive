@@ -60,17 +60,17 @@ ArchiveType_BNK_Harry::~ArchiveType_BNK_Harry()
 {
 }
 
-std::string ArchiveType_BNK_Harry::getArchiveCode() const
+std::string ArchiveType_BNK_Harry::code() const
 {
 	return "bnk-harry";
 }
 
-std::string ArchiveType_BNK_Harry::getFriendlyName() const
+std::string ArchiveType_BNK_Harry::friendlyName() const
 {
 	return "Halloween Harry BNK File";
 }
 
-std::vector<std::string> ArchiveType_BNK_Harry::getFileExtensions() const
+std::vector<std::string> ArchiveType_BNK_Harry::fileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("bnk");
@@ -78,22 +78,23 @@ std::vector<std::string> ArchiveType_BNK_Harry::getFileExtensions() const
 	return vcExtensions;
 }
 
-std::vector<std::string> ArchiveType_BNK_Harry::getGameList() const
+std::vector<std::string> ArchiveType_BNK_Harry::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Halloween Harry");
 	return vcGames;
 }
 
-ArchiveType::Certainty ArchiveType_BNK_Harry::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_BNK_Harry::isInstance(
+	stream::input& content) const
 {
-	stream::pos lenArchive = psArchive->size();
+	stream::pos lenArchive = content.size();
 	if (lenArchive == 0) return DefinitelyYes; // empty archive
 	if (lenArchive < BNK_HH_EFAT_ENTRY_LEN) return DefinitelyNo; // too short
 
 	char sig[5];
-	psArchive->seekg(0, stream::start);
-	psArchive->read(sig, 5);
+	content.seekg(0, stream::start);
+	content.read(sig, 5);
 
 	// TESTED BY: fmt_bnk_harry_isinstance_c01
 	if (strncmp(sig, "\x04-ID-", 5)) return DefinitelyNo;
@@ -103,19 +104,20 @@ ArchiveType::Certainty ArchiveType_BNK_Harry::isInstance(stream::input_sptr psAr
 	return DefinitelyYes;
 }
 
-ArchivePtr ArchiveType_BNK_Harry::newArchive(stream::inout_sptr psArchive, SuppData& suppData)
-	const
+std::unique_ptr<Archive> ArchiveType_BNK_Harry::create(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return this->open(psArchive, suppData);
+	return this->open(content, suppData);
 }
 
-ArchivePtr ArchiveType_BNK_Harry::open(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_BNK_Harry::open(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
 	assert(suppData.find(SuppItem::FAT) != suppData.end());
-	return ArchivePtr(new Archive_BNK_Harry(psArchive, suppData[SuppItem::FAT]));
+	return std::make_unique<Archive_BNK_Harry>(content, suppData[SuppItem::FAT]);
 }
 
-SuppFilenames ArchiveType_BNK_Harry::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_BNK_Harry::getRequiredSupps(stream::input& content,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -126,13 +128,12 @@ SuppFilenames ArchiveType_BNK_Harry::getRequiredSupps(stream::input_sptr data,
 }
 
 
-Archive_BNK_Harry::Archive_BNK_Harry(stream::inout_sptr psArchive, stream::inout_sptr psFAT)
-	:	FATArchive(psArchive, BNK_FIRST_FILE_OFFSET, BNK_MAX_FILENAME_LEN),
-		psFAT(new stream::seg()),
+Archive_BNK_Harry::Archive_BNK_Harry(std::shared_ptr<stream::inout> content,
+	std::shared_ptr<stream::inout> psFAT)
+	:	FATArchive(content, BNK_FIRST_FILE_OFFSET, BNK_MAX_FILENAME_LEN),
+		psFAT(std::make_shared<stream::seg>(psFAT)),
 		isAC(false) // TODO: detect and set this
 {
-	this->psFAT->open(psFAT);
-
 	stream::pos lenFAT = this->psFAT->size();
 	unsigned long numFiles = lenFAT / BNK_FAT_ENTRY_LEN;
 	this->vcFAT.reserve(numFiles);
@@ -140,33 +141,32 @@ Archive_BNK_Harry::Archive_BNK_Harry(stream::inout_sptr psArchive, stream::inout
 	this->psFAT->seekg(0, stream::start);
 
 	for (unsigned int i = 0; i < numFiles; i++) {
-		FATEntry *fatEntry = new FATEntry();
-		EntryPtr ep(fatEntry);
+		auto f = this->createNewFATEntry();
 
 		uint8_t lenName;
-		this->psFAT
+		*this->psFAT
 			>> u8(lenName)
-			>> nullPadded(fatEntry->strName, BNK_MAX_FILENAME_LEN)
-			>> u32le(fatEntry->iOffset)
-			>> u32le(fatEntry->storedSize)
+			>> nullPadded(f->strName, BNK_MAX_FILENAME_LEN)
+			>> u32le(f->iOffset)
+			>> u32le(f->storedSize)
 		;
-		fatEntry->strName = fatEntry->strName.substr(0, lenName);
+		f->strName = f->strName.substr(0, lenName);
 
 		// The offsets are of the start of the file data (skipping over the
 		// embedded header) so we need to subtract a bit to include the
 		// header.
-		fatEntry->iOffset -= BNK_EFAT_ENTRY_LEN;
+		f->iOffset -= BNK_EFAT_ENTRY_LEN;
 
-		fatEntry->iIndex = i;
-		fatEntry->lenHeader = BNK_EFAT_ENTRY_LEN;
-		fatEntry->type = FILETYPE_GENERIC;
-		fatEntry->fAttr = 0;
-		fatEntry->bValid = true;
-		fatEntry->realSize = fatEntry->storedSize;
+		f->iIndex = i;
+		f->lenHeader = BNK_EFAT_ENTRY_LEN;
+		f->type = FILETYPE_GENERIC;
+		f->fAttr = 0;
+		f->bValid = true;
+		f->realSize = f->storedSize;
 
-		if (fatEntry->strName[0] == '\0') fatEntry->fAttr = EA_EMPTY;
+		if (f->strName[0] == '\0') f->fAttr = EA_EMPTY;
 
-		this->vcFAT.push_back(ep);
+		this->vcFAT.push_back(std::move(f));
 	}
 }
 
@@ -192,11 +192,11 @@ void Archive_BNK_Harry::updateFileName(const FATEntry *pid, const std::string& s
 	uint8_t lenByte = strNewName.length();
 	this->psFAT->seekp(pid->iIndex * BNK_FAT_ENTRY_LEN + BNK_FAT_FILENAME_OFFSET, stream::start);
 	this->psFAT->write(&lenByte, 1);
-	this->psFAT << nullPadded(strNewName, BNK_MAX_FILENAME_LEN);
+	*this->psFAT << nullPadded(strNewName, BNK_MAX_FILENAME_LEN);
 
-	this->psArchive->seekp(pid->iOffset + BNK_EFAT_FILENAME_OFFSET, stream::start);
-	this->psArchive->write(&lenByte, 1);
-	this->psArchive << nullPadded(strNewName, BNK_MAX_FILENAME_LEN);
+	this->content->seekp(pid->iOffset + BNK_EFAT_FILENAME_OFFSET, stream::start);
+	this->content->write(&lenByte, 1);
+	*this->content << nullPadded(strNewName, BNK_MAX_FILENAME_LEN);
 
 	return;
 }
@@ -208,7 +208,7 @@ void Archive_BNK_Harry::updateFileOffset(const FATEntry *pid, stream::delta offD
 
 	// Only the external FAT file has offsets, not the embedded FAT
 	this->psFAT->seekp(pid->iIndex * BNK_FAT_ENTRY_LEN + BNK_FAT_FILEOFFSET_OFFSET, stream::start);
-	this->psFAT << u32le(pid->iOffset + BNK_EFAT_ENTRY_LEN);
+	*this->psFAT << u32le(pid->iOffset + BNK_EFAT_ENTRY_LEN);
 	return;
 }
 
@@ -219,16 +219,16 @@ void Archive_BNK_Harry::updateFileSize(const FATEntry *pid, stream::delta sizeDe
 
 	// Update external FAT
 	this->psFAT->seekp(pid->iIndex * BNK_FAT_ENTRY_LEN + BNK_FAT_FILESIZE_OFFSET, stream::start);
-	this->psFAT << u32le(pid->storedSize);
+	*this->psFAT << u32le(pid->storedSize);
 
 	// Update embedded FAT
-	this->psArchive->seekp(pid->iOffset + BNK_EFAT_FILESIZE_OFFSET, stream::start);
-	this->psArchive << u32le(pid->storedSize);
+	this->content->seekp(pid->iOffset + BNK_EFAT_FILESIZE_OFFSET, stream::start);
+	*this->content << u32le(pid->storedSize);
 
 	return;
 }
 
-FATArchive::FATEntry *Archive_BNK_Harry::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+void Archive_BNK_Harry::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_bnk_harry_insert*
 	int len = pNewEntry->strName.length();
@@ -241,12 +241,12 @@ FATArchive::FATEntry *Archive_BNK_Harry::preInsertFile(const FATEntry *idBeforeT
 	boost::to_upper(pNewEntry->strName);
 
 	// Write out the new embedded FAT entry
-	this->psArchive->seekp(pNewEntry->iOffset, stream::start);
-	this->psArchive->insert(BNK_EFAT_ENTRY_LEN);
+	this->content->seekp(pNewEntry->iOffset, stream::start);
+	this->content->insert(BNK_EFAT_ENTRY_LEN);
 
 	// Write the header
-	this->psArchive->write("\x04-ID-", 5);
-	this->psArchive
+	this->content->write("\x04-ID-", 5);
+	*this->content
 		<< u8(lenByte)
 		<< nullPadded(pNewEntry->strName, BNK_MAX_FILENAME_LEN)
 		<< u32le(pNewEntry->storedSize)
@@ -263,14 +263,14 @@ FATArchive::FATEntry *Archive_BNK_Harry::preInsertFile(const FATEntry *idBeforeT
 	// Write out same again but into the BNK file's external FAT
 	this->psFAT->seekp(pNewEntry->iIndex * BNK_FAT_ENTRY_LEN, stream::start);
 	this->psFAT->insert(BNK_FAT_ENTRY_LEN);
-	this->psFAT
+	*this->psFAT
 		<< u8(lenByte)
 		<< nullPadded(pNewEntry->strName, BNK_MAX_FILENAME_LEN)
 		<< u32le(pNewEntry->iOffset + BNK_EFAT_ENTRY_LEN)
 		<< u32le(pNewEntry->storedSize)
 	;
 
-	return pNewEntry;
+	return;
 }
 
 void Archive_BNK_Harry::preRemoveFile(const FATEntry *pid)

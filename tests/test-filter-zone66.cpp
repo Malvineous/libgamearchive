@@ -154,7 +154,7 @@ BOOST_AUTO_TEST_CASE(decode)
 {
 	BOOST_TEST_MESSAGE("Decompress some Zone 66 format data");
 
-	in << STRING_WITH_NULLS(DATA_ENCODED);
+	*this->in << STRING_WITH_NULLS(DATA_ENCODED);
 
 	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(DATA_DECODED)),
 		"Decompressing Zone 66 data failed");
@@ -164,7 +164,7 @@ BOOST_AUTO_TEST_CASE(decode_camoto)
 {
 	BOOST_TEST_MESSAGE("Decompress some Zone 66 format data compressed by Camoto");
 
-	in << STRING_WITH_NULLS(DATA_ENCODED_CAMOTO);
+	*this->in << STRING_WITH_NULLS(DATA_ENCODED_CAMOTO);
 
 	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(DATA_DECODED_CAMOTO)),
 		"Decompressing Zone 66 data failed");
@@ -178,7 +178,7 @@ BOOST_AUTO_TEST_CASE(encode)
 {
 	BOOST_TEST_MESSAGE("Compress some data in Zone 66 format");
 
-	in << STRING_WITH_NULLS(DATA_DECODED_CAMOTO);
+	*this->in << STRING_WITH_NULLS(DATA_DECODED_CAMOTO);
 
 	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(DATA_ENCODED_CAMOTO)),
 		"Compressing Zone 66 data failed");
@@ -194,15 +194,22 @@ BOOST_AUTO_TEST_CASE(encode_decode_20k)
 		src += "ABC";
 	}
 
-	stream::string_sptr out(new stream::string());
-	this->in_filt->open(this->in, this->filter);
-	stream::copy(out, this->in_filt);
-	this->in_filt.reset(new stream::input_filtered());
+	// Compress the data
+	this->in_filt = std::make_shared<stream::input_filtered>(this->in,
+		this->filter);
+	stream::string out;
+	stream::copy(out, *this->in_filt);
 
-	this->in.reset(new stream::string());
-	out->seekg(0, stream::start);
-	stream::copy(in, out);
+	// Wipe the original data stream
+	this->in_filt = nullptr;
+	this->in = std::make_shared<stream::string>();
 
+	// Decompress the data back into the original data stream
+	out.seekg(0, stream::start);
+	stream::copy(*this->in, out);
+
+	// Check to see whether the original data stream now matches what we
+	// originally had.
 	this->filter.reset(new filter_z66_decompress());
 	BOOST_CHECK_MESSAGE(is_equal(src),
 		"Compressing >20k of Zone 66 data failed");

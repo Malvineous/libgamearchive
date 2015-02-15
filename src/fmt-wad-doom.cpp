@@ -24,7 +24,6 @@
 #include <boost/algorithm/string.hpp>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/util.hpp>
-
 #include "fmt-wad-doom.hpp"
 
 #define WAD_FILECOUNT_OFFSET    4
@@ -54,17 +53,17 @@ ArchiveType_WAD_Doom::~ArchiveType_WAD_Doom()
 {
 }
 
-std::string ArchiveType_WAD_Doom::getArchiveCode() const
+std::string ArchiveType_WAD_Doom::code() const
 {
 	return "wad-doom";
 }
 
-std::string ArchiveType_WAD_Doom::getFriendlyName() const
+std::string ArchiveType_WAD_Doom::friendlyName() const
 {
 	return "Doom WAD File";
 }
 
-std::vector<std::string> ArchiveType_WAD_Doom::getFileExtensions() const
+std::vector<std::string> ArchiveType_WAD_Doom::fileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("wad");
@@ -72,7 +71,7 @@ std::vector<std::string> ArchiveType_WAD_Doom::getFileExtensions() const
 	return vcExtensions;
 }
 
-std::vector<std::string> ArchiveType_WAD_Doom::getGameList() const
+std::vector<std::string> ArchiveType_WAD_Doom::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Doom");
@@ -85,16 +84,17 @@ std::vector<std::string> ArchiveType_WAD_Doom::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty ArchiveType_WAD_Doom::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_WAD_Doom::isInstance(
+	stream::input& content) const
 {
-	stream::pos lenArchive = psArchive->size();
+	stream::pos lenArchive = content.size();
 
 	// TESTED BY: fmt_wad_doom_isinstance_c03
 	if (lenArchive < WAD_HEADER_LEN) return DefinitelyNo; // too short
 
 	char sig[4];
-	psArchive->seekg(0, stream::start);
-	psArchive->read(sig, 4);
+	content.seekg(0, stream::start);
+	content.read(sig, 4);
 
 	// TESTED BY: fmt_wad_doom_isinstance_c00
 	if (strncmp(sig, "IWAD", 4) == 0) return DefinitelyYes;
@@ -106,19 +106,21 @@ ArchiveType::Certainty ArchiveType_WAD_Doom::isInstance(stream::input_sptr psArc
 	return DefinitelyNo;
 }
 
-ArchivePtr ArchiveType_WAD_Doom::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_WAD_Doom::create(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	psArchive->seekp(0, stream::start);
-	psArchive->write("IWAD\x00\x00\x00\x00\x0c\x00\x00\x00", WAD_HEADER_LEN);
-	return ArchivePtr(new Archive_WAD_Doom(psArchive));
+	content->seekp(0, stream::start);
+	content->write("IWAD\x00\x00\x00\x00\x0c\x00\x00\x00", WAD_HEADER_LEN);
+	return std::make_unique<Archive_WAD_Doom>(content);
 }
 
-ArchivePtr ArchiveType_WAD_Doom::open(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_WAD_Doom::open(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return ArchivePtr(new Archive_WAD_Doom(psArchive));
+	return std::make_unique<Archive_WAD_Doom>(content);
 }
 
-SuppFilenames ArchiveType_WAD_Doom::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_WAD_Doom::getRequiredSupps(stream::input& content,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -126,17 +128,17 @@ SuppFilenames ArchiveType_WAD_Doom::getRequiredSupps(stream::input_sptr data,
 }
 
 
-Archive_WAD_Doom::Archive_WAD_Doom(stream::inout_sptr psArchive)
-	:	FATArchive(psArchive, WAD_FIRST_FILE_OFFSET, WAD_MAX_FILENAME_LEN)
+Archive_WAD_Doom::Archive_WAD_Doom(std::shared_ptr<stream::inout> content)
+	:	FATArchive(content, WAD_FIRST_FILE_OFFSET, WAD_MAX_FILENAME_LEN)
 {
-	this->psArchive->seekg(4, stream::start); // skip sig
+	this->content->seekg(4, stream::start); // skip sig
 
 	// We still have to perform sanity checks in case the user forced an archive
 	// to open even though it failed the signature check.
-	if (this->psArchive->tellg() != 4) throw stream::error("file too short");
+	if (this->content->tellg() != 4) throw stream::error("file too short");
 
 	uint32_t numFiles, offFAT;
-	this->psArchive
+	*this->content
 		>> u32le(numFiles)
 		>> u32le(offFAT)
 	;
@@ -145,26 +147,25 @@ Archive_WAD_Doom::Archive_WAD_Doom(stream::inout_sptr psArchive)
 		throw stream::error("too many files or corrupted archive");
 	}
 
-	this->psArchive->seekg(offFAT, stream::start);
+	this->content->seekg(offFAT, stream::start);
 	for (unsigned int i = 0; i < numFiles; i++) {
-		FATEntry *fatEntry = new FATEntry();
-		EntryPtr ep(fatEntry);
+		auto f = this->createNewFATEntry();
 
-		fatEntry->iIndex = i;
-		fatEntry->lenHeader = 0;
-		fatEntry->type = FILETYPE_GENERIC;
-		fatEntry->fAttr = 0;
-		fatEntry->bValid = true;
+		f->iIndex = i;
+		f->lenHeader = 0;
+		f->type = FILETYPE_GENERIC;
+		f->fAttr = 0;
+		f->bValid = true;
 
 		// Read the data in from the FAT entry in the file
-		this->psArchive
-			>> u32le(fatEntry->iOffset)
-			>> u32le(fatEntry->storedSize)
-			>> nullPadded(fatEntry->strName, WAD_FILENAME_FIELD_LEN)
+		*this->content
+			>> u32le(f->iOffset)
+			>> u32le(f->storedSize)
+			>> nullPadded(f->strName, WAD_FILENAME_FIELD_LEN)
 		;
 
-		fatEntry->realSize = fatEntry->storedSize;
-		this->vcFAT.push_back(ep);
+		f->realSize = f->storedSize;
+		this->vcFAT.push_back(std::move(f));
 	}
 }
 
@@ -185,9 +186,9 @@ std::string Archive_WAD_Doom::getMetadata(MetadataType item) const
 	// TESTED BY: fmt_wad_doom::test_metadata_get_ver
 	switch (item) {
 		case Version: {
-			psArchive->seekg(0, stream::start);
+			this->content->seekg(0, stream::start);
 			char wadtype;
-			psArchive->read(&wadtype, 1);
+			this->content->read(&wadtype, 1);
 			return std::string(1, wadtype);
 		}
 		default:
@@ -208,8 +209,8 @@ void Archive_WAD_Doom::setMetadata(MetadataType item, const std::string& value)
 			) {
 				throw stream::error("Version can only be set to I or P for IWAD or PWAD");
 			}
-			this->psArchive->seekp(0, stream::start);
-			this->psArchive->write(&(value[0]), 1);
+			this->content->seekp(0, stream::start);
+			this->content->write(&(value[0]), 1);
 			break;
 		default:
 			assert(false);
@@ -222,8 +223,8 @@ void Archive_WAD_Doom::updateFileName(const FATEntry *pid, const std::string& st
 {
 	// TESTED BY: fmt_wad_doom_rename
 	assert(strNewName.length() <= WAD_MAX_FILENAME_LEN);
-	this->psArchive->seekp(WAD_FILENAME_OFFSET(pid), stream::start);
-	this->psArchive << nullPadded(strNewName, WAD_FILENAME_FIELD_LEN);
+	this->content->seekp(WAD_FILENAME_OFFSET(pid), stream::start);
+	*this->content << nullPadded(strNewName, WAD_FILENAME_FIELD_LEN);
 	return;
 }
 
@@ -231,8 +232,8 @@ void Archive_WAD_Doom::updateFileOffset(const FATEntry *pid, stream::delta offDe
 {
 	// TESTED BY: fmt_wad_doom_insert*
 	// TESTED BY: fmt_wad_doom_resize*
-	this->psArchive->seekp(WAD_FILEOFFSET_OFFSET(pid), stream::start);
-	this->psArchive << u32le(pid->iOffset);
+	this->content->seekp(WAD_FILEOFFSET_OFFSET(pid), stream::start);
+	*this->content << u32le(pid->iOffset);
 	return;
 }
 
@@ -240,12 +241,12 @@ void Archive_WAD_Doom::updateFileSize(const FATEntry *pid, stream::delta sizeDel
 {
 	// TESTED BY: fmt_wad_doom_insert*
 	// TESTED BY: fmt_wad_doom_resize*
-	this->psArchive->seekp(WAD_FILESIZE_OFFSET(pid), stream::start);
-	this->psArchive << u32le(pid->storedSize);
+	this->content->seekp(WAD_FILESIZE_OFFSET(pid), stream::start);
+	*this->content << u32le(pid->storedSize);
 	return;
 }
 
-FATArchive::FATEntry *Archive_WAD_Doom::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+void Archive_WAD_Doom::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_wad_doom_insert*
 	assert(pNewEntry->strName.length() <= WAD_MAX_FILENAME_LEN);
@@ -256,11 +257,11 @@ FATArchive::FATEntry *Archive_WAD_Doom::preInsertFile(const FATEntry *idBeforeTh
 	// Because the new entry isn't in the vector yet we need to shift it manually
 	pNewEntry->iOffset += WAD_FAT_ENTRY_LEN;
 
-	this->psArchive->seekp(WAD_FATENTRY_OFFSET(pNewEntry), stream::start);
-	this->psArchive->insert(WAD_FAT_ENTRY_LEN);
+	this->content->seekp(WAD_FATENTRY_OFFSET(pNewEntry), stream::start);
+	this->content->insert(WAD_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
 
-	this->psArchive
+	*this->content
 		<< u32le(pNewEntry->iOffset)
 		<< u32le(pNewEntry->storedSize)
 		<< nullPadded(pNewEntry->strName, WAD_FILENAME_FIELD_LEN)
@@ -275,7 +276,7 @@ FATArchive::FATEntry *Archive_WAD_Doom::preInsertFile(const FATEntry *idBeforeTh
 	);
 
 	this->updateFileCount(this->vcFAT.size() + 1);
-	return pNewEntry;
+	return;
 }
 
 void Archive_WAD_Doom::preRemoveFile(const FATEntry *pid)
@@ -293,8 +294,8 @@ void Archive_WAD_Doom::preRemoveFile(const FATEntry *pid)
 		0
 	);
 
-	this->psArchive->seekp(WAD_FATENTRY_OFFSET(pid), stream::start);
-	this->psArchive->remove(WAD_FAT_ENTRY_LEN);
+	this->content->seekp(WAD_FATENTRY_OFFSET(pid), stream::start);
+	this->content->remove(WAD_FAT_ENTRY_LEN);
 
 	this->updateFileCount(this->vcFAT.size() - 1);
 	return;
@@ -304,8 +305,8 @@ void Archive_WAD_Doom::updateFileCount(uint32_t iNewCount)
 {
 	// TESTED BY: fmt_wad_doom_insert*
 	// TESTED BY: fmt_wad_doom_remove*
-	this->psArchive->seekp(WAD_FILECOUNT_OFFSET, stream::start);
-	this->psArchive << u32le(iNewCount);
+	this->content->seekp(WAD_FILECOUNT_OFFSET, stream::start);
+	*this->content << u32le(iNewCount);
 	return;
 }
 

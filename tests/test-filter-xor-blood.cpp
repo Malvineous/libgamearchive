@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(rff_crypt_read)
 {
 	BOOST_TEST_MESSAGE("Decode some XOR-encoded data");
 
-	in << STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
+	*this->in << STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
 
 	this->filter.reset(new filter_rff_crypt(0, 0));
 
@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(rff_crypt_partial_read)
 {
 	BOOST_TEST_MESSAGE("Decode some partially XOR-encoded data");
 
-	in << STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
+	*this->in << STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
 
 	this->filter.reset(new filter_rff_crypt(4, 0));
 
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(rff_crypt_altseed_read)
 {
 	BOOST_TEST_MESSAGE("Decode some XOR-encoded data with alternate seed");
 
-	in << STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
+	*this->in << STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
 
 	this->filter.reset(new filter_rff_crypt(0, 0xFE));
 
@@ -79,19 +79,21 @@ BOOST_AUTO_TEST_CASE(rff_crypt_write_filteredstream)
 {
 	BOOST_TEST_MESSAGE("Encode some data through filteredstream");
 
-	stream::string_sptr out(new stream::string());
+	auto out = std::make_shared<stream::string>();
 
-	filter_sptr in_filt(new filter_rff_crypt(0, 0));
-	filter_sptr out_filt(new filter_rff_crypt(0, 0));
-
-	stream::filtered_sptr f(new stream::filtered());
-	f->open(out, in_filt, out_filt, NULL);
+	auto f = std::make_shared<stream::filtered>(
+		out,
+		std::make_shared<filter_rff_crypt>(0, 0),
+		std::make_shared<filter_rff_crypt>(0, 0),
+		stream::fn_truncate_filter()
+	);
 
 	f->write("\x00\x01\x02\x03\xFF\xFF\xFF\xFF", 8);
 	f->flush();
 
-	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS("\x00\x01\x03\x02\xFD\xFD\xFC\xFC"),
-		*(out->str())),
+	BOOST_CHECK_MESSAGE(is_equal(
+		STRING_WITH_NULLS("\x00\x01\x03\x02\xFD\xFD\xFC\xFC"),
+		out->data),
 		"Encoding data through filteredstream failed");
 }
 

@@ -23,6 +23,7 @@
 
 #include <camoto/filter.hpp>
 #include <camoto/stream_filtered.hpp>
+#include <camoto/util.hpp> // std::make_unique
 #include <camoto/gamearchive/filtertype.hpp>
 #include "filter-ddave-rle.hpp"
 
@@ -227,48 +228,53 @@ FilterType_DDaveRLE::~FilterType_DDaveRLE()
 {
 }
 
-std::string FilterType_DDaveRLE::getFilterCode() const
+std::string FilterType_DDaveRLE::code() const
 {
 	return "rle-ddave";
 }
 
-std::string FilterType_DDaveRLE::getFriendlyName() const
+std::string FilterType_DDaveRLE::friendlyName() const
 {
 	return "Dangerous Dave RLE";
 }
 
-std::vector<std::string> FilterType_DDaveRLE::getGameList() const
+std::vector<std::string> FilterType_DDaveRLE::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Dangerous Dave");
 	return vcGames;
 }
 
-stream::inout_sptr FilterType_DDaveRLE::apply(stream::inout_sptr target,
-	stream::fn_truncate resize) const
+std::unique_ptr<stream::inout> FilterType_DDaveRLE::apply(
+	std::shared_ptr<stream::inout> target, stream::fn_truncate_filter resize)
+	const
 {
-	stream::filtered_sptr st(new stream::filtered());
-	filter_sptr de(new filter_ddave_unrle());
-	filter_sptr en(new filter_ddave_rle());
-	st->open(target, de, en, resize);
-	return st;
+	return std::make_unique<stream::filtered>(
+		target,
+		std::make_shared<filter_ddave_unrle>(),
+		std::make_shared<filter_ddave_rle>(),
+		resize
+	);
 }
 
-stream::input_sptr FilterType_DDaveRLE::apply(stream::input_sptr target) const
+std::unique_ptr<stream::input> FilterType_DDaveRLE::apply(
+	std::shared_ptr<stream::input> target) const
 {
-	stream::input_filtered_sptr st(new stream::input_filtered());
-	filter_sptr de(new filter_ddave_unrle());
-	st->open(target, de);
-	return st;
+	return std::make_unique<stream::input_filtered>(
+		target,
+		std::make_shared<filter_ddave_unrle>()
+	);
 }
 
-stream::output_sptr FilterType_DDaveRLE::apply(stream::output_sptr target,
-	stream::fn_truncate resize) const
+std::unique_ptr<stream::output> FilterType_DDaveRLE::apply(
+	std::shared_ptr<stream::output> target, stream::fn_truncate_filter resize)
+	const
 {
-	stream::output_filtered_sptr st(new stream::output_filtered());
-	filter_sptr en(new filter_ddave_rle());
-	st->open(target, en, resize);
-	return st;
+	return std::make_unique<stream::output_filtered>(
+		target,
+		std::make_shared<filter_ddave_rle>(),
+		resize
+	);
 }
 
 } // namespace gamearchive

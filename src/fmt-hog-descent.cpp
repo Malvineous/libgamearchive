@@ -48,40 +48,41 @@ ArchiveType_HOG_Descent::~ArchiveType_HOG_Descent()
 {
 }
 
-std::string ArchiveType_HOG_Descent::getArchiveCode() const
+std::string ArchiveType_HOG_Descent::code() const
 {
 	return "hog-descent";
 }
 
-std::string ArchiveType_HOG_Descent::getFriendlyName() const
+std::string ArchiveType_HOG_Descent::friendlyName() const
 {
 	return "Descent HOG file";
 }
 
-std::vector<std::string> ArchiveType_HOG_Descent::getFileExtensions() const
+std::vector<std::string> ArchiveType_HOG_Descent::fileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("hog");
 	return vcExtensions;
 }
 
-std::vector<std::string> ArchiveType_HOG_Descent::getGameList() const
+std::vector<std::string> ArchiveType_HOG_Descent::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Descent");
 	return vcGames;
 }
 
-ArchiveType::Certainty ArchiveType_HOG_Descent::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_HOG_Descent::isInstance(
+	stream::input& content) const
 {
-	stream::pos lenArchive = psArchive->size();
+	stream::pos lenArchive = content.size();
 
 	// TESTED BY: fmt_hog_descent_isinstance_c02
 	if (lenArchive < HOG_HEADER_LEN) return DefinitelyNo; // too short
 
 	char sig[HOG_HEADER_LEN];
-	psArchive->seekg(0, stream::start);
-	psArchive->read(sig, HOG_HEADER_LEN);
+	content.seekg(0, stream::start);
+	content.read(sig, HOG_HEADER_LEN);
 
 	// TESTED BY: fmt_hog_descent_isinstance_c00
 	if (strncmp(sig, "DHF", HOG_HEADER_LEN) == 0) return DefinitelyYes;
@@ -90,19 +91,21 @@ ArchiveType::Certainty ArchiveType_HOG_Descent::isInstance(stream::input_sptr ps
 	return DefinitelyNo;
 }
 
-ArchivePtr ArchiveType_HOG_Descent::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_HOG_Descent::create(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	psArchive->seekp(0, stream::start);
-	psArchive->write("DHF", 3);
-	return ArchivePtr(new Archive_HOG_Descent(psArchive));
+	content->seekp(0, stream::start);
+	content->write("DHF", 3);
+	return std::make_unique<Archive_HOG_Descent>(content);
 }
 
-ArchivePtr ArchiveType_HOG_Descent::open(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_HOG_Descent::open(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return ArchivePtr(new Archive_HOG_Descent(psArchive));
+	return std::make_unique<Archive_HOG_Descent>(content);
 }
 
-SuppFilenames ArchiveType_HOG_Descent::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_HOG_Descent::getRequiredSupps(stream::input& content,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -110,49 +113,49 @@ SuppFilenames ArchiveType_HOG_Descent::getRequiredSupps(stream::input_sptr data,
 }
 
 
-Archive_HOG_Descent::Archive_HOG_Descent(stream::inout_sptr psArchive)
-	:	FATArchive(psArchive, HOG_FIRST_FILE_OFFSET, HOG_MAX_FILENAME_LEN)
+Archive_HOG_Descent::Archive_HOG_Descent(std::shared_ptr<stream::inout> content)
+	:	FATArchive(content, HOG_FIRST_FILE_OFFSET, HOG_MAX_FILENAME_LEN)
 {
-	stream::pos lenArchive = this->psArchive->size();
+	stream::pos lenArchive = this->content->size();
 
-	this->psArchive->seekg(HOG_FIRST_FILE_OFFSET, stream::start); // skip sig
+	this->content->seekg(HOG_FIRST_FILE_OFFSET, stream::start); // skip sig
 
 	// We still have to perform sanity checks in case the user forced an archive
 	// to open even though it failed the signature check.
-	if (this->psArchive->tellg() != HOG_FIRST_FILE_OFFSET) {
+	if (this->content->tellg() != HOG_FIRST_FILE_OFFSET) {
 		throw stream::error("File too short");
 	}
 
 	stream::pos offNext = HOG_FIRST_FILE_OFFSET;
 	for (int i = 0; (offNext + HOG_FAT_ENTRY_LEN <= lenArchive); i++) {
-		FATEntry *fatEntry = new FATEntry();
-		EntryPtr ep(fatEntry);
+		if (i >= HOG_SAFETY_MAX_FILECOUNT) {
+			throw stream::error("too many files or corrupted archive");
+		}
 
-		this->psArchive
-			>> nullPadded(fatEntry->strName, HOG_FILENAME_FIELD_LEN)
-			>> u32le(fatEntry->storedSize)
+		auto f = this->createNewFATEntry();
+
+		*this->content
+			>> nullPadded(f->strName, HOG_FILENAME_FIELD_LEN)
+			>> u32le(f->storedSize)
 		;
 
-		fatEntry->iIndex = i;
-		fatEntry->iOffset = offNext;
-		fatEntry->lenHeader = HOG_FAT_ENTRY_LEN;
-		fatEntry->type = FILETYPE_GENERIC;
-		fatEntry->fAttr = 0;
-		fatEntry->bValid = true;
-		fatEntry->realSize = fatEntry->storedSize;
-		this->vcFAT.push_back(ep);
+		f->iIndex = i;
+		f->iOffset = offNext;
+		f->lenHeader = HOG_FAT_ENTRY_LEN;
+		f->type = FILETYPE_GENERIC;
+		f->fAttr = 0;
+		f->bValid = true;
+		f->realSize = f->storedSize;
 
 		// Update the offset for the next file
-		offNext += HOG_FAT_ENTRY_LEN + fatEntry->storedSize;
+		offNext += HOG_FAT_ENTRY_LEN + f->storedSize;
 		if (offNext > lenArchive) {
 			std::cerr << "Warning: File has been truncated or is not in HOG format, "
 				"file list may be incomplete or complete garbage..." << std::endl;
 			break;
 		}
-		this->psArchive->seekg(fatEntry->storedSize, stream::cur);
-		if (i >= HOG_SAFETY_MAX_FILECOUNT) {
-			throw stream::error("too many files or corrupted archive");
-		}
+		this->content->seekg(f->storedSize, stream::cur);
+		this->vcFAT.push_back(std::move(f));
 	}
 }
 
@@ -164,8 +167,8 @@ void Archive_HOG_Descent::updateFileName(const FATEntry *pid, const std::string&
 {
 	// TESTED BY: fmt_hog_descent_rename
 	assert(strNewName.length() <= HOG_MAX_FILENAME_LEN);
-	this->psArchive->seekp(pid->iOffset, stream::start);
-	this->psArchive << nullPadded(strNewName, HOG_FILENAME_FIELD_LEN);
+	this->content->seekp(pid->iOffset, stream::start);
+	*this->content << nullPadded(strNewName, HOG_FILENAME_FIELD_LEN);
 	return;
 }
 
@@ -181,12 +184,12 @@ void Archive_HOG_Descent::updateFileSize(const FATEntry *pid, stream::delta size
 {
 	// TESTED BY: fmt_hog_descent_insert*
 	// TESTED BY: fmt_hog_descent_resize*
-	this->psArchive->seekp(pid->iOffset + HOG_FAT_FILESIZE_OFFSET, stream::start);
-	this->psArchive << u32le(pid->storedSize);
+	this->content->seekp(pid->iOffset + HOG_FAT_FILESIZE_OFFSET, stream::start);
+	*this->content << u32le(pid->storedSize);
 	return;
 }
 
-FATArchive::FATEntry *Archive_HOG_Descent::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+void Archive_HOG_Descent::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_hog_descent_insert*
 	assert(pNewEntry->strName.length() <= HOG_MAX_FILENAME_LEN);
@@ -199,15 +202,15 @@ FATArchive::FATEntry *Archive_HOG_Descent::preInsertFile(const FATEntry *idBefor
 	// Set the format-specific variables
 	pNewEntry->lenHeader = HOG_FAT_ENTRY_LEN;
 
-	this->psArchive->seekp(pNewEntry->iOffset, stream::start);
-	this->psArchive->insert(HOG_FAT_ENTRY_LEN);
-	this->psArchive << nullPadded(pNewEntry->strName, HOG_FILENAME_FIELD_LEN);
-	this->psArchive << u32le(pNewEntry->storedSize);
+	this->content->seekp(pNewEntry->iOffset, stream::start);
+	this->content->insert(HOG_FAT_ENTRY_LEN);
+	*this->content << nullPadded(pNewEntry->strName, HOG_FILENAME_FIELD_LEN);
+	*this->content << u32le(pNewEntry->storedSize);
 
 	// Update the offsets now the embedded FAT entry has been inserted
 	this->shiftFiles(NULL, pNewEntry->iOffset, pNewEntry->lenHeader, 0);
 
-	return pNewEntry;
+	return;
 }
 
 } // namespace gamearchive

@@ -24,7 +24,6 @@
 #include <boost/algorithm/string.hpp>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/util.hpp>
-
 #include "fmt-vol-cosmo.hpp"
 
 #define VOL_MAX_FILES         200
@@ -44,17 +43,17 @@ ArchiveType_VOL_Cosmo::~ArchiveType_VOL_Cosmo()
 {
 }
 
-std::string ArchiveType_VOL_Cosmo::getArchiveCode() const
+std::string ArchiveType_VOL_Cosmo::code() const
 {
 	return "vol-cosmo";
 }
 
-std::string ArchiveType_VOL_Cosmo::getFriendlyName() const
+std::string ArchiveType_VOL_Cosmo::friendlyName() const
 {
 	return "Cosmo Volume File";
 }
 
-std::vector<std::string> ArchiveType_VOL_Cosmo::getFileExtensions() const
+std::vector<std::string> ArchiveType_VOL_Cosmo::fileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("vol");
@@ -66,7 +65,7 @@ std::vector<std::string> ArchiveType_VOL_Cosmo::getFileExtensions() const
 	return vcExtensions;
 }
 
-std::vector<std::string> ArchiveType_VOL_Cosmo::getGameList() const
+std::vector<std::string> ArchiveType_VOL_Cosmo::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Cosmo's Cosmic Adventure");
@@ -75,14 +74,15 @@ std::vector<std::string> ArchiveType_VOL_Cosmo::getGameList() const
 	return vcGames;
 }
 
-ArchiveType::Certainty ArchiveType_VOL_Cosmo::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_VOL_Cosmo::isInstance(
+	stream::input& content) const
 {
-	stream::pos lenArchive = psArchive->size();
+	stream::pos lenArchive = content.size();
 	if (lenArchive < VOL_FAT_ENTRY_LEN) return DefinitelyNo; // too short
 
-	psArchive->seekg(12, stream::start);
+	content.seekg(12, stream::start);
 	uint32_t lenFAT;
-	psArchive >> u32le(lenFAT);
+	content >> u32le(lenFAT);
 
 	// If the FAT is larger than the entire archive then it's not a VOL file
 	// TESTED BY: fmt_vol_cosmo_isinstance_c04
@@ -95,9 +95,9 @@ ArchiveType::Certainty ArchiveType_VOL_Cosmo::isInstance(stream::input_sptr psAr
 
 	// Check each FAT entry
 	char fn[VOL_MAX_FILENAME_LEN];
-	psArchive->seekg(0, stream::start);
+	content.seekg(0, stream::start);
 	for (unsigned int i = 0; i < lenFAT / VOL_FAT_ENTRY_LEN; i++) {
-		psArchive->read(fn, VOL_MAX_FILENAME_LEN);
+		content.read(fn, VOL_MAX_FILENAME_LEN);
 		// Make sure there aren't any invalid characters in the filename
 		for (unsigned int j = 0; j < VOL_MAX_FILENAME_LEN; j++) {
 			if (!fn[j]) break; // stop on terminating null
@@ -108,7 +108,7 @@ ArchiveType::Certainty ArchiveType_VOL_Cosmo::isInstance(stream::input_sptr psAr
 		}
 
 		uint32_t offEntry, lenEntry;
-		psArchive >> u32le(offEntry) >> u32le(lenEntry);
+		content >> u32le(offEntry) >> u32le(lenEntry);
 
 		// If a file entry points past the end of the archive then it's an invalid
 		// format.
@@ -131,19 +131,21 @@ ArchiveType::Certainty ArchiveType_VOL_Cosmo::isInstance(stream::input_sptr psAr
 	return DefinitelyYes;
 }
 
-ArchivePtr ArchiveType_VOL_Cosmo::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_VOL_Cosmo::create(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	psArchive->seekp(0, stream::start);
-	psArchive->write(std::string(VOL_FAT_LENGTH, '\0'));
-	return ArchivePtr(new Archive_VOL_Cosmo(psArchive));
+	content->seekp(0, stream::start);
+	content->write(std::string(VOL_FAT_LENGTH, '\0'));
+	return std::make_unique<Archive_VOL_Cosmo>(content);
 }
 
-ArchivePtr ArchiveType_VOL_Cosmo::open(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_VOL_Cosmo::open(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return ArchivePtr(new Archive_VOL_Cosmo(psArchive));
+	return std::make_unique<Archive_VOL_Cosmo>(content);
 }
 
-SuppFilenames ArchiveType_VOL_Cosmo::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_VOL_Cosmo::getRequiredSupps(stream::input& content,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -151,44 +153,43 @@ SuppFilenames ArchiveType_VOL_Cosmo::getRequiredSupps(stream::input_sptr data,
 }
 
 
-Archive_VOL_Cosmo::Archive_VOL_Cosmo(stream::inout_sptr psArchive)
-	:	FATArchive(psArchive, VOL_FIRST_FILE_OFFSET, VOL_MAX_FILENAME_LEN)
+Archive_VOL_Cosmo::Archive_VOL_Cosmo(std::shared_ptr<stream::inout> content)
+	:	FATArchive(content, VOL_FIRST_FILE_OFFSET, VOL_MAX_FILENAME_LEN)
 {
-	stream::pos lenArchive = this->psArchive->size();
+	stream::pos lenArchive = this->content->size();
 	if (lenArchive > 0) {
 
-		this->psArchive->seekg(12, stream::start); // skip to offset of first filesize
+		this->content->seekg(12, stream::start); // skip to offset of first filesize
 
 		// TODO: Do we assume the files are in order and read up until the first one,
 		// or do we read 4000 chars, or do we somehow scan the probable files and
 		// read up until the first one in case they're out of order...?
 		// I guess it depends on what works with the games.
 		uint32_t lenFAT;
-		this->psArchive >> u32le(lenFAT);
+		*this->content >> u32le(lenFAT);
 
 		uint32_t numFiles = lenFAT / VOL_FAT_ENTRY_LEN;
 		this->vcFAT.reserve(numFiles);
 
-		this->psArchive->seekg(0, stream::start);
+		this->content->seekg(0, stream::start);
 		for (unsigned int i = 0; i < numFiles; i++) {
-			FATEntry *fatEntry = new FATEntry();
-			EntryPtr ep(fatEntry);
+			auto f = this->createNewFATEntry();
 
-			this->psArchive
-				>> nullPadded(fatEntry->strName, VOL_MAX_FILENAME_LEN)
-				>> u32le(fatEntry->iOffset)
-				>> u32le(fatEntry->storedSize)
+			*this->content
+				>> nullPadded(f->strName, VOL_MAX_FILENAME_LEN)
+				>> u32le(f->iOffset)
+				>> u32le(f->storedSize)
 			;
 
-			fatEntry->iIndex = i;
-			fatEntry->lenHeader = 0;
-			fatEntry->type = FILETYPE_GENERIC;
-			fatEntry->fAttr = 0;
-			fatEntry->bValid = true;
-			fatEntry->realSize = fatEntry->storedSize;
+			f->iIndex = i;
+			f->lenHeader = 0;
+			f->type = FILETYPE_GENERIC;
+			f->fAttr = 0;
+			f->bValid = true;
+			f->realSize = f->storedSize;
 			// Blank FAT entries have an offset of zero
-			if (fatEntry->iOffset > 0) {
-				this->vcFAT.push_back(ep);
+			if (f->iOffset > 0) {
+				this->vcFAT.push_back(std::move(f));
 			}
 		}
 	} // else empty archive
@@ -202,8 +203,8 @@ void Archive_VOL_Cosmo::updateFileName(const FATEntry *pid, const std::string& s
 {
 	// TESTED BY: fmt_vol_cosmo_rename
 	assert(strNewName.length() <= VOL_MAX_FILENAME_LEN);
-	this->psArchive->seekp(pid->iIndex * VOL_FAT_ENTRY_LEN, stream::start);
-	this->psArchive << nullPadded(strNewName, VOL_MAX_FILENAME_LEN);
+	this->content->seekp(pid->iIndex * VOL_FAT_ENTRY_LEN, stream::start);
+	*this->content << nullPadded(strNewName, VOL_MAX_FILENAME_LEN);
 	return;
 }
 
@@ -211,8 +212,8 @@ void Archive_VOL_Cosmo::updateFileOffset(const FATEntry *pid, stream::delta offD
 {
 	// TESTED BY: fmt_vol_cosmo_insert*
 	// TESTED BY: fmt_vol_cosmo_resize*
-	this->psArchive->seekp(pid->iIndex * VOL_FAT_ENTRY_LEN + 12, stream::start);
-	this->psArchive << u32le(pid->iOffset);
+	this->content->seekp(pid->iIndex * VOL_FAT_ENTRY_LEN + 12, stream::start);
+	*this->content << u32le(pid->iOffset);
 	return;
 }
 
@@ -220,12 +221,12 @@ void Archive_VOL_Cosmo::updateFileSize(const FATEntry *pid, stream::delta sizeDe
 {
 	// TESTED BY: fmt_vol_cosmo_insert*
 	// TESTED BY: fmt_vol_cosmo_resize*
-	this->psArchive->seekp(pid->iIndex * VOL_FAT_ENTRY_LEN + 16, stream::start);
-	this->psArchive << u32le(pid->storedSize);
+	this->content->seekp(pid->iIndex * VOL_FAT_ENTRY_LEN + 16, stream::start);
+	*this->content << u32le(pid->storedSize);
 	return;
 }
 
-FATArchive::FATEntry *Archive_VOL_Cosmo::preInsertFile(const FATEntry *idBeforeThis,
+void Archive_VOL_Cosmo::preInsertFile(const FATEntry *idBeforeThis,
 	FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_vol_cosmo_insert*
@@ -238,12 +239,12 @@ FATArchive::FATEntry *Archive_VOL_Cosmo::preInsertFile(const FATEntry *idBeforeT
 	if (this->vcFAT.size() >= VOL_MAX_FILES) {
 		throw stream::error("too many files, maximum is " TOSTRING(VOL_MAX_FILES));
 	}
-	this->psArchive->seekp(pNewEntry->iIndex * VOL_FAT_ENTRY_LEN, stream::start);
-	this->psArchive->insert(VOL_FAT_ENTRY_LEN);
+	this->content->seekp(pNewEntry->iIndex * VOL_FAT_ENTRY_LEN, stream::start);
+	this->content->insert(VOL_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
 
 	// Write out the entry
-	this->psArchive
+	*this->content
 		<< nullPadded(pNewEntry->strName, VOL_MAX_FILENAME_LEN)
 		<< u32le(pNewEntry->iOffset)
 		<< u32le(pNewEntry->storedSize);
@@ -252,12 +253,12 @@ FATArchive::FATEntry *Archive_VOL_Cosmo::preInsertFile(const FATEntry *idBeforeT
 	// compensate for the entry we just added.
 	if (this->vcFAT.size() > 0) {
 		unsigned int indexLast = VOL_MAX_FILES - 1;
-		for (VC_ENTRYPTR::reverse_iterator i = this->vcFAT.rbegin(); i != this->vcFAT.rend(); i++) {
-			FATEntry *pFAT = dynamic_cast<FATEntry *>(i->get());
+		for (auto i = this->vcFAT.rbegin(); i != this->vcFAT.rend(); i++) {
+			auto pFAT = dynamic_cast<const FATEntry *>(i->get());
 			if (pFAT->iIndex != indexLast) {
 				// The previous slot is free, so delete it
-				this->psArchive->seekp(indexLast * VOL_FAT_ENTRY_LEN, stream::start);
-				this->psArchive->remove(VOL_FAT_ENTRY_LEN);
+				this->content->seekp(indexLast * VOL_FAT_ENTRY_LEN, stream::start);
+				this->content->remove(VOL_FAT_ENTRY_LEN);
 				break;
 			} else {
 				indexLast = pFAT->iIndex - 1;
@@ -271,11 +272,11 @@ FATArchive::FATEntry *Archive_VOL_Cosmo::preInsertFile(const FATEntry *idBeforeT
 		assert(indexLast < VOL_MAX_FILES); // unsigned version of previous line
 	} else {
 		// No files so just remove the following entry
-		this->psArchive->seekp(1 * VOL_FAT_ENTRY_LEN, stream::start);
-		this->psArchive->remove(VOL_FAT_ENTRY_LEN);
+		this->content->seekp(1 * VOL_FAT_ENTRY_LEN, stream::start);
+		this->content->remove(VOL_FAT_ENTRY_LEN);
 	}
 
-	return pNewEntry;
+	return;
 }
 
 void Archive_VOL_Cosmo::preRemoveFile(const FATEntry *pid)
@@ -283,13 +284,13 @@ void Archive_VOL_Cosmo::preRemoveFile(const FATEntry *pid)
 	// TESTED BY: fmt_vol_cosmo_remove*
 
 	// Remove the FAT entry
-	this->psArchive->seekp(pid->iIndex * VOL_FAT_ENTRY_LEN, stream::start);
-	this->psArchive->remove(VOL_FAT_ENTRY_LEN);
+	this->content->seekp(pid->iIndex * VOL_FAT_ENTRY_LEN, stream::start);
+	this->content->remove(VOL_FAT_ENTRY_LEN);
 
 	// Add an empty FAT entry onto the end to keep the FAT the same size
 	const FATEntry *pFAT = dynamic_cast<const FATEntry *>(this->vcFAT.back().get());
-	this->psArchive->seekp((pFAT->iIndex + 1) * VOL_FAT_ENTRY_LEN, stream::start);
-	this->psArchive->insert(VOL_FAT_ENTRY_LEN);
+	this->content->seekp((pFAT->iIndex + 1) * VOL_FAT_ENTRY_LEN, stream::start);
+	this->content->insert(VOL_FAT_ENTRY_LEN);
 
 	return;
 }

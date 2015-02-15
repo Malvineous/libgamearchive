@@ -52,35 +52,35 @@ class ArchiveType
 		 *
 		 * @return The archive short name/ID.
 		 */
-		virtual std::string getArchiveCode() const = 0;
+		virtual std::string code() const = 0;
 
 		/// Get the archive name, e.g. "Duke Nukem 3D GRP file"
 		/**
 		 * @return The archive name.
 		 */
-		virtual std::string getFriendlyName() const = 0;
+		virtual std::string friendlyName() const = 0;
 
 		/// Get a list of the known file extensions for this format.
 		/**
 		 * @return A vector of file extensions, e.g. "vol", "stn", "cmp"
 		 */
-		virtual std::vector<std::string> getFileExtensions() const = 0;
+		virtual std::vector<std::string> fileExtensions() const = 0;
 
 		/// Get a list of games using this format.
 		/**
 		 * @return A vector of game names, such as "Major Stryker", "Cosmo's Cosmic
 		 *   Adventures", "Duke Nukem II"
 		 */
-		virtual std::vector<std::string> getGameList() const = 0;
+		virtual std::vector<std::string> games() const = 0;
 
 		/// Check a stream to see if it's in this archive format.
 		/**
-		 * @param psArchive
-		 *   A C++ iostream of the file to test.
+		 * @param content
+		 *   The archive file to examine.
 		 *
 		 * @return A single confidence value from \ref ArchiveType::Certainty.
 		 */
-		virtual ArchiveType::Certainty isInstance(stream::input_sptr psArchive) const = 0;
+		virtual ArchiveType::Certainty isInstance(stream::input& content) const = 0;
 
 		/// Create a blank archive in this format.
 		/**
@@ -91,7 +91,7 @@ class ArchiveType
 		 * if there are headers to write, otherwise an empty stream is passed to
 		 * open() which is expected to succeed.
 		 *
-		 * @param psArchive
+		 * @param content
 		 *   A blank stream to store the new archive in.
 		 *
 		 * @param suppData
@@ -100,15 +100,15 @@ class ArchiveType
 		 * @return A pointer to an instance of the Archive class, just as if a
 		 *   valid empty file had been opened by open().
 		 */
-		virtual ArchivePtr newArchive(stream::inout_sptr psArchive,
-			SuppData& suppData) const = 0;
+		virtual std::unique_ptr<Archive> create(
+			std::shared_ptr<stream::inout> content, SuppData& suppData) const = 0;
 
 		/// Open an archive file.
 		/**
 		 * @pre Recommended that isInstance() has returned > DefinitelyNo.
 		 *
-		 * @param psArchive
-		 *   The archive file to read.
+		 * @param content
+		 *   The archive file to read and modify.
 		 *
 		 * @param suppData
 		 *   Any supplemental data required by this format (see getRequiredSupps()).
@@ -119,8 +119,8 @@ class ArchiveType
 		 *   make it possible to "force" a file to be opened by a particular format
 		 *   handler.
 		 */
-		virtual ArchivePtr open(stream::inout_sptr psArchive, SuppData& suppData)
-			const = 0;
+		virtual std::unique_ptr<Archive> open(
+			std::shared_ptr<stream::inout> content, SuppData& suppData) const = 0;
 
 		/// Get a list of any required supplemental files.
 		/**
@@ -130,7 +130,7 @@ class ArchiveType
 		 * supplementary files, so the caller can open them and pass them along
 		 * to the archive manipulation classes.
 		 *
-		 * @param data
+		 * @param content
 		 *   Read-only stream containing the archive content.  This is for archives
 		 *   which contain the names of the other files they need.
 		 *
@@ -142,19 +142,13 @@ class ArchiveType
 		 * @return A (possibly empty) map associating required supplemental file
 		 *   types with their filenames.  For each returned value the file should be
 		 *   opened and added to a \ref SuppData map, where it can be passed to
-		 *   newArchive() or open().  Note that the filenames returned can have
+		 *   create() or open().  Note that the filenames returned can have
 		 *   relative paths, and may even have an absolute path, if one was passed
 		 *   in with filenameArchive.
 		 */
-		virtual SuppFilenames getRequiredSupps(stream::input_sptr data,
+		virtual SuppFilenames getRequiredSupps(stream::input& content,
 			const std::string& filenameArchive) const = 0;
 };
-
-/// Shared pointer to an ArchiveType.
-typedef boost::shared_ptr<ArchiveType> ArchiveTypePtr;
-
-/// Vector of ArchiveType shared pointers.
-typedef std::vector<ArchiveTypePtr> ArchiveTypeVector;
 
 } // namespace gamearchive
 } // namespace camoto

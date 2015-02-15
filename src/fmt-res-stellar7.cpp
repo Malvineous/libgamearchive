@@ -46,35 +46,36 @@ ArchiveType_RES_Stellar7::~ArchiveType_RES_Stellar7()
 {
 }
 
-std::string ArchiveType_RES_Stellar7::getArchiveCode() const
+std::string ArchiveType_RES_Stellar7::code() const
 {
 	return "res-stellar7";
 }
 
-std::string ArchiveType_RES_Stellar7::getFriendlyName() const
+std::string ArchiveType_RES_Stellar7::friendlyName() const
 {
 	return "Stellar 7 Resource File";
 }
 
-std::vector<std::string> ArchiveType_RES_Stellar7::getFileExtensions() const
+std::vector<std::string> ArchiveType_RES_Stellar7::fileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("res");
 	return vcExtensions;
 }
 
-std::vector<std::string> ArchiveType_RES_Stellar7::getGameList() const
+std::vector<std::string> ArchiveType_RES_Stellar7::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Stellar 7");
 	return vcGames;
 }
 
-ArchiveType::Certainty ArchiveType_RES_Stellar7::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_RES_Stellar7::isInstance(
+	stream::input& content) const
 {
-	stream::pos lenArchive = psArchive->size();
+	stream::pos lenArchive = content.size();
 
-	psArchive->seekg(0, stream::start);
+	content.seekg(0, stream::start);
 
 	stream::pos offNext = 0;
 	int i;
@@ -85,7 +86,7 @@ ArchiveType::Certainty ArchiveType_RES_Stellar7::isInstance(stream::input_sptr p
 
 		// Make sure there aren't any invalid characters in the filename
 		char fn[RES_MAX_FILENAME_LEN];
-		psArchive->read(fn, RES_MAX_FILENAME_LEN);
+		content.read(fn, RES_MAX_FILENAME_LEN);
 		for (int j = 0; j < RES_MAX_FILENAME_LEN; j++) {
 			if (!fn[j]) break; // stop on terminating null
 
@@ -94,7 +95,7 @@ ArchiveType::Certainty ArchiveType_RES_Stellar7::isInstance(stream::input_sptr p
 			if (fn[j] < 32) return DefinitelyNo;
 		}
 		uint32_t isfolder_length;
-		psArchive >> u32le(isfolder_length);
+		content >> u32le(isfolder_length);
 		uint32_t iSize = isfolder_length & 0x7FFFFFFF;
 		offNext += RES_FAT_ENTRY_LEN + iSize;
 
@@ -102,7 +103,7 @@ ArchiveType::Certainty ArchiveType_RES_Stellar7::isInstance(stream::input_sptr p
 		// TESTED BY: fmt_res_stellar7_isinstance_c02
 		if (offNext > lenArchive) return DefinitelyNo;
 
-		psArchive->seekg(iSize, stream::cur);
+		content.seekg(iSize, stream::cur);
 	}
 
 	if (i == RES_SAFETY_MAX_FILECOUNT) return PossiblyYes;
@@ -111,19 +112,19 @@ ArchiveType::Certainty ArchiveType_RES_Stellar7::isInstance(stream::input_sptr p
 	return DefinitelyYes;
 }
 
-ArchivePtr ArchiveType_RES_Stellar7::newArchive(stream::inout_sptr psArchive, SuppData& suppData)
-	const
+std::unique_ptr<Archive> ArchiveType_RES_Stellar7::create(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return this->open(psArchive, suppData);
+	return this->open(content, suppData);
 }
 
-ArchivePtr ArchiveType_RES_Stellar7::open(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_RES_Stellar7::open(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	ArchivePtr root(new Archive_RES_Stellar7_Folder(psArchive));
-	return root;
+	return std::make_unique<Archive_RES_Stellar7_Folder>(content);
 }
 
-SuppFilenames ArchiveType_RES_Stellar7::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_RES_Stellar7::getRequiredSupps(stream::input& content,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -131,48 +132,48 @@ SuppFilenames ArchiveType_RES_Stellar7::getRequiredSupps(stream::input_sptr data
 }
 
 
-Archive_RES_Stellar7_Folder::Archive_RES_Stellar7_Folder(stream::inout_sptr psArchive)
-	:	FATArchive(psArchive, RES_FIRST_FILE_OFFSET, RES_MAX_FILENAME_LEN)
+Archive_RES_Stellar7_Folder::Archive_RES_Stellar7_Folder(std::shared_ptr<stream::inout> content)
+	:	FATArchive(content, RES_FIRST_FILE_OFFSET, RES_MAX_FILENAME_LEN)
 {
-	stream::pos lenArchive = this->psArchive->size();
+	stream::pos lenArchive = this->content->size();
 
-	this->psArchive->seekg(0, stream::start);
+	this->content->seekg(0, stream::start);
 
 	stream::pos offNext = 0;
 	for (int i = 0; (
 		(i < RES_SAFETY_MAX_FILECOUNT) &&
 		(offNext + RES_FAT_ENTRY_LEN <= lenArchive)
 	); i++) {
-
-		FATEntry *fatEntry = new FATEntry();
-		EntryPtr ep(fatEntry);
+		auto f = this->createNewFATEntry();
 
 		// Read the data in from the FAT entry in the file
 		uint32_t isfolder_length;
-		this->psArchive
-			>> nullPadded(fatEntry->strName, RES_MAX_FILENAME_LEN)
+		*this->content
+			>> nullPadded(f->strName, RES_MAX_FILENAME_LEN)
 			>> u32le(isfolder_length)
 		;
 
-		fatEntry->iIndex = i;
-		fatEntry->iOffset = offNext;
-		fatEntry->lenHeader = RES_FAT_ENTRY_LEN;
-		fatEntry->type = FILETYPE_GENERIC;
-		fatEntry->fAttr = 0;
-		if (isfolder_length & 0x80000000) fatEntry->fAttr |= EA_FOLDER;
-		fatEntry->storedSize = isfolder_length & 0x7FFFFFFF;
-		fatEntry->bValid = true;
-		fatEntry->realSize = fatEntry->storedSize;
-		this->vcFAT.push_back(ep);
+		f->iIndex = i;
+		f->iOffset = offNext;
+		f->lenHeader = RES_FAT_ENTRY_LEN;
+		f->type = FILETYPE_GENERIC;
+		f->fAttr = 0;
+		if (isfolder_length & 0x80000000) f->fAttr |= EA_FOLDER;
+		f->storedSize = isfolder_length & 0x7FFFFFFF;
+		f->bValid = true;
+		f->realSize = f->storedSize;
 
 		// Update the offset for the next file
-		offNext += RES_FAT_ENTRY_LEN + fatEntry->storedSize;
+		offNext += RES_FAT_ENTRY_LEN + f->storedSize;
+		this->content->seekg(f->storedSize, stream::cur);
+
+		this->vcFAT.push_back(std::move(f));
+
 		if (offNext > lenArchive) {
 			std::cerr << "Warning: File has been truncated or is not in RES format, "
 				"file list may be incomplete or complete garbage..." << std::endl;
 			break;
 		}
-		this->psArchive->seekg(fatEntry->storedSize, stream::cur);
 	}
 }
 
@@ -180,21 +181,22 @@ Archive_RES_Stellar7_Folder::~Archive_RES_Stellar7_Folder()
 {
 }
 
-ArchivePtr Archive_RES_Stellar7_Folder::openFolder(const EntryPtr id)
+std::unique_ptr<Archive> Archive_RES_Stellar7_Folder::openFolder(const FileHandle& id)
 {
 	// Make sure we're opening a folder
 	assert(id->fAttr & EA_FOLDER);
 
-	stream::inout_sptr folderContents = this->open(id);
-	return ArchivePtr(new Archive_RES_Stellar7_Folder(folderContents));
+	return std::make_unique<Archive_RES_Stellar7_Folder>(
+		this->open(id)
+	);
 }
 
 void Archive_RES_Stellar7_Folder::updateFileName(const FATEntry *pid, const std::string& strNewName)
 {
 	// TESTED BY: fmt_res_stellar7_rename
 	assert(strNewName.length() <= RES_MAX_FILENAME_LEN);
-	this->psArchive->seekp(pid->iOffset + RES_FAT_FILENAME_OFFSET, stream::start);
-	this->psArchive << nullPadded(strNewName, RES_MAX_FILENAME_LEN);
+	this->content->seekp(pid->iOffset + RES_FAT_FILENAME_OFFSET, stream::start);
+	*this->content << nullPadded(strNewName, RES_MAX_FILENAME_LEN);
 	return;
 }
 
@@ -210,12 +212,12 @@ void Archive_RES_Stellar7_Folder::updateFileSize(const FATEntry *pid, stream::de
 {
 	// TESTED BY: fmt_res_stellar7_insert*
 	// TESTED BY: fmt_res_stellar7_resize*
-	this->psArchive->seekp(pid->iOffset + RES_FAT_FILESIZE_OFFSET, stream::start);
-	this->psArchive << u32le(pid->storedSize);
+	this->content->seekp(pid->iOffset + RES_FAT_FILESIZE_OFFSET, stream::start);
+	*this->content << u32le(pid->storedSize);
 	return;
 }
 
-FATArchive::FATEntry *Archive_RES_Stellar7_Folder::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
+void Archive_RES_Stellar7_Folder::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_res_stellar7_insert*
 	assert(pNewEntry->strName.length() <= RES_MAX_FILENAME_LEN);
@@ -223,17 +225,17 @@ FATArchive::FATEntry *Archive_RES_Stellar7_Folder::preInsertFile(const FATEntry 
 	// Set the format-specific variables
 	pNewEntry->lenHeader = RES_FAT_ENTRY_LEN;
 
-	this->psArchive->seekp(pNewEntry->iOffset, stream::start);
-	this->psArchive->insert(RES_FAT_ENTRY_LEN);
+	this->content->seekp(pNewEntry->iOffset, stream::start);
+	this->content->insert(RES_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
-	this->psArchive << nullPadded(pNewEntry->strName, RES_MAX_FILENAME_LEN);
-	this->psArchive << u32le(pNewEntry->storedSize);
+	*this->content << nullPadded(pNewEntry->strName, RES_MAX_FILENAME_LEN);
+	*this->content << u32le(pNewEntry->storedSize);
 
 	// Since we've inserted some data for the embedded header, we need to update
 	// the other file offsets accordingly.
 	this->shiftFiles(NULL, pNewEntry->iOffset, pNewEntry->lenHeader, 0);
 
-	return pNewEntry;
+	return;
 }
 
 } // namespace gamearchive

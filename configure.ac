@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.63])
-AC_INIT([libgamearchive], [1.2],
+AC_INIT([libgamearchive], [2.0],
 	[https://github.com/Malvineous/libgamearchive/issues],
 	[], [http://www.shikadi.net/camoto])
 AM_INIT_AUTOMAKE([foreign dist-bzip2 no-dist-gzip])
@@ -17,12 +17,14 @@ AC_SUBST(camoto_release, camoto-1.0)
 AC_PROG_CXX
 AC_PROG_LIBTOOL
 
+AX_CXX_COMPILE_STDCXX_11(noext, mandatory)
+
 BOOST_REQUIRE([1.46])
 BOOST_FILESYSTEM
 BOOST_PROGRAM_OPTIONS
 BOOST_TEST
 
-PKG_CHECK_MODULES([libgamecommon], [libgamecommon])
+PKG_CHECK_MODULES([libgamecommon], [libgamecommon >= 2])
 
 AC_ARG_ENABLE(debug, AC_HELP_STRING([--enable-debug],[enable extra debugging output]))
 

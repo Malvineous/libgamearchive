@@ -18,8 +18,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/iostreams/invert.hpp>
 #include <camoto/stream_filtered.hpp>
+#include <camoto/util.hpp> // std::make_unique
 #include "filter-glb-raptor.hpp"
 
 namespace camoto {
@@ -138,50 +138,53 @@ FilterType_GLB_Raptor_FAT::~FilterType_GLB_Raptor_FAT()
 {
 }
 
-std::string FilterType_GLB_Raptor_FAT::getFilterCode() const
+std::string FilterType_GLB_Raptor_FAT::code() const
 {
 	return "glb-raptor-fat";
 }
 
-std::string FilterType_GLB_Raptor_FAT::getFriendlyName() const
+std::string FilterType_GLB_Raptor_FAT::friendlyName() const
 {
 	return "Raptor GLB FAT encryption";
 }
 
-std::vector<std::string> FilterType_GLB_Raptor_FAT::getGameList() const
+std::vector<std::string> FilterType_GLB_Raptor_FAT::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Raptor");
 	return vcGames;
 }
 
-stream::inout_sptr FilterType_GLB_Raptor_FAT::apply(stream::inout_sptr target,
-	stream::fn_truncate resize) const
+std::unique_ptr<stream::inout> FilterType_GLB_Raptor_FAT::apply(
+	std::shared_ptr<stream::inout> target, stream::fn_truncate_filter resize)
+	const
 {
-	stream::filtered_sptr st(new stream::filtered());
-	// We need two separate filters, otherwise reading from one will
-	// affect the XOR key next used when writing to the other.
-	filter_sptr de(new filter_glb_decrypt(GLB_KEY, GLB_BLOCKLEN));
-	filter_sptr en(new filter_glb_encrypt(GLB_KEY, GLB_BLOCKLEN));
-	st->open(target, de, en, resize);
-	return st;
+	return std::make_unique<stream::filtered>(
+		target,
+		std::make_shared<filter_glb_decrypt>(GLB_KEY, GLB_BLOCKLEN),
+		std::make_shared<filter_glb_encrypt>(GLB_KEY, GLB_BLOCKLEN),
+		resize
+	);
 }
 
-stream::input_sptr FilterType_GLB_Raptor_FAT::apply(stream::input_sptr target) const
+std::unique_ptr<stream::input> FilterType_GLB_Raptor_FAT::apply(
+	std::shared_ptr<stream::input> target) const
 {
-	stream::input_filtered_sptr st(new stream::input_filtered());
-	filter_sptr de(new filter_glb_decrypt(GLB_KEY, GLB_BLOCKLEN));
-	st->open(target, de);
-	return st;
+	return std::make_unique<stream::input_filtered>(
+		target,
+		std::make_shared<filter_glb_decrypt>(GLB_KEY, GLB_BLOCKLEN)
+	);
 }
 
-stream::output_sptr FilterType_GLB_Raptor_FAT::apply(stream::output_sptr target,
-	stream::fn_truncate resize) const
+std::unique_ptr<stream::output> FilterType_GLB_Raptor_FAT::apply(
+	std::shared_ptr<stream::output> target, stream::fn_truncate_filter resize)
+	const
 {
-	stream::output_filtered_sptr st(new stream::output_filtered());
-	filter_sptr en(new filter_glb_encrypt(GLB_KEY, GLB_BLOCKLEN));
-	st->open(target, en, resize);
-	return st;
+	return std::make_unique<stream::output_filtered>(
+		target,
+		std::make_shared<filter_glb_encrypt>(GLB_KEY, GLB_BLOCKLEN),
+		resize
+	);
 }
 
 
@@ -193,50 +196,53 @@ FilterType_GLB_Raptor_File::~FilterType_GLB_Raptor_File()
 {
 }
 
-std::string FilterType_GLB_Raptor_File::getFilterCode() const
+std::string FilterType_GLB_Raptor_File::code() const
 {
 	return "glb-raptor";
 }
 
-std::string FilterType_GLB_Raptor_File::getFriendlyName() const
+std::string FilterType_GLB_Raptor_File::friendlyName() const
 {
 	return "Raptor GLB file encryption";
 }
 
-std::vector<std::string> FilterType_GLB_Raptor_File::getGameList() const
+std::vector<std::string> FilterType_GLB_Raptor_File::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Raptor");
 	return vcGames;
 }
 
-stream::inout_sptr FilterType_GLB_Raptor_File::apply(stream::inout_sptr target,
-	stream::fn_truncate resize) const
+std::unique_ptr<stream::inout> FilterType_GLB_Raptor_File::apply(
+	std::shared_ptr<stream::inout> target, stream::fn_truncate_filter resize)
+	const
 {
-	stream::filtered_sptr st(new stream::filtered());
-	// We need two separate filters, otherwise reading from one will
-	// affect the XOR key next used when writing to the other.
-	filter_sptr de(new filter_glb_decrypt(GLB_KEY, 0));
-	filter_sptr en(new filter_glb_encrypt(GLB_KEY, 0));
-	st->open(target, de, en, resize);
-	return st;
+	return std::make_unique<stream::filtered>(
+		target,
+		std::make_shared<filter_glb_decrypt>(GLB_KEY, 0),
+		std::make_shared<filter_glb_encrypt>(GLB_KEY, 0),
+		resize
+	);
 }
 
-stream::input_sptr FilterType_GLB_Raptor_File::apply(stream::input_sptr target) const
+std::unique_ptr<stream::input> FilterType_GLB_Raptor_File::apply(
+	std::shared_ptr<stream::input> target) const
 {
-	stream::input_filtered_sptr st(new stream::input_filtered());
-	filter_sptr de(new filter_glb_decrypt(GLB_KEY, 0));
-	st->open(target, de);
-	return st;
+	return std::make_unique<stream::input_filtered>(
+		target,
+		std::make_shared<filter_glb_decrypt>(GLB_KEY, 0)
+	);
 }
 
-stream::output_sptr FilterType_GLB_Raptor_File::apply(stream::output_sptr target,
-	stream::fn_truncate resize) const
+std::unique_ptr<stream::output> FilterType_GLB_Raptor_File::apply(
+	std::shared_ptr<stream::output> target, stream::fn_truncate_filter resize)
+	const
 {
-	stream::output_filtered_sptr st(new stream::output_filtered());
-	filter_sptr en(new filter_glb_encrypt(GLB_KEY, 0));
-	st->open(target, en, resize);
-	return st;
+	return std::make_unique<stream::output_filtered>(
+		target,
+		std::make_shared<filter_glb_encrypt>(GLB_KEY, 0),
+		resize
+	);
 }
 
 } // namespace gamearchive

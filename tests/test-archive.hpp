@@ -53,12 +53,12 @@ class test_archive: public test_main
 		/// Reset pArchive back to a known state.
 		/**
 		 * @param empty
-		 *   true resets to an empty archive (via ArchiveType::newArchive()) while
+		 *   true resets to an empty archive (via ArchiveType::create()) while
 		 *   false resets to initialstate() and calls ArchiveType::open().
 		 */
 		virtual void prepareTest(bool empty);
 
-		Archive::EntryPtr findFile(unsigned int index,
+		Archive::FileHandle findFile(unsigned int index,
 			const std::string& altname = std::string());
 
 		void test_isinstance_others();
@@ -71,6 +71,7 @@ class test_archive: public test_main
 		void test_insert2();
 		void test_remove();
 		void test_remove2();
+		void test_remove_open();
 		void test_insert_remove();
 		void test_remove_insert();
 		void test_move();
@@ -147,7 +148,7 @@ class test_archive: public test_main
 		/// Reset the archive to the initial state and run the given test.
 		/**
 		 * @param empty
-		 *   true resets to an empty archive (via ArchiveType::newArchive()) while
+		 *   true resets to an empty archive (via ArchiveType::create()) while
 		 *   false resets to initialstate() and calls ArchiveType::open().
 		 *
 		 * @param fnTest
@@ -216,13 +217,13 @@ class test_archive: public test_main
 
 	protected:
 		/// Underlying data stream containing archive file content.
-		stream::string_sptr base;
+		std::shared_ptr<stream::string> base;
 
 		/// Factory class used to open archives in this format.
-		ArchiveTypePtr pArchType;
+		ArchiveManager::handler_t pArchType;
 
 		/// Pointer to the active archive instance.
-		ArchivePtr pArchive;
+		std::shared_ptr<Archive> pArchive;
 
 		/// Supplementary data for the archive.
 		camoto::SuppData suppData;

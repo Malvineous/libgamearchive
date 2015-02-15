@@ -22,6 +22,7 @@
  */
 
 #include <camoto/stream_filtered.hpp>
+#include <camoto/util.hpp> // std::make_unique
 #include <camoto/lzw.hpp>
 
 #include "filter-stellar7.hpp"
@@ -37,84 +38,89 @@ FilterType_Stellar7::~FilterType_Stellar7()
 {
 }
 
-std::string FilterType_Stellar7::getFilterCode() const
+std::string FilterType_Stellar7::code() const
 {
 	return "lzw-stellar7";
 }
 
-std::string FilterType_Stellar7::getFriendlyName() const
+std::string FilterType_Stellar7::friendlyName() const
 {
 	return "Stellar 7 compression";
 }
 
-std::vector<std::string> FilterType_Stellar7::getGameList() const
+std::vector<std::string> FilterType_Stellar7::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Stellar 7");
 	return vcGames;
 }
 
-stream::inout_sptr FilterType_Stellar7::apply(stream::inout_sptr target,
-	stream::fn_truncate resize) const
+std::unique_ptr<stream::inout> FilterType_Stellar7::apply(
+	std::shared_ptr<stream::inout> target, stream::fn_truncate_filter resize)
+	const
 {
-	stream::filtered_sptr st(new stream::filtered());
-	filter_sptr de(new filter_lzw_decompress(
-		9,   // initial codeword length (in bits)
-		12,  // maximum codeword length (in bits)
-		257, // first valid codeword
-		0,   // EOF codeword is unused
-		256, // reset codeword is first codeword
-		LZW_LITTLE_ENDIAN     | // bits are split into bytes in little-endian order
-		LZW_RESET_PARAM_VALID | // has codeword reserved for dictionary reset
-		LZW_FLUSH_ON_RESET      // Jump to next word boundary on dict reset
-	));
-	filter_sptr en(new filter_lzw_compress(
-		9,   // initial codeword length (in bits)
-		12,  // maximum codeword length (in bits)
-		257, // first valid codeword
-		0,   // EOF codeword is unused
-		256, // reset codeword is first codeword
-		LZW_LITTLE_ENDIAN     | // bits are split into bytes in little-endian order
-		LZW_RESET_PARAM_VALID | // has codeword reserved for dictionary reset
-		LZW_FLUSH_ON_RESET      // Jump to next word boundary on dict reset
-	));
-	st->open(target, de, en, resize);
-	return st;
+	return std::make_unique<stream::filtered>(
+		target,
+		std::make_shared<filter_lzw_decompress>(
+			9,   // initial codeword length (in bits)
+			12,  // maximum codeword length (in bits)
+			257, // first valid codeword
+			0,   // EOF codeword is unused
+			256, // reset codeword is first codeword
+			LZW_LITTLE_ENDIAN     | // bits are split into bytes in little-endian order
+			LZW_RESET_PARAM_VALID | // has codeword reserved for dictionary reset
+			LZW_FLUSH_ON_RESET      // Jump to next word boundary on dict reset
+		),
+		std::make_shared<filter_lzw_compress>(
+			9,   // initial codeword length (in bits)
+			12,  // maximum codeword length (in bits)
+			257, // first valid codeword
+			0,   // EOF codeword is unused
+			256, // reset codeword is first codeword
+			LZW_LITTLE_ENDIAN     | // bits are split into bytes in little-endian order
+			LZW_RESET_PARAM_VALID | // has codeword reserved for dictionary reset
+			LZW_FLUSH_ON_RESET      // Jump to next word boundary on dict reset
+		),
+		resize
+	);
 }
 
-stream::input_sptr FilterType_Stellar7::apply(stream::input_sptr target) const
+std::unique_ptr<stream::input> FilterType_Stellar7::apply(
+	std::shared_ptr<stream::input> target) const
 {
-	stream::input_filtered_sptr st(new stream::input_filtered());
-	filter_sptr de(new filter_lzw_decompress(
-		9,   // initial codeword length (in bits)
-		12,  // maximum codeword length (in bits)
-		257, // first valid codeword
-		0,   // EOF codeword is unused
-		256, // reset codeword is first codeword
-		LZW_LITTLE_ENDIAN     | // bits are split into bytes in little-endian order
-		LZW_RESET_PARAM_VALID | // has codeword reserved for dictionary reset
-		LZW_FLUSH_ON_RESET      // Jump to next word boundary on dict reset
-	));
-	st->open(target, de);
-	return st;
+	return std::make_unique<stream::input_filtered>(
+		target,
+		std::make_shared<filter_lzw_decompress>(
+			9,   // initial codeword length (in bits)
+			12,  // maximum codeword length (in bits)
+			257, // first valid codeword
+			0,   // EOF codeword is unused
+			256, // reset codeword is first codeword
+			LZW_LITTLE_ENDIAN     | // bits are split into bytes in little-endian order
+			LZW_RESET_PARAM_VALID | // has codeword reserved for dictionary reset
+			LZW_FLUSH_ON_RESET      // Jump to next word boundary on dict reset
+		)
+	);
 }
 
-stream::output_sptr FilterType_Stellar7::apply(stream::output_sptr target,
-	stream::fn_truncate resize) const
+std::unique_ptr<stream::output> FilterType_Stellar7::apply(
+	std::shared_ptr<stream::output> target, stream::fn_truncate_filter resize)
+	const
 {
-	stream::output_filtered_sptr st(new stream::output_filtered());
-	filter_sptr en(new filter_lzw_compress(
-		9,   // initial codeword length (in bits)
-		12,  // maximum codeword length (in bits)
-		257, // first valid codeword
-		0,   // EOF codeword is unused
-		256, // reset codeword is first codeword
-		LZW_LITTLE_ENDIAN     | // bits are split into bytes in little-endian order
-		LZW_RESET_PARAM_VALID | // has codeword reserved for dictionary reset
-		LZW_FLUSH_ON_RESET      // Jump to next word boundary on dict reset
-	));
-	st->open(target, en, resize);
-	return st;
+	return std::make_unique<stream::output_filtered>(
+		target,
+		std::make_shared<filter_lzw_compress>(
+			9,   // initial codeword length (in bits)
+			12,  // maximum codeword length (in bits)
+			257, // first valid codeword
+			0,   // EOF codeword is unused
+			256, // reset codeword is first codeword
+			LZW_LITTLE_ENDIAN     | // bits are split into bytes in little-endian order
+			LZW_RESET_PARAM_VALID | // has codeword reserved for dictionary reset
+			LZW_FLUSH_ON_RESET      // Jump to next word boundary on dict reset
+		),
+		resize
+	);
 }
 
 } // namespace gamearchive

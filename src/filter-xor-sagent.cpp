@@ -19,6 +19,7 @@
  */
 
 #include <camoto/stream_filtered.hpp>
+#include <camoto/util.hpp> // std::make_unique
 #include "filter-xor-sagent.hpp"
 #include "filter-bitswap.hpp"
 
@@ -55,70 +56,75 @@ FilterType_SAM_Base::~FilterType_SAM_Base()
 {
 }
 
-std::string FilterType_SAM_Base::getFilterCode() const
+std::string FilterType_SAM_Base::code() const
 {
 	return "xor-sagent";
 }
 
-std::string FilterType_SAM_Base::getFriendlyName() const
+std::string FilterType_SAM_Base::friendlyName() const
 {
 	return "Secret Agent XOR encryption";
 }
 
-std::vector<std::string> FilterType_SAM_Base::getGameList() const
+std::vector<std::string> FilterType_SAM_Base::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Secret Agent");
 	return vcGames;
 }
 
-stream::inout_sptr FilterType_SAM_Base::apply(stream::inout_sptr target,
-	stream::fn_truncate resize) const
+std::unique_ptr<stream::inout> FilterType_SAM_Base::apply(
+	std::shared_ptr<stream::inout> target, stream::fn_truncate_filter resize)
+	const
 {
-	stream::filtered_sptr sxor(new stream::filtered());
-	// We need two separate filters, otherwise reading from one will
-	// affect the XOR key next used when writing to the other.
-	filter_sptr de_fxor(new filter_sam_crypt(this->resetInterval));
-	filter_sptr en_fxor(new filter_sam_crypt(this->resetInterval));
+	auto fswap = std::make_shared<filter_bitswap>();
 
-	stream::filtered_sptr sswap(new stream::filtered());
-	// Since the bitswap doesn't care how many bytes have been read or
-	// written, we can use the same filter for both reading and writing.
-	filter_sptr fswap(new filter_bitswap());
-
-	sswap->open(target, fswap, fswap, resize);
-	sxor->open(sswap, de_fxor, en_fxor, NULL);
-
-	return sxor;
+	return std::make_unique<stream::filtered>(
+		std::make_unique<stream::filtered>(
+			target,
+			// Since the bitswap doesn't care how many bytes have been read or
+			// written, we can use the same filter for both reading and writing.
+			fswap,
+			fswap,
+			resize
+		),
+		// We need two separate filters, otherwise reading from one will
+		// affect the XOR key next used when writing to the other.
+		std::make_shared<filter_sam_crypt>(this->resetInterval),
+		std::make_shared<filter_sam_crypt>(this->resetInterval),
+		stream::fn_truncate_filter()
+	);
 }
 
-stream::input_sptr FilterType_SAM_Base::apply(stream::input_sptr target) const
+std::unique_ptr<stream::input> FilterType_SAM_Base::apply(
+	std::shared_ptr<stream::input> target) const
 {
-	stream::input_filtered_sptr sxor(new stream::input_filtered());
-	filter_sptr fxor(new filter_sam_crypt(this->resetInterval));
+	auto fswap = std::make_shared<filter_bitswap>();
 
-	stream::input_filtered_sptr sswap(new stream::input_filtered());
-	filter_sptr fswap(new filter_bitswap());
-
-	sswap->open(target, fswap);
-	sxor->open(sswap, fxor);
-
-	return sxor;
+	return std::make_unique<stream::input_filtered>(
+		std::make_unique<stream::input_filtered>(
+			target,
+			fswap
+		),
+		std::make_shared<filter_sam_crypt>(this->resetInterval)
+	);
 }
 
-stream::output_sptr FilterType_SAM_Base::apply(stream::output_sptr target,
-	stream::fn_truncate resize) const
+std::unique_ptr<stream::output> FilterType_SAM_Base::apply(
+	std::shared_ptr<stream::output> target, stream::fn_truncate_filter resize)
+	const
 {
-	stream::output_filtered_sptr sxor(new stream::output_filtered());
-	filter_sptr fxor(new filter_sam_crypt(this->resetInterval));
+	auto fswap = std::make_shared<filter_bitswap>();
 
-	stream::output_filtered_sptr sswap(new stream::output_filtered());
-	filter_sptr fswap(new filter_bitswap());
-
-	sswap->open(target, fswap, NULL);
-	sxor->open(sswap, fxor, resize);
-
-	return sxor;
+	return std::make_unique<stream::output_filtered>(
+		std::make_unique<stream::output_filtered>(
+			target,
+			fswap,
+			resize
+		),
+		std::make_shared<filter_sam_crypt>(this->resetInterval),
+		stream::fn_truncate_filter()
+	);
 }
 
 
@@ -131,12 +137,12 @@ FilterType_SAM_Map::~FilterType_SAM_Map()
 {
 }
 
-std::string FilterType_SAM_Map::getFilterCode() const
+std::string FilterType_SAM_Map::code() const
 {
 	return "xor-sagent-map";
 }
 
-std::string FilterType_SAM_Map::getFriendlyName() const
+std::string FilterType_SAM_Map::friendlyName() const
 {
 	return "Secret Agent XOR encryption (map file)";
 }
@@ -151,12 +157,12 @@ FilterType_SAM_8Sprite::~FilterType_SAM_8Sprite()
 {
 }
 
-std::string FilterType_SAM_8Sprite::getFilterCode() const
+std::string FilterType_SAM_8Sprite::code() const
 {
 	return "xor-sagent-8sprite";
 }
 
-std::string FilterType_SAM_8Sprite::getFriendlyName() const
+std::string FilterType_SAM_8Sprite::friendlyName() const
 {
 	return "Secret Agent XOR encryption (8x8 sprite file)";
 }
@@ -171,12 +177,12 @@ FilterType_SAM_16Sprite::~FilterType_SAM_16Sprite()
 {
 }
 
-std::string FilterType_SAM_16Sprite::getFilterCode() const
+std::string FilterType_SAM_16Sprite::code() const
 {
 	return "xor-sagent-16sprite";
 }
 
-std::string FilterType_SAM_16Sprite::getFriendlyName() const
+std::string FilterType_SAM_16Sprite::friendlyName() const
 {
 	return "Secret Agent XOR encryption (16x16 sprite file)";
 }

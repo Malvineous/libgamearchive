@@ -38,52 +38,6 @@ using namespace camoto::gamearchive;
 		); \
 	}
 
-/// Callback function to set expanded/native file size.
-void setRealSize(camoto::gamearchive::ArchivePtr arch,
-	camoto::gamearchive::Archive::EntryPtr id, stream::len newRealSize)
-{
-	BOOST_TEST_MESSAGE(createString("Leaving stored size unchanged as "
-		<< id->storedSize << " and setting real size to " << newRealSize));
-	arch->resize(id, id->storedSize, newRealSize);
-	return;
-}
-
-/// Apply the correct filter to the stream.
-/**
- * If the given entry pointer has a filter attached, apply it to the given
- * stream pointer.
- *
- * @note This function will always apply the filter, don't call it if the user
- *   has given the -u option to bypass filtering.
- *
- * @param pStream
- *   Shared pointer to the stream.
- *
- * @param id
- *   EntryPtr for the stream.
- *
- * @return A stream providing filtered data from pStream.
- */
-stream::inout_sptr applyFilter(gamearchive::ArchivePtr arch,
-	gamearchive::Archive::EntryPtr id, stream::inout_sptr pStream)
-{
-	if (!id->filter.empty()) {
-		// The file needs to be filtered first
-		gamearchive::ManagerPtr pManager(gamearchive::getManager());
-		gamearchive::FilterTypePtr pFilterType(
-			pManager->getFilterTypeByCode(id->filter));
-		if (!pFilterType) {
-			throw stream::error(createString(
-				"could not find filter \"" << id->filter << "\""
-			));
-		}
-
-		stream::fn_truncate fn_resize = boost::bind<void>(setRealSize, arch, id, _1);
-		return pFilterType->apply(pStream, fn_resize);
-	}
-	return pStream; // no filters to apply
-}
-
 test_archive::test_archive()
 	:	init(false),
 		numIsInstanceTests(0),
@@ -142,6 +96,7 @@ void test_archive::addTests()
 	ADD_ARCH_TEST(false, &test_archive::test_insert2);
 	ADD_ARCH_TEST(false, &test_archive::test_remove);
 	ADD_ARCH_TEST(false, &test_archive::test_remove2);
+	ADD_ARCH_TEST(false, &test_archive::test_remove_open);
 	ADD_ARCH_TEST(false, &test_archive::test_insert_remove);
 	ADD_ARCH_TEST(false, &test_archive::test_remove_insert);
 	ADD_ARCH_TEST(false, &test_archive::test_move);
@@ -194,25 +149,23 @@ void test_archive::runTest(bool empty, boost::function<void()> fnTest)
 void test_archive::prepareTest(bool emptyArchive)
 {
 	if (!this->init) {
-		ManagerPtr pManager;
 		BOOST_REQUIRE_NO_THROW(
-			pManager = getManager();
-			this->pArchType = pManager->getArchiveTypeByCode(this->type);
+			this->pArchType = ArchiveManager::byCode(this->type);
 		);
 		BOOST_REQUIRE_MESSAGE(pArchType, "Could not find archive type " + this->type);
 		this->init = true;
 	}
 
 	if (this->suppResult[SuppItem::FAT]) {
-		stream::string_sptr suppSS(new stream::string());
+		auto suppSS = std::make_shared<stream::string>();
 		if (!emptyArchive) {
 			// Populate the suppitem with its initial state
-			suppSS << this->suppResult[SuppItem::FAT]->initialstate();
+			*suppSS << this->suppResult[SuppItem::FAT]->initialstate();
 		}
 		this->suppData[SuppItem::FAT] = suppSS;
 	}
 
-	this->base.reset(new stream::string());
+	this->base = std::make_shared<stream::string>();
 
 	if (emptyArchive) {
 		BOOST_TEST_CHECKPOINT("About to create new empty instance of "
@@ -220,10 +173,10 @@ void test_archive::prepareTest(bool emptyArchive)
 		// This should really use BOOST_REQUIRE_NO_THROW but the message is more
 		// informative without it.
 		//BOOST_REQUIRE_NO_THROW(
-			this->pArchive = this->pArchType->newArchive(this->base, this->suppData);
+			this->pArchive = this->pArchType->create(this->base, this->suppData);
 		//);
 	} else {
-		this->base << this->initialstate();
+		*this->base << this->initialstate();
 		BOOST_TEST_CHECKPOINT("About to open " + this->basename
 			+ " initialstate as an archive");
 		// This should really use BOOST_REQUIRE_NO_THROW but the message is more
@@ -244,10 +197,10 @@ void test_archive::prepareTest(bool emptyArchive)
 	return;
 }
 
-Archive::EntryPtr test_archive::findFile(unsigned int index,
+Archive::FileHandle test_archive::findFile(unsigned int index,
 	const std::string& altname)
 {
-	Archive::EntryPtr ep;
+	Archive::FileHandle ep;
 	if (this->lenMaxFilename >= 0) {
 		// Find the file we're going to open by name
 		std::string filename = altname;
@@ -270,7 +223,7 @@ Archive::EntryPtr test_archive::findFile(unsigned int index,
 
 	} else {
 		// No filenames in this format, do it by order
-		const Archive::VC_ENTRYPTR& files = this->pArchive->getFileList();
+		auto& files = this->pArchive->files();
 		ep = getFileAt(files, index);
 
 		// Make sure we found it
@@ -301,12 +254,11 @@ void test_archive::test_isInstance(ArchiveType::Certainty result,
 	BOOST_TEST_MESSAGE(createString("isInstance check (" << this->basename
 		<< "; " << std::setfill('0') << std::setw(2) << testNumber << ")"));
 
-	ManagerPtr pManager(getManager());
-	ArchiveTypePtr pTestType(pManager->getArchiveTypeByCode(this->type));
+	auto pTestType = ArchiveManager::byCode(this->type);
 	BOOST_REQUIRE_MESSAGE(pTestType,
 		createString("Could not find archive type " << this->type));
 
-	stream::string_sptr ss(new stream::string());
+	stream::string ss;
 	ss << content;
 
 	BOOST_CHECK_EQUAL(pTestType->isInstance(ss), result);
@@ -332,20 +284,19 @@ void test_archive::test_invalidContent(const std::string& content,
 	BOOST_TEST_MESSAGE(createString("invalidContent check (" << this->basename
 		<< "; " << std::setfill('0') << std::setw(2) << testNumber << ")"));
 
-	ManagerPtr pManager(getManager());
-	ArchiveTypePtr pTestType(pManager->getArchiveTypeByCode(this->type));
+	auto pTestType = ArchiveManager::byCode(this->type);
 	BOOST_REQUIRE_MESSAGE(pTestType,
 		createString("Could not find archive type " << this->type));
 
-	stream::string_sptr ss(new stream::string());
-	ss << content;
+	auto ss = std::make_shared<stream::string>();
+	*ss << content;
 
 	// Make sure isInstance reports this is valid
-	BOOST_CHECK_EQUAL(pTestType->isInstance(ss), ArchiveType::DefinitelyYes);
+	BOOST_CHECK_EQUAL(pTestType->isInstance(*ss), ArchiveType::DefinitelyYes);
 
 	// But that we get an error when trying to open the file
 	BOOST_CHECK_THROW(
-		ArchivePtr pArchive(pTestType->open(ss, this->suppData)),
+		std::unique_ptr<Archive> pArchive(pTestType->open(ss, this->suppData)),
 		stream::error
 	);
 
@@ -376,9 +327,6 @@ void test_archive::test_changeMetadata(camoto::Metadata::MetadataType item,
 	this->prepareTest(false);
 	this->pArchive->setMetadata(item, newValue);
 
-	stream::string_sptr ss(new stream::string());
-	ss << content;
-
 	BOOST_CHECK_MESSAGE(
 		this->is_content_equal(content),
 		"Error setting metadata field"
@@ -398,7 +346,7 @@ boost::test_tools::predicate_result test_archive::is_content_equal(
 		this->pArchive->flush()
 	);
 
-	return this->is_equal(exp, *(this->base->str()));
+	return this->is_equal(exp, this->base->data);
 }
 
 boost::test_tools::predicate_result test_archive::is_supp_equal(
@@ -409,12 +357,12 @@ boost::test_tools::predicate_result test_archive::is_supp_equal(
 	BOOST_CHECK_NO_THROW(
 		this->pArchive->flush()
 	);
-	stream::string_sptr suppBase =
-		boost::dynamic_pointer_cast<stream::string>(this->suppData[type]);
+	auto suppBase =
+		std::dynamic_pointer_cast<stream::string>(this->suppData[type]);
 
 	// Use the supp's test-class' own comparison function, as this will use its
 	// preferred outputWidth value, which might be different to the main file's.
-	return this->suppResult[type]->is_equal(strExpected, *(suppBase->str()));
+	return this->suppResult[type]->is_equal(strExpected, suppBase->data);
 }
 
 void test_archive::test_isinstance_others()
@@ -422,12 +370,9 @@ void test_archive::test_isinstance_others()
 	// Check all file formats except this one to avoid any false positives
 	BOOST_TEST_MESSAGE("isInstance check for other formats (not " << this->type
 		<< ")");
-	ManagerPtr pManager(camoto::gamearchive::getManager());
-	int i = 0;
-	ArchiveTypePtr pTestType;
-	for (int i = 0; (pTestType = pManager->getArchiveType(i)); i++) {
+	for (const auto& pTestType : ArchiveManager::formats()) {
 		// Don't check our own type, that's done by the other isinstance_* tests
-		std::string otherType = pTestType->getArchiveCode();
+		std::string otherType = pTestType->code();
 		if (otherType.compare(this->type) == 0) continue;
 
 		// Skip any formats known to produce false detections unavoidably
@@ -439,7 +384,7 @@ void test_archive::test_isinstance_others()
 		BOOST_TEST_MESSAGE("Checking " << this->type
 			<< " content against isInstance() for " << otherType);
 
-		BOOST_CHECK_MESSAGE(pTestType->isInstance(base) < ArchiveType::DefinitelyYes,
+		BOOST_CHECK_MESSAGE(pTestType->isInstance(*base) < ArchiveType::DefinitelyYes,
 			"isInstance() for " << otherType << " incorrectly recognises content for "
 			<< this->type);
 	}
@@ -450,23 +395,23 @@ void test_archive::test_open()
 {
 	BOOST_TEST_MESSAGE("Opening file in archive");
 
-	Archive::EntryPtr ep = this->findFile(0);
+	auto ep = this->findFile(0);
 
 	// Open it
-	camoto::stream::inout_sptr pfsIn(this->pArchive->open(ep));
-	stream::string_sptr out(new stream::string());
+	auto pfsIn = this->pArchive->open(ep);
+	stream::string out;
 
 	// Make sure the file opens at the start
 	BOOST_REQUIRE_EQUAL(pfsIn->tellg(), 0);
 
 	// Apply any decryption/decompression filter
-	pfsIn = applyFilter(this->pArchive, ep, pfsIn);
+	applyFilter(&pfsIn, this->pArchive, ep);
 
 	// Copy it into the stringstream
-	stream::copy(out, pfsIn);
+	stream::copy(out, *pfsIn);
 
 	BOOST_CHECK_MESSAGE(
-		this->is_equal(this->content[0], *(out->str())),
+		this->is_equal(this->content[0], out.data),
 		"Error opening file or wrong file opened"
 	);
 }
@@ -478,7 +423,7 @@ void test_archive::test_rename()
 	BOOST_REQUIRE_MESSAGE(this->lenMaxFilename >= 0,
 		"Tried to run test_archive::test_rename() on a format with no filenames!");
 
-	Archive::EntryPtr ep = this->findFile(0);
+	Archive::FileHandle ep = this->findFile(0);
 
 	this->pArchive->rename(ep, this->filename[2]);
 
@@ -499,7 +444,7 @@ void test_archive::test_rename_long()
 	BOOST_REQUIRE_MESSAGE(this->lenMaxFilename > 0,
 		"Tried to run test_archive::test_rename_long() on a format with unlimited-length filenames!");
 
-	Archive::EntryPtr ep = this->findFile(0);
+	Archive::FileHandle ep = this->findFile(0);
 
 	assert(this->lenMaxFilename < 256);
 	char name[256 + 2];
@@ -539,7 +484,7 @@ void test_archive::test_insert_long()
 	BOOST_REQUIRE_MESSAGE(this->lenMaxFilename > 0,
 		"Tried to run test_archive::test_insert_long() on a format with unlimited-length filenames!");
 
-	Archive::EntryPtr epb = this->findFile(0);
+	Archive::FileHandle epb = this->findFile(0);
 
 	assert(this->lenMaxFilename < 256);
 	char name[256 + 2];
@@ -547,7 +492,7 @@ void test_archive::test_insert_long()
 	name[this->lenMaxFilename + 1] = 0;
 
 	BOOST_CHECK_THROW(
-		Archive::EntryPtr ep = this->pArchive->insert(epb, name,
+		Archive::FileHandle ep = this->pArchive->insert(epb, name,
 			this->content[0].length(), this->insertType, this->insertAttr),
 		stream::error
 	);
@@ -564,7 +509,7 @@ void test_archive::test_insert_long()
 	name[this->lenMaxFilename] = 0;
 
 	BOOST_CHECK_NO_THROW(
-		Archive::EntryPtr ep = this->pArchive->insert(epb, name,
+		Archive::FileHandle ep = this->pArchive->insert(epb, name,
 			this->content[0].length(), this->insertType, this->insertAttr)
 	);
 
@@ -575,7 +520,7 @@ void test_archive::test_insert_end()
 	BOOST_TEST_MESSAGE("Inserting file at end of archive");
 
 	// Insert the file
-	Archive::EntryPtr ep = this->pArchive->insert(Archive::EntryPtr(),
+	auto ep = this->pArchive->insert(nullptr,
 		this->filename[2], this->content[2].length(), this->insertType,
 		this->insertAttr);
 
@@ -584,10 +529,10 @@ void test_archive::test_insert_end()
 		"Couldn't create new file in sample archive");
 
 	// Open it
-	stream::inout_sptr pfsNew(this->pArchive->open(ep));
+	auto pfsNew = this->pArchive->open(ep);
 
 	// Apply any encryption/compression filter
-	pfsNew = applyFilter(this->pArchive, ep, pfsNew);
+	applyFilter(&pfsNew, this->pArchive, ep);
 
 	// Set the size of the file we want to write
 	pfsNew->truncate(this->content[2].length());
@@ -607,10 +552,10 @@ void test_archive::test_insert_mid()
 {
 	BOOST_TEST_MESSAGE("Inserting file into middle of archive");
 
-	Archive::EntryPtr epBefore = this->findFile(1);
+	Archive::FileHandle epBefore = this->findFile(1);
 
 	// Insert the file
-	Archive::EntryPtr ep = this->pArchive->insert(epBefore, this->filename[2],
+	Archive::FileHandle ep = this->pArchive->insert(epBefore, this->filename[2],
 		this->content[2].length(), this->insertType, this->insertAttr);
 
 	// Make sure it went in ok
@@ -618,10 +563,10 @@ void test_archive::test_insert_mid()
 		"Couldn't insert new file in sample archive");
 
 	// Open it
-	stream::inout_sptr pfsNew(this->pArchive->open(ep));
+	auto pfsNew = this->pArchive->open(ep);
 
 	// Apply any encryption/compression filter
-	pfsNew = applyFilter(this->pArchive, ep, pfsNew);
+	applyFilter(&pfsNew, this->pArchive, ep);
 
 	pfsNew->write(this->content[2]);
 	pfsNew->flush();
@@ -638,10 +583,10 @@ void test_archive::test_insert2()
 {
 	BOOST_TEST_MESSAGE("Inserting multiple files");
 
-	Archive::EntryPtr epBefore = this->findFile(1);
+	Archive::FileHandle epBefore = this->findFile(1);
 
 	// Insert the file
-	Archive::EntryPtr ep1 = this->pArchive->insert(epBefore, this->filename[2],
+	Archive::FileHandle ep1 = this->pArchive->insert(epBefore, this->filename[2],
 		this->content[2].length(), this->insertType, this->insertAttr);
 
 	// Make sure it went in ok
@@ -649,10 +594,10 @@ void test_archive::test_insert2()
 		"Couldn't insert first new file in sample archive");
 
 	// Open it
-	stream::inout_sptr pfsNew1(this->pArchive->open(ep1));
+	auto pfsNew1 = this->pArchive->open(ep1);
 
 	// Apply any encryption/compression filter
-	pfsNew1 = applyFilter(this->pArchive, ep1, pfsNew1);
+	applyFilter(&pfsNew1, this->pArchive, ep1);
 
 	pfsNew1->write(this->content[2]);
 	pfsNew1->flush();
@@ -660,17 +605,17 @@ void test_archive::test_insert2()
 	epBefore = this->findFile(2, this->filename[1]); // FILENAME2 is now the third fil
 
 	// Insert the file
-	Archive::EntryPtr ep2 = this->pArchive->insert(epBefore, this->filename[3],
+	Archive::FileHandle ep2 = this->pArchive->insert(epBefore, this->filename[3],
 		this->content[3].length(), this->insertType, this->insertAttr);
 
 	// Make sure it went in ok
 	BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(ep2),
 		"Couldn't insert second new file in sample archive");
 
-	stream::inout_sptr pfsNew2(this->pArchive->open(ep2));
+	std::shared_ptr<stream::inout> pfsNew2(this->pArchive->open(ep2));
 
 	// Apply any encryption/compression filter
-	pfsNew2 = applyFilter(this->pArchive, ep2, pfsNew2);
+	applyFilter(&pfsNew2, this->pArchive, ep2);
 
 	pfsNew2->write(this->content[3]);
 	pfsNew2->flush();
@@ -687,7 +632,7 @@ void test_archive::test_remove()
 {
 	BOOST_TEST_MESSAGE("Removing file from archive");
 
-	Archive::EntryPtr ep = this->findFile(0);
+	Archive::FileHandle ep = this->findFile(0);
 
 	// Remove it
 	this->pArchive->remove(ep);
@@ -704,8 +649,8 @@ void test_archive::test_remove2()
 {
 	BOOST_TEST_MESSAGE("Removing multiple files from archive");
 
-	Archive::EntryPtr ep1 = this->findFile(0);
-	Archive::EntryPtr ep2 = this->findFile(1);
+	Archive::FileHandle ep1 = this->findFile(0);
+	Archive::FileHandle ep2 = this->findFile(1);
 
 	// Remove it
 	this->pArchive->remove(ep1);
@@ -719,14 +664,38 @@ void test_archive::test_remove2()
 	CHECK_SUPP_ITEM(FAT, remove2, "Error removing multiple files");
 }
 
+void test_archive::test_remove_open()
+{
+	BOOST_TEST_MESSAGE("Attemping to remove an open file");
+
+	auto ep1 = this->findFile(0);
+
+	auto content1 = this->pArchive->open(ep1);
+
+	// Removing an open file should fail
+	BOOST_CHECK_THROW(
+		this->pArchive->remove(ep1),
+		stream::error
+	);
+
+	BOOST_CHECK_MESSAGE(
+		this->is_content_equal(this->initialstate()),
+		"Archive corrupted after refused file removal"
+	);
+
+	// Use the stream so the compiler doesn't optimise the variable out, closing
+	// the file before we try to remove it.
+	content1->seekg(0, stream::start);
+}
+
 void test_archive::test_insert_remove()
 {
 	BOOST_TEST_MESSAGE("Insert then remove file from archive");
 
-	Archive::EntryPtr epBefore = this->findFile(1);
+	Archive::FileHandle epBefore = this->findFile(1);
 
 	// Insert the file
-	Archive::EntryPtr ep = this->pArchive->insert(epBefore, this->filename[2],
+	Archive::FileHandle ep = this->pArchive->insert(epBefore, this->filename[2],
 		this->content[2].length(), this->insertType, this->insertAttr);
 
 	// Make sure it went in ok
@@ -734,15 +703,15 @@ void test_archive::test_insert_remove()
 		"Couldn't insert new file in sample archive");
 
 	// Open it
-	stream::inout_sptr pfsNew(this->pArchive->open(ep));
+	auto pfsNew = this->pArchive->open(ep);
 
 	// Apply any encryption/compression filter
-	pfsNew = applyFilter(this->pArchive, ep, pfsNew);
+	applyFilter(&pfsNew, this->pArchive, ep);
 
 	pfsNew->write(this->content[2]);
 	pfsNew->flush();
 
-	Archive::EntryPtr ep2 = this->findFile(0);
+	Archive::FileHandle ep2 = this->findFile(0);
 
 	// Remove it
 	this->pArchive->remove(ep2);
@@ -759,15 +728,15 @@ void test_archive::test_remove_insert()
 {
 	BOOST_TEST_MESSAGE("Remove then insert file from archive");
 
-	Archive::EntryPtr ep2 = this->findFile(0);
+	Archive::FileHandle ep2 = this->findFile(0);
 
 	// Remove it
 	this->pArchive->remove(ep2);
 
-	Archive::EntryPtr epBefore = this->findFile(0, this->filename[1]);
+	Archive::FileHandle epBefore = this->findFile(0, this->filename[1]);
 
 	// Insert the file
-	Archive::EntryPtr ep = this->pArchive->insert(epBefore, this->filename[2],
+	Archive::FileHandle ep = this->pArchive->insert(epBefore, this->filename[2],
 		this->content[2].length(), this->insertType, this->insertAttr);
 
 	// Make sure it went in ok
@@ -775,10 +744,10 @@ void test_archive::test_remove_insert()
 		"Couldn't insert new file in sample archive");
 
 	// Open it
-	stream::inout_sptr pfsNew(this->pArchive->open(ep));
+	auto pfsNew = this->pArchive->open(ep);
 
 	// Apply any encryption/compression filter
-	pfsNew = applyFilter(this->pArchive, ep, pfsNew);
+	applyFilter(&pfsNew, this->pArchive, ep);
 
 	pfsNew->write(this->content[2]);
 	pfsNew->flush();
@@ -798,8 +767,8 @@ void test_archive::test_move()
 {
 	BOOST_TEST_MESSAGE("Moving file inside archive");
 
-	Archive::EntryPtr ep1 = this->findFile(0);
-	Archive::EntryPtr ep2 = this->findFile(1);
+	Archive::FileHandle ep1 = this->findFile(0);
+	Archive::FileHandle ep2 = this->findFile(1);
 
 	// Swap the file positions
 	this->pArchive->move(ep1, ep2);
@@ -816,7 +785,7 @@ void test_archive::test_resize_larger()
 {
 	BOOST_TEST_MESSAGE("Enlarging a file inside the archive");
 
-	Archive::EntryPtr ep = this->findFile(0);
+	Archive::FileHandle ep = this->findFile(0);
 
 	this->pArchive->resize(ep, this->content0_largeSize,
 		this->content0_largeSize_unfiltered);
@@ -834,7 +803,7 @@ void test_archive::test_resize_smaller()
 	BOOST_TEST_MESSAGE("Shrink a file inside the archive");
 
 	// Find the file we're going to resize
-	Archive::EntryPtr ep = this->findFile(0);
+	Archive::FileHandle ep = this->findFile(0);
 
 	this->pArchive->resize(ep, this->content0_smallSize,
 		this->content0_smallSize_unfiltered);
@@ -852,7 +821,7 @@ void test_archive::test_resize_write()
 	BOOST_TEST_MESSAGE("Enlarging a file inside the archive");
 
 	// Find the file we're going to resize
-	Archive::EntryPtr ep = this->findFile(0);
+	Archive::FileHandle ep = this->findFile(0);
 
 	// We can't call Archive::resize() because that resizes the storage space,
 	// but if there are filters involved the storage space might be quite a
@@ -860,10 +829,10 @@ void test_archive::test_resize_write()
 	// stream and use truncate() instead.
 	//this->pArchive->resize(ep, sizeof(CONTENT1_OVERWRITTEN) - 1, sizeof(CONTENT1_OVERWRITTEN) - 1);
 
-	stream::inout_sptr pfsNew(this->pArchive->open(ep));
+	auto pfsNew = this->pArchive->open(ep);
 
 	// Apply any encryption/compression filter
-	pfsNew = applyFilter(this->pArchive, ep, pfsNew);
+	applyFilter(&pfsNew, this->pArchive, ep);
 
 	// Make sure it's the right size
 	BOOST_REQUIRE_EQUAL(pfsNew->size(), this->content[0].length());
@@ -889,23 +858,23 @@ void test_archive::test_resize_write()
 		"Error enlarging a file then writing into new space");
 
 	// Open the file following it to make sure it was moved out of the way
-	Archive::EntryPtr ep2 = this->findFile(1);
+	Archive::FileHandle ep2 = this->findFile(1);
 
 	// Open it
-	camoto::stream::inout_sptr pfsIn(this->pArchive->open(ep2));
-	stream::string_sptr out(new stream::string());
+	std::shared_ptr<stream::inout> pfsIn(this->pArchive->open(ep2));
+	stream::string out;
 
 	// Apply any decryption/decompression filter
-	pfsIn = applyFilter(this->pArchive, ep2, pfsIn);
+	applyFilter(&pfsIn, this->pArchive, ep2);
 
 	// Make sure it's the right size
 	BOOST_REQUIRE_EQUAL(pfsIn->size(), this->content[1].length());
 
 	// Copy it into the stringstream
-	stream::copy(out, pfsIn);
+	stream::copy(out, *pfsIn);
 
 	BOOST_CHECK_MESSAGE(
-		this->is_equal(this->content[1], *(out->str())),
+		this->is_equal(this->content[1], out.data),
 		"Unrelated file was corrupted after file resize operation"
 	);
 }
@@ -917,32 +886,32 @@ void test_archive::test_remove_all_re_add()
 {
 	BOOST_TEST_MESSAGE("Remove all files then add them again");
 
-	Archive::EntryPtr epOne = this->findFile(0);
+	Archive::FileHandle epOne = this->findFile(0);
 	this->pArchive->remove(epOne);
 
-	Archive::EntryPtr epTwo = this->findFile(0, this->filename[1]);
+	Archive::FileHandle epTwo = this->findFile(0, this->filename[1]);
 	this->pArchive->remove(epTwo);
 
 	// Make sure there are now no files in the archive
-	const Archive::VC_ENTRYPTR& allfiles = this->pArchive->getFileList();
+	auto& allfiles = this->pArchive->files();
 	BOOST_REQUIRE_EQUAL(allfiles.size(), 0);
 
 	// Add the files back again
-	epOne = this->pArchive->insert(Archive::EntryPtr(), this->filename[0],
+	epOne = this->pArchive->insert(Archive::FileHandle(), this->filename[0],
 		this->content[0].length(), this->insertType, this->insertAttr);
 
 	BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(epOne),
 		"Couldn't insert new file after removing all files");
 
-	stream::inout_sptr pfsNew(this->pArchive->open(epOne));
+	std::shared_ptr<stream::inout> pfsNew(this->pArchive->open(epOne));
 
 	// Apply any encryption/compression filter
-	pfsNew = applyFilter(this->pArchive, epOne, pfsNew);
+	applyFilter(&pfsNew, this->pArchive, epOne);
 
 	pfsNew->write(this->content[0]);
 	pfsNew->flush();
 
-	epTwo = this->pArchive->insert(Archive::EntryPtr(), this->filename[1],
+	epTwo = this->pArchive->insert(Archive::FileHandle(), this->filename[1],
 		this->content[1].length(), this->insertType, this->insertAttr);
 
 	BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(epTwo),
@@ -951,7 +920,7 @@ void test_archive::test_remove_all_re_add()
 	pfsNew = this->pArchive->open(epTwo);
 
 	// Apply any encryption/compression filter
-	pfsNew = applyFilter(this->pArchive, epTwo, pfsNew);
+	applyFilter(&pfsNew, this->pArchive, epTwo);
 
 	pfsNew->write(this->content[1]);
 	pfsNew->flush();
@@ -972,7 +941,7 @@ void test_archive::test_insert_zero_then_resize()
 	BOOST_TEST_MESSAGE("Inserting empty file into archive, then resize it");
 
 	// Insert the file
-	Archive::EntryPtr ep = this->pArchive->insert(Archive::EntryPtr(),
+	Archive::FileHandle ep = this->pArchive->insert(Archive::FileHandle(),
 		this->filename[2], 0, this->insertType, this->insertAttr);
 
 	// Make sure it went in ok
@@ -980,10 +949,10 @@ void test_archive::test_insert_zero_then_resize()
 		"Couldn't create new file in sample archive");
 
 	// Open it
-	camoto::stream::inout_sptr pfsNew(this->pArchive->open(ep));
+	auto pfsNew = this->pArchive->open(ep);
 
 	// Apply any encryption/compression filter
-	pfsNew = applyFilter(this->pArchive, ep, pfsNew);
+	applyFilter(&pfsNew, this->pArchive, ep);
 
 	this->pArchive->resize(ep, this->content[2].length(), this->content[2].length());
 	pfsNew->seekp(0, stream::start);
@@ -1002,7 +971,7 @@ void test_archive::test_resize_over64k()
 {
 	BOOST_TEST_MESSAGE("Enlarging a file to over the 64k limit");
 
-	Archive::EntryPtr ep = this->findFile(0);
+	Archive::FileHandle ep = this->findFile(0);
 
 	// Do a potentially illegal resize
 	try {
@@ -1021,14 +990,13 @@ void test_archive::test_shortext()
 {
 	BOOST_TEST_MESSAGE("Rename a file with a short extension");
 
-	Archive::EntryPtr ep = this->findFile(0);
+	Archive::FileHandle ep = this->findFile(0);
 	this->pArchive->rename(ep, this->filename_shortext);
 	this->pArchive->flush();
 	this->pArchive.reset();
 
 	// Reopen the archive
-	ManagerPtr pManager(getManager());
-	ArchiveTypePtr pTestType(pManager->getArchiveTypeByCode(this->type));
+	auto pTestType = ArchiveManager::byCode(this->type);
 	BOOST_REQUIRE_MESSAGE(pTestType,
 		createString("Could not find archive type " << this->type));
 
@@ -1062,10 +1030,9 @@ void test_archive::test_new_isinstance()
 
 	this->pArchive->flush();
 
-	ManagerPtr pManager(getManager());
-	ArchiveTypePtr pTestType(pManager->getArchiveTypeByCode(this->type));
+	auto pTestType = ArchiveManager::byCode(this->type);
 
-	BOOST_REQUIRE_MESSAGE(pTestType->isInstance(this->base),
+	BOOST_REQUIRE_MESSAGE(pTestType->isInstance(*this->base),
 		"Newly created archive was not recognised as a valid instance");
 
 	BOOST_TEST_CHECKPOINT("New archive reported valid, trying to open");
@@ -1077,7 +1044,7 @@ void test_archive::test_new_isinstance()
 	//);
 
 	// Make sure there are now no files in the archive
-	const Archive::VC_ENTRYPTR& files = pArchive->getFileList();
+	auto& files = pArchive->files();
 	BOOST_REQUIRE_EQUAL(files.size(), 0);
 }
 
@@ -1091,24 +1058,24 @@ void test_archive::test_new_to_initialstate()
 		this->pArchive->setMetadata(camoto::Metadata::Version, this->metadataVer);
 	}
 
-	const Archive::VC_ENTRYPTR& files2 = this->pArchive->getFileList();
+	auto& files2 = this->pArchive->files();
 	BOOST_REQUIRE_EQUAL(files2.size(), 0);
 
 	// Add the files to the new archive
-	Archive::EntryPtr epOne = this->pArchive->insert(Archive::EntryPtr(),
+	Archive::FileHandle epOne = this->pArchive->insert(Archive::FileHandle(),
 		this->filename[0], this->content[0].length(), this->insertType,
 		this->insertAttr);
 
 	BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(epOne),
 		"Couldn't insert new file in empty archive");
 
-	stream::inout_sptr pfsNew(this->pArchive->open(epOne));
+	std::shared_ptr<stream::inout> pfsNew(this->pArchive->open(epOne));
 	// Apply any encryption/compression filter
-	pfsNew = applyFilter(this->pArchive, epOne, pfsNew);
+	applyFilter(&pfsNew, this->pArchive, epOne);
 	pfsNew->write(this->content[0]);
 	pfsNew->flush();
 
-	Archive::EntryPtr epTwo = pArchive->insert(Archive::EntryPtr(),
+	Archive::FileHandle epTwo = pArchive->insert(Archive::FileHandle(),
 		this->filename[1], this->content[1].length(), this->insertType,
 		this->insertAttr);
 
@@ -1116,7 +1083,7 @@ void test_archive::test_new_to_initialstate()
 		"Couldn't insert second new file in empty archive");
 	pfsNew = pArchive->open(epTwo);
 	// Apply any encryption/compression filter
-	pfsNew = applyFilter(this->pArchive, epTwo, pfsNew);
+	applyFilter(&pfsNew, this->pArchive, epTwo);
 	pfsNew->write(this->content[1]);
 	pfsNew->flush();
 
@@ -1133,7 +1100,7 @@ void test_archive::test_new_to_initialstate()
 	);
 
 	// Make sure there are now the correct number of files in the archive
-	const Archive::VC_ENTRYPTR& files = this->pArchive->getFileList();
+	auto& files = this->pArchive->files();
 	BOOST_REQUIRE_EQUAL(files.size(), 2);
 
 	CHECK_SUPP_ITEM(FAT, initialstate,
@@ -1157,7 +1124,7 @@ void test_archive::test_new_manipulate_zero_length_files()
 	}
 
 	// Insert the file
-	Archive::EntryPtr ep3 = this->pArchive->insert(Archive::EntryPtr(),
+	Archive::FileHandle ep3 = this->pArchive->insert(Archive::FileHandle(),
 		this->filename[2], 0, this->insertType, this->insertAttr);
 
 	// Make sure it went in ok
@@ -1165,12 +1132,12 @@ void test_archive::test_new_manipulate_zero_length_files()
 		"Couldn't create new file in archive");
 
 	// Open it
-	camoto::stream::inout_sptr file3(this->pArchive->open(ep3));
+	std::shared_ptr<stream::inout> file3(this->pArchive->open(ep3));
 
 	// Apply any encryption/compression filter
-	file3 = applyFilter(this->pArchive, ep3, file3);
+	applyFilter(&file3, this->pArchive, ep3);
 
-	Archive::EntryPtr ep1 = pArchive->insert(ep3, this->filename[0], 0,
+	Archive::FileHandle ep1 = pArchive->insert(ep3, this->filename[0], 0,
 		this->insertType, this->insertAttr);
 
 	// Make sure it went in ok
@@ -1178,12 +1145,12 @@ void test_archive::test_new_manipulate_zero_length_files()
 		"Couldn't create new file in archive");
 
 	// Open it
-	camoto::stream::inout_sptr file1(this->pArchive->open(ep1));
+	std::shared_ptr<stream::inout> file1(this->pArchive->open(ep1));
 
 	// Apply any encryption/compression filter
-	file1 = applyFilter(this->pArchive, ep1, file1);
+	applyFilter(&file1, this->pArchive, ep1);
 
-	Archive::EntryPtr ep2 = pArchive->insert(ep3, this->filename[1], 0,
+	Archive::FileHandle ep2 = pArchive->insert(ep3, this->filename[1], 0,
 		this->insertType, this->insertAttr);
 
 	// Make sure it went in ok
@@ -1191,16 +1158,16 @@ void test_archive::test_new_manipulate_zero_length_files()
 		"Couldn't create new file in archive");
 
 	// Open it
-	camoto::stream::inout_sptr file2(this->pArchive->open(ep2));
+	std::shared_ptr<stream::inout> file2(this->pArchive->open(ep2));
 
 	// Apply any encryption/compression filter
-	file2 = applyFilter(this->pArchive, ep2, file2);
+	applyFilter(&file2, this->pArchive, ep2);
 
 	// Get offsets of each file for later testing
-	FATArchive::FATEntryPtr fat1 =
-		boost::dynamic_pointer_cast<FATArchive::FATEntry>(ep1);
-	FATArchive::FATEntryPtr fat3 =
-		boost::dynamic_pointer_cast<FATArchive::FATEntry>(ep3);
+	auto fat1 =
+		std::dynamic_pointer_cast<const FATArchive::FATEntry>(ep1);
+	auto fat3 =
+		std::dynamic_pointer_cast<const FATArchive::FATEntry>(ep3);
 
 	int off1 = fat1->iOffset;
 	int off3 = fat3->iOffset;
@@ -1273,11 +1240,11 @@ void test_archive::test_metadata_get_desc()
 	BOOST_REQUIRE_EQUAL(value.length(), this->metadataDesc.length());
 
 	// Put it in a stringstream to allow use of the standard checking mechanism
-	stream::string_sptr out(new stream::string());
+	stream::string out;
 	out << value;
 
 	BOOST_CHECK_MESSAGE(
-		this->is_equal(this->metadataDesc, *(out->str())),
+		this->is_equal(this->metadataDesc, out.data),
 		"Error getting 'description' metadata field"
 	);
 
@@ -1345,11 +1312,11 @@ void test_archive::test_metadata_get_ver()
 	BOOST_REQUIRE_EQUAL(value.length(), this->metadataVer.length());
 
 	// Put it in a stringstream to allow use of the standard checking mechanism
-	stream::string_sptr out(new stream::string());
+	stream::string out;
 	out << value;
 
 	BOOST_CHECK_MESSAGE(
-		this->is_equal(this->metadataVer, *(out->str())),
+		this->is_equal(this->metadataVer, out.data),
 		"Error getting 'version' metadata field"
 	);
 }

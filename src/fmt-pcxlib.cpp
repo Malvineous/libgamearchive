@@ -50,48 +50,49 @@ ArchiveType_PCXLib::~ArchiveType_PCXLib()
 {
 }
 
-std::string ArchiveType_PCXLib::getArchiveCode() const
+std::string ArchiveType_PCXLib::code() const
 {
 	return "pcxlib";
 }
 
-std::string ArchiveType_PCXLib::getFriendlyName() const
+std::string ArchiveType_PCXLib::friendlyName() const
 {
 	return "PCX Library (v2)";
 }
 
-std::vector<std::string> ArchiveType_PCXLib::getFileExtensions() const
+std::vector<std::string> ArchiveType_PCXLib::fileExtensions() const
 {
 	std::vector<std::string> vcExtensions;
 	vcExtensions.push_back("pcl");
 	return vcExtensions;
 }
 
-std::vector<std::string> ArchiveType_PCXLib::getGameList() const
+std::vector<std::string> ArchiveType_PCXLib::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Word Rescue");
 	return vcGames;
 }
 
-ArchiveType::Certainty ArchiveType_PCXLib::isInstance(stream::input_sptr psArchive) const
+ArchiveType::Certainty ArchiveType_PCXLib::isInstance(
+	stream::input& content) const
 {
-	stream::pos lenArchive = psArchive->size();
+	stream::pos lenArchive = content.size();
 	// File too short to hold header
 	// TESTED BY: fmt_pcxlib_isinstance_c01
 	if (lenArchive < PCX_FAT_OFFSET) return DefinitelyNo;
 
-	psArchive->seekg(0, stream::start);
+	content.seekg(0, stream::start);
 	uint32_t version;
-	psArchive >> u16le(version);
+	content >> u16le(version);
 
 	// Only accept known versions
 	// TESTED BY: fmt_pcxlib_isinstance_c02
 	if (version != 0xCA01) return DefinitelyNo;
 
-	psArchive->seekg(PCX_FILECOUNT_OFFSET, stream::start);
+	content.seekg(PCX_FILECOUNT_OFFSET, stream::start);
 	uint32_t numFiles;
-	psArchive >> u16le(numFiles);
+	content >> u16le(numFiles);
 
 	// File too short to hold FAT
 	// TESTED BY: fmt_pcxlib_isinstance_c03
@@ -99,13 +100,13 @@ ArchiveType::Certainty ArchiveType_PCXLib::isInstance(stream::input_sptr psArchi
 		return DefinitelyNo;
 	}
 
-	psArchive->seekg(PCX_FAT_OFFSET, stream::start);
+	content.seekg(PCX_FAT_OFFSET, stream::start);
 	for (unsigned int i = 0; i < numFiles; i++) {
 		uint8_t sync;
 		std::string name, ext;
 		uint16_t date, time;
 		uint32_t offset, size;
-		psArchive
+		content
 			>> u8(sync)
 			>> nullPadded(name, 8)
 			>> nullPadded(ext, 5)
@@ -136,10 +137,11 @@ ArchiveType::Certainty ArchiveType_PCXLib::isInstance(stream::input_sptr psArchi
 	return DefinitelyYes;
 }
 
-ArchivePtr ArchiveType_PCXLib::newArchive(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_PCXLib::create(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	psArchive->seekp(0, stream::start);
-	psArchive->write(
+	content->seekp(0, stream::start);
+	content->write(
 		"\x01\xCA" "Copyright (c) Genus Microprogramming, Inc. 1988-90"
 		"\x00\x00\x00\x00\x00\x00\x00\x00"
 		"\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -154,15 +156,16 @@ ArchivePtr ArchiveType_PCXLib::newArchive(stream::inout_sptr psArchive, SuppData
 		"\x00\x00\x00\x00\x00\x00\x00\x00",
 		128);
 
-	return ArchivePtr(new Archive_PCXLib(psArchive));
+	return std::make_unique<Archive_PCXLib>(content);
 }
 
-ArchivePtr ArchiveType_PCXLib::open(stream::inout_sptr psArchive, SuppData& suppData) const
+std::unique_ptr<Archive> ArchiveType_PCXLib::open(
+	std::shared_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return ArchivePtr(new Archive_PCXLib(psArchive));
+	return std::make_unique<Archive_PCXLib>(content);
 }
 
-SuppFilenames ArchiveType_PCXLib::getRequiredSupps(stream::input_sptr data,
+SuppFilenames ArchiveType_PCXLib::getRequiredSupps(stream::input& content,
 	const std::string& filenameArchive) const
 {
 	// No supplemental types/empty list
@@ -170,48 +173,47 @@ SuppFilenames ArchiveType_PCXLib::getRequiredSupps(stream::input_sptr data,
 }
 
 
-Archive_PCXLib::Archive_PCXLib(stream::inout_sptr psArchive)
-	:	FATArchive(psArchive, PCX_FIRST_FILE_OFFSET, PCX_MAX_FILENAME_LEN)
+Archive_PCXLib::Archive_PCXLib(std::shared_ptr<stream::inout> content)
+	:	FATArchive(content, PCX_FIRST_FILE_OFFSET, PCX_MAX_FILENAME_LEN)
 {
-	stream::pos lenArchive = this->psArchive->size();
+	stream::pos lenArchive = this->content->size();
 
 	if (lenArchive < PCX_FAT_OFFSET) {
 		throw stream::error("Truncated file");
 	}
 
-	this->psArchive->seekg(PCX_FILECOUNT_OFFSET, stream::start);
+	this->content->seekg(PCX_FILECOUNT_OFFSET, stream::start);
 	uint16_t numFiles;
-	this->psArchive >> u16le(numFiles);
+	*this->content >> u16le(numFiles);
 	this->vcFAT.reserve(numFiles);
 
 	// Skip over remaining header
-	this->psArchive->seekg(32, stream::cur);
+	this->content->seekg(32, stream::cur);
 
 	for (int i = 0; i < numFiles; i++) {
-		FATEntry *fatEntry = new FATEntry();
-		EntryPtr ep(fatEntry);
+		auto f = this->createNewFATEntry();
 
 		uint8_t sync;
 		std::string name, ext;
 		uint16_t date, time;
-		this->psArchive
+		*this->content
 			>> u8(sync)
 			>> nullPadded(name, 8)
 			>> nullPadded(ext, 5)
-			>> u32le(fatEntry->iOffset)
-			>> u32le(fatEntry->storedSize)
+			>> u32le(f->iOffset)
+			>> u32le(f->storedSize)
 			>> u16le(date)
 			>> u16le(time)
 		;
-		fatEntry->strName = name.substr(0, name.find_first_of(' ')) + ext.substr(0, ext.find_first_of(' '));
+		f->strName = name.substr(0, name.find_first_of(' ')) + ext.substr(0, ext.find_first_of(' '));
 
-		fatEntry->iIndex = i;
-		fatEntry->lenHeader = 0;
-		fatEntry->type = FILETYPE_GENERIC;
-		fatEntry->fAttr = 0;
-		fatEntry->bValid = true;
-		fatEntry->realSize = fatEntry->storedSize;
-		this->vcFAT.push_back(ep);
+		f->iIndex = i;
+		f->lenHeader = 0;
+		f->type = FILETYPE_GENERIC;
+		f->fAttr = 0;
+		f->bValid = true;
+		f->realSize = f->storedSize;
+		this->vcFAT.push_back(std::move(f));
 	}
 }
 
@@ -223,7 +225,7 @@ void Archive_PCXLib::updateFileName(const FATEntry *pid, const std::string& strN
 {
 	// TESTED BY: fmt_pcxlib_rename
 	assert(strNewName.length() <= PCX_MAX_FILENAME_LEN);
-	this->psArchive->seekp(PCX_FILENAME_OFFSET(pid), stream::start);
+	this->content->seekp(PCX_FILENAME_OFFSET(pid), stream::start);
 	int pos = strNewName.find_last_of('.');
 	std::string name = strNewName.substr(0, pos);
 	while (name.length() < 8) name += ' ';
@@ -232,7 +234,7 @@ void Archive_PCXLib::updateFileName(const FATEntry *pid, const std::string& strN
 		throw stream::error("Filename extension too long - three letters max.");
 	}
 	while (ext.length() < 4) ext += ' ';
-	this->psArchive
+	*this->content
 		<< nullPadded(name, 8)
 		<< nullPadded(ext, 5)
 	;
@@ -243,8 +245,8 @@ void Archive_PCXLib::updateFileOffset(const FATEntry *pid, stream::delta offDelt
 {
 	// TESTED BY: fmt_pcxlib_insert*
 	// TESTED BY: fmt_pcxlib_resize*
-	this->psArchive->seekp(PCX_FILEOFFSET_OFFSET(pid), stream::start);
-	this->psArchive << u32le(pid->iOffset);
+	this->content->seekp(PCX_FILEOFFSET_OFFSET(pid), stream::start);
+	*this->content << u32le(pid->iOffset);
 	return;
 }
 
@@ -252,12 +254,12 @@ void Archive_PCXLib::updateFileSize(const FATEntry *pid, stream::delta sizeDelta
 {
 	// TESTED BY: fmt_pcxlib_insert*
 	// TESTED BY: fmt_pcxlib_resize*
-	this->psArchive->seekp(PCX_FILESIZE_OFFSET(pid), stream::start);
-	this->psArchive << u32le(pid->storedSize);
+	this->content->seekp(PCX_FILESIZE_OFFSET(pid), stream::start);
+	*this->content << u32le(pid->storedSize);
 	return;
 }
 
-FATArchive::FATEntry *Archive_PCXLib::preInsertFile(const FATEntry *idBeforeThis,
+void Archive_PCXLib::preInsertFile(const FATEntry *idBeforeThis,
 	FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_pcxlib_insert*
@@ -272,8 +274,8 @@ FATArchive::FATEntry *Archive_PCXLib::preInsertFile(const FATEntry *idBeforeThis
 	if (this->vcFAT.size() >= PCX_MAX_FILES) {
 		throw stream::error("too many files, maximum is " TOSTRING(PCX_MAX_FILES));
 	}
-	this->psArchive->seekp(PCX_FATENTRY_OFFSET(pNewEntry), stream::start);
-	this->psArchive->insert(PCX_FAT_ENTRY_LEN);
+	this->content->seekp(PCX_FATENTRY_OFFSET(pNewEntry), stream::start);
+	this->content->insert(PCX_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
 
 	int pos = pNewEntry->strName.find_last_of('.');
@@ -288,7 +290,7 @@ FATArchive::FATEntry *Archive_PCXLib::preInsertFile(const FATEntry *idBeforeThis
 	uint16_t date = 0, time = 0; // TODO
 
 	// Write out the entry
-	this->psArchive
+	*this->content
 		<< u8(0) // sync byte
 		<< nullPadded(name, 8)
 		<< nullPadded(ext, 5)
@@ -308,7 +310,7 @@ FATArchive::FATEntry *Archive_PCXLib::preInsertFile(const FATEntry *idBeforeThis
 
 	this->updateFileCount(this->vcFAT.size() + 1);
 
-	return pNewEntry;
+	return;
 }
 
 void Archive_PCXLib::preRemoveFile(const FATEntry *pid)
@@ -327,8 +329,8 @@ void Archive_PCXLib::preRemoveFile(const FATEntry *pid)
 	);
 
 	// Remove the FAT entry
-	this->psArchive->seekp(PCX_FATENTRY_OFFSET(pid), stream::start);
-	this->psArchive->remove(PCX_FAT_ENTRY_LEN);
+	this->content->seekp(PCX_FATENTRY_OFFSET(pid), stream::start);
+	this->content->remove(PCX_FAT_ENTRY_LEN);
 
 	this->updateFileCount(this->vcFAT.size() - 1);
 
@@ -339,8 +341,8 @@ void Archive_PCXLib::updateFileCount(uint32_t iNewCount)
 {
 	// TESTED BY: fmt_pcxlib_insert*
 	// TESTED BY: fmt_pcxlib_remove*
-	this->psArchive->seekp(PCX_FILECOUNT_OFFSET, stream::start);
-	this->psArchive << u32le(iNewCount);
+	this->content->seekp(PCX_FILECOUNT_OFFSET, stream::start);
+	*this->content << u32le(iNewCount);
 	return;
 }
 

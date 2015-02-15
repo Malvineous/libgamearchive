@@ -34,7 +34,7 @@ namespace camoto {
 namespace gamearchive {
 
 /// Callback function to "resize" files in a fixed archive.
-typedef boost::function<stream::len(stream::inout_sptr arch, unsigned int index,
+typedef boost::function<stream::len(std::shared_ptr<stream::inout> arch, unsigned int index,
 	stream::len newStoredSize, stream::len newRealSize)> FA_ResizeCallback;
 
 /// Value to put in FixedArchiveFile::fnResize when resizing is not possible.
@@ -55,7 +55,7 @@ struct FixedArchiveFile {
 };
 
 /// Create an archive by splitting up the given stream into files.
-ArchivePtr DLL_EXPORT createFixedArchive(stream::inout_sptr psArchive,
+std::unique_ptr<Archive> DLL_EXPORT createFixedArchive(std::shared_ptr<stream::inout> psArchive,
 	std::vector<FixedArchiveFile> files);
 
 } // namespace gamearchive

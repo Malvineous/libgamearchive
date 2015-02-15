@@ -25,6 +25,7 @@
 
 #include <boost/bind.hpp>
 #include <camoto/stream_filtered.hpp>
+#include <camoto/util.hpp> // std::make_unique
 
 #include "filter-zone66.hpp"
 
@@ -258,48 +259,53 @@ FilterType_Zone66::~FilterType_Zone66()
 {
 }
 
-std::string FilterType_Zone66::getFilterCode() const
+std::string FilterType_Zone66::code() const
 {
 	return "lzw-zone66";
 }
 
-std::string FilterType_Zone66::getFriendlyName() const
+std::string FilterType_Zone66::friendlyName() const
 {
 	return "Zone 66 compression";
 }
 
-std::vector<std::string> FilterType_Zone66::getGameList() const
+std::vector<std::string> FilterType_Zone66::games() const
 {
 	std::vector<std::string> vcGames;
 	vcGames.push_back("Zone 66");
 	return vcGames;
 }
 
-stream::inout_sptr FilterType_Zone66::apply(stream::inout_sptr target,
-	stream::fn_truncate resize) const
+std::unique_ptr<stream::inout> FilterType_Zone66::apply(
+	std::shared_ptr<stream::inout> target, stream::fn_truncate_filter resize)
+	const
 {
-	stream::filtered_sptr st(new stream::filtered());
-	filter_sptr de(new filter_z66_decompress());
-	filter_sptr en(new filter_z66_compress());
-	st->open(target, de, en, resize);
-	return st;
+	return std::make_unique<stream::filtered>(
+		target,
+		std::make_shared<filter_z66_decompress>(),
+		std::make_shared<filter_z66_compress>(),
+		resize
+	);
 }
 
-stream::input_sptr FilterType_Zone66::apply(stream::input_sptr target) const
+std::unique_ptr<stream::input> FilterType_Zone66::apply(
+	std::shared_ptr<stream::input> target) const
 {
-	stream::input_filtered_sptr st(new stream::input_filtered());
-	filter_sptr de(new filter_z66_decompress());
-	st->open(target, de);
-	return st;
+	return std::make_unique<stream::input_filtered>(
+		target,
+		std::make_shared<filter_z66_decompress>()
+	);
 }
 
-stream::output_sptr FilterType_Zone66::apply(stream::output_sptr target,
-	stream::fn_truncate resize) const
+std::unique_ptr<stream::output> FilterType_Zone66::apply(
+	std::shared_ptr<stream::output> target, stream::fn_truncate_filter resize)
+	const
 {
-	stream::output_filtered_sptr st(new stream::output_filtered());
-	filter_sptr en(new filter_z66_compress());
-	st->open(target, en, resize);
-	return st;
+	return std::make_unique<stream::output_filtered>(
+		target,
+		std::make_shared<filter_z66_compress>(),
+		resize
+	);
 }
 
 } // namespace gamearchive

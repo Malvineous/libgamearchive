@@ -18,12 +18,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stack>
-#include <boost/iostreams/concepts.hpp>     // multichar_input_filter
-#include <boost/bind.hpp>
-#include <camoto/iostream_helpers.hpp>
 #include <camoto/stream_filtered.hpp>
-#include <camoto/bitstream.hpp>
+#include <camoto/util.hpp> // std::make_unique
 
 #include "filter-xor.hpp"
 
@@ -99,48 +95,53 @@ FilterType_XOR::~FilterType_XOR()
 {
 }
 
-std::string FilterType_XOR::getFilterCode() const
+std::string FilterType_XOR::code() const
 {
 	return "xor-inc";
 }
 
-std::string FilterType_XOR::getFriendlyName() const
+std::string FilterType_XOR::friendlyName() const
 {
 	return "Incremental XOR encryption";
 }
 
-std::vector<std::string> FilterType_XOR::getGameList() const
+std::vector<std::string> FilterType_XOR::games() const
 {
 	return std::vector<std::string>();
 }
 
-stream::inout_sptr FilterType_XOR::apply(stream::inout_sptr target,
-	stream::fn_truncate resize) const
+std::unique_ptr<stream::inout> FilterType_XOR::apply(
+	std::shared_ptr<stream::inout> target, stream::fn_truncate_filter resize)
+	const
 {
-	stream::filtered_sptr st(new stream::filtered());
-	// We need two separate filters, otherwise reading from one will
-	// affect the XOR key next used when writing to the other.
-	filter_sptr de(new filter_xor_crypt(0, 0));
-	filter_sptr en(new filter_xor_crypt(0, 0));
-	st->open(target, de, en, resize);
-	return st;
+	return std::make_unique<stream::filtered>(
+		target,
+		// We need two separate filters, otherwise reading from one will
+		// affect the XOR key next used when writing to the other.
+		std::make_shared<filter_xor_crypt>(0, 0),
+		std::make_shared<filter_xor_crypt>(0, 0),
+		resize
+	);
 }
 
-stream::input_sptr FilterType_XOR::apply(stream::input_sptr target) const
+std::unique_ptr<stream::input> FilterType_XOR::apply(
+	std::shared_ptr<stream::input> target) const
 {
-	stream::input_filtered_sptr st(new stream::input_filtered());
-	filter_sptr de(new filter_xor_crypt(0, 0));
-	st->open(target, de);
-	return st;
+	return std::make_unique<stream::input_filtered>(
+		target,
+		std::make_shared<filter_xor_crypt>(0, 0)
+	);
 }
 
-stream::output_sptr FilterType_XOR::apply(stream::output_sptr target,
-	stream::fn_truncate resize) const
+std::unique_ptr<stream::output> FilterType_XOR::apply(
+	std::shared_ptr<stream::output> target, stream::fn_truncate_filter resize)
+	const
 {
-	stream::output_filtered_sptr st(new stream::output_filtered());
-	filter_sptr en(new filter_xor_crypt(0, 0));
-	st->open(target, en, resize);
-	return st;
+	return std::make_unique<stream::output_filtered>(
+		target,
+		std::make_shared<filter_xor_crypt>(0, 0),
+		resize
+	);
 }
 
 } // namespace gamearchive

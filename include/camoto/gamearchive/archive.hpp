@@ -22,9 +22,8 @@
 #ifndef _CAMOTO_GAMEARCHIVE_ARCHIVE_HPP_
 #define _CAMOTO_GAMEARCHIVE_ARCHIVE_HPP_
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <exception>
-#include <sstream>
 #include <vector>
 
 #include <camoto/stream.hpp>
@@ -59,10 +58,6 @@ class EInvalidFormat: public std::exception {
 
 class Archive;
 
-/// Shared pointer to an Archive.
-typedef boost::shared_ptr<Archive> ArchivePtr;
-
-
 /// Primary interface to an archive file.
 /**
  * This class represents an archive file.  Its functions are used to manipulate
@@ -72,15 +67,15 @@ typedef boost::shared_ptr<Archive> ArchivePtr;
  *       of the functions seek around the underlying stream and thus will break
  *       if two or more functions are executing at the same time.
  */
-class Archive: virtual public Metadata {
-
+class Archive: virtual public Metadata
+{
 	public:
 		/// Base class to represent entries in the file.
 		/**
 		 * Will be extended by descendent classes to hold format-specific data.
 		 * The entries here will be valid for all archive types.
 		 */
-		struct FileEntry {
+		struct File {
 			/// Are the other fields valid?
 			/**
 			 * This only confirms whether the rest of the values are valid, as
@@ -136,24 +131,32 @@ class Archive: virtual public Metadata {
 
 
 			/// Empty constructor
-			FileEntry();
+			File();
 
 			/// Empty destructor
-			virtual ~FileEntry();
+			virtual ~File();
 
 			/// Helper function (for debugging) to return all the data as a string
 			virtual std::string getContent() const;
 
 			private:
-				/// Can't copy FileEntry instances, must use references/pointers.
-				FileEntry(const FileEntry&);
+				/// Can't copy File instances, must use references/pointers.
+				File(const File&) = delete;
+				File& operator=(const File&) = delete;
+				File(File&&) = delete;
+				File& operator=(File&&) = delete;
 		};
 
-		/// Shared pointer to a FileEntry
-		typedef boost::shared_ptr<FileEntry> EntryPtr;
+		//typedef typename std::shared_ptr<File> FileHandle;
+		typedef typename std::shared_ptr<const File> FileHandle;
+		typedef typename std::vector<FileHandle> FileVector;
 
-		/// Vector of shared FileEntry pointers
-		typedef std::vector<EntryPtr> VC_ENTRYPTR;
+		/// Get a list of all files in the archive.
+		/**
+		 * @return A vector of FileHandle with one element for each file in the
+		 *   archive.
+		 */
+		virtual const FileVector& files() const = 0;
 
 		/// Find the given file.
 		/**
@@ -166,46 +169,44 @@ class Archive: virtual public Metadata {
 		 * This could cause problems in a GUI environment when a file is dragged
 		 * but its duplicate is affected instead.  For this reason it is best to
 		 * use this function only with user input, and to otherwise use
-		 * EntryPtrs only, as returned by getFileList().
+		 * FileHandle instances only, as returned by files().
 		 *
 		 * @param strFilename
 		 *   Name of the file to search for.
 		 *
-		 * @return EntryPtr to the requested file, or an empty EntryPtr() if the
-		 *   file can't be found (EntryPtr::bValid will be false.)
+		 * @return Shared pointer to the requested file, or an empty pointer if the
+		 *   file can't be found.
 		 */
-		virtual EntryPtr find(const std::string& strFilename) const = 0;
+		virtual FileHandle find(const std::string& strFilename) const = 0;
 
-		/// Get a list of all files in the archive.
+		/// Checks that the File instance points to a file that still exists.
 		/**
-		 * @return A vector of FileEntry with one element for each file in the
-		 *   archive.
-		 */
-		virtual const VC_ENTRYPTR& getFileList(void) const = 0;
-
-		/// Checks that the EntryPtr points to a file that still exists.
-		/**
-		 * This is different to the bValid member in FileEntry as it confirms
-		 * that the EntryPtr is still valid for this particular archive file.
+		 * This is different to the bValid member in File as it confirms
+		 * that the File instance is still valid for this particular archive file.
 		 *
 		 * @param id
 		 *   Entry to check.
 		 *
-		 * @return true if the EntryPtr is valid.
+		 * @return true if the parameter refers to a valid file that can be opened,
+		 *   hasn't been deleted, etc.
 		 */
-		virtual bool isValid(const EntryPtr id) const = 0;
+		virtual bool isValid(const FileHandle& id) const = 0;
 
 		/// Open a file in the archive.
 		/**
 		 * @param id
-		 *   A valid file entry, obtained from find(), getFileList(), etc.
+		 *   A valid iterator, obtained from find(), getFileList(), etc.
 		 *
 		 * @return A C++ iostream containing the file data.  Writes to this stream
 		 *   will immediately update the data in the archive.  Writing beyond EOF
 		 *   is not permitted - use resize() if the file needs to change size (grow
 		 *   or shrink.)
+		 *
+		 * @note It would be nice to return a unique_ptr, but often the archive
+		 *   instance will need to monitor all open files so that some can be moved
+		 *   around, as files that come before them in the archive get resized.
 		 */
-		virtual stream::inout_sptr open(const EntryPtr id) = 0;
+		virtual std::shared_ptr<stream::inout> open(const FileHandle& id) = 0;
 
 		/// Open a folder in the archive.
 		/**
@@ -221,11 +222,11 @@ class Archive: virtual public Metadata {
 		 * @pre The entry must have the EA_FOLDER attribute set.
 		 *
 		 * @param id
-		 *   A valid file entry, obtained from find(), getFileList(), etc.
+		 *   A valid iterator, obtained from find(), getFileList(), etc.
 		 *
 		 * @return Another Archive instance representing the files in the folder.
 		 */
-		virtual ArchivePtr openFolder(const EntryPtr id) = 0;
+		virtual std::unique_ptr<Archive> openFolder(const FileHandle& id) = 0;
 
 		/// Insert a new file into the archive.
 		/**
@@ -239,7 +240,7 @@ class Archive: virtual public Metadata {
 		 *   done in a single pass.  However providing this class is the sole
 		 *   method of accessing the archive file, this is of no concern.
 		 *
-		 * @post Existing EntryPtrs become invalid.  Any open files remain valid.
+		 * @post Existing iterators become invalid.  Any open files remain valid.
 		 *
 		 * @param idBeforeThis
 		 *   The new file will be inserted before this one.  If it is not valid,
@@ -255,22 +256,26 @@ class Archive: virtual public Metadata {
 		 *
 		 * @param type
 		 *   MIME-like file type, or empty string for generic file.  See
-		 *   FileEntry::type.
+		 *   File::type.
 		 *
 		 * @param attr
 		 *   File attributes (one or more E_ATTRIBUTEs)
 		 *
-		 * @return An EntryPtr to the newly added file, which can be immediately
+		 * @return A pointer to the newly added file, which can be immediately
 		 *   passed to open() if needed.
 		 *
-		 * @note The returned EntryPtr may have a filter set, in the case of a
+		 * @note The returned pointer may have a filter set, in the case of a
 		 *   file with the EA_COMPRESSED attribute.  In this case the caller must
 		 *   pass the data through the appropriate filter before writing it to the
 		 *   file.  The file may also need to be resized if the filtered data ends
 		 *   up being a different size to the unfiltered data.
+		 *
+		 * @post All existing iterators are invalidated.  However adding one to the
+		 *   return value will produce a valid iterator to the same file that
+		 *   idBeforeThis pointed to before the call.
 		 */
-		virtual EntryPtr insert(const EntryPtr idBeforeThis,
-			const std::string& strFilename, stream::pos storedSize, std::string type,
+		virtual FileHandle insert(const FileHandle& idBeforeThis,
+			const std::string& strFilename, stream::len storedSize, std::string type,
 			int attr) = 0;
 
 		/// Delete the given entry from the archive.
@@ -284,9 +289,10 @@ class Archive: virtual public Metadata {
 		 * @param id
 		 *   The file to delete.
 		 *
-		 * @post Existing EntryPtrs become invalid.  Any open files remain valid.
+		 * @post id->valid becomes false.  All existing iterators are invalidated.
+		 *   Any open files remain valid.
 		 */
-		virtual void remove(EntryPtr id) = 0;
+		virtual void remove(FileHandle& id) = 0;
 
 		/// Rename a file.
 		/**
@@ -297,26 +303,26 @@ class Archive: virtual public Metadata {
 		 *
 		 * @param strNewName
 		 *   The new filename.
-		 *
-		 * @post Existing EntryPtrs remain valid.
 		 */
-		virtual void rename(EntryPtr id, const std::string& strNewName) = 0;
+		virtual void rename(FileHandle& id, const std::string& strNewName)
+			= 0;
 
 		/// Move an entry to a different position within the archive.
 		/**
 		 * Take id and place it before idBeforeThis, or last if idBeforeThis is not
 		 * valid.
 		 *
-		 * @param id
-		 *   File to move.
-		 *
 		 * @param idBeforeThis
 		 *   File will be inserted before this one.  If it is not valid, the file
 		 *   will become last in the archive.
 		 *
-		 * @post Existing EntryPtrs become invalid.  Any open files remain valid.
+		 * @param id
+		 *   File to move.
+		 *
+		 * @post All existing iterators are invalidated.  Any open files remain
+		 *   valid.
 		 */
-		virtual void move(const EntryPtr idBeforeThis, EntryPtr id) = 0;
+		virtual void move(const FileHandle& idBeforeThis, FileHandle& id) = 0;
 
 		/// Enlarge or shrink an existing file.
 		/**
@@ -340,7 +346,7 @@ class Archive: virtual public Metadata {
 		 *   value as newStoredSize unless the file is compressed, in which case this
 		 *   value will usually be larger (the decompressed size.)
 		 *
-		 * @post Existing EntryPtrs remain valid.
+		 * @post Existing iterators remain valid.
 		 *
 		 * @note Resizing files to zero will cause problems if files are already
 		 *   opened.  This is because already open files are identified by offset
@@ -351,8 +357,8 @@ class Archive: virtual public Metadata {
 		 *   does not exist if the resize is done while none of the archive's files
 		 *   are open.
 		 */
-		virtual void resize(EntryPtr id, stream::pos newStoredSize,
-			stream::pos newRealSize) = 0;
+		virtual void resize(FileHandle& id, stream::len newStoredSize,
+			stream::len newRealSize) = 0;
 
 		/// Write out any cached changes to the underlying stream.
 		/**
@@ -383,12 +389,6 @@ class Archive: virtual public Metadata {
 		 */
 		virtual int getSupportedAttributes() const = 0;
 };
-
-/// Vector of Archive shared pointers.
-typedef std::vector<ArchivePtr> ArchiveVector;
-
-/// Truncate callback for substreams that are a fixed size.
-void preventResize(stream::len len);
 
 } // namespace gamearchive
 } // namespace camoto
