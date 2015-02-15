@@ -139,8 +139,11 @@ void test_archive::addBoundTest(bool empty, boost::function<void()> fnTest,
 
 void test_archive::runTest(bool empty, boost::function<void()> fnTest)
 {
+	this->pArchive.reset();
 	this->prepareTest(empty);
 	fnTest();
+	BOOST_REQUIRE_MESSAGE(!this->pArchive || this->pArchive.unique(),
+		"Archive left with cyclic reference to itself after test");
 	return;
 }
 
