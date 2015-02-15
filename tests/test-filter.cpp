@@ -28,11 +28,11 @@ test_filter::test_filter()
 
 boost::test_tools::predicate_result test_filter::is_equal(const std::string& strExpected)
 {
-	this->in_filt = std::make_shared<stream::input_filtered>(this->in,
+	auto in_filt = std::make_shared<stream::input_filtered>(this->in,
 		this->filter);
 
 	stream::string out;
-	stream::copy(out, *this->in_filt);
+	stream::copy(out, *in_filt);
 
 	// See if the stringstream now matches what we expected
 	return this->test_main::is_equal(strExpected, out.data);
@@ -71,10 +71,10 @@ boost::test_tools::predicate_result test_filter::is_equal_write(
 boost::test_tools::predicate_result test_filter::should_fail()
 {
 	try {
-		this->in_filt = std::make_shared<stream::input_filtered>(this->in,
+		auto in_filt = std::make_shared<stream::input_filtered>(this->in,
 			this->filter);
 		stream::string out;
-		stream::copy(out, *this->in_filt);
+		stream::copy(out, *in_filt);
 	} catch (filter_error) {
 		// If we made it this far all is good
 		return boost::test_tools::predicate_result(true);

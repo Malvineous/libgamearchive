@@ -32,7 +32,6 @@ class test_filter: public test_main
 {
 	public:
 		std::shared_ptr<stream::string> in;
-		std::shared_ptr<stream::input_filtered> in_filt;
 		std::shared_ptr<camoto::filter> filter;
 
 		test_filter();
