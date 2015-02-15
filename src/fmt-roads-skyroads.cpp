@@ -120,15 +120,15 @@ ArchiveType::Certainty ArchiveType_Roads_SkyRoads::isInstance(
 }
 
 std::unique_ptr<Archive> ArchiveType_Roads_SkyRoads::create(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return std::make_unique<Archive_Roads_SkyRoads>(content);
+	return std::make_unique<Archive_Roads_SkyRoads>(std::move(content));
 }
 
 std::unique_ptr<Archive> ArchiveType_Roads_SkyRoads::open(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return std::make_unique<Archive_Roads_SkyRoads>(content);
+	return std::make_unique<Archive_Roads_SkyRoads>(std::move(content));
 }
 
 SuppFilenames ArchiveType_Roads_SkyRoads::getRequiredSupps(stream::input& content,

@@ -217,7 +217,11 @@ class test_archive: public test_main
 
 	protected:
 		/// Underlying data stream containing archive file content.
-		std::shared_ptr<stream::string> base;
+		/**
+		 * This points to the stream owned by pArchive so it will only be valid for
+		 * as long as pArchive is around.
+		 */
+		std::string *archContent;
 
 		/// Factory class used to open archives in this format.
 		ArchiveManager::handler_t pArchType;

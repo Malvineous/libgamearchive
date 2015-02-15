@@ -148,7 +148,7 @@ ArchiveType::Certainty ArchiveType_DAT_GoT::isInstance(
 }
 
 std::unique_ptr<Archive> ArchiveType_DAT_GoT::create(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	// Create an empty FAT (of 0x00 bytes) and XOR encode it.  We should really
 	// use the XOR filter but it's much quicker to do it directly.
@@ -158,13 +158,13 @@ std::unique_ptr<Archive> ArchiveType_DAT_GoT::create(
 	}
 	content->seekp(0, stream::start);
 	content->write(emptyFAT, GOT_FAT_LENGTH);
-	return std::make_unique<Archive_DAT_GoT>(content);
+	return std::make_unique<Archive_DAT_GoT>(std::move(content));
 }
 
 std::unique_ptr<Archive> ArchiveType_DAT_GoT::open(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return std::make_unique<Archive_DAT_GoT>(content);
+	return std::make_unique<Archive_DAT_GoT>(std::move(content));
 }
 
 SuppFilenames ArchiveType_DAT_GoT::getRequiredSupps(stream::input& content,

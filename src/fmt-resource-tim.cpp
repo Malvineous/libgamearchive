@@ -110,16 +110,16 @@ ArchiveType::Certainty ArchiveType_Resource_TIM::isInstance(
 }
 
 std::unique_ptr<Archive> ArchiveType_Resource_TIM::create(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return this->open(content, suppData);
+	return this->open(std::move(content), suppData);
 }
 
 std::unique_ptr<Archive> ArchiveType_Resource_TIM::open(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	assert(suppData.find(SuppItem::FAT) != suppData.end());
-	return std::make_unique<Archive_Resource_TIM>(content, suppData[SuppItem::FAT]);
+	return std::make_unique<Archive_Resource_TIM>(std::move(content), suppData[SuppItem::FAT]);
 }
 
 SuppFilenames ArchiveType_Resource_TIM::getRequiredSupps(stream::input& content,

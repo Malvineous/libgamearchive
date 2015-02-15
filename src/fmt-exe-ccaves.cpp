@@ -149,21 +149,21 @@ ArchiveType::Certainty ArchiveType_EXE_CCaves::isInstance(
 }
 
 std::unique_ptr<Archive> ArchiveType_EXE_CCaves::create(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	// This isn't a true archive so we can't create new versions of it.
 	throw stream::error("Can't create a new archive in this format.");
 }
 
 std::unique_ptr<Archive> ArchiveType_EXE_CCaves::open(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	std::vector<FixedArchiveFile> files;
 	files.reserve(sizeof(ccaves_file_list) / sizeof(FixedArchiveFile));
 	for (unsigned int i = 0; i < sizeof(ccaves_file_list) / sizeof(FixedArchiveFile); i++) {
 		files.push_back(ccaves_file_list[i]);
 	}
-	return createFixedArchive(content, files);
+	return createFixedArchive(std::move(content), files);
 }
 
 SuppFilenames ArchiveType_EXE_CCaves::getRequiredSupps(stream::input& content,

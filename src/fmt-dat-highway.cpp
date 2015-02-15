@@ -129,17 +129,17 @@ ArchiveType::Certainty ArchiveType_DAT_Highway::isInstance(
 }
 
 std::unique_ptr<Archive> ArchiveType_DAT_Highway::create(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	content->seekp(0, stream::start);
 	content->write("\x11\x00" "\x00\x00\x00\x00" "\0\0\0\0\0\0\0\0\0\0\0\0\0", 2+4+13);
-	return std::make_unique<Archive_DAT_Highway>(content);
+	return std::make_unique<Archive_DAT_Highway>(std::move(content));
 }
 
 std::unique_ptr<Archive> ArchiveType_DAT_Highway::open(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return std::make_unique<Archive_DAT_Highway>(content);
+	return std::make_unique<Archive_DAT_Highway>(std::move(content));
 }
 
 SuppFilenames ArchiveType_DAT_Highway::getRequiredSupps(stream::input& content,

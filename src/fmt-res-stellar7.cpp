@@ -113,15 +113,15 @@ ArchiveType::Certainty ArchiveType_RES_Stellar7::isInstance(
 }
 
 std::unique_ptr<Archive> ArchiveType_RES_Stellar7::create(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return this->open(content, suppData);
+	return this->open(std::move(content), suppData);
 }
 
 std::unique_ptr<Archive> ArchiveType_RES_Stellar7::open(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return std::make_unique<Archive_RES_Stellar7_Folder>(content);
+	return std::make_unique<Archive_RES_Stellar7_Folder>(std::move(content));
 }
 
 SuppFilenames ArchiveType_RES_Stellar7::getRequiredSupps(stream::input& content,

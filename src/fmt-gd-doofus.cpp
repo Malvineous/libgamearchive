@@ -76,7 +76,7 @@ ArchiveType::Certainty ArchiveType_GD_Doofus::isInstance(
 }
 
 std::unique_ptr<Archive> ArchiveType_GD_Doofus::open(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	assert(suppData.find(SuppItem::FAT) != suppData.end());
 	stream::pos lenEXE = suppData[SuppItem::FAT]->size();
@@ -96,11 +96,11 @@ std::unique_ptr<Archive> ArchiveType_GD_Doofus::open(
 	auto fat = std::make_shared<stream::sub>(
 		suppData[SuppItem::FAT], offFAT, lenFAT, preventResize
 	);
-	return std::make_unique<Archive_GD_Doofus>(content, fat);
+	return std::make_unique<Archive_GD_Doofus>(std::move(content), fat);
 }
 
 std::unique_ptr<Archive> ArchiveType_GD_Doofus::create(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	// We can't create new archives because the FAT has to go inside a
 	// specific version of an .EXE file, and we wouldn't know where that is!

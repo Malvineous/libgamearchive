@@ -124,15 +124,15 @@ ArchiveType::Certainty ArchiveType_DAT_Bash::isInstance(
 }
 
 std::unique_ptr<Archive> ArchiveType_DAT_Bash::create(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return std::make_unique<Archive_DAT_Bash>(content);
+	return std::make_unique<Archive_DAT_Bash>(std::move(content));
 }
 
 std::unique_ptr<Archive> ArchiveType_DAT_Bash::open(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return std::make_unique<Archive_DAT_Bash>(content);
+	return std::make_unique<Archive_DAT_Bash>(std::move(content));
 }
 
 SuppFilenames ArchiveType_DAT_Bash::getRequiredSupps(stream::input& content,

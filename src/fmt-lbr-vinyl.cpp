@@ -441,17 +441,17 @@ ArchiveType::Certainty ArchiveType_LBR_Vinyl::isInstance(
 }
 
 std::unique_ptr<Archive> ArchiveType_LBR_Vinyl::create(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	content->seekp(0, stream::start);
 	content->write("\x00\x00", 2);
-	return std::make_unique<Archive_LBR_Vinyl>(content);
+	return std::make_unique<Archive_LBR_Vinyl>(std::move(content));
 }
 
 std::unique_ptr<Archive> ArchiveType_LBR_Vinyl::open(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return std::make_unique<Archive_LBR_Vinyl>(content);
+	return std::make_unique<Archive_LBR_Vinyl>(std::move(content));
 }
 
 SuppFilenames ArchiveType_LBR_Vinyl::getRequiredSupps(stream::input& content,

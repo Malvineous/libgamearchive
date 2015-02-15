@@ -106,7 +106,7 @@ ArchiveType::Certainty ArchiveType_GLB_Raptor::isInstance(
 }
 
 std::unique_ptr<Archive> ArchiveType_GLB_Raptor::create(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	content->seekp(0, stream::start);
 	*content << nullPadded(
@@ -120,13 +120,13 @@ std::unique_ptr<Archive> ArchiveType_GLB_Raptor::create(
 		"\x22\x59\x8F\xC7\x0E\x5A\x9C\xCF\x01\x38\x6E\xA6"
 #endif
 		, GLB_HEADER_LEN);
-	return std::make_unique<Archive_GLB_Raptor>(content);
+	return std::make_unique<Archive_GLB_Raptor>(std::move(content));
 }
 
 std::unique_ptr<Archive> ArchiveType_GLB_Raptor::open(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return std::make_unique<Archive_GLB_Raptor>(content);
+	return std::make_unique<Archive_GLB_Raptor>(std::move(content));
 }
 
 SuppFilenames ArchiveType_GLB_Raptor::getRequiredSupps(stream::input& content,

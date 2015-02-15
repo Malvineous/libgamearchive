@@ -82,21 +82,21 @@ ArchiveType::Certainty ArchiveType_DA_Levels::isInstance(
 }
 
 std::unique_ptr<Archive> ArchiveType_DA_Levels::create(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	// This isn't a true archive so we can't create new versions of it.
 	throw stream::error("Can't create a new archive in this format.");
 }
 
 std::unique_ptr<Archive> ArchiveType_DA_Levels::open(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	std::vector<FixedArchiveFile> files;
 	files.reserve(sizeof(da_file_list) / sizeof(FixedArchiveFile));
 	for (unsigned int i = 0; i < sizeof(da_file_list) / sizeof(FixedArchiveFile); i++) {
 		files.push_back(da_file_list[i]);
 	}
-	return createFixedArchive(content, files);
+	return createFixedArchive(std::move(content), files);
 }
 
 SuppFilenames ArchiveType_DA_Levels::getRequiredSupps(stream::input& content,

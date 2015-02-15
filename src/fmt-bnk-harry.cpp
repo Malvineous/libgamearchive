@@ -105,16 +105,16 @@ ArchiveType::Certainty ArchiveType_BNK_Harry::isInstance(
 }
 
 std::unique_ptr<Archive> ArchiveType_BNK_Harry::create(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return this->open(content, suppData);
+	return this->open(std::move(content), suppData);
 }
 
 std::unique_ptr<Archive> ArchiveType_BNK_Harry::open(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	assert(suppData.find(SuppItem::FAT) != suppData.end());
-	return std::make_unique<Archive_BNK_Harry>(content, suppData[SuppItem::FAT]);
+	return std::make_unique<Archive_BNK_Harry>(std::move(content), suppData[SuppItem::FAT]);
 }
 
 SuppFilenames ArchiveType_BNK_Harry::getRequiredSupps(stream::input& content,

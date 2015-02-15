@@ -132,17 +132,17 @@ ArchiveType::Certainty ArchiveType_VOL_Cosmo::isInstance(
 }
 
 std::unique_ptr<Archive> ArchiveType_VOL_Cosmo::create(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	content->seekp(0, stream::start);
 	content->write(std::string(VOL_FAT_LENGTH, '\0'));
-	return std::make_unique<Archive_VOL_Cosmo>(content);
+	return std::make_unique<Archive_VOL_Cosmo>(std::move(content));
 }
 
 std::unique_ptr<Archive> ArchiveType_VOL_Cosmo::open(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return std::make_unique<Archive_VOL_Cosmo>(content);
+	return std::make_unique<Archive_VOL_Cosmo>(std::move(content));
 }
 
 SuppFilenames ArchiveType_VOL_Cosmo::getRequiredSupps(stream::input& content,

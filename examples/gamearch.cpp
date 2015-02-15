@@ -495,7 +495,7 @@ int main(int iArgC, char *cArgV[])
 			return RET_BADARGS;
 		}
 
-		auto psArchive = std::make_shared<stream::file>();
+		auto psArchive = std::make_unique<stream::file>();
 		if (bCreate) {
 			if (strType.empty()) {
 				std::cerr << "Error: You must specify the --type of archive to create"
@@ -638,9 +638,9 @@ finishTesting:
 		std::shared_ptr<ga::Archive> pArchive;
 		try {
 			if (bCreate) {
-				pArchive = pArchType->create(psArchive, suppData);
+				pArchive = pArchType->create(std::move(psArchive), suppData);
 			} else {
-				pArchive = pArchType->open(psArchive, suppData);
+				pArchive = pArchType->open(std::move(psArchive), suppData);
 			}
 			assert(pArchive);
 		} catch (const stream::error& e) {

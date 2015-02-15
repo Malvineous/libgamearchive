@@ -138,7 +138,7 @@ ArchiveType::Certainty ArchiveType_PCXLib::isInstance(
 }
 
 std::unique_ptr<Archive> ArchiveType_PCXLib::create(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	content->seekp(0, stream::start);
 	content->write(
@@ -156,13 +156,13 @@ std::unique_ptr<Archive> ArchiveType_PCXLib::create(
 		"\x00\x00\x00\x00\x00\x00\x00\x00",
 		128);
 
-	return std::make_unique<Archive_PCXLib>(content);
+	return std::make_unique<Archive_PCXLib>(std::move(content));
 }
 
 std::unique_ptr<Archive> ArchiveType_PCXLib::open(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return std::make_unique<Archive_PCXLib>(content);
+	return std::make_unique<Archive_PCXLib>(std::move(content));
 }
 
 SuppFilenames ArchiveType_PCXLib::getRequiredSupps(stream::input& content,

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <camoto/stream_file.hpp>
+#include <camoto/util.hpp>
 #include <camoto/gamearchive.hpp>
 
 using namespace camoto;
@@ -11,7 +12,7 @@ int main(void)
 	auto archiveType = ArchiveManager::byCode("grp-duke3d");
 
 	// Open an archive file on disk
-	auto file = std::make_shared<stream::file>();
+	auto file = std::make_unique<stream::file>();
 	file->open("duke3d.grp");
 
 	// We cheat here - we should check and load any supplementary files, but
@@ -20,7 +21,7 @@ int main(void)
 	camoto::SuppData supps;
 
 	// Use the archive format handler to read in the file we opened as an archive
-	auto arch = archiveType->open(file, supps);
+	auto arch = archiveType->open(std::move(file), supps);
 
 	// Get a list of all the files in the archive
 	auto& contents = arch->files();

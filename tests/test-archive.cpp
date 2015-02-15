@@ -165,7 +165,8 @@ void test_archive::prepareTest(bool emptyArchive)
 		this->suppData[SuppItem::FAT] = suppSS;
 	}
 
-	this->base = std::make_shared<stream::string>();
+	auto base = std::make_unique<stream::string>();
+	this->archContent = &base->data;
 
 	if (emptyArchive) {
 		BOOST_TEST_CHECKPOINT("About to create new empty instance of "
@@ -173,16 +174,18 @@ void test_archive::prepareTest(bool emptyArchive)
 		// This should really use BOOST_REQUIRE_NO_THROW but the message is more
 		// informative without it.
 		//BOOST_REQUIRE_NO_THROW(
-			this->pArchive = this->pArchType->create(this->base, this->suppData);
+			this->pArchive = this->pArchType->create(
+				std::move(base), this->suppData);
 		//);
 	} else {
-		*this->base << this->initialstate();
+		*base << this->initialstate();
 		BOOST_TEST_CHECKPOINT("About to open " + this->basename
 			+ " initialstate as an archive");
 		// This should really use BOOST_REQUIRE_NO_THROW but the message is more
 		// informative without it.
 		//BOOST_REQUIRE_NO_THROW(
-		this->pArchive = this->pArchType->open(this->base, this->suppData);
+		this->pArchive = this->pArchType->open(
+			std::move(base), this->suppData);
 		//);
 	}
 	BOOST_REQUIRE_MESSAGE(this->pArchive, "Could not create archive class");
@@ -288,7 +291,7 @@ void test_archive::test_invalidContent(const std::string& content,
 	BOOST_REQUIRE_MESSAGE(pTestType,
 		createString("Could not find archive type " << this->type));
 
-	auto ss = std::make_shared<stream::string>();
+	auto ss = std::make_unique<stream::string>();
 	*ss << content;
 
 	// Make sure isInstance reports this is valid
@@ -296,7 +299,7 @@ void test_archive::test_invalidContent(const std::string& content,
 
 	// But that we get an error when trying to open the file
 	BOOST_CHECK_THROW(
-		std::unique_ptr<Archive> pArchive(pTestType->open(ss, this->suppData)),
+		auto pArchive = pTestType->open(std::move(ss), this->suppData),
 		stream::error
 	);
 
@@ -346,7 +349,7 @@ boost::test_tools::predicate_result test_archive::is_content_equal(
 		this->pArchive->flush()
 	);
 
-	return this->is_equal(exp, this->base->data);
+	return this->is_equal(exp, *this->archContent);
 }
 
 boost::test_tools::predicate_result test_archive::is_supp_equal(
@@ -370,6 +373,11 @@ void test_archive::test_isinstance_others()
 	// Check all file formats except this one to avoid any false positives
 	BOOST_TEST_MESSAGE("isInstance check for other formats (not " << this->type
 		<< ")");
+
+	auto base = std::make_unique<stream::string>();
+	this->archContent = &base->data;
+	*base << this->initialstate();
+
 	for (const auto& pTestType : ArchiveManager::formats()) {
 		// Don't check our own type, that's done by the other isinstance_* tests
 		std::string otherType = pTestType->code();
@@ -1000,7 +1008,9 @@ void test_archive::test_shortext()
 	BOOST_REQUIRE_MESSAGE(pTestType,
 		createString("Could not find archive type " << this->type));
 
-	this->pArchive = pTestType->open(this->base, this->suppData);
+	auto base = std::make_unique<stream::string>(*this->archContent);
+	this->archContent = &base->data;
+	this->pArchive = pTestType->open(std::move(base), this->suppData);
 
 	// See if we can find the file again
 	ep = this->pArchive->find(this->filename_shortext);
@@ -1030,9 +1040,12 @@ void test_archive::test_new_isinstance()
 
 	this->pArchive->flush();
 
+	auto base = std::make_unique<stream::string>(*this->archContent);
+	this->archContent = &base->data;
+
 	auto pTestType = ArchiveManager::byCode(this->type);
 
-	BOOST_REQUIRE_MESSAGE(pTestType->isInstance(*this->base),
+	BOOST_REQUIRE_MESSAGE(pTestType->isInstance(*base),
 		"Newly created archive was not recognised as a valid instance");
 
 	BOOST_TEST_CHECKPOINT("New archive reported valid, trying to open");
@@ -1040,7 +1053,7 @@ void test_archive::test_new_isinstance()
 	// This should really use BOOST_REQUIRE_NO_THROW but the message is more
 	// informative without it.
 	//BOOST_REQUIRE_NO_THROW(
-		boost::shared_ptr<Archive> pArchive(pTestType->open(this->base, suppData));
+		auto pArchive = pTestType->open(std::move(base), suppData);
 	//);
 
 	// Make sure there are now no files in the archive

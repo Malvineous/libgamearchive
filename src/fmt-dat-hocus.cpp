@@ -75,7 +75,7 @@ ArchiveType::Certainty ArchiveType_DAT_Hocus::isInstance(
 }
 
 std::unique_ptr<Archive> ArchiveType_DAT_Hocus::open(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	assert(suppData.find(SuppItem::FAT) != suppData.end());
 	stream::pos lenEXE = suppData[SuppItem::FAT]->size();
@@ -111,11 +111,11 @@ std::unique_ptr<Archive> ArchiveType_DAT_Hocus::open(
 	auto fat = std::make_shared<stream::sub>(
 		suppData[SuppItem::FAT], offFAT, lenFAT, preventResize
 	);
-	return std::make_unique<Archive_DAT_Hocus>(content, fat);
+	return std::make_unique<Archive_DAT_Hocus>(std::move(content), fat);
 }
 
 std::unique_ptr<Archive> ArchiveType_DAT_Hocus::create(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	// We can't create new archives because the FAT has to go inside a
 	// specific version of an .EXE file, and we wouldn't know where that is!

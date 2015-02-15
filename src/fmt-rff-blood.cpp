@@ -101,7 +101,7 @@ ArchiveType::Certainty ArchiveType_RFF_Blood::isInstance(
 }
 
 std::unique_ptr<Archive> ArchiveType_RFF_Blood::create(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	content->seekp(0, stream::start);
 	*content
@@ -113,13 +113,13 @@ std::unique_ptr<Archive> ArchiveType_RFF_Blood::create(
 		<< u32le(0)               // Unknown
 		<< u32le(0)               // Unknown
 		<< u32le(0);              // Unknown
-	return std::make_unique<Archive_RFF_Blood>(content);
+	return std::make_unique<Archive_RFF_Blood>(std::move(content));
 }
 
 std::unique_ptr<Archive> ArchiveType_RFF_Blood::open(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return std::make_unique<Archive_RFF_Blood>(content);
+	return std::make_unique<Archive_RFF_Blood>(std::move(content));
 }
 
 SuppFilenames ArchiveType_RFF_Blood::getRequiredSupps(stream::input& content,

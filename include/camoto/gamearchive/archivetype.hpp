@@ -101,7 +101,7 @@ class ArchiveType
 		 *   valid empty file had been opened by open().
 		 */
 		virtual std::unique_ptr<Archive> create(
-			std::shared_ptr<stream::inout> content, SuppData& suppData) const = 0;
+			std::unique_ptr<stream::inout> content, SuppData& suppData) const = 0;
 
 		/// Open an archive file.
 		/**
@@ -120,7 +120,7 @@ class ArchiveType
 		 *   handler.
 		 */
 		virtual std::unique_ptr<Archive> open(
-			std::shared_ptr<stream::inout> content, SuppData& suppData) const = 0;
+			std::unique_ptr<stream::inout> content, SuppData& suppData) const = 0;
 
 		/// Get a list of any required supplemental files.
 		/**

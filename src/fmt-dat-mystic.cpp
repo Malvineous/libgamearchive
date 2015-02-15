@@ -127,17 +127,17 @@ ArchiveType::Certainty ArchiveType_DAT_Mystic::isInstance(
 }
 
 std::unique_ptr<Archive> ArchiveType_DAT_Mystic::create(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	content->seekp(0, stream::start);
 	*content << u16le(0);
-	return std::make_unique<Archive_DAT_Mystic>(content);
+	return std::make_unique<Archive_DAT_Mystic>(std::move(content));
 }
 
 std::unique_ptr<Archive> ArchiveType_DAT_Mystic::open(
-	std::shared_ptr<stream::inout> content, SuppData& suppData) const
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return std::make_unique<Archive_DAT_Mystic>(content);
+	return std::make_unique<Archive_DAT_Mystic>(std::move(content));
 }
 
 SuppFilenames ArchiveType_DAT_Mystic::getRequiredSupps(stream::input& content,
