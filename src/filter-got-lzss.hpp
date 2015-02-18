@@ -21,7 +21,7 @@
 #ifndef _CAMOTO_FILTER_GOT_LZSS_HPP_
 #define _CAMOTO_FILTER_GOT_LZSS_HPP_
 
-#include <boost/shared_array.hpp>
+#include <memory>
 #include <camoto/filter.hpp>
 #include <camoto/gamearchive/filtertype.hpp>
 
@@ -31,6 +31,8 @@ namespace gamearchive {
 class filter_got_unlzss: virtual public filter
 {
 	public:
+		constexpr static int GOT_DICT_SIZE = 4096;
+
 		virtual void reset(stream::len lenInput);
 		virtual void transform(uint8_t *out, stream::len *lenOut,
 			const uint8_t *in, stream::len *lenIn);
@@ -40,7 +42,7 @@ class filter_got_unlzss: virtual public filter
 		unsigned int blocksLeft; ///< Number of blocks left
 		unsigned int lzssDictPos;
 		unsigned int lzssLength;
-		boost::shared_array<uint8_t> dictionary;
+		uint8_t dictionary[GOT_DICT_SIZE];
 		unsigned int dictPos;
 		unsigned int lenDecomp; ///< Target output size
 		unsigned int numDecomp; ///< Current output size

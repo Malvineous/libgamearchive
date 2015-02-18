@@ -18,14 +18,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <cassert>
 #include <camoto/stream_filtered.hpp>
 #include <camoto/util.hpp> // std::make_unique
 #include "filter-got-lzss.hpp"
 
 namespace camoto {
 namespace gamearchive {
-
-#define GOT_DICT_SIZE 4096
 
 #define ADD_DICT(c) \
 	this->dictionary[this->dictPos] = c; \
@@ -37,7 +36,7 @@ void filter_got_unlzss::reset(stream::len lenInput)
 	this->blocksLeft = 0;
 	this->state = S0_READ_LEN;
 	this->lzssLength = 0;
-	this->dictionary.reset(new uint8_t[GOT_DICT_SIZE]);
+	memset(this->dictionary, 0, sizeof(uint8_t) * GOT_DICT_SIZE);
 	this->dictPos = 0;
 	this->lenDecomp = 0;
 	this->numDecomp = 0;

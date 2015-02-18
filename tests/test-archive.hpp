@@ -23,7 +23,7 @@
 
 #include <map>
 #include <boost/test/unit_test.hpp>
-#include <boost/bind.hpp>
+#include <functional>
 #include <camoto/stream_string.hpp>
 #include <camoto/gamearchive.hpp>
 #include "tests.hpp"
@@ -143,7 +143,7 @@ class test_archive: public test_main
 		virtual std::string metadata_set_desc_smaller();
 
 		/// Add a test to the suite.  Used by ADD_ARCH_TEST().
-		void addBoundTest(bool empty, boost::function<void()> fnTest,
+		void addBoundTest(bool empty, std::function<void()> fnTest,
 			boost::unit_test::const_string name);
 
 		/// Reset the archive to the initial state and run the given test.
@@ -155,7 +155,7 @@ class test_archive: public test_main
 		 * @param fnTest
 		 *   Function to call once archive is back to initial state.
 		 */
-		void runTest(bool empty, boost::function<void()> fnTest);
+		void runTest(bool empty, std::function<void()> fnTest);
 
 		/// Populate suppBase with default content.
 		/**
@@ -365,7 +365,7 @@ class test_archive: public test_main
 
 /// Add a test_archive member function to the test suite
 #define ADD_ARCH_TEST(empty, fn) {	  \
-	boost::function<void()> fnTest = boost::bind(fn, this); \
+	std::function<void()> fnTest = std::bind(fn, this); \
 	this->test_archive::addBoundTest(empty, fnTest, BOOST_TEST_STRINGIZE(fn)); \
 }
 

@@ -18,12 +18,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <functional>
 #define BOOST_FILESYSTEM_VERSION 3
 #include <boost/algorithm/string.hpp> // for case-insensitive string compare
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/iostreams/copy.hpp>
-#include <boost/bind.hpp>
 #include <camoto/stream_file.hpp>
 #include <camoto/util.hpp>
 #include <camoto/gamearchive.hpp>

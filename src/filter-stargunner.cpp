@@ -23,8 +23,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <cassert>
+#include <functional>
 #include <stack>
-#include <boost/bind.hpp>
 #include <camoto/filter.hpp>
 #include <camoto/stream_filtered.hpp>
 #include <camoto/util.hpp> // std::make_unique

@@ -23,7 +23,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/bind.hpp>
+#include <functional>
 #include <camoto/stream_filtered.hpp>
 #include <camoto/util.hpp> // std::make_unique
 
@@ -41,7 +41,8 @@ filter_z66_decompress::~filter_z66_decompress()
 {
 }
 
-int filter_z66_decompress::nextChar(const uint8_t **in, stream::len *lenIn, stream::len *r, uint8_t *out)
+int filter_z66_decompress::nextChar(const uint8_t **in, stream::len *lenIn,
+	stream::len *r, uint8_t *out)
 {
 	if (*r < *lenIn) {
 		*out = **in; // "read" byte
@@ -74,7 +75,8 @@ void filter_z66_decompress::transform(uint8_t *out, stream::len *lenOut,
 {
 	stream::len r = 0, w = 0;
 
-	fn_getnextchar cbNext = boost::bind(&filter_z66_decompress::nextChar, this, &in, lenIn, &r, _1);
+	fn_getnextchar cbNext = std::bind(&filter_z66_decompress::nextChar, this,
+		&in, lenIn, &r, std::placeholders::_1);
 
 	while (
 		(w < *lenOut)  // while there is more space to write into
@@ -99,7 +101,9 @@ void filter_z66_decompress::transform(uint8_t *out, stream::len *lenOut,
 				break;
 			}
 			case 1: {
-				if (this->data.read(cbNext, this->codeLength, &this->code) != this->codeLength) {
+				if (this->data.read(cbNext, this->codeLength, &this->code)
+					!= this->codeLength
+				) {
 					goto done;
 				}
 				this->curCode = this->code;
@@ -201,7 +205,8 @@ void filter_z66_compress::transform(uint8_t *out, stream::len *lenOut,
 {
 	stream::len r = 0, w = 0;
 
-	fn_putnextchar cbNext = boost::bind(&filter_z66_compress::putChar, this, &out, lenOut, &w, _1);
+	fn_putnextchar cbNext = std::bind(&filter_z66_compress::putChar, this, &out,
+		lenOut, &w, std::placeholders::_1);
 
 	if (*lenIn == 0) {
 		// No more data to read, so flush

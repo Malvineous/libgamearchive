@@ -19,7 +19,7 @@
  */
 
 #include <iomanip>
-#include <boost/bind.hpp>
+#include <functional>
 #include <camoto/util.hpp>
 #include "test-archive.hpp"
 
@@ -141,10 +141,10 @@ void test_archive::addTests()
 	return;
 }
 
-void test_archive::addBoundTest(bool empty, boost::function<void()> fnTest,
+void test_archive::addBoundTest(bool empty, std::function<void()> fnTest,
 	boost::unit_test::const_string name)
 {
-	boost::function<void()> fnTestWrapper = boost::bind(&test_archive::runTest,
+	std::function<void()> fnTestWrapper = std::bind(&test_archive::runTest,
 		this, empty, fnTest);
 	this->ts->add(boost::unit_test::make_test_case(
 		boost::unit_test::callback0<>(fnTestWrapper),
@@ -153,7 +153,7 @@ void test_archive::addBoundTest(bool empty, boost::function<void()> fnTest,
 	return;
 }
 
-void test_archive::runTest(bool empty, boost::function<void()> fnTest)
+void test_archive::runTest(bool empty, std::function<void()> fnTest)
 {
 	this->pArchive.reset();
 	this->prepareTest(empty);
@@ -294,7 +294,7 @@ void test_archive::populateSuppData()
 void test_archive::isInstance(ArchiveType::Certainty result,
 	const std::string& content)
 {
-	boost::function<void()> fnTest = boost::bind(&test_archive::test_isInstance,
+	std::function<void()> fnTest = std::bind(&test_archive::test_isInstance,
 		this, result, content, this->numIsInstanceTests);
 	this->ts->add(boost::unit_test::make_test_case(
 			boost::unit_test::callback0<>(fnTest),
@@ -324,7 +324,7 @@ void test_archive::test_isInstance(ArchiveType::Certainty result,
 
 void test_archive::invalidContent(const std::string& content)
 {
-	boost::function<void()> fnTest = boost::bind(&test_archive::test_invalidContent,
+	std::function<void()> fnTest = std::bind(&test_archive::test_invalidContent,
 		this, content, this->numInvalidContentTests);
 	this->ts->add(boost::unit_test::make_test_case(
 			boost::unit_test::callback0<>(fnTest),
@@ -366,7 +366,7 @@ void test_archive::test_invalidContent(const std::string& content,
 void test_archive::changeMetadata(camoto::Metadata::MetadataType item,
 	const std::string& newValue, const std::string& content)
 {
-	boost::function<void()> fnTest = boost::bind(&test_archive::test_changeMetadata,
+	std::function<void()> fnTest = std::bind(&test_archive::test_changeMetadata,
 		this, item, newValue, content, this->numChangeMetadataTests);
 	this->ts->add(boost::unit_test::make_test_case(
 			boost::unit_test::callback0<>(fnTest),

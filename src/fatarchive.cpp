@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/bind.hpp>
+#include <functional>
 #include <boost/algorithm/string.hpp>
 #include <camoto/util.hpp> // createString
 #include "fatarchive.hpp"

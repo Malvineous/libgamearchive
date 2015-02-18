@@ -22,7 +22,7 @@
  */
 
 #include <boost/algorithm/string.hpp>
-#include <boost/bind.hpp>
+#include <functional>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/util.hpp>
 
@@ -183,7 +183,7 @@ Archive_DAT_GoT::Archive_DAT_GoT(std::unique_ptr<stream::inout> content)
 		this->content,
 		0,
 		GOT_MAX_FILES * GOT_FAT_ENTRY_LEN,
-		boost::bind<void>(&Archive_DAT_GoT::truncateFAT, this, _2)
+		std::bind<void>(&Archive_DAT_GoT::truncateFAT, this, std::placeholders::_2)
 	);
 
 #ifdef USE_XOR

@@ -19,7 +19,7 @@
  */
 
 #include <iostream>
-#include <boost/bind.hpp>
+#include <functional>
 #include <camoto/stream_filtered.hpp>
 #include <camoto/util.hpp> // std::make_unique
 #include "filter-skyroads.hpp"
@@ -62,7 +62,8 @@ void filter_skyroads_unlzs::transform(uint8_t *out, stream::len *lenOut,
 	const uint8_t *in, stream::len *lenIn)
 {
 	stream::len r = 0, w = 0;
-	fn_getnextchar cbNext = boost::bind(nextChar, &in, lenIn, &r, _1);
+	fn_getnextchar cbNext = std::bind(nextChar, &in, lenIn, &r,
+		std::placeholders::_1);
 
 	// While there's more space to write, and either more data to read or
 	// more data to write
@@ -219,7 +220,8 @@ void filter_skyroads_lzs::transform(uint8_t *out, stream::len *lenOut,
 	const uint8_t *in, stream::len *lenIn)
 {
 	stream::len r = 0, w = 0;
-	fn_putnextchar cbNext = boost::bind(putChar, &out, lenOut, &w, _1);
+	fn_putnextchar cbNext = std::bind(putChar, &out, lenOut, &w,
+		std::placeholders::_1);
 
 	while (              // while there is...
 		(w + 2 < *lenOut) // leave some leftover bytes to guarantee the codeword will be written

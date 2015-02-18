@@ -20,7 +20,7 @@
  */
 
 #include <boost/algorithm/string.hpp>
-#include <boost/bind.hpp>
+#include <functional>
 #include <camoto/util.hpp>
 #include <camoto/gamearchive/fixedarchive.hpp>
 
