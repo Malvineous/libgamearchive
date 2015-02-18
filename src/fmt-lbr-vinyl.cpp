@@ -483,7 +483,7 @@ Archive_LBR_Vinyl::Archive_LBR_Vinyl(std::unique_ptr<stream::inout> content)
 		}
 
 		uint32_t offNext, offCur;
-		uint16_t hashNext, hashCur; // TODO: store in new LBREntry class
+		uint16_t hashNext = 0, hashCur; // TODO: store in new LBREntry class
 		*this->content
 			>> u16le(hashCur)
 			>> u32le(offCur)
