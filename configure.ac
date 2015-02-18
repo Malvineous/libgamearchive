@@ -12,7 +12,7 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_LANG(C++)
 
 # Overarching version of all libraries (used for installation dir)
-AC_SUBST(camoto_release, camoto-1.0)
+AC_SUBST(camoto_release, camoto-2.0)
 
 AC_PROG_CXX
 AC_PROG_LIBTOOL
