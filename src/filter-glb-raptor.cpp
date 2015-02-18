@@ -156,11 +156,11 @@ std::vector<std::string> FilterType_GLB_Raptor_FAT::games() const
 }
 
 std::unique_ptr<stream::inout> FilterType_GLB_Raptor_FAT::apply(
-	std::shared_ptr<stream::inout> target, stream::fn_truncate_filter resize)
+	std::unique_ptr<stream::inout> target, stream::fn_notify_prefiltered_size resize)
 	const
 {
 	return std::make_unique<stream::filtered>(
-		target,
+		std::move(target),
 		std::make_shared<filter_glb_decrypt>(GLB_KEY, GLB_BLOCKLEN),
 		std::make_shared<filter_glb_encrypt>(GLB_KEY, GLB_BLOCKLEN),
 		resize
@@ -168,20 +168,20 @@ std::unique_ptr<stream::inout> FilterType_GLB_Raptor_FAT::apply(
 }
 
 std::unique_ptr<stream::input> FilterType_GLB_Raptor_FAT::apply(
-	std::shared_ptr<stream::input> target) const
+	std::unique_ptr<stream::input> target) const
 {
 	return std::make_unique<stream::input_filtered>(
-		target,
+		std::move(target),
 		std::make_shared<filter_glb_decrypt>(GLB_KEY, GLB_BLOCKLEN)
 	);
 }
 
 std::unique_ptr<stream::output> FilterType_GLB_Raptor_FAT::apply(
-	std::shared_ptr<stream::output> target, stream::fn_truncate_filter resize)
+	std::unique_ptr<stream::output> target, stream::fn_notify_prefiltered_size resize)
 	const
 {
 	return std::make_unique<stream::output_filtered>(
-		target,
+		std::move(target),
 		std::make_shared<filter_glb_encrypt>(GLB_KEY, GLB_BLOCKLEN),
 		resize
 	);
@@ -214,11 +214,11 @@ std::vector<std::string> FilterType_GLB_Raptor_File::games() const
 }
 
 std::unique_ptr<stream::inout> FilterType_GLB_Raptor_File::apply(
-	std::shared_ptr<stream::inout> target, stream::fn_truncate_filter resize)
+	std::unique_ptr<stream::inout> target, stream::fn_notify_prefiltered_size resize)
 	const
 {
 	return std::make_unique<stream::filtered>(
-		target,
+		std::move(target),
 		std::make_shared<filter_glb_decrypt>(GLB_KEY, 0),
 		std::make_shared<filter_glb_encrypt>(GLB_KEY, 0),
 		resize
@@ -226,20 +226,20 @@ std::unique_ptr<stream::inout> FilterType_GLB_Raptor_File::apply(
 }
 
 std::unique_ptr<stream::input> FilterType_GLB_Raptor_File::apply(
-	std::shared_ptr<stream::input> target) const
+	std::unique_ptr<stream::input> target) const
 {
 	return std::make_unique<stream::input_filtered>(
-		target,
+		std::move(target),
 		std::make_shared<filter_glb_decrypt>(GLB_KEY, 0)
 	);
 }
 
 std::unique_ptr<stream::output> FilterType_GLB_Raptor_File::apply(
-	std::shared_ptr<stream::output> target, stream::fn_truncate_filter resize)
+	std::unique_ptr<stream::output> target, stream::fn_notify_prefiltered_size resize)
 	const
 {
 	return std::make_unique<stream::output_filtered>(
-		target,
+		std::move(target),
 		std::make_shared<filter_glb_encrypt>(GLB_KEY, 0),
 		resize
 	);

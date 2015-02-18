@@ -18,18 +18,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/bind.hpp>
+#include <memory>
+#include <camoto/util.hpp> // std::make_unique
 #include "test-filter.hpp"
 
 test_filter::test_filter()
-	:	in(std::make_shared<stream::string>())
+	:	in(std::make_unique<stream::string>())
 {
 }
 
 boost::test_tools::predicate_result test_filter::is_equal(const std::string& strExpected)
 {
-	auto in_filt = std::make_shared<stream::input_filtered>(this->in,
-		this->filter);
+	auto in_filt = std::make_unique<stream::input_filtered>(
+		std::move(this->in),
+		std::move(this->filter)
+	);
 
 	stream::string out;
 	stream::copy(out, *in_filt);
@@ -43,7 +46,7 @@ boost::test_tools::predicate_result test_filter::is_equal_read(
 {
 	this->in->write(strInput);
 
-	auto s = ft->apply(this->in);
+	auto s = ft->apply(std::move(this->in));
 
 	stream::string out;
 	stream::copy(out, *s);
@@ -56,23 +59,26 @@ boost::test_tools::predicate_result test_filter::is_equal_write(
 	camoto::gamearchive::FilterType *ft, const std::string& strInput,
 	const std::string& strExpected)
 {
-	std::shared_ptr<stream::inout> in2 = this->in;
-	stream::fn_truncate_filter fnTruncate = boost::bind(&stream::string::truncate,
-		this->in.get(), _2);
-	std::shared_ptr<stream::inout> s = ft->apply(in2, fnTruncate);
+	const std::string *indata = &this->in->data;
+	auto s = ft->apply(
+		std::unique_ptr<stream::inout>(std::move(this->in)),
+		stream::fn_notify_prefiltered_size()
+	);
 
 	s->write(strInput);
 	s->flush();
 
 	// See if the stringstream now matches what we expected
-	return this->test_main::is_equal(strExpected, this->in->data);
+	return this->test_main::is_equal(strExpected, *indata);
 }
 
 boost::test_tools::predicate_result test_filter::should_fail()
 {
 	try {
-		auto in_filt = std::make_shared<stream::input_filtered>(this->in,
-			this->filter);
+		auto in_filt = std::make_shared<stream::input_filtered>(
+			std::move(this->in),
+			std::move(this->filter)
+		);
 		stream::string out;
 		stream::copy(out, *in_filt);
 	} catch (filter_error) {

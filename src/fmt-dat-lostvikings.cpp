@@ -123,16 +123,16 @@ ArchiveType::Certainty ArchiveType_DAT_LostVikings::isInstance(
 	return DefinitelyYes;
 }
 
-std::unique_ptr<Archive> ArchiveType_DAT_LostVikings::create(
+std::shared_ptr<Archive> ArchiveType_DAT_LostVikings::create(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return std::make_unique<Archive_DAT_LostVikings>(std::move(content));
+	return std::make_shared<Archive_DAT_LostVikings>(std::move(content));
 }
 
-std::unique_ptr<Archive> ArchiveType_DAT_LostVikings::open(
+std::shared_ptr<Archive> ArchiveType_DAT_LostVikings::open(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return std::make_unique<Archive_DAT_LostVikings>(std::move(content));
+	return std::make_shared<Archive_DAT_LostVikings>(std::move(content));
 }
 
 SuppFilenames ArchiveType_DAT_LostVikings::getRequiredSupps(stream::input& content,

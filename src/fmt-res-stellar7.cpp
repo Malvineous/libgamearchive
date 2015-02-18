@@ -112,16 +112,16 @@ ArchiveType::Certainty ArchiveType_RES_Stellar7::isInstance(
 	return DefinitelyYes;
 }
 
-std::unique_ptr<Archive> ArchiveType_RES_Stellar7::create(
+std::shared_ptr<Archive> ArchiveType_RES_Stellar7::create(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	return this->open(std::move(content), suppData);
 }
 
-std::unique_ptr<Archive> ArchiveType_RES_Stellar7::open(
+std::shared_ptr<Archive> ArchiveType_RES_Stellar7::open(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return std::make_unique<Archive_RES_Stellar7_Folder>(std::move(content));
+	return std::make_shared<Archive_RES_Stellar7_Folder>(std::move(content));
 }
 
 SuppFilenames ArchiveType_RES_Stellar7::getRequiredSupps(stream::input& content,
@@ -182,27 +182,15 @@ Archive_RES_Stellar7_Folder::~Archive_RES_Stellar7_Folder()
 {
 }
 
-std::unique_ptr<Archive> Archive_RES_Stellar7_Folder::openFolder(
+std::shared_ptr<Archive> Archive_RES_Stellar7_Folder::openFolder(
 	const FileHandle& id)
 {
 	// Make sure we're opening a folder
 	assert(id->fAttr & EA_FOLDER);
 
-	auto s = this->open(id);
-	// We need an std::unique_ptr here, so construct a substream around the
-	// shared pointer and use the substream as the unique_ptr.
-	auto unique = std::make_unique<stream::sub>(
-		s,
-		0,
-		s->size(),
-		[s](stream::output_sub* sub, stream::len newSize) {
-			// Adjust underlying stream
-			s->truncate(newSize);
-			// Update substream
-			sub->resize(newSize);
-		}
+	return std::make_shared<Archive_RES_Stellar7_Folder>(
+		this->open(id, true)
 	);
-	return std::make_unique<Archive_RES_Stellar7_Folder>(std::move(unique));
 }
 
 void Archive_RES_Stellar7_Folder::updateFileName(const FATEntry *pid,

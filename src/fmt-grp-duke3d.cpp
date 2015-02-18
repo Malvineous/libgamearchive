@@ -100,18 +100,18 @@ ArchiveType::Certainty ArchiveType_GRP_Duke3D::isInstance(
 	return DefinitelyYes;
 }
 
-std::unique_ptr<Archive> ArchiveType_GRP_Duke3D::create(
+std::shared_ptr<Archive> ArchiveType_GRP_Duke3D::create(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	content->seekp(0, stream::start);
 	content->write("KenSilverman\0\0\0\0", 16);
-	return std::make_unique<Archive_GRP_Duke3D>(std::move(content));
+	return std::make_shared<Archive_GRP_Duke3D>(std::move(content));
 }
 
-std::unique_ptr<Archive> ArchiveType_GRP_Duke3D::open(
+std::shared_ptr<Archive> ArchiveType_GRP_Duke3D::open(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return std::make_unique<Archive_GRP_Duke3D>(std::move(content));
+	return std::make_shared<Archive_GRP_Duke3D>(std::move(content));
 }
 
 SuppFilenames ArchiveType_GRP_Duke3D::getRequiredSupps(stream::input& data,

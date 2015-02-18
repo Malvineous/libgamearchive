@@ -31,8 +31,8 @@ using namespace camoto::gamearchive;
 class test_filter: public test_main
 {
 	public:
-		std::shared_ptr<stream::string> in;
-		std::shared_ptr<camoto::filter> filter;
+		std::unique_ptr<stream::string> in;
+		std::unique_ptr<camoto::filter> filter;
 
 		test_filter();
 

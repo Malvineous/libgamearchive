@@ -97,18 +97,18 @@ ArchiveType::Certainty ArchiveType_DLT_Stargunner::isInstance(
 	return DefinitelyNo;
 }
 
-std::unique_ptr<Archive> ArchiveType_DLT_Stargunner::create(
+std::shared_ptr<Archive> ArchiveType_DLT_Stargunner::create(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	content->seekp(0, stream::start);
 	content->write("DAVE\x00\x01\x00\x00", 8);
-	return std::make_unique<Archive_DLT_Stargunner>(std::move(content));
+	return std::make_shared<Archive_DLT_Stargunner>(std::move(content));
 }
 
-std::unique_ptr<Archive> ArchiveType_DLT_Stargunner::open(
+std::shared_ptr<Archive> ArchiveType_DLT_Stargunner::open(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return std::make_unique<Archive_DLT_Stargunner>(std::move(content));
+	return std::make_shared<Archive_DLT_Stargunner>(std::move(content));
 }
 
 SuppFilenames ArchiveType_DLT_Stargunner::getRequiredSupps(stream::input& content,

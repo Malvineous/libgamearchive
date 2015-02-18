@@ -74,14 +74,14 @@ std::vector<std::string> FilterType_SAM_Base::games() const
 }
 
 std::unique_ptr<stream::inout> FilterType_SAM_Base::apply(
-	std::shared_ptr<stream::inout> target, stream::fn_truncate_filter resize)
+	std::unique_ptr<stream::inout> target, stream::fn_notify_prefiltered_size resize)
 	const
 {
 	auto fswap = std::make_shared<filter_bitswap>();
 
 	return std::make_unique<stream::filtered>(
 		std::make_unique<stream::filtered>(
-			target,
+			std::move(target),
 			// Since the bitswap doesn't care how many bytes have been read or
 			// written, we can use the same filter for both reading and writing.
 			fswap,
@@ -92,18 +92,18 @@ std::unique_ptr<stream::inout> FilterType_SAM_Base::apply(
 		// affect the XOR key next used when writing to the other.
 		std::make_shared<filter_sam_crypt>(this->resetInterval),
 		std::make_shared<filter_sam_crypt>(this->resetInterval),
-		stream::fn_truncate_filter()
+		stream::fn_notify_prefiltered_size()
 	);
 }
 
 std::unique_ptr<stream::input> FilterType_SAM_Base::apply(
-	std::shared_ptr<stream::input> target) const
+	std::unique_ptr<stream::input> target) const
 {
 	auto fswap = std::make_shared<filter_bitswap>();
 
 	return std::make_unique<stream::input_filtered>(
 		std::make_unique<stream::input_filtered>(
-			target,
+			std::move(target),
 			fswap
 		),
 		std::make_shared<filter_sam_crypt>(this->resetInterval)
@@ -111,19 +111,19 @@ std::unique_ptr<stream::input> FilterType_SAM_Base::apply(
 }
 
 std::unique_ptr<stream::output> FilterType_SAM_Base::apply(
-	std::shared_ptr<stream::output> target, stream::fn_truncate_filter resize)
+	std::unique_ptr<stream::output> target, stream::fn_notify_prefiltered_size resize)
 	const
 {
 	auto fswap = std::make_shared<filter_bitswap>();
 
 	return std::make_unique<stream::output_filtered>(
 		std::make_unique<stream::output_filtered>(
-			target,
+			std::move(target),
 			fswap,
 			resize
 		),
 		std::make_shared<filter_sam_crypt>(this->resetInterval),
-		stream::fn_truncate_filter()
+		stream::fn_notify_prefiltered_size()
 	);
 }
 

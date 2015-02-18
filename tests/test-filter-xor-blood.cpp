@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(rff_crypt_write_filteredstream)
 		out,
 		std::make_shared<filter_rff_crypt>(0, 0),
 		std::make_shared<filter_rff_crypt>(0, 0),
-		stream::fn_truncate_filter()
+		stream::fn_notify_prefiltered_size()
 	);
 
 	f->write("\x00\x01\x02\x03\xFF\xFF\xFF\xFF", 8);

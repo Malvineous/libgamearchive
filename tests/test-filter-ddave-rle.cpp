@@ -220,11 +220,14 @@ BOOST_AUTO_TEST_CASE(decoder_trail)
 
 	*this->in << STRING_WITH_NULLS(DATA_ENCODED DATA_BAD_TRAIL);
 
+	// Save access to the string as is_equal() will std::move() it
+	const std::string *indata = &this->in->data;
+
 	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(DATA_DECODED)),
 		"Decoding RLE data with trailing incomplete code was not ignored");
 
 	BOOST_CHECK_MESSAGE(this->test_main::is_equal(STRING_WITH_NULLS(DATA_ENCODED
-		DATA_BAD_TRAIL), this->in->data),
+		DATA_BAD_TRAIL), *indata),
 		"Decoding RLE data corrupted the source data");
 }
 

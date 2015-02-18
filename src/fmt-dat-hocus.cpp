@@ -22,6 +22,7 @@
  */
 
 #include <camoto/iostream_helpers.hpp>
+#include <camoto/util.hpp>
 #include <camoto/gamearchive/util.hpp>
 #include "fmt-dat-hocus.hpp"
 
@@ -74,7 +75,7 @@ ArchiveType::Certainty ArchiveType_DAT_Hocus::isInstance(
 	return Unsure;
 }
 
-std::unique_ptr<Archive> ArchiveType_DAT_Hocus::open(
+std::shared_ptr<Archive> ArchiveType_DAT_Hocus::open(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	assert(suppData.find(SuppItem::FAT) != suppData.end());
@@ -108,7 +109,7 @@ std::unique_ptr<Archive> ArchiveType_DAT_Hocus::open(
 		default:
 			throw stream::error("Unknown file version");
 	}
-	return std::make_unique<Archive_DAT_Hocus>(
+	return std::make_shared<Archive_DAT_Hocus>(
 		std::move(content),
 		std::make_unique<stream::sub>(
 			std::move(suppData[SuppItem::FAT]), offFAT, lenFAT, preventResize
@@ -116,7 +117,7 @@ std::unique_ptr<Archive> ArchiveType_DAT_Hocus::open(
 	);
 }
 
-std::unique_ptr<Archive> ArchiveType_DAT_Hocus::create(
+std::shared_ptr<Archive> ArchiveType_DAT_Hocus::create(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	// We can't create new archives because the FAT has to go inside a

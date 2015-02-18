@@ -100,7 +100,7 @@ ArchiveType::Certainty ArchiveType_RFF_Blood::isInstance(
 	return DefinitelyNo;
 }
 
-std::unique_ptr<Archive> ArchiveType_RFF_Blood::create(
+std::shared_ptr<Archive> ArchiveType_RFF_Blood::create(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	content->seekp(0, stream::start);
@@ -113,13 +113,13 @@ std::unique_ptr<Archive> ArchiveType_RFF_Blood::create(
 		<< u32le(0)               // Unknown
 		<< u32le(0)               // Unknown
 		<< u32le(0);              // Unknown
-	return std::make_unique<Archive_RFF_Blood>(std::move(content));
+	return std::make_shared<Archive_RFF_Blood>(std::move(content));
 }
 
-std::unique_ptr<Archive> ArchiveType_RFF_Blood::open(
+std::shared_ptr<Archive> ArchiveType_RFF_Blood::open(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return std::make_unique<Archive_RFF_Blood>(std::move(content));
+	return std::make_shared<Archive_RFF_Blood>(std::move(content));
 }
 
 SuppFilenames ArchiveType_RFF_Blood::getRequiredSupps(stream::input& content,
@@ -350,7 +350,7 @@ void Archive_RFF_Blood::flush()
 			fatPlaintext = std::make_shared<stream::output_filtered>(
 				fatSubStream,
 				std::make_shared<filter_rff_crypt>(0, offFAT & 0xFF),
-				stream::fn_truncate_filter()
+				stream::fn_notify_prefiltered_size()
 			);
 		} else {
 			fatPlaintext = fatSubStream;

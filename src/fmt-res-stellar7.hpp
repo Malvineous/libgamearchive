@@ -39,9 +39,9 @@ class ArchiveType_RES_Stellar7: virtual public ArchiveType
 		virtual std::vector<std::string> fileExtensions() const;
 		virtual std::vector<std::string> games() const;
 		virtual ArchiveType::Certainty isInstance(stream::input& content) const;
-		virtual std::unique_ptr<Archive> create(
+		virtual std::shared_ptr<Archive> create(
 			std::unique_ptr<stream::inout> content, SuppData& suppData) const;
-		virtual std::unique_ptr<Archive> open(
+		virtual std::shared_ptr<Archive> open(
 			std::unique_ptr<stream::inout> content, SuppData& suppData) const;
 		virtual SuppFilenames getRequiredSupps(stream::input& content,
 			const std::string& filenameArchive) const;
@@ -54,7 +54,7 @@ class Archive_RES_Stellar7_Folder: virtual public FATArchive
 		Archive_RES_Stellar7_Folder(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_RES_Stellar7_Folder();
 
-		virtual std::unique_ptr<Archive> openFolder(const FileHandle& id);
+		virtual std::shared_ptr<Archive> openFolder(const FileHandle& id);
 
 		virtual void updateFileName(const FATEntry *pid,
 			const std::string& strNewName);

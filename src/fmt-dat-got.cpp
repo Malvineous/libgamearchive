@@ -147,7 +147,7 @@ ArchiveType::Certainty ArchiveType_DAT_GoT::isInstance(
 	return DefinitelyYes;
 }
 
-std::unique_ptr<Archive> ArchiveType_DAT_GoT::create(
+std::shared_ptr<Archive> ArchiveType_DAT_GoT::create(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	// Create an empty FAT (of 0x00 bytes) and XOR encode it.  We should really
@@ -158,13 +158,13 @@ std::unique_ptr<Archive> ArchiveType_DAT_GoT::create(
 	}
 	content->seekp(0, stream::start);
 	content->write(emptyFAT, GOT_FAT_LENGTH);
-	return std::make_unique<Archive_DAT_GoT>(std::move(content));
+	return std::make_shared<Archive_DAT_GoT>(std::move(content));
 }
 
-std::unique_ptr<Archive> ArchiveType_DAT_GoT::open(
+std::shared_ptr<Archive> ArchiveType_DAT_GoT::open(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return std::make_unique<Archive_DAT_GoT>(std::move(content));
+	return std::make_shared<Archive_DAT_GoT>(std::move(content));
 }
 
 SuppFilenames ArchiveType_DAT_GoT::getRequiredSupps(stream::input& content,
@@ -191,7 +191,7 @@ Archive_DAT_GoT::Archive_DAT_GoT(std::unique_ptr<stream::inout> content)
 		std::move(fatSubStream),
 		std::make_shared<filter_xor_crypt>(0, 128),
 		std::make_shared<filter_xor_crypt>(0, 128),
-		stream::fn_truncate_filter()
+		stream::fn_notify_prefiltered_size()
 	);
 #else
 	auto fatFilter = std::move(fatSubStream);

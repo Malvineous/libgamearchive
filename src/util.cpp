@@ -102,14 +102,8 @@ void findFile(std::shared_ptr<Archive> *pArchive,
 
 void preventResize(stream::output_sub* sub, stream::len len)
 {
-	throw stream::write_error("This file is a fixed size, it cannot be made smaller or larger.");
-}
-
-void setRealSize(std::shared_ptr<Archive> arch,
-	Archive::FileHandle id, stream::len newRealSize)
-{
-	arch->resize(id, id->storedSize, newRealSize);
-	return;
+	throw stream::write_error("This file is a fixed size, it cannot be made "
+		"smaller or larger.");
 }
 
 } // namespace gamearchive

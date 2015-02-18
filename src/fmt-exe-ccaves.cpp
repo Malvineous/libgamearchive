@@ -148,14 +148,14 @@ ArchiveType::Certainty ArchiveType_EXE_CCaves::isInstance(
 	return DefinitelyNo;
 }
 
-std::unique_ptr<Archive> ArchiveType_EXE_CCaves::create(
+std::shared_ptr<Archive> ArchiveType_EXE_CCaves::create(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	// This isn't a true archive so we can't create new versions of it.
 	throw stream::error("Can't create a new archive in this format.");
 }
 
-std::unique_ptr<Archive> ArchiveType_EXE_CCaves::open(
+std::shared_ptr<Archive> ArchiveType_EXE_CCaves::open(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	std::vector<FixedArchiveFile> files;

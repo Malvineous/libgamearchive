@@ -239,35 +239,35 @@ std::vector<std::string> FilterType_Stargunner::games() const
 }
 
 std::unique_ptr<stream::inout> FilterType_Stargunner::apply(
-	std::shared_ptr<stream::inout> target, stream::fn_truncate_filter resize)
+	std::unique_ptr<stream::inout> target, stream::fn_notify_prefiltered_size resize)
 	const
 {
 	return std::make_unique<stream::filtered>(
-		target,
+		std::move(target),
 		std::make_shared<filter_stargunner_decompress>(),
 		/// @todo Implement Stargunner compression
-		std::shared_ptr<filter>(),//std::make_shared<filter_stargunner_compress>(),
+		std::unique_ptr<filter>(),//std::make_shared<filter_stargunner_compress>(),
 		resize
 	);
 }
 
 std::unique_ptr<stream::input> FilterType_Stargunner::apply(
-	std::shared_ptr<stream::input> target) const
+	std::unique_ptr<stream::input> target) const
 {
 	return std::make_unique<stream::input_filtered>(
-		target,
+		std::move(target),
 		std::make_shared<filter_stargunner_decompress>()
 	);
 }
 
 std::unique_ptr<stream::output> FilterType_Stargunner::apply(
-	std::shared_ptr<stream::output> target,  stream::fn_truncate_filter resize)
+	std::unique_ptr<stream::output> target,  stream::fn_notify_prefiltered_size resize)
 	const
 {
 	return std::make_unique<stream::output_filtered>(
-		target,
+		std::move(target),
 		/// @todo Implement Stargunner compression
-		std::shared_ptr<filter>(),//std::make_shared<filter_stargunner_compress>(),
+		std::unique_ptr<filter>(),//std::make_shared<filter_stargunner_compress>(),
 		resize
 	);
 }

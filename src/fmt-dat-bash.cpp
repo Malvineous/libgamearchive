@@ -123,16 +123,16 @@ ArchiveType::Certainty ArchiveType_DAT_Bash::isInstance(
 	return DefinitelyYes;
 }
 
-std::unique_ptr<Archive> ArchiveType_DAT_Bash::create(
+std::shared_ptr<Archive> ArchiveType_DAT_Bash::create(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return std::make_unique<Archive_DAT_Bash>(std::move(content));
+	return std::make_shared<Archive_DAT_Bash>(std::move(content));
 }
 
-std::unique_ptr<Archive> ArchiveType_DAT_Bash::open(
+std::shared_ptr<Archive> ArchiveType_DAT_Bash::open(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return std::make_unique<Archive_DAT_Bash>(std::move(content));
+	return std::make_shared<Archive_DAT_Bash>(std::move(content));
 }
 
 SuppFilenames ArchiveType_DAT_Bash::getRequiredSupps(stream::input& content,
@@ -300,15 +300,13 @@ void Archive_DAT_Bash::updateFileName(const FATEntry *pid, const std::string& st
 }
 
 void Archive_DAT_Bash::updateFileOffset(const FATEntry *pid,
-	stream::delta offDelta
-)
+	stream::delta offDelta)
 {
 	return;
 }
 
 void Archive_DAT_Bash::updateFileSize(const FATEntry *pid,
-	stream::delta sizeDelta
-)
+	stream::delta sizeDelta)
 {
 	if (pid->storedSize > 65535) {
 		throw stream::error(createString("The file \"" << pid->strName
@@ -338,9 +336,8 @@ void Archive_DAT_Bash::updateFileSize(const FATEntry *pid,
 	return;
 }
 
-void Archive_DAT_Bash::preInsertFile(
-	const FATEntry *idBeforeThis, FATEntry *pNewEntry
-)
+void Archive_DAT_Bash::preInsertFile(const FATEntry *idBeforeThis,
+	FATEntry *pNewEntry)
 {
 	// See if file extension is known and set type appropriately
 	int newLen = pNewEntry->strName.length();

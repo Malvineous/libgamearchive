@@ -104,17 +104,17 @@ ArchiveType::Certainty ArchiveType_BNK_Harry::isInstance(
 	return DefinitelyYes;
 }
 
-std::unique_ptr<Archive> ArchiveType_BNK_Harry::create(
+std::shared_ptr<Archive> ArchiveType_BNK_Harry::create(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	return this->open(std::move(content), suppData);
 }
 
-std::unique_ptr<Archive> ArchiveType_BNK_Harry::open(
+std::shared_ptr<Archive> ArchiveType_BNK_Harry::open(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	assert(suppData.find(SuppItem::FAT) != suppData.end());
-	return std::make_unique<Archive_BNK_Harry>(
+	return std::make_shared<Archive_BNK_Harry>(
 		std::move(content),
 		std::move(suppData[SuppItem::FAT])
 	);

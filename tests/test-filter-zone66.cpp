@@ -195,14 +195,16 @@ BOOST_AUTO_TEST_CASE(encode_decode_20k)
 	}
 
 	// Compress the data
-	auto in_filt = std::make_shared<stream::input_filtered>(this->in,
-		this->filter);
+	auto in_filt = std::make_shared<stream::input_filtered>(
+		std::move(this->in),
+		std::move(this->filter)
+	);
 	stream::string out;
 	stream::copy(out, *in_filt);
 
 	// Wipe the original data stream
 	in_filt = nullptr;
-	this->in = std::make_shared<stream::string>();
+	this->in = std::make_unique<stream::string>();
 
 	// Decompress the data back into the original data stream
 	out.seekg(0, stream::start);

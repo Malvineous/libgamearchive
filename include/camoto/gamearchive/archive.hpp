@@ -197,6 +197,10 @@ class Archive: virtual public Metadata
 		 * @param id
 		 *   A valid iterator, obtained from find(), getFileList(), etc.
 		 *
+		 * @param useFilter
+		 *   True to apply any filters before the stream is returned, false to
+		 *   return a raw unfiltered stream.
+		 *
 		 * @return A C++ iostream containing the file data.  Writes to this stream
 		 *   will immediately update the data in the archive.  Writing beyond EOF
 		 *   is not permitted - use resize() if the file needs to change size (grow
@@ -206,7 +210,8 @@ class Archive: virtual public Metadata
 		 *   instance will need to monitor all open files so that some can be moved
 		 *   around, as files that come before them in the archive get resized.
 		 */
-		virtual std::shared_ptr<stream::inout> open(const FileHandle& id) = 0;
+		virtual std::unique_ptr<stream::inout> open(const FileHandle& id,
+			bool useFilter) = 0;
 
 		/// Open a folder in the archive.
 		/**
@@ -225,8 +230,12 @@ class Archive: virtual public Metadata
 		 *   A valid iterator, obtained from find(), getFileList(), etc.
 		 *
 		 * @return Another Archive instance representing the files in the folder.
+		 *   This is a shared pointer because it is safe to share the returned
+		 *   object without one access method interfering (too much) with another.
+		 *   It is also an implementation detail as often open files will need
+		 *   to hold on to their parent Archive instance.
 		 */
-		virtual std::unique_ptr<Archive> openFolder(const FileHandle& id) = 0;
+		virtual std::shared_ptr<Archive> openFolder(const FileHandle& id) = 0;
 
 		/// Insert a new file into the archive.
 		/**

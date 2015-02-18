@@ -21,8 +21,8 @@
 #include <boost/bind.hpp>
 #include <boost/algorithm/string.hpp>
 #include <camoto/util.hpp> // createString
-
 #include "fatarchive.hpp"
+#include "stream_archfile.hpp"
 
 namespace camoto {
 namespace gamearchive {
@@ -75,6 +75,13 @@ FATArchive::~FATArchive()
 	// Can't flush here as it could throw stream::error and we have no way
 	// of handling it.
 	//this->flush(); // make sure it saves on close just in case
+
+	// Mark all open files as invalid, just in case someone still has a reference
+	// to them without a reference to this archive.
+	for (auto& i : this->vcFAT) {
+		auto i2 = const_cast<Archive::File*>(&*i);
+		i2->bValid = false;
+	}
 }
 
 const Archive::FileVector& FATArchive::files() const
@@ -102,7 +109,8 @@ bool FATArchive::isValid(const FileHandle& id) const
 	return ((id2) && (id2->bValid));
 }
 
-std::shared_ptr<stream::inout> FATArchive::open(const FileHandle& id)
+std::unique_ptr<stream::inout> FATArchive::open(const FileHandle& id,
+	bool useFilter)
 {
 	// TESTED BY: fmt_grp_duke3d_open
 
@@ -113,52 +121,23 @@ std::shared_ptr<stream::inout> FATArchive::open(const FileHandle& id)
 	// code opens this file (even though it's flagged as a folder) and then
 	// passes the data to the Archive.
 
-	// We are casting away const here, but that's because we need to maintain
-	// access to the FileHandle, which we may need to "change" later (to update
-	// the offset if another file gets inserted before it, i.e. any change would
-	// not be visible externally.)
-	auto pFAT = fatentry_cast(id);
-
-	auto psSub = std::make_shared<stream::sub>(
-		this->content,
-		pFAT->iOffset + pFAT->lenHeader,
-		pFAT->storedSize,
-		[id, this](stream::output_sub* sub, stream::len newSize) {
-			// An open substream belonging to file entry 'id' wants to be resized.
-
-			stream::len newRealSize;
-			if (id->fAttr & EA_COMPRESSED) {
-				// We're compressed, so the real and stored sizes are both valid
-				newRealSize = id->realSize;
-			} else {
-				// We're not compressed, so the real size won't be updated by a filter,
-				// so we need to update it here.
-				newRealSize = newSize;
-			}
-
-			// Resize the file in the archive.  This function will also tell the
-			// substream it can now write to a larger area.
-			// We are updating both the stored (in-archive) and the real (extracted)
-			// sizes, to handle the case where no filters are used and the sizes are
-			// the same.  When filters are in use, the flush() function that writes
-			// the filtered data out should call us first, then call the archive's
-			// resize() function with the correct real/extracted size.
-			FileHandle& id_noconst = const_cast<FileHandle&>(id);
-			this->resize(id_noconst, newSize, newRealSize);
-		}
+	auto raw = std::make_unique<archfile>(
+		this->shared_from_this(),
+		id,
+		this->content
 	);
 
-	// Add it to the list of open files, in case we need to shift the substream
-	// around later on as files are added/removed/resized.
-	// pFAT is passed to a shared_ptr constructor so it had better not be a raw
-	// pointer type here or we'll get double-free errors.
-	auto fatHandle = std::dynamic_pointer_cast<FATEntry>(std::const_pointer_cast<File>(id));
-	this->openFiles.emplace(fatHandle, std::weak_ptr<stream::sub>(psSub));
+	if (useFilter && !id->filter.empty()) {
+		return applyFilter(
+			std::unique_ptr<stream::inout>(std::move(raw)),
+			id->filter
+		);
+	}
 
-	return psSub;
+	return std::move(raw);
 }
 
-std::unique_ptr<Archive> FATArchive::openFolder(const FileHandle& id)
+std::shared_ptr<Archive> FATArchive::openFolder(const FileHandle& id)
 {
 	// This function should only be called for folders (not files)
 	assert(id->fAttr & EA_FOLDER);
@@ -276,21 +255,6 @@ void FATArchive::remove(FileHandle& id)
 	auto pFAT = fatentry_cast(id);
 	assert(pFAT);
 
-	// Make sure the file isn't currently open
-	for (auto i = this->openFiles.begin(); i != this->openFiles.end(); ) {
-		if (i->first.get() == pFAT) {
-			if (auto sub = i->second.lock()) {
-				throw stream::error("Cannot remove an open file.  Close the file then "
-					"try again.");
-			} else {
-				// this file has been closed, so remove it from the list
-				i = this->openFiles.erase(i);
-				continue; // avoid i++ below
-			}
-		}
-		i++;
-	}
-
 	// Remove the file's entry from the FAT
 	this->preRemoveFile(pFAT);
 
@@ -343,7 +307,7 @@ void FATArchive::rename(FileHandle& id, const std::string& strNewName)
 void FATArchive::move(const FileHandle& idBeforeThis, FileHandle& id)
 {
 	// Open the file we want to move
-	std::shared_ptr<stream::inout> src(this->open(id));
+	auto src = this->open(id, false);
 	assert(src);
 
 	// Insert a new file at the destination index
@@ -357,7 +321,7 @@ void FATArchive::move(const FileHandle& idBeforeThis, FileHandle& id)
 			" - try removing and then adding it instead");
 	}
 
-	std::shared_ptr<stream::inout> dst(this->open(n));
+	auto dst = this->open(n, false);
 	assert(dst);
 
 	// Copy the data into the new file's position
@@ -420,21 +384,6 @@ void FATArchive::resize(FileHandle& id, stream::len newStoredSize,
 		// The internal file size is changing, so adjust the offsets etc. of the
 		// rest of the files in the archive, including any open streams.
 		this->shiftFiles(pFAT, iStart, iDelta, 0);
-
-		// Resize any open substreams for this file
-		for (auto i = this->openFiles.begin(); i != this->openFiles.end(); ) {
-			if (i->first.get() == pFAT) {
-				if (auto sub = i->second.lock()) {
-					sub->resize(newStoredSize);
-					// no break, could be multiple opens for same entry
-				} else {
-					// this file has been closed, so remove it from the list
-					i = this->openFiles.erase(i);
-					continue; // avoid i++ below
-				}
-			}
-			i++;
-		}
 	} // else only realSize changed
 
 	return;
@@ -470,22 +419,6 @@ void FATArchive::shiftFiles(const FATEntry *fatSkip, stream::pos offStart,
 			this->updateFileOffset(pFAT, deltaOffset);
 		}
 	}
-
-	// Relocate any open substreams
-	for (auto i = this->openFiles.begin(); i != this->openFiles.end(); ) {
-		if (i->first->bValid) {
-			if (this->entryInRange(i->first.get(), offStart, fatSkip)) {
-				if (auto sub = i->second.lock()) {
-					sub->relocate(deltaOffset);
-				}
-			}
-			i++;
-		} else {
-			// this file has been closed, so remove it from the list
-			i = this->openFiles.erase(i);
-		}
-	}
-
 	return;
 }
 

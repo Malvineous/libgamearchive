@@ -91,18 +91,18 @@ ArchiveType::Certainty ArchiveType_HOG_Descent::isInstance(
 	return DefinitelyNo;
 }
 
-std::unique_ptr<Archive> ArchiveType_HOG_Descent::create(
+std::shared_ptr<Archive> ArchiveType_HOG_Descent::create(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	content->seekp(0, stream::start);
 	content->write("DHF", 3);
-	return std::make_unique<Archive_HOG_Descent>(std::move(content));
+	return std::make_shared<Archive_HOG_Descent>(std::move(content));
 }
 
-std::unique_ptr<Archive> ArchiveType_HOG_Descent::open(
+std::shared_ptr<Archive> ArchiveType_HOG_Descent::open(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return std::make_unique<Archive_HOG_Descent>(std::move(content));
+	return std::make_shared<Archive_HOG_Descent>(std::move(content));
 }
 
 SuppFilenames ArchiveType_HOG_Descent::getRequiredSupps(stream::input& content,

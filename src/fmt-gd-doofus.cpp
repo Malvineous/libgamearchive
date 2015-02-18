@@ -22,6 +22,7 @@
  */
 
 #include <camoto/iostream_helpers.hpp>
+#include <camoto/util.hpp>
 #include <camoto/gamearchive/util.hpp>
 #include "fmt-gd-doofus.hpp"
 
@@ -75,7 +76,7 @@ ArchiveType::Certainty ArchiveType_GD_Doofus::isInstance(
 	return Unsure;
 }
 
-std::unique_ptr<Archive> ArchiveType_GD_Doofus::open(
+std::shared_ptr<Archive> ArchiveType_GD_Doofus::open(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	assert(suppData.find(SuppItem::FAT) != suppData.end());
@@ -93,7 +94,7 @@ std::unique_ptr<Archive> ArchiveType_GD_Doofus::open(
 		default:
 			throw stream::error("Unknown file version");
 	}
-	return std::make_unique<Archive_GD_Doofus>(
+	return std::make_shared<Archive_GD_Doofus>(
 		std::move(content),
 		std::make_unique<stream::sub>(
 			std::move(suppData[SuppItem::FAT]), offFAT, lenFAT, preventResize
@@ -101,7 +102,7 @@ std::unique_ptr<Archive> ArchiveType_GD_Doofus::open(
 	);
 }
 
-std::unique_ptr<Archive> ArchiveType_GD_Doofus::create(
+std::shared_ptr<Archive> ArchiveType_GD_Doofus::create(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	// We can't create new archives because the FAT has to go inside a

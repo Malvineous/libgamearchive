@@ -122,22 +122,22 @@ ArchiveType::Certainty ArchiveType_DAT_Hugo::isInstance(
 	return DefinitelyYes;
 }
 
-std::unique_ptr<Archive> ArchiveType_DAT_Hugo::create(
+std::shared_ptr<Archive> ArchiveType_DAT_Hugo::create(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	// Return an empty file
-	return std::make_unique<Archive_DAT_Hugo>(std::move(content), nullptr);
+	return std::make_shared<Archive_DAT_Hugo>(std::move(content), nullptr);
 }
 
-std::unique_ptr<Archive> ArchiveType_DAT_Hugo::open(
+std::shared_ptr<Archive> ArchiveType_DAT_Hugo::open(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	if (suppData.find(SuppItem::FAT) != suppData.end()) {
-		return std::make_unique<Archive_DAT_Hugo>(
+		return std::make_shared<Archive_DAT_Hugo>(
 			std::move(content), std::move(suppData[SuppItem::FAT])
 		);
 	}
-	return std::make_unique<Archive_DAT_Hugo>(std::move(content), nullptr);
+	return std::make_shared<Archive_DAT_Hugo>(std::move(content), nullptr);
 }
 
 SuppFilenames ArchiveType_DAT_Hugo::getRequiredSupps(stream::input& content,

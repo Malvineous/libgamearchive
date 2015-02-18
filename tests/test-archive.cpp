@@ -38,6 +38,21 @@ using namespace camoto::gamearchive;
 		); \
 	}
 
+std::unique_ptr<stream::sub> stream_wrap(std::shared_ptr<stream::inout> base)
+{
+	return std::make_unique<stream::sub>(
+		base,
+		0,
+		base->size(),
+		[base](stream::output_sub* sub, stream::len newSize) {
+			// Adjust underlying stream
+			base->truncate(newSize);
+			// Update substream
+			sub->resize(newSize);
+		}
+	);
+}
+
 test_archive::test_archive()
 	:	init(false),
 		numIsInstanceTests(0),
@@ -102,6 +117,7 @@ void test_archive::addTests()
 	ADD_ARCH_TEST(false, &test_archive::test_resize_larger);
 	ADD_ARCH_TEST(false, &test_archive::test_resize_smaller);
 	ADD_ARCH_TEST(false, &test_archive::test_resize_write);
+	ADD_ARCH_TEST(false, &test_archive::test_resize_after_close);
 	ADD_ARCH_TEST(false, &test_archive::test_remove_all_re_add);
 	ADD_ARCH_TEST(false, &test_archive::test_insert_zero_then_resize);
 	ADD_ARCH_TEST(false, &test_archive::test_resize_over64k);
@@ -141,9 +157,19 @@ void test_archive::runTest(bool empty, boost::function<void()> fnTest)
 {
 	this->pArchive.reset();
 	this->prepareTest(empty);
+	BOOST_REQUIRE_MESSAGE(
+		this->pArchive.unique(),
+		"Archive has multiple references (" << this->pArchive.use_count()
+			<< ", expected 1) before use - this shouldn't happen!"
+	);
 	fnTest();
-	BOOST_REQUIRE_MESSAGE(!this->pArchive || this->pArchive.unique(),
-		"Archive left with cyclic reference to itself after test");
+	if (this->pArchive) {
+		BOOST_REQUIRE_MESSAGE(
+			this->pArchive.unique(),
+			"Archive left with " << this->pArchive.use_count()
+				<< " references after test (should be only 1)"
+		);
+	}
 	return;
 }
 
@@ -161,8 +187,7 @@ void test_archive::prepareTest(bool emptyArchive)
 	this->resetSuppData(emptyArchive);
 	this->populateSuppData();
 
-	auto base = std::make_unique<stream::string>();
-	this->archContent = &base->data;
+	this->base = std::make_unique<stream::string>();
 
 	if (emptyArchive) {
 		BOOST_TEST_CHECKPOINT("About to create new empty instance of "
@@ -171,7 +196,7 @@ void test_archive::prepareTest(bool emptyArchive)
 		// informative without it.
 		//BOOST_REQUIRE_NO_THROW(
 			this->pArchive = this->pArchType->create(
-				std::move(base), this->suppData);
+				stream_wrap(this->base), this->suppData);
 		//);
 	} else {
 		*base << this->initialstate();
@@ -181,7 +206,7 @@ void test_archive::prepareTest(bool emptyArchive)
 		// informative without it.
 		//BOOST_REQUIRE_NO_THROW(
 		this->pArchive = this->pArchType->open(
-			std::move(base), this->suppData);
+			stream_wrap(this->base), this->suppData);
 		//);
 	}
 	BOOST_REQUIRE_MESSAGE(this->pArchive, "Could not create archive class");
@@ -261,17 +286,7 @@ void test_archive::populateSuppData()
 		auto& suppSS = i.second;
 		// Wrap this in a substream to get a unique pointer, with an independent
 		// seek position.
-		this->suppData[item] = std::make_unique<stream::sub>(
-			suppSS,
-			0,
-			suppSS->size(),
-			[suppSS](stream::output_sub* sub, stream::len newSize) {
-				// Adjust underlying stream
-				suppSS->truncate(newSize);
-				// Update substream
-				sub->resize(newSize);
-			}
-		);
+		this->suppData[item] = stream_wrap(suppSS);
 	}
 	return;
 }
@@ -388,10 +403,10 @@ boost::test_tools::predicate_result test_archive::is_content_equal(
 {
 	// Flush out any changes before we perform the check
 	BOOST_CHECK_NO_THROW(
-		this->pArchive->flush()
+		if (this->pArchive) this->pArchive->flush()
 	);
 
-	return this->is_equal(exp, *this->archContent);
+	return this->is_equal(exp, this->base->data);
 }
 
 boost::test_tools::predicate_result test_archive::is_supp_equal(
@@ -400,7 +415,7 @@ boost::test_tools::predicate_result test_archive::is_supp_equal(
 	// Flush out any changes to the main archive before we perform the check,
 	// in case this function was called first.
 	BOOST_CHECK_NO_THROW(
-		this->pArchive->flush()
+		if (this->pArchive) this->pArchive->flush()
 	);
 
 	// Use the supp's test-class' own comparison function, as this will use its
@@ -415,9 +430,8 @@ void test_archive::test_isinstance_others()
 	BOOST_TEST_MESSAGE("isInstance check for other formats (not " << this->type
 		<< ")");
 
-	auto base = std::make_unique<stream::string>();
-	this->archContent = &base->data;
-	*base << this->initialstate();
+	stream::string content;
+	content << this->initialstate();
 
 	for (const auto& pTestType : ArchiveManager::formats()) {
 		// Don't check our own type, that's done by the other isinstance_* tests
@@ -433,7 +447,7 @@ void test_archive::test_isinstance_others()
 		BOOST_TEST_MESSAGE("Checking " << this->type
 			<< " content against isInstance() for " << otherType);
 
-		BOOST_CHECK_MESSAGE(pTestType->isInstance(*base) < ArchiveType::DefinitelyYes,
+		BOOST_CHECK_MESSAGE(pTestType->isInstance(content) < ArchiveType::DefinitelyYes,
 			"isInstance() for " << otherType << " incorrectly recognises content for "
 			<< this->type);
 	}
@@ -447,14 +461,12 @@ void test_archive::test_open()
 	auto ep = this->findFile(0);
 
 	// Open it
-	auto pfsIn = this->pArchive->open(ep);
+	auto pfsIn = this->pArchive->open(ep, true);
+
 	stream::string out;
 
 	// Make sure the file opens at the start
 	BOOST_REQUIRE_EQUAL(pfsIn->tellg(), 0);
-
-	// Apply any decryption/decompression filter
-	applyFilter(&pfsIn, this->pArchive, ep);
 
 	// Copy it into the stringstream
 	stream::copy(out, *pfsIn);
@@ -578,10 +590,7 @@ void test_archive::test_insert_end()
 		"Couldn't create new file in sample archive");
 
 	// Open it
-	auto pfsNew = this->pArchive->open(ep);
-
-	// Apply any encryption/compression filter
-	applyFilter(&pfsNew, this->pArchive, ep);
+	auto pfsNew = this->pArchive->open(ep, true);
 
 	// Set the size of the file we want to write
 	pfsNew->truncate(this->content[2].length());
@@ -612,10 +621,7 @@ void test_archive::test_insert_mid()
 		"Couldn't insert new file in sample archive");
 
 	// Open it
-	auto pfsNew = this->pArchive->open(ep);
-
-	// Apply any encryption/compression filter
-	applyFilter(&pfsNew, this->pArchive, ep);
+	auto pfsNew = this->pArchive->open(ep, true);
 
 	pfsNew->write(this->content[2]);
 	pfsNew->flush();
@@ -643,10 +649,7 @@ void test_archive::test_insert2()
 		"Couldn't insert first new file in sample archive");
 
 	// Open it
-	auto pfsNew1 = this->pArchive->open(ep1);
-
-	// Apply any encryption/compression filter
-	applyFilter(&pfsNew1, this->pArchive, ep1);
+	auto pfsNew1 = this->pArchive->open(ep1, true);
 
 	pfsNew1->write(this->content[2]);
 	pfsNew1->flush();
@@ -661,10 +664,7 @@ void test_archive::test_insert2()
 	BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(ep2),
 		"Couldn't insert second new file in sample archive");
 
-	std::shared_ptr<stream::inout> pfsNew2(this->pArchive->open(ep2));
-
-	// Apply any encryption/compression filter
-	applyFilter(&pfsNew2, this->pArchive, ep2);
+	auto pfsNew2 = this->pArchive->open(ep2, true);
 
 	pfsNew2->write(this->content[3]);
 	pfsNew2->flush();
@@ -719,22 +719,23 @@ void test_archive::test_remove_open()
 
 	auto ep1 = this->findFile(0);
 
-	auto content1 = this->pArchive->open(ep1);
+	auto content1 = this->pArchive->open(ep1, false);
 
-	// Removing an open file should fail
-	BOOST_CHECK_THROW(
-		this->pArchive->remove(ep1),
-		stream::error
-	);
+	// Removing an open file should be allowed
+	this->pArchive->remove(ep1);
 
 	BOOST_CHECK_MESSAGE(
-		this->is_content_equal(this->initialstate()),
-		"Archive corrupted after refused file removal"
+		this->is_content_equal(this->remove()),
+		"Error removing open file"
 	);
 
-	// Use the stream so the compiler doesn't optimise the variable out, closing
-	// the file before we try to remove it.
-	content1->seekg(0, stream::start);
+	CHECK_SUPP_ITEM(FAT, remove, "Error removing open file");
+
+	// But now it should no longer be possible to use the file
+	BOOST_CHECK_THROW(
+		content1->seekg(0, stream::start),
+		stream::error
+	);
 }
 
 void test_archive::test_insert_remove()
@@ -752,10 +753,7 @@ void test_archive::test_insert_remove()
 		"Couldn't insert new file in sample archive");
 
 	// Open it
-	auto pfsNew = this->pArchive->open(ep);
-
-	// Apply any encryption/compression filter
-	applyFilter(&pfsNew, this->pArchive, ep);
+	auto pfsNew = this->pArchive->open(ep, true);
 
 	pfsNew->write(this->content[2]);
 	pfsNew->flush();
@@ -793,10 +791,7 @@ void test_archive::test_remove_insert()
 		"Couldn't insert new file in sample archive");
 
 	// Open it
-	auto pfsNew = this->pArchive->open(ep);
-
-	// Apply any encryption/compression filter
-	applyFilter(&pfsNew, this->pArchive, ep);
+	auto pfsNew = this->pArchive->open(ep, true);
 
 	pfsNew->write(this->content[2]);
 	pfsNew->flush();
@@ -878,10 +873,7 @@ void test_archive::test_resize_write()
 	// stream and use truncate() instead.
 	//this->pArchive->resize(ep, sizeof(CONTENT1_OVERWRITTEN) - 1, sizeof(CONTENT1_OVERWRITTEN) - 1);
 
-	auto pfsNew = this->pArchive->open(ep);
-
-	// Apply any encryption/compression filter
-	applyFilter(&pfsNew, this->pArchive, ep);
+	auto pfsNew = this->pArchive->open(ep, true);
 
 	// Make sure it's the right size
 	BOOST_REQUIRE_EQUAL(pfsNew->size(), this->content[0].length());
@@ -910,21 +902,52 @@ void test_archive::test_resize_write()
 	Archive::FileHandle ep2 = this->findFile(1);
 
 	// Open it
-	std::shared_ptr<stream::inout> pfsIn(this->pArchive->open(ep2));
-	stream::string out;
-
-	// Apply any decryption/decompression filter
-	applyFilter(&pfsIn, this->pArchive, ep2);
+	auto pfsIn = this->pArchive->open(ep2, true);
 
 	// Make sure it's the right size
 	BOOST_REQUIRE_EQUAL(pfsIn->size(), this->content[1].length());
 
 	// Copy it into the stringstream
+	stream::string out;
 	stream::copy(out, *pfsIn);
 
 	BOOST_CHECK_MESSAGE(
 		this->is_equal(this->content[1], out.data),
 		"Unrelated file was corrupted after file resize operation"
+	);
+}
+
+void test_archive::test_resize_after_close()
+{
+	BOOST_TEST_MESSAGE("Write to a file after closing the archive");
+
+	// Find the file we're going to resize
+	Archive::FileHandle ep = this->findFile(0);
+
+	auto pfsNew = this->pArchive->open(ep, true);
+
+	// Close our reference to the archive to make sure we can still write to the
+	// stream afterwards.
+	this->pArchive = nullptr;
+
+	// Make sure it's the right size
+	BOOST_REQUIRE_EQUAL(pfsNew->size(), this->content[0].length());
+
+	pfsNew->truncate(this->content0_overwritten.length());
+
+	// Make sure it's the right size
+	BOOST_REQUIRE_EQUAL(pfsNew->size(), this->content0_overwritten.length());
+
+	pfsNew->seekp(0, stream::start);
+	pfsNew->write(this->content0_overwritten);
+	pfsNew->flush();
+
+	// Make sure it's the right size
+	BOOST_REQUIRE_EQUAL(pfsNew->size(), this->content0_overwritten.length());
+
+	BOOST_CHECK_MESSAGE(
+		this->is_content_equal(this->resize_write()),
+		"Error writing to a file after closing the archive"
 	);
 }
 
@@ -952,10 +975,7 @@ void test_archive::test_remove_all_re_add()
 	BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(epOne),
 		"Couldn't insert new file after removing all files");
 
-	std::shared_ptr<stream::inout> pfsNew(this->pArchive->open(epOne));
-
-	// Apply any encryption/compression filter
-	applyFilter(&pfsNew, this->pArchive, epOne);
+	auto pfsNew = this->pArchive->open(epOne, true);
 
 	pfsNew->write(this->content[0]);
 	pfsNew->flush();
@@ -966,10 +986,7 @@ void test_archive::test_remove_all_re_add()
 	BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(epTwo),
 		"Couldn't insert second new file after removing all files");
 
-	pfsNew = this->pArchive->open(epTwo);
-
-	// Apply any encryption/compression filter
-	applyFilter(&pfsNew, this->pArchive, epTwo);
+	pfsNew = this->pArchive->open(epTwo, true);
 
 	pfsNew->write(this->content[1]);
 	pfsNew->flush();
@@ -998,10 +1015,7 @@ void test_archive::test_insert_zero_then_resize()
 		"Couldn't create new file in sample archive");
 
 	// Open it
-	auto pfsNew = this->pArchive->open(ep);
-
-	// Apply any encryption/compression filter
-	applyFilter(&pfsNew, this->pArchive, ep);
+	auto pfsNew = this->pArchive->open(ep, true);
 
 	this->pArchive->resize(ep, this->content[2].length(), this->content[2].length());
 	pfsNew->seekp(0, stream::start);
@@ -1052,9 +1066,8 @@ void test_archive::test_shortext()
 	// Make this->suppData valid again, reusing previous data
 	this->populateSuppData();
 
-	auto base = std::make_unique<stream::string>(*this->archContent);
-	this->archContent = &base->data;
-	this->pArchive = pTestType->open(std::move(base), this->suppData);
+	auto base2 = stream_wrap(this->base);
+	this->pArchive = pTestType->open(std::move(base2), this->suppData);
 
 	// See if we can find the file again
 	ep = this->pArchive->find(this->filename_shortext);
@@ -1084,12 +1097,9 @@ void test_archive::test_new_isinstance()
 
 	this->pArchive->flush();
 
-	auto base = std::make_unique<stream::string>(*this->archContent);
-	this->archContent = &base->data;
-
 	auto pTestType = ArchiveManager::byCode(this->type);
 
-	BOOST_REQUIRE_MESSAGE(pTestType->isInstance(*base),
+	BOOST_REQUIRE_MESSAGE(pTestType->isInstance(*this->base),
 		"Newly created archive was not recognised as a valid instance");
 
 	BOOST_TEST_CHECKPOINT("New archive reported valid, trying to open");
@@ -1097,10 +1107,12 @@ void test_archive::test_new_isinstance()
 	// Make this->suppData valid again, reusing previous data
 	this->populateSuppData();
 
+	auto base2 = stream_wrap(this->base);
+
 	// This should really use BOOST_REQUIRE_NO_THROW but the message is more
 	// informative without it.
 	//BOOST_REQUIRE_NO_THROW(
-		auto pArchive = pTestType->open(std::move(base), this->suppData);
+		auto pArchive = pTestType->open(std::move(base2), this->suppData);
 	//);
 
 	// Make sure there are now no files in the archive
@@ -1129,9 +1141,7 @@ void test_archive::test_new_to_initialstate()
 	BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(epOne),
 		"Couldn't insert new file in empty archive");
 
-	std::shared_ptr<stream::inout> pfsNew(this->pArchive->open(epOne));
-	// Apply any encryption/compression filter
-	applyFilter(&pfsNew, this->pArchive, epOne);
+	auto pfsNew = this->pArchive->open(epOne, true);
 	pfsNew->write(this->content[0]);
 	pfsNew->flush();
 
@@ -1141,9 +1151,7 @@ void test_archive::test_new_to_initialstate()
 
 	BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(epTwo),
 		"Couldn't insert second new file in empty archive");
-	pfsNew = pArchive->open(epTwo);
-	// Apply any encryption/compression filter
-	applyFilter(&pfsNew, this->pArchive, epTwo);
+	pfsNew = pArchive->open(epTwo, true);
 	pfsNew->write(this->content[1]);
 	pfsNew->flush();
 
@@ -1184,7 +1192,7 @@ void test_archive::test_new_manipulate_zero_length_files()
 	}
 
 	// Insert the file
-	Archive::FileHandle ep3 = this->pArchive->insert(Archive::FileHandle(),
+	auto ep3 = this->pArchive->insert(Archive::FileHandle(),
 		this->filename[2], 0, this->insertType, this->insertAttr);
 
 	// Make sure it went in ok
@@ -1192,10 +1200,7 @@ void test_archive::test_new_manipulate_zero_length_files()
 		"Couldn't create new file in archive");
 
 	// Open it
-	std::shared_ptr<stream::inout> file3(this->pArchive->open(ep3));
-
-	// Apply any encryption/compression filter
-	applyFilter(&file3, this->pArchive, ep3);
+	auto file3 = this->pArchive->open(ep3, true);
 
 	Archive::FileHandle ep1 = pArchive->insert(ep3, this->filename[0], 0,
 		this->insertType, this->insertAttr);
@@ -1205,12 +1210,9 @@ void test_archive::test_new_manipulate_zero_length_files()
 		"Couldn't create new file in archive");
 
 	// Open it
-	std::shared_ptr<stream::inout> file1(this->pArchive->open(ep1));
+	auto file1 = this->pArchive->open(ep1, true);
 
-	// Apply any encryption/compression filter
-	applyFilter(&file1, this->pArchive, ep1);
-
-	Archive::FileHandle ep2 = pArchive->insert(ep3, this->filename[1], 0,
+	auto ep2 = pArchive->insert(ep3, this->filename[1], 0,
 		this->insertType, this->insertAttr);
 
 	// Make sure it went in ok
@@ -1218,10 +1220,7 @@ void test_archive::test_new_manipulate_zero_length_files()
 		"Couldn't create new file in archive");
 
 	// Open it
-	std::shared_ptr<stream::inout> file2(this->pArchive->open(ep2));
-
-	// Apply any encryption/compression filter
-	applyFilter(&file2, this->pArchive, ep2);
+	auto file2 = this->pArchive->open(ep2, true);
 
 	// Get offsets of each file for later testing
 	auto fat1 =

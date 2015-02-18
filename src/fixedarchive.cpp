@@ -57,9 +57,6 @@ class FixedArchive: virtual public Archive
 		// order on-disk.  Use the iIndex member for that.)
 		FileVector vcFixedEntries;
 
-		typedef std::vector<std::shared_ptr<stream::sub>> substream_vc;
-		substream_vc vcSubStream; // List of substreams currently open
-
 	public:
 		FixedArchive(std::shared_ptr<stream::inout> content,
 			std::vector<FixedArchiveFile> vcFiles);
@@ -68,12 +65,13 @@ class FixedArchive: virtual public Archive
 		virtual FileHandle find(const std::string& strFilename) const;
 		virtual const FileVector& files(void) const;
 		virtual bool isValid(const FileHandle& id) const;
-		virtual std::shared_ptr<stream::inout> open(const FileHandle& id);
+		virtual std::unique_ptr<stream::inout> open(const FileHandle& id,
+			bool useFilter);
 
 		/**
 		 * @note Will always throw an exception as there are never any subfolders.
 		 */
-		virtual std::unique_ptr<Archive> openFolder(const FileHandle& id);
+		virtual std::shared_ptr<Archive> openFolder(const FileHandle& id);
 
 		/**
 		 * @note Will always throw an exception as the files are fixed and
@@ -173,12 +171,13 @@ bool FixedArchive::isValid(const FileHandle& id) const
 	return ((id2) && (id2->index < this->vcFiles.size()));
 }
 
-std::shared_ptr<stream::inout> FixedArchive::open(const FileHandle& id)
+std::unique_ptr<stream::inout> FixedArchive::open(const FileHandle& id,
+	bool useFilter)
 {
 	// TESTED BY: TODO
 	const FixedEntry *entry = dynamic_cast<const FixedEntry *>(id.get());
 	const FixedArchiveFile *file = &this->vcFiles[entry->index];
-	auto psSub = std::make_shared<stream::sub>(
+	return std::make_unique<stream::sub>(
 		this->content,
 		file->offset,
 		file->size,
@@ -206,11 +205,9 @@ std::shared_ptr<stream::inout> FixedArchive::open(const FileHandle& id)
 			this->resize(id_noconst, newSize, newRealSize);
 		}
 	);
-	this->vcSubStream.push_back(psSub);
-	return psSub;
 }
 
-std::unique_ptr<Archive> FixedArchive::openFolder(const Archive::FileHandle& id)
+std::shared_ptr<Archive> FixedArchive::openFolder(const Archive::FileHandle& id)
 {
 	// This function should only be called for folders (not files)
 	assert(id->fAttr & EA_FOLDER);

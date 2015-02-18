@@ -109,17 +109,17 @@ ArchiveType::Certainty ArchiveType_Resource_TIM::isInstance(
 	return DefinitelyYes;
 }
 
-std::unique_ptr<Archive> ArchiveType_Resource_TIM::create(
+std::shared_ptr<Archive> ArchiveType_Resource_TIM::create(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	return this->open(std::move(content), suppData);
 }
 
-std::unique_ptr<Archive> ArchiveType_Resource_TIM::open(
+std::shared_ptr<Archive> ArchiveType_Resource_TIM::open(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	assert(suppData.find(SuppItem::FAT) != suppData.end());
-	return std::make_unique<Archive_Resource_TIM>(
+	return std::make_shared<Archive_Resource_TIM>(
 		std::move(content),
 		std::move(suppData[SuppItem::FAT])
 	);

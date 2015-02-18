@@ -108,7 +108,7 @@ ArchiveType::Certainty ArchiveType_EPF_LionKing::isInstance(
 	return DefinitelyNo;
 }
 
-std::unique_ptr<Archive> ArchiveType_EPF_LionKing::create(
+std::shared_ptr<Archive> ArchiveType_EPF_LionKing::create(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	content->seekp(0, stream::start);
@@ -117,13 +117,13 @@ std::unique_ptr<Archive> ArchiveType_EPF_LionKing::create(
 		<< u32le(11) // FAT offset
 		<< u8(0)     // Unknown/flags?
 		<< u16le(0); // File count
-	return std::make_unique<Archive_EPF_LionKing>(std::move(content));
+	return std::make_shared<Archive_EPF_LionKing>(std::move(content));
 }
 
-std::unique_ptr<Archive> ArchiveType_EPF_LionKing::open(
+std::shared_ptr<Archive> ArchiveType_EPF_LionKing::open(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return std::make_unique<Archive_EPF_LionKing>(std::move(content));
+	return std::make_shared<Archive_EPF_LionKing>(std::move(content));
 }
 
 SuppFilenames ArchiveType_EPF_LionKing::getRequiredSupps(stream::input& content,

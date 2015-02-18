@@ -36,11 +36,14 @@ class FilterType_Bash: virtual public FilterType
 		virtual std::string code() const;
 		virtual std::string friendlyName() const;
 		virtual std::vector<std::string> games() const;
-		virtual std::unique_ptr<stream::inout> apply(std::shared_ptr<stream::inout> target,
-			stream::fn_truncate_filter resize) const;
-		virtual std::unique_ptr<stream::input> apply(std::shared_ptr<stream::input> target) const;
-		virtual std::unique_ptr<stream::output> apply(std::shared_ptr<stream::output> target,
-			stream::fn_truncate_filter resize) const;
+		virtual std::unique_ptr<stream::inout> apply(
+			std::unique_ptr<stream::inout> target, stream::fn_notify_prefiltered_size resize)
+			const;
+		virtual std::unique_ptr<stream::input> apply(
+			std::unique_ptr<stream::input> target) const;
+		virtual std::unique_ptr<stream::output> apply(
+			std::unique_ptr<stream::output> target, stream::fn_notify_prefiltered_size resize)
+			const;
 };
 
 } // namespace gamearchive

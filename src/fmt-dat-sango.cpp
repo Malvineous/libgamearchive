@@ -101,18 +101,18 @@ ArchiveType::Certainty ArchiveType_DAT_Sango::isInstance(
 	return DefinitelyYes;
 }
 
-std::unique_ptr<Archive> ArchiveType_DAT_Sango::create(
+std::shared_ptr<Archive> ArchiveType_DAT_Sango::create(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	content->seekp(0, stream::start);
 	content->write("\x04\0\0\0", 4);
-	return std::make_unique<Archive_DAT_Sango>(std::move(content));
+	return std::make_shared<Archive_DAT_Sango>(std::move(content));
 }
 
-std::unique_ptr<Archive> ArchiveType_DAT_Sango::open(
+std::shared_ptr<Archive> ArchiveType_DAT_Sango::open(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return std::make_unique<Archive_DAT_Sango>(std::move(content));
+	return std::make_shared<Archive_DAT_Sango>(std::move(content));
 }
 
 SuppFilenames ArchiveType_DAT_Sango::getRequiredSupps(stream::input& content,

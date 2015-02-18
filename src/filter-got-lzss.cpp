@@ -224,11 +224,11 @@ std::vector<std::string> FilterType_DAT_GOT::games() const
 }
 
 std::unique_ptr<stream::inout> FilterType_DAT_GOT::apply(
-	std::shared_ptr<stream::inout> target, stream::fn_truncate_filter resize)
+	std::unique_ptr<stream::inout> target, stream::fn_notify_prefiltered_size resize)
 	const
 {
 	return std::make_unique<stream::filtered>(
-		target,
+		std::move(target),
 		std::make_shared<filter_got_unlzss>(),
 		std::make_shared<filter_got_lzss>(),
 		resize
@@ -236,20 +236,20 @@ std::unique_ptr<stream::inout> FilterType_DAT_GOT::apply(
 }
 
 std::unique_ptr<stream::input> FilterType_DAT_GOT::apply(
-	std::shared_ptr<stream::input> target) const
+	std::unique_ptr<stream::input> target) const
 {
 	return std::make_unique<stream::input_filtered>(
-		target,
+		std::move(target),
 		std::make_shared<filter_got_unlzss>()
 	);
 }
 
 std::unique_ptr<stream::output> FilterType_DAT_GOT::apply(
-	std::shared_ptr<stream::output> target, stream::fn_truncate_filter resize)
+	std::unique_ptr<stream::output> target, stream::fn_notify_prefiltered_size resize)
 	const
 {
 	return std::make_unique<stream::output_filtered>(
-		target,
+		std::move(target),
 		std::make_shared<filter_got_lzss>(),
 		resize
 	);

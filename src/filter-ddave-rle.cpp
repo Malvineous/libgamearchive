@@ -246,11 +246,11 @@ std::vector<std::string> FilterType_DDaveRLE::games() const
 }
 
 std::unique_ptr<stream::inout> FilterType_DDaveRLE::apply(
-	std::shared_ptr<stream::inout> target, stream::fn_truncate_filter resize)
+	std::unique_ptr<stream::inout> target, stream::fn_notify_prefiltered_size resize)
 	const
 {
 	return std::make_unique<stream::filtered>(
-		target,
+		std::move(target),
 		std::make_shared<filter_ddave_unrle>(),
 		std::make_shared<filter_ddave_rle>(),
 		resize
@@ -258,20 +258,20 @@ std::unique_ptr<stream::inout> FilterType_DDaveRLE::apply(
 }
 
 std::unique_ptr<stream::input> FilterType_DDaveRLE::apply(
-	std::shared_ptr<stream::input> target) const
+	std::unique_ptr<stream::input> target) const
 {
 	return std::make_unique<stream::input_filtered>(
-		target,
+		std::move(target),
 		std::make_shared<filter_ddave_unrle>()
 	);
 }
 
 std::unique_ptr<stream::output> FilterType_DDaveRLE::apply(
-	std::shared_ptr<stream::output> target, stream::fn_truncate_filter resize)
+	std::unique_ptr<stream::output> target, stream::fn_notify_prefiltered_size resize)
 	const
 {
 	return std::make_unique<stream::output_filtered>(
-		target,
+		std::move(target),
 		std::make_shared<filter_ddave_rle>(),
 		resize
 	);

@@ -86,7 +86,6 @@ int main(int iArgC, char *cArgV[])
 	po::variables_map mpArgs;
 
 	auto pstdout = stream::open_stdout();
-	auto pstdin = stream::open_stdin();
 	ga::FilterManager::handler_t pFilterType;
 	bool bApply = false;   // default is to reverse the algorithm (decompress)
 	try {
@@ -153,23 +152,22 @@ int main(int iArgC, char *cArgV[])
 
 		if (bApply) {
 			// Apply the filter
-			auto out = pFilterType->apply(
-				std::shared_ptr<stream::output>(std::move(pstdout)),
-				camoto::stream::fn_truncate_filter()
+			pstdout = pFilterType->apply(
+				std::move(pstdout),
+				camoto::stream::fn_notify_prefiltered_size()
 			);
 
 			// Copy filtered data to stdout
-			stream::copy(*out, *pstdin);
-			out->flush();
+			stream::copy(*pstdout, *stream::open_stdin());
 
 		} else {
 			// Apply the filter
-			auto in = pFilterType->apply(std::move(pstdin));
+			auto in = pFilterType->apply(stream::open_stdin());
 
 			// Copy filtered data to stdout
 			stream::copy(*pstdout, *in);
-			pstdout->flush();
 		}
+		pstdout->flush();
 
 	} catch (const camoto::filter_error& e) {
 		pstdout->flush(); // keep as much data as we could process

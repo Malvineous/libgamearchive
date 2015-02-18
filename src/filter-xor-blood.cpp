@@ -64,11 +64,11 @@ std::vector<std::string> FilterType_RFF::games() const
 }
 
 std::unique_ptr<stream::inout> FilterType_RFF::apply(
-	std::shared_ptr<stream::inout> target, stream::fn_truncate_filter resize)
+	std::unique_ptr<stream::inout> target, stream::fn_notify_prefiltered_size resize)
 	const
 {
 	return std::make_unique<stream::filtered>(
-		target,
+		std::move(target),
 		// We need two separate filters, otherwise reading from one will
 		// affect the XOR key next used when writing to the other.
 		std::make_shared<filter_rff_crypt>(RFF_FILE_CRYPT_LEN, 0),
@@ -78,20 +78,20 @@ std::unique_ptr<stream::inout> FilterType_RFF::apply(
 }
 
 std::unique_ptr<stream::input> FilterType_RFF::apply(
-	std::shared_ptr<stream::input> target) const
+	std::unique_ptr<stream::input> target) const
 {
 	return std::make_unique<stream::input_filtered>(
-		target,
+		std::move(target),
 		std::make_shared<filter_rff_crypt>(RFF_FILE_CRYPT_LEN, 0)
 	);
 }
 
 std::unique_ptr<stream::output> FilterType_RFF::apply(
-	std::shared_ptr<stream::output> target, stream::fn_truncate_filter resize)
+	std::unique_ptr<stream::output> target, stream::fn_notify_prefiltered_size resize)
 	const
 {
 	return std::make_unique<stream::output_filtered>(
-		target,
+		std::move(target),
 		std::make_shared<filter_rff_crypt>(RFF_FILE_CRYPT_LEN, 0),
 		resize
 	);

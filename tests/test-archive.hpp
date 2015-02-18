@@ -78,6 +78,7 @@ class test_archive: public test_main
 		void test_resize_larger();
 		void test_resize_smaller();
 		void test_resize_write();
+		void test_resize_after_close();
 		void test_remove_all_re_add();
 		void test_insert_zero_then_resize();
 		void test_resize_over64k();
@@ -238,11 +239,7 @@ class test_archive: public test_main
 
 	protected:
 		/// Underlying data stream containing archive file content.
-		/**
-		 * This points to the stream owned by pArchive so it will only be valid for
-		 * as long as pArchive is around.
-		 */
-		std::string *archContent;
+		std::shared_ptr<stream::string> base;
 
 		/// Factory class used to open archives in this format.
 		ArchiveManager::handler_t pArchType;

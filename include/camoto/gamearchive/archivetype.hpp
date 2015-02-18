@@ -92,15 +92,21 @@ class ArchiveType
 		 * open() which is expected to succeed.
 		 *
 		 * @param content
-		 *   A blank stream to store the new archive in.
+		 *   A blank stream to store the new archive in.  This is a unique_ptr as
+		 *   nothing else is permitted to use the stream while the Archive has it,
+		 *   otherwise the underlying file could be corrupted.
 		 *
 		 * @param suppData
 		 *   Any supplemental data required by this format (see getRequiredSupps()).
 		 *
 		 * @return A pointer to an instance of the Archive class, just as if a
 		 *   valid empty file had been opened by open().
+		 *   This is a shared pointer because it is safe to share the returned
+		 *   object without one access method interfering (too much) with another.
+		 *   It is also an implementation detail as often open files will need
+		 *   to hold on to their parent Archive instance.
 		 */
-		virtual std::unique_ptr<Archive> create(
+		virtual std::shared_ptr<Archive> create(
 			std::unique_ptr<stream::inout> content, SuppData& suppData) const = 0;
 
 		/// Open an archive file.
@@ -108,7 +114,9 @@ class ArchiveType
 		 * @pre Recommended that isInstance() has returned > DefinitelyNo.
 		 *
 		 * @param content
-		 *   The archive file to read and modify.
+		 *   The archive file to read and modify.  This is a unique_ptr as nothing
+		 *   else is permitted to use the stream while the Archive has it,
+		 *   otherwise the underlying file could be corrupted.
 		 *
 		 * @param suppData
 		 *   Any supplemental data required by this format (see getRequiredSupps()).
@@ -118,8 +126,12 @@ class ArchiveType
 		 *   DefinitelyNo) however it will try its best to read the data anyway, to
 		 *   make it possible to "force" a file to be opened by a particular format
 		 *   handler.
+		 *   This is a shared pointer because it is safe to share the returned
+		 *   object without one access method interfering (too much) with another.
+		 *   It is also an implementation detail as often open files will need
+		 *   to hold on to their parent Archive instance.
 		 */
-		virtual std::unique_ptr<Archive> open(
+		virtual std::shared_ptr<Archive> open(
 			std::unique_ptr<stream::inout> content, SuppData& suppData) const = 0;
 
 		/// Get a list of any required supplemental files.

@@ -96,18 +96,18 @@ ArchiveType::Certainty ArchiveType_LIB_Mythos::isInstance(
 	return DefinitelyYes;
 }
 
-std::unique_ptr<Archive> ArchiveType_LIB_Mythos::create(
+std::shared_ptr<Archive> ArchiveType_LIB_Mythos::create(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	content->seekp(0, stream::start);
 	content->write("LIB\x1A\x00\x00" "\0\0\0\0\0\0\0\0\0\0\0\0\0\x17\x00\x00\x00", 4+2+13+4);
-	return std::make_unique<Archive_LIB_Mythos>(std::move(content));
+	return std::make_shared<Archive_LIB_Mythos>(std::move(content));
 }
 
-std::unique_ptr<Archive> ArchiveType_LIB_Mythos::open(
+std::shared_ptr<Archive> ArchiveType_LIB_Mythos::open(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return std::make_unique<Archive_LIB_Mythos>(std::move(content));
+	return std::make_shared<Archive_LIB_Mythos>(std::move(content));
 }
 
 SuppFilenames ArchiveType_LIB_Mythos::getRequiredSupps(stream::input& content,

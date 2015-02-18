@@ -39,7 +39,7 @@ namespace gamearchive {
 #define ARCH_STD_DOS_FILENAMES  12     // 8.3 + dot
 
 /// Archive implementation for archives with an associated size/offset table.
-class FATArchive: virtual public Archive
+class FATArchive: virtual public Archive, public std::enable_shared_from_this<FATArchive>
 {
 	public:
 
@@ -93,21 +93,6 @@ class FATArchive: virtual public Archive
 		 */
 		FileVector vcFAT;
 
-		/// Vector of substream references.
-		/**
-		 * These are weak pointers so that we don't hold a file open simply because
-		 * we're keeping track of it.  We need to keep track of it so that open
-		 * files can be moved around as other files are inserted, resized, etc.
-		 */
-		//typedef std::multimap< FATEntry, boost::weak_ptr<stream::sub> > OPEN_FILES;
-		typedef std::multimap<std::shared_ptr<FATEntry>, std::weak_ptr<stream::sub>> OpenFilesVector;
-
-		/// Helper type when inserting elements into openFiles.
-		//typedef std::pair< FATfe_const_iterator, boost::weak_ptr<stream::sub> > OPEN_FILE;
-
-		/// List of substreams currently open.
-		OpenFilesVector openFiles;
-
 		/// Maximum length of filenames in this archive format.
 		unsigned int lenMaxFilename;
 
@@ -138,8 +123,9 @@ class FATArchive: virtual public Archive
 		virtual FileHandle find(const std::string& strFilename) const;
 		virtual const FileVector& files(void) const;
 		virtual bool isValid(const FileHandle& id) const;
-		virtual std::shared_ptr<stream::inout> open(const FileHandle& id);
-		virtual std::unique_ptr<Archive> openFolder(const FileHandle& id);
+		virtual std::unique_ptr<stream::inout> open(const FileHandle& id,
+			bool useFilter);
+		virtual std::shared_ptr<Archive> openFolder(const FileHandle& id);
 		virtual FileHandle insert(const FileHandle& idBeforeThis,
 			const std::string& strFilename, stream::len storedSize, std::string type,
 			int attr);
@@ -338,9 +324,11 @@ class FATArchive: virtual public Archive
 		void resizeSubstream(FATEntry *id, stream::len newSize);
 };
 
-/// Function for test code only, do not use.  Searches for files based on the
-/// order/index field as this is the order in the archive, which is different to
-/// the order in the vector.
+/// Function for test code only, do not use.
+/**
+ * Searches for files based on the order/index field as that's the order in the
+ * archive, which could be different to the order in the vector.
+ */
 Archive::FileHandle DLL_EXPORT getFileAt(const Archive::FileVector& files,
 	unsigned int index);
 

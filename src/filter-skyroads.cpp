@@ -262,11 +262,11 @@ std::vector<std::string> FilterType_SkyRoads::games() const
 }
 
 std::unique_ptr<stream::inout> FilterType_SkyRoads::apply(
-	std::shared_ptr<stream::inout> target, stream::fn_truncate_filter resize)
+	std::unique_ptr<stream::inout> target, stream::fn_notify_prefiltered_size resize)
 	const
 {
 	return std::make_unique<stream::filtered>(
-		target,
+		std::move(target),
 		std::make_shared<filter_skyroads_unlzs>(),
 		std::make_shared<filter_skyroads_lzs>(),
 		resize
@@ -274,20 +274,20 @@ std::unique_ptr<stream::inout> FilterType_SkyRoads::apply(
 }
 
 std::unique_ptr<stream::input> FilterType_SkyRoads::apply(
-	std::shared_ptr<stream::input> target) const
+	std::unique_ptr<stream::input> target) const
 {
 	return std::make_unique<stream::input_filtered>(
-		target,
+		std::move(target),
 		std::make_shared<filter_skyroads_unlzs>()
 	);
 }
 
 std::unique_ptr<stream::output> FilterType_SkyRoads::apply(
-	std::shared_ptr<stream::output> target, stream::fn_truncate_filter resize)
+	std::unique_ptr<stream::output> target, stream::fn_notify_prefiltered_size resize)
 	const
 {
 	return std::make_unique<stream::output_filtered>(
-		target,
+		std::move(target),
 		std::make_shared<filter_skyroads_lzs>(),
 		resize
 	);

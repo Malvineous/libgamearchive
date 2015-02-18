@@ -124,8 +124,7 @@ bool insertFile(std::shared_ptr<ga::Archive> pArchive, const std::string& strLoc
 		lenSource, type, attr);
 
 	// Open the new (empty) file in the archive
-	auto psNew = pArchive->open(id);
-	if (bUseFilters) applyFilter(&psNew, pArchive, id);
+	auto psNew = pArchive->open(id, bUseFilters);
 
 	// Copy all the data from the file on disk into the archive file.
 	try {
@@ -295,8 +294,7 @@ void extractAll(std::shared_ptr<ga::Archive> archive, bool bScript)
 
 			// Open on disk
 			try {
-				auto pfsIn = archive->open(i);
-				if (bUseFilters) applyFilter(&pfsIn, archive, i);
+				auto pfsIn = archive->open(i, bUseFilters);
 
 				// If the file exists, add .1 .2 .3 etc. onto the end until an
 				// unused name is found.  This allows extracting files with the
@@ -685,8 +683,7 @@ finishTesting:
 						iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
 					} else {
 						// Found it, open on disk
-						auto pfsIn = destArch->open(id);
-						if (bUseFilters) applyFilter(&pfsIn, destArch, id);
+						auto pfsIn = destArch->open(id, bUseFilters);
 						auto fsOut = std::make_shared<stream::output_file>();
 						try {
 							fsOut->create(strLocalFile);
@@ -898,11 +895,13 @@ finishTesting:
 							// access to the file, it means a compressed file won't be
 							// decompressed in case we want to read it.  Which we don't,
 							// because we're about to completely overwrite it.
-							auto psDest = destArch->open(id);
+							auto psDest = destArch->open(id, bUseFilters);
 
-							if (bUseFilters) {
-								applyFilter(&psDest, destArch, id);
-							} else {
+							// Set the size of the stream within the archive, so it exactly
+							// holds the data we want to write.
+							psDest->truncate(lenSource);
+
+							if (!bUseFilters) {
 								if (lenReal) {
 									pArchive->resize(id, lenSource, lenReal);
 								} else {
@@ -910,10 +909,6 @@ finishTesting:
 									pArchive->resize(id, lenSource, id->realSize);
 								}
 							}
-
-							// Set the size of the stream within the archive, so it exactly
-							// holds the data we want to write.
-							psDest->truncate(lenSource);
 
 							psDest->seekp(0, stream::start);
 							stream::copy(*psDest, *sSrc);

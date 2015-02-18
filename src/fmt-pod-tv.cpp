@@ -129,20 +129,20 @@ ArchiveType::Certainty ArchiveType_POD_TV::isInstance(
 	return DefinitelyYes;
 }
 
-std::unique_ptr<Archive> ArchiveType_POD_TV::create(
+std::shared_ptr<Archive> ArchiveType_POD_TV::create(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	content->seekp(0, stream::start);
 	*content
 		<< u32le(0) // File count
 		<< nullPadded("Empty POD file", POD_DESCRIPTION_LEN);
-	return std::make_unique<Archive_POD_TV>(std::move(content));
+	return std::make_shared<Archive_POD_TV>(std::move(content));
 }
 
-std::unique_ptr<Archive> ArchiveType_POD_TV::open(
+std::shared_ptr<Archive> ArchiveType_POD_TV::open(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return std::make_unique<Archive_POD_TV>(std::move(content));
+	return std::make_shared<Archive_POD_TV>(std::move(content));
 }
 
 SuppFilenames ArchiveType_POD_TV::getRequiredSupps(stream::input& content,

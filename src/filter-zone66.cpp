@@ -277,11 +277,11 @@ std::vector<std::string> FilterType_Zone66::games() const
 }
 
 std::unique_ptr<stream::inout> FilterType_Zone66::apply(
-	std::shared_ptr<stream::inout> target, stream::fn_truncate_filter resize)
+	std::unique_ptr<stream::inout> target, stream::fn_notify_prefiltered_size resize)
 	const
 {
 	return std::make_unique<stream::filtered>(
-		target,
+		std::move(target),
 		std::make_shared<filter_z66_decompress>(),
 		std::make_shared<filter_z66_compress>(),
 		resize
@@ -289,20 +289,20 @@ std::unique_ptr<stream::inout> FilterType_Zone66::apply(
 }
 
 std::unique_ptr<stream::input> FilterType_Zone66::apply(
-	std::shared_ptr<stream::input> target) const
+	std::unique_ptr<stream::input> target) const
 {
 	return std::make_unique<stream::input_filtered>(
-		target,
+		std::move(target),
 		std::make_shared<filter_z66_decompress>()
 	);
 }
 
 std::unique_ptr<stream::output> FilterType_Zone66::apply(
-	std::shared_ptr<stream::output> target, stream::fn_truncate_filter resize)
+	std::unique_ptr<stream::output> target, stream::fn_notify_prefiltered_size resize)
 	const
 {
 	return std::make_unique<stream::output_filtered>(
-		target,
+		std::move(target),
 		std::make_shared<filter_z66_compress>(),
 		resize
 	);

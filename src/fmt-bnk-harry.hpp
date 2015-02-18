@@ -39,9 +39,9 @@ class ArchiveType_BNK_Harry: virtual public ArchiveType
 		virtual std::vector<std::string> fileExtensions() const;
 		virtual std::vector<std::string> games() const;
 		virtual ArchiveType::Certainty isInstance(stream::input& content) const;
-		virtual std::unique_ptr<Archive> create(
+		virtual std::shared_ptr<Archive> create(
 			std::unique_ptr<stream::inout> content, SuppData& suppData) const;
-		virtual std::unique_ptr<Archive> open(
+		virtual std::shared_ptr<Archive> open(
 			std::unique_ptr<stream::inout> content, SuppData& suppData) const;
 		virtual SuppFilenames getRequiredSupps(stream::input& content,
 			const std::string& filenameArchive) const;

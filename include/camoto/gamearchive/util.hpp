@@ -21,11 +21,8 @@
 #ifndef _CAMOTO_GAMEARCHIVE_UTIL_HPP_
 #define _CAMOTO_GAMEARCHIVE_UTIL_HPP_
 
-#include <boost/bind.hpp>
 #include <camoto/stream_sub.hpp>
-#include <camoto/util.hpp>
 #include <camoto/gamearchive/archive.hpp>
-#include <camoto/gamearchive/manager.hpp>
 
 #ifndef DLL_EXPORT
 #define DLL_EXPORT
@@ -34,7 +31,8 @@
 namespace camoto {
 namespace gamearchive {
 
-/// Find the given file, or if it starts with an '@', the file at that index.
+/// Find the given file within any subfolders, or if it starts with an '@', the
+/// file at that index.
 /**
  * @param pArchive
  *   On input, the archive file.  On output, the archive holding the file.
@@ -56,46 +54,6 @@ void DLL_EXPORT findFile(std::shared_ptr<Archive> *pArchive,
 
 /// Truncate callback for substreams that are a fixed size.
 void preventResize(stream::output_sub* sub, stream::len len);
-
-/// Callback function to set expanded/native file size.
-void setRealSize(std::shared_ptr<Archive> arch,
-	Archive::FileHandle id, stream::len newRealSize);
-
-/// Apply the correct filter to the stream.
-/**
- * If the given entry pointer has a filter attached, apply it to the given
- * stream pointer.
- *
- * @note This function will always apply the filter, don't call it if the user
- *   has given the -u option to bypass filtering.
- *
- * @param ppStream
- *   Pointer to the stream.  On return may point to a different stream.
- *
- * @param arch
- *   Archive where id is valid.
- *
- * @param id
- *   FileHandle for the stream.
- */
-template <class T>
-void applyFilter(T* ppStream, std::shared_ptr<Archive> arch,
-	Archive::FileHandle id)
-{
-	if (!id->filter.empty()) {
-		// The file needs to be filtered first
-		auto pFilterType = FilterManager::byCode(id->filter);
-		if (!pFilterType) {
-			throw stream::error(createString(
-				"could not find filter \"" << id->filter << "\""
-			));
-		}
-		stream::fn_truncate_filter fn_resize = boost::bind<void>(setRealSize, arch,
-			id, _2);
-		*ppStream = pFilterType->apply(*ppStream, fn_resize);
-	}
-	return;
-}
 
 } // namespace gamearchive
 } // namespace camoto

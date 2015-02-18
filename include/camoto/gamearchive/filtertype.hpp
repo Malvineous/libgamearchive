@@ -87,21 +87,25 @@ class FilterType
 		 * @return Clear/plaintext stream providing data from target after
 		 *   processing.
 		 */
-		virtual std::unique_ptr<stream::inout> apply(std::shared_ptr<stream::inout> target,
-			stream::fn_truncate_filter resize) const = 0;
+		virtual std::unique_ptr<stream::inout> apply(
+			std::unique_ptr<stream::inout> target, stream::fn_notify_prefiltered_size resize)
+			const = 0;
 
 		/// Apply the algorithm to an input stream.
 		/**
 		 * @sa apply(std::shared_ptr<stream::inout>)
 		 */
-		virtual std::unique_ptr<stream::input> apply(std::shared_ptr<stream::input> target) const = 0;
+		virtual std::unique_ptr<stream::input> apply(
+			std::unique_ptr<stream::input> target)
+			const = 0;
 
 		/// Apply the algorithm to an output stream.
 		/**
 		 * @sa apply(std::shared_ptr<stream::inout>)
 		 */
-		virtual std::unique_ptr<stream::output> apply(std::shared_ptr<stream::output> target,
-			stream::fn_truncate_filter resize) const = 0;
+		virtual std::unique_ptr<stream::output> apply(
+			std::unique_ptr<stream::output> target, stream::fn_notify_prefiltered_size resize)
+			const = 0;
 };
 
 } // namespace gamearchive

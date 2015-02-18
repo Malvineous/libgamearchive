@@ -106,18 +106,18 @@ ArchiveType::Certainty ArchiveType_WAD_Doom::isInstance(
 	return DefinitelyNo;
 }
 
-std::unique_ptr<Archive> ArchiveType_WAD_Doom::create(
+std::shared_ptr<Archive> ArchiveType_WAD_Doom::create(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
 	content->seekp(0, stream::start);
 	content->write("IWAD\x00\x00\x00\x00\x0c\x00\x00\x00", WAD_HEADER_LEN);
-	return std::make_unique<Archive_WAD_Doom>(std::move(content));
+	return std::make_shared<Archive_WAD_Doom>(std::move(content));
 }
 
-std::unique_ptr<Archive> ArchiveType_WAD_Doom::open(
+std::shared_ptr<Archive> ArchiveType_WAD_Doom::open(
 	std::unique_ptr<stream::inout> content, SuppData& suppData) const
 {
-	return std::make_unique<Archive_WAD_Doom>(std::move(content));
+	return std::make_shared<Archive_WAD_Doom>(std::move(content));
 }
 
 SuppFilenames ArchiveType_WAD_Doom::getRequiredSupps(stream::input& content,
