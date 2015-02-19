@@ -129,7 +129,7 @@ std::unique_ptr<stream::inout> FATArchive::open(const FileHandle& id,
 
 	if (useFilter && !id->filter.empty()) {
 		return applyFilter(
-			std::unique_ptr<stream::inout>(std::move(raw)),
+			std::move(raw),
 			id->filter
 		);
 	}

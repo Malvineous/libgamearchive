@@ -157,43 +157,8 @@ class archfile:
 			std::shared_ptr<stream::inout> content);
 };
 
-template <class T>
-std::unique_ptr<T> applyFilter(std::unique_ptr<T> s, const std::string& filter)
-{
-	auto arch = dynamic_cast<archfile*>(s.get());
-	assert(arch);
-	if (filter.empty()) return s;
-
-	// The file needs to be filtered first
-	auto pFilterType = FilterManager::byCode(filter);
-	if (!pFilterType) {
-		throw stream::error(createString(
-			"could not find filter \"" << filter << "\""
-		));
-	}
-
-	return pFilterType->apply(
-		std::move(s),
-		[](stream::output_filtered* filt, stream::len newRealSize) {
-			archfile* arch;
-			while (filt) {
-				auto filt_content = filt->get_stream().get();
-				arch = dynamic_cast<archfile*>(filt_content);
-				if (arch) break;
-
-				// This isn't an archfile, so see if this is a layered filter and
-				// there's another one below it.
-				filt = dynamic_cast<stream::output_filtered*>(filt_content);
-			}
-			// If this fails, the underlying stream (even if it's buried under layers
-			// of output_filtered streams) isn't an archfile.
-			assert(arch);
-
-			if (arch) arch->setRealSize(newRealSize);
-			return;
-		}
-	);
-}
+std::unique_ptr<stream::inout> applyFilter(std::unique_ptr<archfile> s,
+	const std::string& filter);
 
 } // namespace gamearchive
 } // namespace camoto

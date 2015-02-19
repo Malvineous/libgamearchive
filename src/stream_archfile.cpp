@@ -22,8 +22,44 @@
 #include <camoto/util.hpp>
 #include "stream_archfile.hpp"
 
-using namespace camoto;
-using namespace camoto::gamearchive;
+namespace camoto {
+namespace gamearchive {
+
+std::unique_ptr<stream::inout> applyFilter(std::unique_ptr<archfile> s,
+	const std::string& filter)
+{
+	if (filter.empty()) return std::move(s);
+
+	// The file needs to be filtered first
+	auto pFilterType = FilterManager::byCode(filter);
+	if (!pFilterType) {
+		throw stream::error(createString(
+			"could not find filter \"" << filter << "\""
+		));
+	}
+
+	return pFilterType->apply(
+		std::unique_ptr<stream::inout>(std::move(s)),
+		[](stream::output_filtered* filt, stream::len newRealSize) {
+			archfile* arch;
+			while (filt) {
+				auto filt_content = filt->get_stream().get();
+				arch = dynamic_cast<archfile*>(filt_content);
+				if (arch) break;
+
+				// This isn't an archfile, so see if this is a layered filter and
+				// there's another one below it.
+				filt = dynamic_cast<stream::output_filtered*>(filt_content);
+			}
+			// If this fails, the underlying stream (even if it's buried under layers
+			// of output_filtered streams) isn't an archfile.
+			assert(arch);
+
+			if (arch) arch->setRealSize(newRealSize);
+			return;
+		}
+	);
+}
 
 archfile_core::archfile_core(const Archive::FileHandle& id)
 	:	sub_core(0, 0),
@@ -140,3 +176,6 @@ archfile::archfile(std::shared_ptr<Archive> archive, Archive::FileHandle id,
 		output_archfile(archive, id, content)
 {
 }
+
+} // namespace gamearchive
+} // namespace camoto
