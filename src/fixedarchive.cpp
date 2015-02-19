@@ -174,6 +174,9 @@ bool FixedArchive::isValid(const FileHandle& id) const
 std::unique_ptr<stream::inout> FixedArchive::open(const FileHandle& id,
 	bool useFilter)
 {
+	if (!id->filter.empty() && useFilter) {
+		throw stream::error("Filtering on fixed archives is not yet implemented!");
+	}
 	// TESTED BY: TODO
 	const FixedEntry *entry = dynamic_cast<const FixedEntry *>(id.get());
 	const FixedArchiveFile *file = &this->vcFiles[entry->index];
