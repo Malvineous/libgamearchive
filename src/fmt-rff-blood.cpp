@@ -190,7 +190,7 @@ Archive_RFF_Blood::Archive_RFF_Blood(std::unique_ptr<stream::inout> content)
 		f->iIndex = i;
 		f->lenHeader = 0;
 		f->type = FILETYPE_GENERIC;
-		f->fAttr = 0;
+		f->fAttr = EA_NONE;
 		f->bValid = true;
 
 		uint32_t lastModified, unknown2, unknown3;

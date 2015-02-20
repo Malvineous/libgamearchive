@@ -159,7 +159,7 @@ Archive_DAT_Bash::Archive_DAT_Bash(std::unique_ptr<stream::inout> content)
 		f->iIndex = numFiles;
 		f->iOffset = pos;
 		f->lenHeader = DAT_EFAT_ENTRY_LEN;
-		f->fAttr = 0;
+		f->fAttr = EA_NONE;
 		f->bValid = true;
 
 		// Read the data in from the FAT entry in the file

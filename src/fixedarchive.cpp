@@ -134,7 +134,7 @@ FixedArchive::FixedArchive(std::shared_ptr<stream::inout> content,
 		f->strName = i.name;
 		f->type = FILETYPE_GENERIC;
 		f->filter = i.filter;
-		f->fAttr = 0;
+		f->fAttr = EA_NONE;
 		if (!i.filter.empty()) f->fAttr |= EA_COMPRESSED;
 
 		f->index = j++;

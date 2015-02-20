@@ -161,7 +161,7 @@ Archive_GD_Doofus::Archive_GD_Doofus(std::unique_ptr<stream::inout> content,
 			case GD_TYPE_MUSIC_TBSA: f->type = "music/tbsa"; break;
 			default: f->type = FILETYPE_GENERIC; break;
 		}
-		f->fAttr = 0;
+		f->fAttr = EA_NONE;
 		f->bValid = true;
 		f->realSize = f->storedSize;
 		f->iOffset = off;

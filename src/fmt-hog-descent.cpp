@@ -143,7 +143,7 @@ Archive_HOG_Descent::Archive_HOG_Descent(std::unique_ptr<stream::inout> content)
 		f->iOffset = offNext;
 		f->lenHeader = HOG_FAT_ENTRY_LEN;
 		f->type = FILETYPE_GENERIC;
-		f->fAttr = 0;
+		f->fAttr = EA_NONE;
 		f->bValid = true;
 		f->realSize = f->storedSize;
 

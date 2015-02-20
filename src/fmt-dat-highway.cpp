@@ -166,7 +166,7 @@ Archive_DAT_Highway::Archive_DAT_Highway(std::unique_ptr<stream::inout> content)
 		f->iIndex = i;
 		f->lenHeader = DATHH_EFAT_ENTRY_LEN;;
 		f->type = FILETYPE_GENERIC;
-		f->fAttr = 0;
+		f->fAttr = EA_NONE;
 		f->bValid = true;
 		*this->content
 			>> u32le(f->iOffset)

@@ -176,7 +176,7 @@ Archive_EPF_LionKing::Archive_EPF_LionKing(std::unique_ptr<stream::inout> conten
 		f->iOffset = offNext;
 		f->lenHeader = 0;
 		f->type = FILETYPE_GENERIC;
-		f->fAttr = 0;
+		f->fAttr = EA_NONE;
 		f->bValid = true;
 
 		// Read the data in from the FAT entry in the file

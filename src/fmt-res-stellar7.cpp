@@ -158,7 +158,7 @@ Archive_RES_Stellar7_Folder::Archive_RES_Stellar7_Folder(
 		f->iOffset = offNext;
 		f->lenHeader = RES_FAT_ENTRY_LEN;
 		f->type = FILETYPE_GENERIC;
-		f->fAttr = 0;
+		f->fAttr = EA_NONE;
 		if (isfolder_length & 0x80000000) f->fAttr |= EA_FOLDER;
 		f->storedSize = isfolder_length & 0x7FFFFFFF;
 		f->bValid = true;

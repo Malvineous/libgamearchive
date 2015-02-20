@@ -154,7 +154,7 @@ Archive_WAD_Doom::Archive_WAD_Doom(std::unique_ptr<stream::inout> content)
 		f->iIndex = i;
 		f->lenHeader = 0;
 		f->type = FILETYPE_GENERIC;
-		f->fAttr = 0;
+		f->fAttr = EA_NONE;
 		f->bValid = true;
 
 		// Read the data in from the FAT entry in the file

@@ -155,7 +155,7 @@ Archive_Resource_TIM::Archive_Resource_TIM(
 		f->iIndex = index++;
 		f->lenHeader = TIM_EFAT_ENTRY_LEN;
 		f->type = FILETYPE_GENERIC;
-		f->fAttr = 0;
+		f->fAttr = EA_NONE;
 		f->bValid = true;
 		f->realSize = f->storedSize;
 

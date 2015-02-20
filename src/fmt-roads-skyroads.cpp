@@ -168,7 +168,7 @@ Archive_Roads_SkyRoads::Archive_Roads_SkyRoads(std::unique_ptr<stream::inout> co
 			f->iIndex = i;
 			f->lenHeader = 0;
 			f->type = "map/skyroads";
-			f->fAttr = 0;
+			f->fAttr = EA_NONE;
 			f->filter = "";
 			f->bValid = true;
 			this->vcFAT.push_back(std::move(f));

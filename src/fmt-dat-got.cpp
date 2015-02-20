@@ -220,7 +220,7 @@ Archive_DAT_GoT::Archive_DAT_GoT(std::unique_ptr<stream::inout> content)
 			f->fAttr = EA_COMPRESSED;
 			f->filter = "lzss-got";
 		} else {
-			f->fAttr = 0;
+			f->fAttr = EA_NONE;
 		}
 		f->bValid = true;
 		// Blank FAT entries have an offset of zero

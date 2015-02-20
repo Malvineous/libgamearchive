@@ -141,7 +141,7 @@ Archive_LIB_Mythos::Archive_LIB_Mythos(std::unique_ptr<stream::inout> content)
 		f->iIndex = i;
 		f->lenHeader = 0;
 		f->type = FILETYPE_GENERIC;
-		f->fAttr = 0;
+		f->fAttr = EA_NONE;
 		f->bValid = true;
 		*this->content
 			>> nullPadded(f->strName, LIB_FILENAME_FIELD_LEN)
