@@ -147,7 +147,6 @@ class Archive: virtual public Metadata
 				File& operator=(File&&) = delete;
 		};
 
-		//typedef typename std::shared_ptr<File> FileHandle;
 		typedef typename std::shared_ptr<const File> FileHandle;
 		typedef typename std::vector<FileHandle> FileVector;
 

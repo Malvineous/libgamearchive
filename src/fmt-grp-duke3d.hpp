@@ -63,9 +63,8 @@ class Archive_GRP_Duke3D: virtual public FATArchive
 		virtual void preRemoveFile(const FATEntry *pid);
 
 	protected:
-		// Update the header with the number of files in the archive
+		/// Update the header with the number of files in the archive
 		void updateFileCount(uint32_t iNewCount);
-
 };
 
 } // namespace gamearchive
