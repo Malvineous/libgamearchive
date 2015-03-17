@@ -47,22 +47,11 @@ void filter_skyroads_unlzs::reset(stream::len lenInput)
 	return;
 }
 
-int nextChar(const uint8_t **in, stream::len *lenIn, stream::len *r, uint8_t *out)
-{
-	if (*r < *lenIn) {
-		*out = **in; // "read" byte
-		(*in)++;     // increment read buffer
-		(*r)++;      // increment read count
-		return 1;    // return number of bytes read
-	}
-	return 0; // EOF
-}
-
 void filter_skyroads_unlzs::transform(uint8_t *out, stream::len *lenOut,
 	const uint8_t *in, stream::len *lenIn)
 {
 	stream::len r = 0, w = 0;
-	fn_getnextchar cbNext = std::bind(nextChar, &in, lenIn, &r,
+	fn_getnextchar cbNext = std::bind(bitstreamFilterNextChar, &in, lenIn, &r,
 		std::placeholders::_1);
 
 	// While there's more space to write, and either more data to read or
@@ -205,22 +194,11 @@ void filter_skyroads_lzs::reset(stream::len lenInput)
 	return;
 }
 
-int putChar(uint8_t **out, const stream::len *lenOut, stream::len *w, uint8_t in)
-{
-	if (*w < *lenOut) {
-		**out = in;  // "write" byte
-		(*out)++;    // increment write buffer
-		(*w)++;      // increment write count
-		return 1;    // return number of bytes written
-	}
-	return 0; // EOF
-}
-
 void filter_skyroads_lzs::transform(uint8_t *out, stream::len *lenOut,
 	const uint8_t *in, stream::len *lenIn)
 {
 	stream::len r = 0, w = 0;
-	fn_putnextchar cbNext = std::bind(putChar, &out, lenOut, &w,
+	fn_putnextchar cbNext = std::bind(bitstreamFilterPutChar, &out, lenOut, &w,
 		std::placeholders::_1);
 
 	while (              // while there is...
