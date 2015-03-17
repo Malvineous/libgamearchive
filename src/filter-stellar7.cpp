@@ -23,7 +23,7 @@
 
 #include <camoto/stream_filtered.hpp>
 #include <camoto/util.hpp> // std::make_unique
-#include <camoto/lzw.hpp>
+#include <camoto/filter-lzw.hpp>
 
 #include "filter-stellar7.hpp"
 

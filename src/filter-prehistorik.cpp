@@ -24,7 +24,7 @@
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/stream_filtered.hpp>
 #include <camoto/util.hpp> // std::make_unique
-#include <camoto/lzss.hpp>
+#include <camoto/filter-lzss.hpp>
 #include <camoto/filter-crop.hpp>
 #include <camoto/filter-pad.hpp>
 #include <camoto/stream_sub.hpp>

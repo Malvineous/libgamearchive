@@ -24,7 +24,7 @@
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/stream_filtered.hpp>
 #include <camoto/util.hpp> // std::make_unique
-#include <camoto/lzw.hpp>
+#include <camoto/filter-lzw.hpp>
 
 #include "filter-bash-rle.hpp"
 #include "filter-bash.hpp"
