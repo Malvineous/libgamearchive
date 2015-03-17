@@ -26,71 +26,71 @@ using namespace camoto::gamearchive;
 
 BOOST_FIXTURE_TEST_SUITE(glb_suite, test_filter)
 
-BOOST_AUTO_TEST_CASE(read_fat)
+BOOST_AUTO_TEST_CASE(glb_read_fat)
 {
 	BOOST_TEST_MESSAGE("Decode some Raptor GLB-encoded FAT data");
 
 	FilterType_GLB_Raptor_FAT filter;
 
-	BOOST_CHECK_MESSAGE(is_equal_read(&filter,
+	this->test_equal_read(&filter,
 		STRING_WITH_NULLS(
 			"\x64\x9B\xD1\x09\x4F\xA0\xE2\x15" "\x47\x7E\xB4\xEC\x33\x7F\xC1\xF4" "\x26\x5D\x93\xCB\x12\x5E\xA0\xD3" "\x05\x3C\x72\xAA"
 			"\x64\x9B\xD1\x09\x50\x44\x86\xB9"
 		), STRING_WITH_NULLS(
 			"\x00\x00\x00\x00\xFF\x05\x00\x00" "\x00\x00\x00\x00\x00\x00\x00\x00" "\x00\x00\x00\x00\x00\x00\x00\x00" "\x00\x00\x00\x00"
 			"\x00\x00\x00\x00\x00\xA8\x00\x00"
-		)), "Raptor GLB-decoding FAT failed"
+		)
 	);
 }
 
-BOOST_AUTO_TEST_CASE(write_fat)
+BOOST_AUTO_TEST_CASE(glb_write_fat)
 {
 	BOOST_TEST_MESSAGE("Encode some FAT data using Raptor's GLB cipher");
 
 	FilterType_GLB_Raptor_FAT filter;
 
-	BOOST_CHECK_MESSAGE(is_equal_write(&filter,
+	this->test_equal_write(&filter,
 		STRING_WITH_NULLS(
 			"\x00\x00\x00\x00\xFF\x05\x00\x00" "\x00\x00\x00\x00\x00\x00\x00\x00" "\x00\x00\x00\x00\x00\x00\x00\x00" "\x00\x00\x00\x00"
 			"\x00\x00\x00\x00\x00\xA8\x00\x00"
 		), STRING_WITH_NULLS(
 			"\x64\x9B\xD1\x09\x4F\xA0\xE2\x15" "\x47\x7E\xB4\xEC\x33\x7F\xC1\xF4" "\x26\x5D\x93\xCB\x12\x5E\xA0\xD3" "\x05\x3C\x72\xAA"
 			"\x64\x9B\xD1\x09\x50\x44\x86\xB9"
-		)), "Raptor GLB-encoding FAT failed"
+		)
 	);
 }
 
-BOOST_AUTO_TEST_CASE(read_file)
+BOOST_AUTO_TEST_CASE(glb_read_file)
 {
 	BOOST_TEST_MESSAGE("Decode some Raptor GLB-encoded file data");
 
 	FilterType_GLB_Raptor_File filter;
 
-	BOOST_CHECK_MESSAGE(is_equal_read(&filter,
+	this->test_equal_read(&filter,
 		STRING_WITH_NULLS(
 			"\x64\x9B\xD1\x09\x4F\xA0\xE2\x15" "\x47\x7E\xB4\xEC\x33\x7F\xC1\xF4" "\x26\x5D\x93\xCB\x12\x5E\xA0\xD3" "\x05\x3C\x72\xAA"
 			"\xF1\x3D\x7F\xB2\xE4\xC3\xF9\x31"
 		), STRING_WITH_NULLS(
 			"\x00\x00\x00\x00\xFF\x05\x00\x00" "\x00\x00\x00\x00\x00\x00\x00\x00" "\x00\x00\x00\x00\x00\x00\x00\x00" "\x00\x00\x00\x00"
 			"\x00\x00\x00\x00\x00\xA8\x00\x00"
-		)), "Raptor GLB-decoding file failed"
+		)
 	);
 }
 
-BOOST_AUTO_TEST_CASE(write_file)
+BOOST_AUTO_TEST_CASE(glb_write_file)
 {
 	BOOST_TEST_MESSAGE("Encode some file data using Raptor's GLB cipher");
 
 	FilterType_GLB_Raptor_File filter;
 
-	BOOST_CHECK_MESSAGE(is_equal_write(&filter,
+	this->test_equal_write(&filter,
 		STRING_WITH_NULLS(
 			"\x00\x00\x00\x00\xFF\x05\x00\x00" "\x00\x00\x00\x00\x00\x00\x00\x00" "\x00\x00\x00\x00\x00\x00\x00\x00" "\x00\x00\x00\x00"
 			"\x00\x00\x00\x00\x00\xA8\x00\x00"
 		), STRING_WITH_NULLS(
 			"\x64\x9B\xD1\x09\x4F\xA0\xE2\x15" "\x47\x7E\xB4\xEC\x33\x7F\xC1\xF4" "\x26\x5D\x93\xCB\x12\x5E\xA0\xD3" "\x05\x3C\x72\xAA"
 			"\xF1\x3D\x7F\xB2\xE4\xC3\xF9\x31"
-		)), "Raptor GLB-encoding file failed"
+		)
 	);
 }
 

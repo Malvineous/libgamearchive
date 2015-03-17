@@ -41,35 +41,77 @@ boost::test_tools::predicate_result test_filter::is_equal(const std::string& str
 	return this->test_main::is_equal(strExpected, out.data);
 }
 
-boost::test_tools::predicate_result test_filter::is_equal_read(
-	FilterType *ft, const std::string& strInput, const std::string& strExpected)
-{
-	this->in->write(strInput);
-
-	auto s = ft->apply(std::move(this->in));
-
-	stream::string out;
-	stream::copy(out, *s);
-
-	// See if the stringstream now matches what we expected
-	return this->test_main::is_equal(strExpected, out.data);
-}
-
-boost::test_tools::predicate_result test_filter::is_equal_write(
-	camoto::gamearchive::FilterType *ft, const std::string& strInput,
+void test_filter::test_equal_read(FilterType *ft, const std::string& strInput,
 	const std::string& strExpected)
 {
-	const std::string *indata = &this->in->data;
-	auto s = ft->apply(
-		std::unique_ptr<stream::inout>(std::move(this->in)),
+	{
+	auto ss = std::make_unique<stream::string>(strInput);
+	auto filteredStream = ft->apply(
+		std::unique_ptr<stream::inout>(std::move(ss)),
 		stream::fn_notify_prefiltered_size()
 	);
 
-	s->write(strInput);
-	s->flush();
+	stream::string out;
+	stream::copy(out, *filteredStream);
+	out.flush();
 
 	// See if the stringstream now matches what we expected
-	return this->test_main::is_equal(strExpected, *indata);
+	BOOST_CHECK_MESSAGE(this->test_main::is_equal(strExpected, out.data),
+		"Reading data through input/output filter failed");
+	}
+	{
+	auto ss = std::make_unique<stream::input_string>(strInput);
+	auto filteredStream = ft->apply(
+		std::unique_ptr<stream::input>(std::move(ss))
+	);
+
+	stream::string out;
+	stream::copy(out, *filteredStream);
+	out.flush();
+
+	// See if the stringstream now matches what we expected
+	BOOST_CHECK_MESSAGE(this->test_main::is_equal(strExpected, out.data),
+		"Reading data through input-only filter failed");
+	}
+	return;
+}
+
+void test_filter::test_equal_write(FilterType *ft, const std::string& strInput,
+	const std::string& strExpected)
+{
+	{
+	auto ss = std::make_unique<stream::string>();
+	const std::string *indata = &ss->data;
+	auto filteredStream = ft->apply(
+		std::unique_ptr<stream::inout>(std::move(ss)),
+		stream::fn_notify_prefiltered_size()
+	);
+
+	*filteredStream << strInput;
+	filteredStream->truncate_here();
+	filteredStream->flush();
+
+	// See if the stringstream now matches what we expected
+	BOOST_CHECK_MESSAGE(this->test_main::is_equal(strExpected, *indata),
+		"Writing data through input/output filter failed");
+	}
+	{
+	auto ss = std::make_unique<stream::output_string>();
+	const std::string *indata = &ss->data;
+	auto filteredStream = ft->apply(
+		std::unique_ptr<stream::output>(std::move(ss)),
+		stream::fn_notify_prefiltered_size()
+	);
+
+	*filteredStream << strInput;
+	filteredStream->truncate_here();
+	filteredStream->flush();
+
+	// See if the stringstream now matches what we expected
+	BOOST_CHECK_MESSAGE(this->test_main::is_equal(strExpected, *indata),
+		"Writing data through output-only filter failed");
+	}
+	return;
 }
 
 boost::test_tools::predicate_result test_filter::should_fail()

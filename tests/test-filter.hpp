@@ -37,11 +37,9 @@ class test_filter: public test_main
 		test_filter();
 
 		boost::test_tools::predicate_result is_equal(const std::string& strExpected);
-		boost::test_tools::predicate_result is_equal_read(
-			camoto::gamearchive::FilterType *ft, const std::string& strInput,
-			const std::string& strExpected);
-		boost::test_tools::predicate_result is_equal_write(
-			camoto::gamearchive::FilterType *ft, const std::string& strInput,
-			const std::string& strExpected);
+		void test_equal_read(camoto::gamearchive::FilterType *ft,
+			const std::string& strInput, const std::string& strExpected);
+		void test_equal_write(camoto::gamearchive::FilterType *ft,
+			const std::string& strInput, const std::string& strExpected);
 		boost::test_tools::predicate_result should_fail();
 };
