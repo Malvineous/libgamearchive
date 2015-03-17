@@ -26,6 +26,7 @@
 #include "filter-epfs.hpp"
 #include "filter-glb-raptor.hpp"
 #include "filter-got-lzss.hpp"
+#include "filter-prehistorik.hpp"
 #include "filter-skyroads.hpp"
 #include "filter-stargunner.hpp"
 #include "filter-stellar7.hpp"
@@ -34,6 +35,7 @@
 #include "filter-xor.hpp"
 #include "filter-zone66.hpp"
 #include "fmt-bnk-harry.hpp"
+#include "fmt-cur-prehistorik.hpp"
 #include "fmt-da-levels.hpp"
 #include "fmt-dat-bash.hpp"
 #include "fmt-dat-got.hpp"
@@ -102,6 +104,7 @@ const std::vector<std::shared_ptr<const ArchiveType> > FormatEnumerator<ArchiveT
 		// The following formats are difficult to autodetect, so putting them last
 		// means they should only be checked if all the more robust formats above
 		// have already failed to match.
+		ArchiveType_CUR_Prehistorik,
 		ArchiveType_GD_Doofus,
 		ArchiveType_DAT_Hugo,
 		ArchiveType_DAT_Hocus,
@@ -117,10 +120,11 @@ const std::vector<std::shared_ptr<const FilterType> > FormatEnumerator<FilterTyp
 	FormatEnumerator<FilterType>::addFormat<
 		FilterType_Bash,
 		FilterType_DDaveRLE,
+		FilterType_DAT_GOT,
 		FilterType_EPFS,
 		FilterType_GLB_Raptor_FAT,
 		FilterType_GLB_Raptor_File,
-		FilterType_DAT_GOT,
+		FilterType_Prehistorik,
 		FilterType_RFF,
 		FilterType_SAM_16Sprite,
 		FilterType_SAM_8Sprite,

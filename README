@@ -43,6 +43,7 @@ File formats from the following games have been implemented:
   * Monster Bash (.dat)
   * Mystic Towers (.dat)
   * Overdrive (.epf)
+  * Prehistorik (.cur, .vga)
   * Project X (.epf)
   * Raptor (.glb)
   * Rise of the Triad (.wad, .rts)
@@ -74,6 +75,7 @@ compression/encryption algorithms used by these games:
   * Lion King, The (decompress only)
   * Monster Bash (decompress only)
   * Overdrive (decompress only)
+  * Prehistorik
   * Project X (decompress only)
   * Raptor
   * Secret Agent
