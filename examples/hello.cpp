@@ -12,8 +12,7 @@ int main(void)
 	auto archiveType = ArchiveManager::byCode("grp-duke3d");
 
 	// Open an archive file on disk
-	auto file = std::make_unique<stream::file>();
-	file->open("duke3d.grp");
+	auto file = std::make_unique<stream::file>("duke3d.grp", false);
 
 	// We cheat here - we should check and load any supplementary files, but
 	// for the sake of keeping this example simple we know this format doesn't

@@ -108,8 +108,7 @@ bool insertFile(std::shared_ptr<ga::Archive> pArchive, const std::string& strLoc
 	const std::string& type, int attr, stream::len lenReal)
 {
 	// Open the file
-	auto fsIn = std::make_unique<stream::file>();
-	fsIn->open(strLocalFile);
+	auto fsIn = std::make_unique<stream::file>(strLocalFile, false);
 	stream::len lenSource = fsIn->size();
 
 	fsIn->seekg(0, stream::start);
@@ -314,8 +313,7 @@ void extractAll(std::shared_ptr<ga::Archive> archive, bool bScript)
 				std::cout << std::flush;
 
 				if (bScript) std::cout << ";wrote=" << strLocalFile;
-				auto fsOut = std::make_shared<stream::output_file>();
-				fsOut->create(strLocalFile);
+				auto fsOut = std::make_unique<stream::output_file>(strLocalFile, true);
 
 				// Copy the data from the in-archive stream to the on-disk stream
 				stream::copy(*fsOut, *pfsIn);
@@ -492,32 +490,21 @@ int main(int iArgC, char *cArgV[])
 			return RET_BADARGS;
 		}
 
-		auto psArchive = std::make_unique<stream::file>();
-		if (bCreate) {
-			if (strType.empty()) {
-				std::cerr << "Error: You must specify the --type of archive to create"
-					<< std::endl;
-				return RET_BADARGS;
-			}
-			std::cout << "Creating " << strFilename << " as type " << strType
+		std::unique_ptr<stream::file> psArchive;
+		if (bCreate && strType.empty()) {
+			std::cerr << "Error: You must specify the --type of archive to create"
 				<< std::endl;
-			try {
-				psArchive->create(strFilename);
-			} catch (const stream::open_error& e) {
-				std::cerr << "Error creating archive file " << strFilename
-					<< ": " << e.what() << std::endl;
-				return RET_SHOWSTOPPER;
-			}
-		} else {
-			std::cout << "Opening " << strFilename << " as type "
-				<< (strType.empty() ? "<autodetect>" : strType) << std::endl;
-			try {
-				psArchive->open(strFilename);
-			} catch (const stream::open_error& e) {
-				std::cerr << "Error opening archive file " << strFilename
-					<< ": " << e.what() << std::endl;
-				return RET_SHOWSTOPPER;
-			}
+			return RET_BADARGS;
+		}
+		std::cout << (bCreate ? "Creating " : "Opening ") << strFilename
+			<< " as type " << (strType.empty() ? "<autodetect>" : strType)
+			<< std::endl;
+		try {
+			psArchive = std::make_unique<stream::file>(strFilename, bCreate);
+		} catch (const stream::open_error& e) {
+			std::cerr << "Error " << (bCreate ? "creating" : "opening")
+				<< " archive file " << strFilename << ": " << e.what() << std::endl;
+			return RET_SHOWSTOPPER;
 		}
 
 		// Get the format handler for this file format
@@ -563,8 +550,7 @@ int main(int iArgC, char *cArgV[])
 						bool bSuppOK = true;
 						for (const auto& s : suppList) {
 							try {
-								auto suppStream = std::make_shared<stream::file>();
-								suppStream->open(s.second);
+								auto suppStream = std::make_shared<stream::file>(s.second, false);
 							} catch (const stream::open_error& e) {
 								bSuppOK = false;
 								std::cout << "  * Could not find/open " << s.second
@@ -621,8 +607,7 @@ finishTesting:
 		for (const auto& s : suppList) {
 			try {
 				std::cout << "Opening supplemental file " << s.second << std::endl;
-				auto suppStream = std::make_unique<stream::file>();
-				suppStream->open(s.second);
+				auto suppStream = std::make_unique<stream::file>(s.second, false);
 				suppData[s.first] = std::move(suppStream);
 			} catch (const stream::open_error& e) {
 				std::cerr << "Error opening supplemental file " << s.second
@@ -683,9 +668,8 @@ finishTesting:
 					} else {
 						// Found it, open on disk
 						auto pfsIn = destArch->open(id, bUseFilters);
-						auto fsOut = std::make_shared<stream::output_file>();
 						try {
-							fsOut->create(strLocalFile);
+							auto fsOut = std::make_shared<stream::output_file>(strLocalFile, true);
 							try {
 								stream::copy(*fsOut, *pfsIn);
 							} catch (const stream::error& e) {
@@ -885,8 +869,7 @@ finishTesting:
 							iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
 						} else {
 							// Found it, open replacement file
-							auto sSrc = std::make_shared<stream::input_file>();
-							sSrc->open(strLocalFile);
+							auto sSrc = std::make_shared<stream::input_file>(strLocalFile);
 							stream::len lenSource = sSrc->size();
 
 							// Note that we are opening the file into an output_sptr (instead
