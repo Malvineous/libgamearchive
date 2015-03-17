@@ -43,15 +43,17 @@ void test_main::printNice(boost::test_tools::predicate_result& res,
 	const char *c = CLR_YELLOW;
 	res.message() << c;
 	std::ostringstream text;
+	text << c;
 	unsigned int len = s.length();
 	for (unsigned int i = 0; i < len; i++) {
 		if ((i > 0) && (i % this->outputWidth == 0)) {
-			res.message() << ' ' << CLR_YELLOW << text.str();
+			res.message() << ' ' << text.str();
 //res.message() << "\" \\";
 			res.message() << CLR_NORM << "\n" << std::setfill('0') << std::setw(3)
 				<< std::hex << i << ": " << c;
 			text.str("");
 			text.seekp(0, std::ios::beg);
+			res.message() << c;
 			text << c;
 //res.message() << "\"";
 		}
