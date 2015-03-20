@@ -24,7 +24,7 @@
 #include <camoto/gamearchive/archivetype.hpp>
 #include <camoto/stream_seg.hpp>
 #include <camoto/stream_filtered.hpp>
-#include "fatarchive.hpp"
+#include <camoto/gamearchive/archive-fat.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -50,7 +50,7 @@ class ArchiveType_DAT_Mystic: virtual public ArchiveType
 };
 
 /// Mystic Towers .DAT archive instance.
-class Archive_DAT_Mystic: virtual public FATArchive
+class Archive_DAT_Mystic: virtual public Archive_FAT
 {
 	public:
 		Archive_DAT_Mystic(std::unique_ptr<stream::inout> content);

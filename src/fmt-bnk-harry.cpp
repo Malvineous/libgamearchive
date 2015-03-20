@@ -133,7 +133,7 @@ SuppFilenames ArchiveType_BNK_Harry::getRequiredSupps(stream::input& content,
 
 Archive_BNK_Harry::Archive_BNK_Harry(std::unique_ptr<stream::inout> content,
 	std::unique_ptr<stream::inout> psFAT)
-	:	FATArchive(std::move(content), BNK_FIRST_FILE_OFFSET, BNK_MAX_FILENAME_LEN),
+	:	Archive_FAT(std::move(content), BNK_FIRST_FILE_OFFSET, BNK_MAX_FILENAME_LEN),
 		psFAT(std::make_unique<stream::seg>(std::move(psFAT))),
 		isAC(false) // TODO: detect and set this
 {
@@ -179,7 +179,7 @@ Archive_BNK_Harry::~Archive_BNK_Harry()
 
 void Archive_BNK_Harry::flush()
 {
-	this->FATArchive::flush();
+	this->Archive_FAT::flush();
 
 	// Write out to the underlying stream for the supplemental files
 	this->psFAT->flush();

@@ -22,7 +22,7 @@
 #define _CAMOTO_FMT_HOG_DESCENT_HPP_
 
 #include <camoto/gamearchive/archivetype.hpp>
-#include "fatarchive.hpp"
+#include <camoto/gamearchive/archive-fat.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -48,7 +48,7 @@ class ArchiveType_HOG_Descent: virtual public ArchiveType
 };
 
 /// Descent .HOG archive instance.
-class Archive_HOG_Descent: virtual public FATArchive
+class Archive_HOG_Descent: virtual public Archive_FAT
 {
 	public:
 		Archive_HOG_Descent(std::unique_ptr<stream::inout> content);

@@ -22,7 +22,7 @@
 #define _CAMOTO_FMT_DAT_SANGO_HPP_
 
 #include <camoto/gamearchive/archivetype.hpp>
-#include "fatarchive.hpp"
+#include <camoto/gamearchive/archive-fat.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -48,7 +48,7 @@ class ArchiveType_DAT_Sango: virtual public ArchiveType
 };
 
 /// Sango Fighter .DAT archive instance.
-class Archive_DAT_Sango: virtual public FATArchive {
+class Archive_DAT_Sango: virtual public Archive_FAT {
 	public:
 		Archive_DAT_Sango(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_DAT_Sango();

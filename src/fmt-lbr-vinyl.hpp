@@ -22,7 +22,7 @@
 #define _CAMOTO_FMT_LBR_VINYL_HPP_
 
 #include <camoto/gamearchive/archivetype.hpp>
-#include "fatarchive.hpp"
+#include <camoto/gamearchive/archive-fat.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -48,7 +48,7 @@ class ArchiveType_LBR_Vinyl: virtual public ArchiveType
 };
 
 /// Vinyl Goddess From Mars .LBR archive instance.
-class Archive_LBR_Vinyl: virtual public FATArchive
+class Archive_LBR_Vinyl: virtual public Archive_FAT
 {
 	public:
 		Archive_LBR_Vinyl(std::unique_ptr<stream::inout> content);

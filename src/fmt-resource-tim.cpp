@@ -137,7 +137,7 @@ SuppFilenames ArchiveType_Resource_TIM::getRequiredSupps(stream::input& content,
 
 Archive_Resource_TIM::Archive_Resource_TIM(
 	std::unique_ptr<stream::inout> content, std::unique_ptr<stream::inout> psFAT)
-	:	FATArchive(std::move(content), TIM_FIRST_FILE_OFFSET, TIM_MAX_FILENAME_LEN),
+	:	Archive_FAT(std::move(content), TIM_FIRST_FILE_OFFSET, TIM_MAX_FILENAME_LEN),
 		psFAT(std::make_unique<stream::seg>(std::move(psFAT)))
 {
 	stream::len lenArchive = this->content->size();
@@ -173,7 +173,7 @@ Archive_Resource_TIM::~Archive_Resource_TIM()
 void Archive_Resource_TIM::flush()
 {
 	this->psFAT->flush();
-	this->FATArchive::flush();
+	this->Archive_FAT::flush();
 	return;
 }
 

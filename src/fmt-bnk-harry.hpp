@@ -22,7 +22,7 @@
 #define _CAMOTO_FMT_BNK_HARRY_HPP_
 
 #include <camoto/gamearchive/archivetype.hpp>
-#include "fatarchive.hpp"
+#include <camoto/gamearchive/archive-fat.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -48,7 +48,7 @@ class ArchiveType_BNK_Harry: virtual public ArchiveType
 };
 
 /// Halloween Harry .BNK archive instance.
-class Archive_BNK_Harry: virtual public FATArchive
+class Archive_BNK_Harry: virtual public Archive_FAT
 {
 	protected:
 		std::unique_ptr<stream::seg> psFAT;

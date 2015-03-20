@@ -22,7 +22,7 @@
 #define _CAMOTO_FMT_GD_DOOFUS_HPP_
 
 #include <camoto/gamearchive/archivetype.hpp>
-#include "fatarchive.hpp"
+#include <camoto/gamearchive/archive-fat.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -48,7 +48,7 @@ class ArchiveType_GD_Doofus: virtual public ArchiveType
 };
 
 /// Doofus .G-D archive instance.
-class Archive_GD_Doofus: virtual public FATArchive
+class Archive_GD_Doofus: virtual public Archive_FAT
 {
 	protected:
 		std::unique_ptr<stream::seg> psFAT; ///< FAT stream (doofus.exe)

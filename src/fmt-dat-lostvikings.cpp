@@ -144,7 +144,7 @@ SuppFilenames ArchiveType_DAT_LostVikings::getRequiredSupps(stream::input& conte
 
 
 Archive_DAT_LostVikings::Archive_DAT_LostVikings(std::unique_ptr<stream::inout> content)
-	:	FATArchive(std::move(content), DAT_FIRST_FILE_OFFSET, 0)
+	:	Archive_FAT(std::move(content), DAT_FIRST_FILE_OFFSET, 0)
 {
 	stream::pos lenArchive = this->content->size();
 	if (lenArchive > 0) {

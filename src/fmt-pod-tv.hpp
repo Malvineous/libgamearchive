@@ -22,7 +22,7 @@
 #define _CAMOTO_FMT_POD_TV_HPP_
 
 #include <camoto/gamearchive/archivetype.hpp>
-#include "fatarchive.hpp"
+#include <camoto/gamearchive/archive-fat.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -48,7 +48,7 @@ class ArchiveType_POD_TV: virtual public ArchiveType
 };
 
 /// Terminal Velocity .POD archive instance.
-class Archive_POD_TV: virtual public FATArchive
+class Archive_POD_TV: virtual public Archive_FAT
 {
 	public:
 		Archive_POD_TV(std::unique_ptr<stream::inout> content);

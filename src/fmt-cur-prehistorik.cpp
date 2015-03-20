@@ -149,7 +149,7 @@ SuppFilenames ArchiveType_CUR_Prehistorik::getRequiredSupps(stream::input& data,
 
 
 Archive_CUR_Prehistorik::Archive_CUR_Prehistorik(std::unique_ptr<stream::inout> content)
-	:	FATArchive(std::move(content), CUR_FIRST_FILE_OFFSET, CUR_MAX_FILENAME_LEN)
+	:	Archive_FAT(std::move(content), CUR_FIRST_FILE_OFFSET, CUR_MAX_FILENAME_LEN)
 {
 	this->content->seekg(CUR_FATLEN_OFFSET, stream::start);
 

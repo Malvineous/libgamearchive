@@ -23,7 +23,7 @@
 
 #include <camoto/stream_filtered.hpp>
 #include <camoto/gamearchive/archivetype.hpp>
-#include "fatarchive.hpp"
+#include <camoto/gamearchive/archive-fat.hpp>
 #include "filter-xor.hpp"
 
 namespace camoto {
@@ -50,7 +50,7 @@ class ArchiveType_DAT_GoT: virtual public ArchiveType
 };
 
 /// God of Thunder .DAT archive instance.
-class Archive_DAT_GoT: virtual public FATArchive
+class Archive_DAT_GoT: virtual public Archive_FAT
 {
 	public:
 		Archive_DAT_GoT(std::unique_ptr<stream::inout> content);

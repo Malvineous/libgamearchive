@@ -22,7 +22,7 @@
 #define _CAMOTO_FMT_DAT_BASH_HPP_
 
 #include <camoto/gamearchive/archivetype.hpp>
-#include "fatarchive.hpp"
+#include <camoto/gamearchive/archive-fat.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -48,7 +48,7 @@ class ArchiveType_DAT_Bash: virtual public ArchiveType
 };
 
 /// Monster Bash .DAT archive instance.
-class Archive_DAT_Bash: virtual public FATArchive
+class Archive_DAT_Bash: virtual public Archive_FAT
 {
 	public:
 		Archive_DAT_Bash(std::unique_ptr<stream::inout> content);
@@ -57,7 +57,7 @@ class Archive_DAT_Bash: virtual public FATArchive
 		// As per Archive (see there for docs)
 		virtual int getSupportedAttributes() const;
 
-		// As per FATArchive (see there for docs)
+		// As per Archive_FAT (see there for docs)
 		virtual void updateFileName(const FATEntry *pid,
 			const std::string& strNewName);
 		virtual void updateFileOffset(const FATEntry *pid, stream::delta offDelta);

@@ -22,7 +22,7 @@
 #define _CAMOTO_FMT_CUR_PREHISTORIK_HPP_
 
 #include <camoto/gamearchive/archivetype.hpp>
-#include "fatarchive.hpp"
+#include <camoto/gamearchive/archive-fat.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -48,7 +48,7 @@ class ArchiveType_CUR_Prehistorik: virtual public ArchiveType
 };
 
 /// Prehistorik .CUR/.VGA archive instance.
-class Archive_CUR_Prehistorik: virtual public FATArchive
+class Archive_CUR_Prehistorik: virtual public Archive_FAT
 {
 	public:
 		Archive_CUR_Prehistorik(std::unique_ptr<stream::inout> content);

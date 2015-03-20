@@ -149,7 +149,7 @@ SuppFilenames ArchiveType_DAT_Mystic::getRequiredSupps(stream::input& content,
 
 
 Archive_DAT_Mystic::Archive_DAT_Mystic(std::unique_ptr<stream::inout> content)
-	:	FATArchive(std::move(content), DAT_FIRST_FILE_OFFSET, ARCH_STD_DOS_FILENAMES),
+	:	Archive_FAT(std::move(content), DAT_FIRST_FILE_OFFSET, ARCH_STD_DOS_FILENAMES),
 		uncommittedFiles(0)
 {
 	stream::pos lenArchive = this->content->size();
@@ -234,7 +234,7 @@ void Archive_DAT_Mystic::preInsertFile(const FATEntry *idBeforeThis,
 	boost::to_upper(pNewEntry->strName);
 
 	// Add the new entry into the on-disk FAT.  This has to happen here (rather
-	// than in postInsertFile()) because on return FATArchive will update the
+	// than in postInsertFile()) because on return Archive_FAT will update the
 	// offsets of all FAT entries following this one.  If we don't insert a new
 	// entry now, all the offset changes will be applied to the wrong files.
 	this->content->seekp(DAT_FATENTRY_OFFSET_END(pNewEntry), stream::end);

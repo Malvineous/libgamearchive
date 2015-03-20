@@ -174,7 +174,7 @@ SuppFilenames ArchiveType_PCXLib::getRequiredSupps(stream::input& content,
 
 
 Archive_PCXLib::Archive_PCXLib(std::unique_ptr<stream::inout> content)
-	:	FATArchive(std::move(content), PCX_FIRST_FILE_OFFSET, PCX_MAX_FILENAME_LEN)
+	:	Archive_FAT(std::move(content), PCX_FIRST_FILE_OFFSET, PCX_MAX_FILENAME_LEN)
 {
 	stream::pos lenArchive = this->content->size();
 

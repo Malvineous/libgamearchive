@@ -133,7 +133,7 @@ SuppFilenames ArchiveType_Resource_TIM_FAT::getRequiredSupps(stream::input& cont
 
 
 Archive_Resource_TIM_FAT::Archive_Resource_TIM_FAT(std::unique_ptr<stream::inout> content)
-	:	FATArchive(std::move(content), TIM_FIRST_FILE_OFFSET, TIM_MAX_FILENAME_LEN)
+	:	Archive_FAT(std::move(content), TIM_FIRST_FILE_OFFSET, TIM_MAX_FILENAME_LEN)
 {
 	this->content->seekg(TIM_FILECOUNT_OFFSET, stream::start);
 	uint16_t numFiles;

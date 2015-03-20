@@ -22,7 +22,7 @@
 #define _CAMOTO_FMT_PCXLIB_HPP_
 
 #include <camoto/gamearchive/archivetype.hpp>
-#include "fatarchive.hpp"
+#include <camoto/gamearchive/archive-fat.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -48,7 +48,7 @@ class ArchiveType_PCXLib: virtual public ArchiveType
 };
 
 /// PCX Library archive instance.
-class Archive_PCXLib: virtual public FATArchive
+class Archive_PCXLib: virtual public Archive_FAT
 {
 	public:
 		Archive_PCXLib(std::unique_ptr<stream::inout> content);

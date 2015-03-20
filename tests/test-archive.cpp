@@ -21,9 +21,8 @@
 #include <iomanip>
 #include <functional>
 #include <camoto/util.hpp>
+#include <camoto/gamearchive/archive-fat.hpp> // getFileAt()
 #include "test-archive.hpp"
-
-#include "../src/fatarchive.hpp" // getFileAt()
 
 using namespace camoto;
 using namespace camoto::gamearchive;
@@ -1224,9 +1223,9 @@ void test_archive::test_new_manipulate_zero_length_files()
 
 	// Get offsets of each file for later testing
 	auto fat1 =
-		std::dynamic_pointer_cast<const FATArchive::FATEntry>(ep1);
+		std::dynamic_pointer_cast<const Archive_FAT::FATEntry>(ep1);
 	auto fat3 =
-		std::dynamic_pointer_cast<const FATArchive::FATEntry>(ep3);
+		std::dynamic_pointer_cast<const Archive_FAT::FATEntry>(ep3);
 
 	int off1 = fat1->iOffset;
 	int off3 = fat3->iOffset;

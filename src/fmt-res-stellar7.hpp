@@ -22,7 +22,7 @@
 #define _CAMOTO_FMT_RES_STELLAR7_HPP_
 
 #include <camoto/gamearchive/archivetype.hpp>
-#include "fatarchive.hpp"
+#include <camoto/gamearchive/archive-fat.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -48,7 +48,7 @@ class ArchiveType_RES_Stellar7: virtual public ArchiveType
 };
 
 /// Stellar 7 .RES archive instance.
-class Archive_RES_Stellar7_Folder: virtual public FATArchive
+class Archive_RES_Stellar7_Folder: virtual public Archive_FAT
 {
 	public:
 		Archive_RES_Stellar7_Folder(std::unique_ptr<stream::inout> content);

@@ -22,7 +22,7 @@
 #define _CAMOTO_FMT_DAT_HOCUS_HPP_
 
 #include <camoto/gamearchive/archivetype.hpp>
-#include "fatarchive.hpp"
+#include <camoto/gamearchive/archive-fat.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -48,7 +48,7 @@ class ArchiveType_DAT_Hocus: virtual public ArchiveType
 };
 
 /// Hocus Pocus .DAT archive instance.
-class Archive_DAT_Hocus: virtual public FATArchive
+class Archive_DAT_Hocus: virtual public Archive_FAT
 {
 	protected:
 		std::unique_ptr<stream::seg> psFAT; ///< FAT stream (hocus.exe)

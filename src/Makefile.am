@@ -2,7 +2,7 @@ lib_LTLIBRARIES = libgamearchive.la
 
 libgamearchive_la_SOURCES  = main.cpp
 libgamearchive_la_SOURCES += archive.cpp
-libgamearchive_la_SOURCES += fatarchive.cpp
+libgamearchive_la_SOURCES += archive-fat.cpp
 libgamearchive_la_SOURCES += filter-bash-rle.cpp
 libgamearchive_la_SOURCES += filter-bash.cpp
 libgamearchive_la_SOURCES += filter-bitswap.cpp
@@ -53,9 +53,8 @@ libgamearchive_la_SOURCES += fmt-wad-doom.cpp
 libgamearchive_la_SOURCES += stream_archfile.cpp
 libgamearchive_la_SOURCES += util.cpp
 
-EXTRA_libgamearchive_la_SOURCES  = fatarchive.hpp
+EXTRA_libgamearchive_la_SOURCES  = filter-bash.hpp
 EXTRA_libgamearchive_la_SOURCES += filter-bash-rle.hpp
-EXTRA_libgamearchive_la_SOURCES += filter-bash.hpp
 EXTRA_libgamearchive_la_SOURCES += filter-bitswap.hpp
 EXTRA_libgamearchive_la_SOURCES += filter-ddave-rle.hpp
 EXTRA_libgamearchive_la_SOURCES += filter-epfs.hpp

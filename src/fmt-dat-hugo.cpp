@@ -164,7 +164,7 @@ SuppFilenames ArchiveType_DAT_Hugo::getRequiredSupps(stream::input& content,
 
 Archive_DAT_Hugo::Archive_DAT_Hugo(std::unique_ptr<stream::inout> content,
 	std::unique_ptr<stream::inout> psFAT)
-	:	FATArchive(std::move(content), DAT_FIRST_FILE_OFFSET, 0)
+	:	Archive_FAT(std::move(content), DAT_FIRST_FILE_OFFSET, 0)
 {
 	if (psFAT) {
 		this->psFAT = std::make_unique<stream::seg>(std::move(psFAT));
@@ -323,7 +323,7 @@ void Archive_DAT_Hugo::preRemoveFile(const FATEntry *pid)
 	return;
 }
 
-std::unique_ptr<FATArchive::FATEntry> Archive_DAT_Hugo::createNewFATEntry()
+std::unique_ptr<Archive_FAT::FATEntry> Archive_DAT_Hugo::createNewFATEntry()
 {
 	return std::make_unique<FATEntry_Hugo>();
 }

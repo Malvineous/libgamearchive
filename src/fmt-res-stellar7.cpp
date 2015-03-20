@@ -134,7 +134,7 @@ SuppFilenames ArchiveType_RES_Stellar7::getRequiredSupps(stream::input& content,
 
 Archive_RES_Stellar7_Folder::Archive_RES_Stellar7_Folder(
 	std::unique_ptr<stream::inout> content)
-	:	FATArchive(std::move(content), RES_FIRST_FILE_OFFSET, RES_MAX_FILENAME_LEN)
+	:	Archive_FAT(std::move(content), RES_FIRST_FILE_OFFSET, RES_MAX_FILENAME_LEN)
 {
 	stream::pos lenArchive = this->content->size();
 

@@ -64,7 +64,7 @@ std::unique_ptr<stream::inout> applyFilter(std::unique_ptr<archfile> s,
 archfile_core::archfile_core(const Archive::FileHandle& id)
 	:	sub_core(0, 0),
 		id(const_cast<Archive::FileHandle&>(id)),
-		fat(dynamic_cast<const FATArchive::FATEntry *>(&*id))
+		fat(dynamic_cast<const Archive_FAT::FATEntry *>(&*id))
 {
 }
 

@@ -23,7 +23,7 @@
 
 #include <camoto/gamearchive/manager.hpp>
 #include <camoto/stream_sub.hpp>
-#include "fatarchive.hpp"
+#include <camoto/gamearchive/archive-fat.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -77,7 +77,7 @@ class archfile_core: virtual public stream::sub_core
 		/**
 		 * This avoids doing a dynamic_cast on each and every read/write.
 		 */
-		const FATArchive::FATEntry *fat;
+		const Archive_FAT::FATEntry *fat;
 };
 
 /// Read-only stream to access a section within another stream.

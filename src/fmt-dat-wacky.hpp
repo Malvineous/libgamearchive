@@ -22,7 +22,7 @@
 #define _CAMOTO_FMT_DAT_WACKY_HPP_
 
 #include <camoto/gamearchive/archivetype.hpp>
-#include "fatarchive.hpp"
+#include <camoto/gamearchive/archive-fat.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -48,7 +48,7 @@ class ArchiveType_DAT_Wacky: virtual public ArchiveType
 };
 
 /// Wacky Wheels .DAT archive instance.
-class Archive_DAT_Wacky: virtual public FATArchive
+class Archive_DAT_Wacky: virtual public Archive_FAT
 {
 	public:
 		Archive_DAT_Wacky(std::unique_ptr<stream::inout> content);

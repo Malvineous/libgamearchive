@@ -1,5 +1,5 @@
 /**
- * @file  fatarchive.hpp
+ * @file  camoto/gamearchive/archive-fat.hpp
  * @brief Implementation of a FAT-style archive format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
@@ -18,8 +18,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _CAMOTO_FATARCHIVE_HPP_
-#define _CAMOTO_FATARCHIVE_HPP_
+#ifndef _CAMOTO_ARCHIVE_FAT_HPP_
+#define _CAMOTO_ARCHIVE_FAT_HPP_
 
 #include <memory>
 #include <map>
@@ -35,11 +35,11 @@
 namespace camoto {
 namespace gamearchive {
 
-/// Common value for lenMaxFilename in FATArchive::FATArchive()
+/// Common value for lenMaxFilename in Archive_FAT::Archive_FAT()
 #define ARCH_STD_DOS_FILENAMES  12     // 8.3 + dot
 
 /// Archive implementation for archives with an associated size/offset table.
-class FATArchive: virtual public Archive, public std::enable_shared_from_this<FATArchive>
+class Archive_FAT: virtual public Archive, public std::enable_shared_from_this<Archive_FAT>
 {
 	public:
 
@@ -96,7 +96,7 @@ class FATArchive: virtual public Archive, public std::enable_shared_from_this<FA
 		/// Maximum length of filenames in this archive format.
 		unsigned int lenMaxFilename;
 
-		/// Create a new FATArchive.
+		/// Create a new Archive_FAT.
 		/**
 		 * @param content
 		 *   Archive data stream, in whatever format the class descended from this
@@ -114,11 +114,11 @@ class FATArchive: virtual public Archive, public std::enable_shared_from_this<FA
 		 *
 		 * @throws stream::error on I/O error.
 		 */
-		FATArchive(std::unique_ptr<stream::inout> content, stream::pos offFirstFile,
+		Archive_FAT(std::unique_ptr<stream::inout> content, stream::pos offFirstFile,
 			int lenMaxFilename);
 
 	public:
-		virtual ~FATArchive();
+		virtual ~Archive_FAT();
 
 		virtual FileHandle find(const std::string& strFilename) const;
 		virtual const FileVector& files(void) const;
@@ -335,4 +335,4 @@ Archive::FileHandle DLL_EXPORT getFileAt(const Archive::FileVector& files,
 } // namespace gamearchive
 } // namespace camoto
 
-#endif // _CAMOTO_FATARCHIVE_HPP_
+#endif // _CAMOTO_ARCHIVE_FAT_HPP_

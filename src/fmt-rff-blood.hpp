@@ -24,7 +24,7 @@
 #include <camoto/gamearchive/archivetype.hpp>
 #include <camoto/stream_seg.hpp>
 #include <camoto/stream_filtered.hpp>
-#include "fatarchive.hpp"
+#include <camoto/gamearchive/archive-fat.hpp>
 #include "filter-xor-blood.hpp"
 
 namespace camoto {
@@ -51,7 +51,7 @@ class ArchiveType_RFF_Blood: virtual public ArchiveType
 };
 
 /// Blood .RFF archive instance.
-class Archive_RFF_Blood: virtual public FATArchive
+class Archive_RFF_Blood: virtual public Archive_FAT
 {
 	public:
 		Archive_RFF_Blood(std::unique_ptr<stream::inout> content);

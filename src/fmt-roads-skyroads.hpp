@@ -22,7 +22,7 @@
 #define _CAMOTO_FMT_ROADS_SKYROADS_HPP_
 
 #include <camoto/gamearchive/archivetype.hpp>
-#include "fatarchive.hpp"
+#include <camoto/gamearchive/archive-fat.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -48,7 +48,7 @@ class ArchiveType_Roads_SkyRoads: virtual public ArchiveType
 };
 
 /// Skyroads ROADS.LZS archive instance.
-class Archive_Roads_SkyRoads: virtual public FATArchive
+class Archive_Roads_SkyRoads: virtual public Archive_FAT
 {
 	public:
 		Archive_Roads_SkyRoads(std::unique_ptr<stream::inout> content);

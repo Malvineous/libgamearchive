@@ -22,7 +22,7 @@
 #define _CAMOTO_FMT_VOL_COSMO_HPP_
 
 #include <camoto/gamearchive/archivetype.hpp>
-#include "fatarchive.hpp"
+#include <camoto/gamearchive/archive-fat.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -48,7 +48,7 @@ class ArchiveType_VOL_Cosmo: virtual public ArchiveType
 };
 
 /// Cosmo .VOL archive instance.
-class Archive_VOL_Cosmo: virtual public FATArchive
+class Archive_VOL_Cosmo: virtual public Archive_FAT
 {
 	public:
 		Archive_VOL_Cosmo(std::unique_ptr<stream::inout> content);

@@ -138,7 +138,7 @@ SuppFilenames ArchiveType_GLB_Raptor::getRequiredSupps(stream::input& content,
 
 
 Archive_GLB_Raptor::Archive_GLB_Raptor(std::unique_ptr<stream::inout> content)
-	:	FATArchive(std::move(content), GLB_FIRST_FILE_OFFSET, GLB_MAX_FILENAME_LEN)
+	:	Archive_FAT(std::move(content), GLB_FIRST_FILE_OFFSET, GLB_MAX_FILENAME_LEN)
 {
 	FilterType_GLB_Raptor_FAT glbFilterType;
 	uint32_t numFiles;
@@ -239,7 +239,7 @@ void Archive_GLB_Raptor::flush()
 	stream::copy(*bareCrypt, *this->fat);
 	bareCrypt->flush();
 
-	this->FATArchive::flush();
+	this->Archive_FAT::flush();
 	return;
 }
 

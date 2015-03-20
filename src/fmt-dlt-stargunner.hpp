@@ -22,7 +22,7 @@
 #define _CAMOTO_FMT_DLT_STARGUNNER_HPP_
 
 #include <camoto/gamearchive/archivetype.hpp>
-#include "fatarchive.hpp"
+#include <camoto/gamearchive/archive-fat.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -48,7 +48,7 @@ class ArchiveType_DLT_Stargunner: virtual public ArchiveType
 };
 
 /// Stargunner .DLT archive instance.
-class Archive_DLT_Stargunner: virtual public FATArchive
+class Archive_DLT_Stargunner: virtual public Archive_FAT
 {
 	public:
 		Archive_DLT_Stargunner(std::unique_ptr<stream::inout> content);

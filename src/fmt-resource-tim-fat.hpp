@@ -22,7 +22,7 @@
 #define _CAMOTO_FMT_RESOURCE_TIM_FAT_HPP_
 
 #include <camoto/gamearchive/archivetype.hpp>
-#include "fatarchive.hpp"
+#include <camoto/gamearchive/archive-fat.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -48,7 +48,7 @@ class ArchiveType_Resource_TIM_FAT: virtual public ArchiveType
 };
 
 /// The Incredible Machine resource FAT archive instance.
-class Archive_Resource_TIM_FAT: virtual public FATArchive
+class Archive_Resource_TIM_FAT: virtual public Archive_FAT
 {
 	public:
 		Archive_Resource_TIM_FAT(std::unique_ptr<stream::inout> content);

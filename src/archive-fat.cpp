@@ -1,5 +1,5 @@
 /**
- * @file  fatarchive.cpp
+ * @file  archive-fat.cpp
  * @brief Implementation of a FAT-style archive format.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
@@ -21,27 +21,27 @@
 #include <functional>
 #include <boost/algorithm/string.hpp>
 #include <camoto/util.hpp> // createString
-#include "fatarchive.hpp"
+#include <camoto/gamearchive/archive-fat.hpp>
 #include "stream_archfile.hpp"
 
 namespace camoto {
 namespace gamearchive {
 
 /// Convert a FileHandle into a FATEntry pointer
-inline FATArchive::FATEntry *fatentry_cast(const Archive::FileHandle& id)
+inline Archive_FAT::FATEntry *fatentry_cast(const Archive::FileHandle& id)
 {
-	return dynamic_cast<FATArchive::FATEntry *>(
+	return dynamic_cast<Archive_FAT::FATEntry *>(
 		const_cast<Archive::File*>(&*id)
 	);
 }
 
-FATArchive::FATEntry::FATEntry()
+Archive_FAT::FATEntry::FATEntry()
 {
 }
-FATArchive::FATEntry::~FATEntry()
+Archive_FAT::FATEntry::~FATEntry()
 {
 }
-std::string FATArchive::FATEntry::getContent() const
+std::string Archive_FAT::FATEntry::getContent() const
 {
 	std::ostringstream ss;
 	ss << this->File::getContent()
@@ -56,13 +56,13 @@ Archive::FileHandle DLL_EXPORT getFileAt(
 	const Archive::FileVector& files, unsigned int index)
 {
 	for (const auto& i : files) {
-		auto pEntry = dynamic_cast<const FATArchive::FATEntry *>(&*i);
+		auto pEntry = dynamic_cast<const Archive_FAT::FATEntry *>(&*i);
 		if (pEntry->iIndex == index) return i;
 	}
 	return std::shared_ptr<Archive::File>();
 }
 
-FATArchive::FATArchive(std::unique_ptr<stream::inout> content,
+Archive_FAT::Archive_FAT(std::unique_ptr<stream::inout> content,
 	stream::pos offFirstFile, int lenMaxFilename)
 	:	content(std::make_shared<stream::seg>(std::move(content))),
 		offFirstFile(offFirstFile),
@@ -70,7 +70,7 @@ FATArchive::FATArchive(std::unique_ptr<stream::inout> content,
 {
 }
 
-FATArchive::~FATArchive()
+Archive_FAT::~Archive_FAT()
 {
 	// Can't flush here as it could throw stream::error and we have no way
 	// of handling it.
@@ -84,12 +84,12 @@ FATArchive::~FATArchive()
 	}
 }
 
-const Archive::FileVector& FATArchive::files() const
+const Archive::FileVector& Archive_FAT::files() const
 {
 	return this->vcFAT;
 }
 
-Archive::FileHandle FATArchive::find(const std::string& strFilename) const
+Archive::FileHandle Archive_FAT::find(const std::string& strFilename) const
 {
 	// TESTED BY: fmt_grp_duke3d_*
 	for (const auto& i : this->vcFAT) {
@@ -101,7 +101,7 @@ Archive::FileHandle FATArchive::find(const std::string& strFilename) const
 	return nullptr;
 }
 
-bool FATArchive::isValid(const FileHandle& id) const
+bool Archive_FAT::isValid(const FileHandle& id) const
 {
 	// Don't need to cast to get to the bValid member, but the dynamic_cast
 	// requires that id is an instance of FATEntry in order to be valid.
@@ -109,7 +109,7 @@ bool FATArchive::isValid(const FileHandle& id) const
 	return ((id2) && (id2->bValid));
 }
 
-std::unique_ptr<stream::inout> FATArchive::open(const FileHandle& id,
+std::unique_ptr<stream::inout> Archive_FAT::open(const FileHandle& id,
 	bool useFilter)
 {
 	// TESTED BY: fmt_grp_duke3d_open
@@ -137,7 +137,7 @@ std::unique_ptr<stream::inout> FATArchive::open(const FileHandle& id,
 	return std::move(raw);
 }
 
-std::shared_ptr<Archive> FATArchive::openFolder(const FileHandle& id)
+std::shared_ptr<Archive> Archive_FAT::openFolder(const FileHandle& id)
 {
 	// This function should only be called for folders (not files)
 	assert(id->fAttr & EA_FOLDER);
@@ -146,7 +146,7 @@ std::shared_ptr<Archive> FATArchive::openFolder(const FileHandle& id)
 	throw stream::error("BUG: Archive format doesn't implement openFolder()");
 }
 
-Archive::FileHandle FATArchive::insert(const FileHandle& idBeforeThis,
+Archive::FileHandle Archive_FAT::insert(const FileHandle& idBeforeThis,
 	const std::string& strFilename, stream::len storedSize, std::string type,
 	int attr)
 {
@@ -242,7 +242,7 @@ Archive::FileHandle FATArchive::insert(const FileHandle& idBeforeThis,
 	return pNewFile;
 }
 
-void FATArchive::remove(FileHandle& id)
+void Archive_FAT::remove(FileHandle& id)
 {
 	// TESTED BY: fmt_grp_duke3d_remove
 	// TESTED BY: fmt_grp_duke3d_remove2
@@ -284,7 +284,7 @@ void FATArchive::remove(FileHandle& id)
 	return;
 }
 
-void FATArchive::rename(FileHandle& id, const std::string& strNewName)
+void Archive_FAT::rename(FileHandle& id, const std::string& strNewName)
 {
 	// TESTED BY: fmt_grp_duke3d_rename
 	assert(this->isValid(id));
@@ -304,7 +304,7 @@ void FATArchive::rename(FileHandle& id, const std::string& strNewName)
 	return;
 }
 
-void FATArchive::move(const FileHandle& idBeforeThis, FileHandle& id)
+void Archive_FAT::move(const FileHandle& idBeforeThis, FileHandle& id)
 {
 	// Open the file we want to move
 	auto src = this->open(id, false);
@@ -340,7 +340,7 @@ void FATArchive::move(const FileHandle& idBeforeThis, FileHandle& id)
 	return;
 }
 
-void FATArchive::resize(FileHandle& id, stream::len newStoredSize,
+void Archive_FAT::resize(FileHandle& id, stream::len newStoredSize,
 	stream::len newRealSize)
 {
 	assert(this->isValid(id));
@@ -389,19 +389,19 @@ void FATArchive::resize(FileHandle& id, stream::len newStoredSize,
 	return;
 }
 
-void FATArchive::flush()
+void Archive_FAT::flush()
 {
 	// Write out to the underlying stream
 	this->content->flush();
 	return;
 }
 
-int FATArchive::getSupportedAttributes() const
+int Archive_FAT::getSupportedAttributes() const
 {
 	return 0;
 }
 
-void FATArchive::shiftFiles(const FATEntry *fatSkip, stream::pos offStart,
+void Archive_FAT::shiftFiles(const FATEntry *fatSkip, stream::pos offStart,
 	stream::delta deltaOffset, int deltaIndex)
 {
 	for (auto& i : this->vcFAT) {
@@ -422,37 +422,37 @@ void FATArchive::shiftFiles(const FATEntry *fatSkip, stream::pos offStart,
 	return;
 }
 
-void FATArchive::preInsertFile(const FATEntry *idBeforeThis,
+void Archive_FAT::preInsertFile(const FATEntry *idBeforeThis,
 	FATEntry *pNewEntry)
 {
 	// No-op default
 	return;
 }
 
-void FATArchive::postInsertFile(FATEntry *pNewEntry)
+void Archive_FAT::postInsertFile(FATEntry *pNewEntry)
 {
 	// No-op default
 	return;
 }
 
-void FATArchive::preRemoveFile(const FATEntry *pid)
+void Archive_FAT::preRemoveFile(const FATEntry *pid)
 {
 	// No-op default
 	return;
 }
 
-void FATArchive::postRemoveFile(const FATEntry *pid)
+void Archive_FAT::postRemoveFile(const FATEntry *pid)
 {
 	// No-op default
 	return;
 }
 
-std::unique_ptr<FATArchive::FATEntry> FATArchive::createNewFATEntry()
+std::unique_ptr<Archive_FAT::FATEntry> Archive_FAT::createNewFATEntry()
 {
 	return std::make_unique<FATEntry>();
 }
 
-bool FATArchive::entryInRange(const FATEntry *fat, stream::pos offStart,
+bool Archive_FAT::entryInRange(const FATEntry *fat, stream::pos offStart,
 	const FATEntry *fatSkip)
 {
 	// Don't move any files earlier than the start of the shift block.

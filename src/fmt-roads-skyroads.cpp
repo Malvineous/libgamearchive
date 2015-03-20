@@ -140,7 +140,7 @@ SuppFilenames ArchiveType_Roads_SkyRoads::getRequiredSupps(stream::input& conten
 
 
 Archive_Roads_SkyRoads::Archive_Roads_SkyRoads(std::unique_ptr<stream::inout> content)
-	:	FATArchive(std::move(content), SRR_FIRST_FILE_OFFSET, 0)
+	:	Archive_FAT(std::move(content), SRR_FIRST_FILE_OFFSET, 0)
 {
 	stream::pos lenArchive = this->content->size();
 	if (lenArchive > 0) {

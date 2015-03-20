@@ -22,7 +22,7 @@
 #define _CAMOTO_FMT_WAD_DOOM_HPP_
 
 #include <camoto/gamearchive/archivetype.hpp>
-#include "fatarchive.hpp"
+#include <camoto/gamearchive/archive-fat.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -48,7 +48,7 @@ class ArchiveType_WAD_Doom: virtual public ArchiveType
 };
 
 /// Doom .WAD archive instance.
-class Archive_WAD_Doom: virtual public FATArchive
+class Archive_WAD_Doom: virtual public Archive_FAT
 {
 	public:
 		Archive_WAD_Doom(std::unique_ptr<stream::inout> content);

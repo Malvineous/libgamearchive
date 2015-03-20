@@ -463,7 +463,7 @@ SuppFilenames ArchiveType_LBR_Vinyl::getRequiredSupps(stream::input& content,
 
 
 Archive_LBR_Vinyl::Archive_LBR_Vinyl(std::unique_ptr<stream::inout> content)
-	:	FATArchive(std::move(content), LBR_FIRST_FILE_OFFSET, 0 /* no max filename len */)
+	:	Archive_FAT(std::move(content), LBR_FIRST_FILE_OFFSET, 0 /* no max filename len */)
 {
 	stream::pos lenArchive = this->content->size();
 

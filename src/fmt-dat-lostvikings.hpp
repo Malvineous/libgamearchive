@@ -22,7 +22,7 @@
 #define _CAMOTO_FMT_DAT_LOSTVIKINGS_HPP_
 
 #include <camoto/gamearchive/archivetype.hpp>
-#include "fatarchive.hpp"
+#include <camoto/gamearchive/archive-fat.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -48,7 +48,7 @@ class ArchiveType_DAT_LostVikings: virtual public ArchiveType
 };
 
 /// The Lost Vikings .DAT archive instance.
-class Archive_DAT_LostVikings: virtual public FATArchive
+class Archive_DAT_LostVikings: virtual public Archive_FAT
 {
 	public:
 		Archive_DAT_LostVikings(std::unique_ptr<stream::inout> content);

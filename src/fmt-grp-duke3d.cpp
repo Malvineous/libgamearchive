@@ -123,7 +123,7 @@ SuppFilenames ArchiveType_GRP_Duke3D::getRequiredSupps(stream::input& data,
 
 
 Archive_GRP_Duke3D::Archive_GRP_Duke3D(std::unique_ptr<stream::inout> content)
-	:	FATArchive(std::move(content), GRP_FIRST_FILE_OFFSET, GRP_MAX_FILENAME_LEN)
+	:	Archive_FAT(std::move(content), GRP_FIRST_FILE_OFFSET, GRP_MAX_FILENAME_LEN)
 {
 	this->content->seekg(GRP_FILECOUNT_OFFSET, stream::start); // skip "KenSilverman" sig
 

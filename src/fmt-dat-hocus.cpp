@@ -140,7 +140,7 @@ SuppFilenames ArchiveType_DAT_Hocus::getRequiredSupps(stream::input& content,
 
 Archive_DAT_Hocus::Archive_DAT_Hocus(std::unique_ptr<stream::inout> content,
 	std::unique_ptr<stream::inout> psFAT)
-	:	FATArchive(std::move(content), DAT_FIRST_FILE_OFFSET, 0),
+	:	Archive_FAT(std::move(content), DAT_FIRST_FILE_OFFSET, 0),
 		psFAT(std::make_unique<stream::seg>(std::move(psFAT))),
 		numFiles(0)
 {
@@ -181,7 +181,7 @@ Archive_DAT_Hocus::~Archive_DAT_Hocus()
 
 void Archive_DAT_Hocus::flush()
 {
-	this->FATArchive::flush();
+	this->Archive_FAT::flush();
 
 	// Write out to the underlying stream for the supplemental files
 	this->psFAT->flush();

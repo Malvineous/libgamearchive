@@ -119,7 +119,7 @@ SuppFilenames ArchiveType_LIB_Mythos::getRequiredSupps(stream::input& content,
 
 
 Archive_LIB_Mythos::Archive_LIB_Mythos(std::unique_ptr<stream::inout> content)
-	:	FATArchive(std::move(content), LIB_FIRST_FILE_OFFSET, LIB_MAX_FILENAME_LEN)
+	:	Archive_FAT(std::move(content), LIB_FIRST_FILE_OFFSET, LIB_MAX_FILENAME_LEN)
 {
 	this->lenArchive = this->content->size();
 

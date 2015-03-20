@@ -176,7 +176,7 @@ SuppFilenames ArchiveType_DAT_GoT::getRequiredSupps(stream::input& content,
 
 
 Archive_DAT_GoT::Archive_DAT_GoT(std::unique_ptr<stream::inout> content)
-	:	FATArchive(std::move(content), GOT_FIRST_FILE_OFFSET, GOT_MAX_FILENAME_LEN)
+	:	Archive_FAT(std::move(content), GOT_FIRST_FILE_OFFSET, GOT_MAX_FILENAME_LEN)
 {
 	// Create a substream to decrypt the FAT
 	auto fatSubStream = std::make_unique<stream::sub>(
@@ -239,7 +239,7 @@ void Archive_DAT_GoT::flush()
 	this->fatStream->flush();
 
 	// Commit this->content
-	this->FATArchive::flush();
+	this->Archive_FAT::flush();
 	return;
 }
 

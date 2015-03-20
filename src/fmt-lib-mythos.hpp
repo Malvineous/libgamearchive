@@ -22,7 +22,7 @@
 #define _CAMOTO_FMT_LIB_MYTHOS_HPP_
 
 #include <camoto/gamearchive/archivetype.hpp>
-#include "fatarchive.hpp"
+#include <camoto/gamearchive/archive-fat.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -48,7 +48,7 @@ class ArchiveType_LIB_Mythos: virtual public ArchiveType
 };
 
 /// Mythos .LIB archive instance.
-class Archive_LIB_Mythos: virtual public FATArchive {
+class Archive_LIB_Mythos: virtual public Archive_FAT {
 	public:
 		Archive_LIB_Mythos(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_LIB_Mythos();

@@ -154,7 +154,7 @@ SuppFilenames ArchiveType_VOL_Cosmo::getRequiredSupps(stream::input& content,
 
 
 Archive_VOL_Cosmo::Archive_VOL_Cosmo(std::unique_ptr<stream::inout> content)
-	:	FATArchive(std::move(content), VOL_FIRST_FILE_OFFSET, VOL_MAX_FILENAME_LEN)
+	:	Archive_FAT(std::move(content), VOL_FIRST_FILE_OFFSET, VOL_MAX_FILENAME_LEN)
 {
 	stream::pos lenArchive = this->content->size();
 	if (lenArchive > 0) {

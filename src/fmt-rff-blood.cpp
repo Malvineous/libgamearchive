@@ -131,7 +131,7 @@ SuppFilenames ArchiveType_RFF_Blood::getRequiredSupps(stream::input& content,
 
 
 Archive_RFF_Blood::Archive_RFF_Blood(std::unique_ptr<stream::inout> content)
-	:	FATArchive(std::move(content), RFF_FIRST_FILE_OFFSET, ARCH_STD_DOS_FILENAMES),
+	:	Archive_FAT(std::move(content), RFF_FIRST_FILE_OFFSET, ARCH_STD_DOS_FILENAMES),
 		modifiedFAT(false)
 {
 	stream::pos lenArchive = this->content->size();
@@ -369,7 +369,7 @@ void Archive_RFF_Blood::flush()
 	}
 
 	// Commit this->content
-	this->FATArchive::flush();
+	this->Archive_FAT::flush();
 	return;
 }
 
@@ -435,7 +435,7 @@ void Archive_RFF_Blood::preInsertFile(const FATEntry *idBeforeThis,
 	this->splitFilename(pNewEntry->strName, &base, &ext);
 
 	// Add the new entry into the on-disk FAT.  This has to happen here (rather
-	// than in postInsertFile()) because on return FATArchive will update the
+	// than in postInsertFile()) because on return Archive_FAT will update the
 	// offsets of all FAT entries following this one.  If we don't insert a new
 	// entry now, all the offset changes will be applied to the wrong files.
 	this->fatStream->seekp(RFF_FATENTRY_OFFSET(pNewEntry), stream::start);

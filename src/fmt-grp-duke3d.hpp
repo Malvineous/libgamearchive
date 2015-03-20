@@ -22,7 +22,7 @@
 #define _CAMOTO_FMT_GRP_DUKE3D_HPP_
 
 #include <camoto/gamearchive/archivetype.hpp>
-#include "fatarchive.hpp"
+#include <camoto/gamearchive/archive-fat.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -48,7 +48,7 @@ class ArchiveType_GRP_Duke3D: virtual public ArchiveType
 };
 
 /// Duke Nukem 3D .GRP archive instance.
-class Archive_GRP_Duke3D: virtual public FATArchive
+class Archive_GRP_Duke3D: virtual public Archive_FAT
 {
 	public:
 		Archive_GRP_Duke3D(std::unique_ptr<stream::inout> content);

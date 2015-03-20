@@ -22,7 +22,7 @@
 #define _CAMOTO_FMT_EPF_LIONKING_HPP_
 
 #include <camoto/gamearchive/archivetype.hpp>
-#include "fatarchive.hpp"
+#include <camoto/gamearchive/archive-fat.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -48,7 +48,7 @@ class ArchiveType_EPF_LionKing: virtual public ArchiveType
 };
 
 /// The Lion King .EPF format handler.
-class Archive_EPF_LionKing: virtual public FATArchive
+class Archive_EPF_LionKing: virtual public Archive_FAT
 {
 	protected:
 		stream::pos offFAT;  ///< Offset of the FAT from the start of the file

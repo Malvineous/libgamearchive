@@ -22,7 +22,7 @@
 #define _CAMOTO_FMT_GLB_RAPTOR_HPP_
 
 #include <camoto/gamearchive/archivetype.hpp>
-#include "fatarchive.hpp"
+#include <camoto/gamearchive/archive-fat.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -48,7 +48,7 @@ class ArchiveType_GLB_Raptor: virtual public ArchiveType
 };
 
 /// Raptor .GLB archive instance.
-class Archive_GLB_Raptor: virtual public FATArchive
+class Archive_GLB_Raptor: virtual public Archive_FAT
 {
 	public:
 		Archive_GLB_Raptor(std::unique_ptr<stream::inout> content);

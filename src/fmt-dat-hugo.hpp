@@ -22,7 +22,7 @@
 #define _CAMOTO_FMT_DAT_HUGO_HPP_
 
 #include <camoto/gamearchive/archivetype.hpp>
-#include "fatarchive.hpp"
+#include <camoto/gamearchive/archive-fat.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -48,7 +48,7 @@ class ArchiveType_DAT_Hugo: virtual public ArchiveType
 };
 
 /// Hugo 2/3 scenery .DAT archive instance.
-class Archive_DAT_Hugo: virtual public FATArchive
+class Archive_DAT_Hugo: virtual public Archive_FAT
 {
 	protected:
 		std::shared_ptr<stream::seg> psFAT;
