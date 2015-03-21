@@ -220,7 +220,7 @@ Archive_DAT_Hugo::Archive_DAT_Hugo(std::unique_ptr<stream::inout> content,
 			f->iIndex = i - firstIndexInSecondArch;
 			f->lenHeader = 0;
 			f->type = FILETYPE_GENERIC;
-			f->fAttr = EA_NONE;
+			f->fAttr = File::Attribute::Default;
 			f->bValid = true;
 			f->strName = std::string();
 			f->realSize = f->storedSize;

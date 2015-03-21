@@ -40,8 +40,13 @@ std::string Archive::File::getContent() const
 		"realSize=" << this->realSize << ";"
 		"type=" << this->type << ";"
 		"filter=" << this->filter << ";"
-		"attr=" << this->fAttr
+		"attr=" << (unsigned int)this->fAttr
 	);
+}
+
+Archive::File::Attribute Archive::getSupportedAttributes() const
+{
+	return File::Attribute::Default;
 }
 
 } // namespace gamearchive

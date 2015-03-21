@@ -508,7 +508,7 @@ Archive_LBR_Vinyl::Archive_LBR_Vinyl(std::unique_ptr<stream::inout> content)
 			f->storedSize = offNext - offCur;
 			f->realSize = f->storedSize;
 			f->type = FILETYPE_GENERIC;
-			f->fAttr = EA_NONE;
+			f->fAttr = File::Attribute::Default;
 			f->bValid = true;
 			std::map<int, const char *>::iterator fnit = fn.find(hashCur);
 			if (fnit != fn.end()) {

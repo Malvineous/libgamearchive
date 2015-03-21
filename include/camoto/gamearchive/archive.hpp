@@ -38,16 +38,6 @@ namespace gamearchive {
 
 #define FILTER_NONE              std::string()
 
-/// File attribute flags.  Can be OR'd together.
-enum E_ATTRIBUTE {
-	EA_NONE       = 0x00,  ///< No attributes set
-	EA_EMPTY      = 0x01,  ///< There's currently no file at this location
-	EA_HIDDEN     = 0x02,  ///< File is hidden between two FAT entries
-	EA_COMPRESSED = 0x04,  ///< File is compressed
-	EA_ENCRYPTED  = 0x08,  ///< File is encrypted
-	EA_FOLDER     = 0x80,  ///< This entry is a folder, not a file
-};
-
 /// Generic "file not found" exception.
 class ENotFound: public std::exception {
 };
@@ -76,6 +66,16 @@ class Archive: virtual public Metadata
 		 * The entries here will be valid for all archive types.
 		 */
 		struct File {
+			/// Which attributes can be set for a file.
+			enum class Attribute {
+				Default    = 0x00,  ///< No attributes set
+				Vacant     = 0x01,  ///< There's currently no file at this location
+				Hidden     = 0x02,  ///< File is hidden between two FAT entries
+				Compressed = 0x04,  ///< File is compressed
+				Encrypted  = 0x08,  ///< File is encrypted
+				Folder     = 0x80,  ///< This entry is a folder, not a file
+			};
+
 			/// Are the other fields valid?
 			/**
 			 * This only confirms whether the rest of the values are valid, as
@@ -126,8 +126,8 @@ class Archive: virtual public Metadata
 			 */
 			std::string filter;
 
-			/// One or more E_ATTRIBUTE flags
-			int fAttr;
+			/// One or more members from Attribute.
+			Attribute fAttr;
 
 
 			/// Empty constructor
@@ -284,7 +284,7 @@ class Archive: virtual public Metadata
 		 */
 		virtual FileHandle insert(const FileHandle& idBeforeThis,
 			const std::string& strFilename, stream::len storedSize, std::string type,
-			int attr) = 0;
+			File::Attribute attr) = 0;
 
 		/// Delete the given entry from the archive.
 		/**
@@ -390,13 +390,55 @@ class Archive: virtual public Metadata
 		 * not be supplied to insert().
 		 *
 		 * Note to archive format implementors: There is a default implementation
-		 * of this function which returns 0.  Thus this only needs to be overridden
-		 * if the archive format does actually support any of the attributes.
+		 * of this function which returns 0 (Attribute::Default).  Thus this only
+		 * needs to be overridden if the archive format does actually support any
+		 * of the attributes.
 		 *
-		 * @return Zero or more E_ATTRIBUTE values OR'd together.
+		 * @return Zero or more Attribute members OR'd together.
 		 */
-		virtual int getSupportedAttributes() const = 0;
+		virtual File::Attribute getSupportedAttributes() const;
 };
+
+/// Allow multiple File::Attribute members to be combined.
+inline Archive::File::Attribute operator| (const Archive::File::Attribute& a,
+	const Archive::File::Attribute& b)
+{
+	return static_cast<Archive::File::Attribute>(
+		static_cast<unsigned int>(a) | static_cast<unsigned int>(b)
+	);
+}
+
+/// Allow multiple File::Attribute members to be combined.
+inline Archive::File::Attribute& operator|= (Archive::File::Attribute& a,
+	const Archive::File::Attribute& b)
+{
+	a = a | b;
+	return a;
+}
+
+/// Allow multiple File::Attribute members to be split.
+inline bool operator& (const Archive::File::Attribute& a,
+	const Archive::File::Attribute& b)
+{
+	return
+		static_cast<unsigned int>(a) & static_cast<unsigned int>(b)
+	;
+}
+
+/// Allow multiple File::Attribute members to be split.
+inline Archive::File::Attribute& operator&= (Archive::File::Attribute& a,
+	const Archive::File::Attribute& b)
+{
+	a = static_cast<Archive::File::Attribute>(
+		static_cast<unsigned int>(a) & static_cast<unsigned int>(b)
+	);
+	return a;
+}
+
+/// Allow File::Attribute members to be inverted.
+inline Archive::File::Attribute operator~ (const Archive::File::Attribute& a) {
+	return static_cast<Archive::File::Attribute>(~static_cast<unsigned int>(a));
+}
 
 } // namespace gamearchive
 } // namespace camoto

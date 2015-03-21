@@ -159,7 +159,7 @@ Archive_DAT_Bash::Archive_DAT_Bash(std::unique_ptr<stream::inout> content)
 		f->iIndex = numFiles;
 		f->iOffset = pos;
 		f->lenHeader = DAT_EFAT_ENTRY_LEN;
-		f->fAttr = EA_NONE;
+		f->fAttr = File::Attribute::Default;
 		f->bValid = true;
 
 		// Read the data in from the FAT entry in the file
@@ -170,7 +170,7 @@ Archive_DAT_Bash::Archive_DAT_Bash(std::unique_ptr<stream::inout> content)
 			>> u16le(f->realSize);
 
 		if (f->realSize) {
-			f->fAttr |= EA_COMPRESSED;
+			f->fAttr |= File::Attribute::Compressed;
 			f->filter = "lzw-bash"; // decompression algorithm
 		} else {
 			f->realSize = f->storedSize;
@@ -253,9 +253,9 @@ Archive_DAT_Bash::~Archive_DAT_Bash()
 {
 }
 
-int Archive_DAT_Bash::getSupportedAttributes() const
+Archive::File::Attribute Archive_DAT_Bash::getSupportedAttributes() const
 {
-	return EA_COMPRESSED;
+	return File::Attribute::Compressed;
 }
 
 void Archive_DAT_Bash::updateFileName(const FATEntry *pid, const std::string& strNewName)
@@ -328,7 +328,7 @@ void Archive_DAT_Bash::updateFileSize(const FATEntry *pid,
 
 	// Write out the decompressed size too
 	this->content->seekp(DAT_FILENAME_FIELD_LEN, stream::cur);
-	if (pid->fAttr & EA_COMPRESSED) {
+	if (pid->fAttr & File::Attribute::Compressed) {
 		*this->content << u16le(pid->realSize);
 	} else {
 		*this->content << u16le(0);
@@ -372,7 +372,7 @@ void Archive_DAT_Bash::preInsertFile(const FATEntry *idBeforeThis,
 	this->content->seekp(pNewEntry->iOffset, stream::start);
 	this->content->insert(DAT_EFAT_ENTRY_LEN);
 
-	if (pNewEntry->fAttr & EA_COMPRESSED) {
+	if (pNewEntry->fAttr & File::Attribute::Compressed) {
 		pNewEntry->filter = "lzw-bash";
 	}
 
@@ -417,7 +417,7 @@ void Archive_DAT_Bash::postInsertFile(FATEntry *pNewEntry)
 	}
 
 	uint16_t expandedSize;
-	if (pNewEntry->fAttr & EA_COMPRESSED) {
+	if (pNewEntry->fAttr & File::Attribute::Compressed) {
 		expandedSize = pNewEntry->realSize;
 	} else {
 		expandedSize = 0;

@@ -283,8 +283,9 @@ class test_gd_doofus: public test_archive
 			Archive::FileHandle epb = this->findFile(0);
 
 			// Insert a file with a numeric typecode ("unknown/doofus-1234")
-			Archive::FileHandle ep =
-				this->pArchive->insert(epb, "", 0x0f, "unknown/doofus-1234", EA_NONE);
+			Archive::FileHandle ep = this->pArchive->insert(
+				epb, "", 0x0f, "unknown/doofus-1234", Archive::File::Attribute::Default
+			);
 
 			BOOST_CHECK_MESSAGE(
 				this->is_content_equal(this->insert_unknown_type()),

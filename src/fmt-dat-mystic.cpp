@@ -166,7 +166,7 @@ Archive_DAT_Mystic::Archive_DAT_Mystic(std::unique_ptr<stream::inout> content)
 		f->iIndex = i;
 		f->lenHeader = 0;
 		f->type = FILETYPE_GENERIC;
-		f->fAttr = EA_NONE;
+		f->fAttr = File::Attribute::Default;
 		f->bValid = true;
 
 		uint8_t lenFilename;

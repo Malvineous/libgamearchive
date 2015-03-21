@@ -144,7 +144,7 @@ Archive_DAT_Sango::Archive_DAT_Sango(std::unique_ptr<stream::inout> content)
 		f->iOffset = offCur;
 		f->lenHeader = 0;
 		f->type = FILETYPE_GENERIC;
-		f->fAttr = EA_NONE;
+		f->fAttr = File::Attribute::Default;
 		f->bValid = true;
 		f->storedSize = offNext - offCur;
 		f->realSize = f->storedSize;

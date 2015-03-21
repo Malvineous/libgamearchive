@@ -210,7 +210,7 @@ Archive_PCXLib::Archive_PCXLib(std::unique_ptr<stream::inout> content)
 		f->iIndex = i;
 		f->lenHeader = 0;
 		f->type = FILETYPE_GENERIC;
-		f->fAttr = EA_NONE;
+		f->fAttr = File::Attribute::Default;
 		f->bValid = true;
 		f->realSize = f->storedSize;
 		this->vcFAT.push_back(std::move(f));

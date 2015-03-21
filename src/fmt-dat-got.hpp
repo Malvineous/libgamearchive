@@ -57,7 +57,7 @@ class Archive_DAT_GoT: virtual public Archive_FAT
 		virtual ~Archive_DAT_GoT();
 
 		virtual void flush();
-		virtual int getSupportedAttributes() const;
+		virtual Archive::File::Attribute getSupportedAttributes() const;
 
 		virtual void updateFileName(const FATEntry *pid,
 			const std::string& strNewName);

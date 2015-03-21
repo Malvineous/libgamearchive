@@ -190,7 +190,7 @@ Archive_RFF_Blood::Archive_RFF_Blood(std::unique_ptr<stream::inout> content)
 		f->iIndex = i;
 		f->lenHeader = 0;
 		f->type = FILETYPE_GENERIC;
-		f->fAttr = EA_NONE;
+		f->fAttr = File::Attribute::Default;
 		f->bValid = true;
 
 		uint32_t lastModified, unknown2, unknown3;
@@ -209,7 +209,7 @@ Archive_RFF_Blood::Archive_RFF_Blood(std::unique_ptr<stream::inout> content)
 			>> u32le(unknown3);
 
 		if (flags & RFF_FILE_ENCRYPTED) {
-			f->fAttr |= EA_ENCRYPTED;
+			f->fAttr |= File::Attribute::Encrypted;
 			f->filter = "xor-blood"; // decryption algorithm
 		}
 
@@ -273,7 +273,7 @@ void Archive_RFF_Blood::setMetadata(MetadataType item, const std::string& value)
 				// so make sure there are no encrypted files.
 				for (auto& i : this->vcFAT) {
 					auto pFAT = dynamic_cast<const FATEntry *>(&*i);
-					if (pFAT->fAttr & EA_ENCRYPTED) {
+					if (pFAT->fAttr & File::Attribute::Encrypted) {
 						throw stream::error("cannot change to this version while the "
 							"archive contains encrypted files (the target version does not "
 							"support encryption)");
@@ -419,13 +419,13 @@ void Archive_RFF_Blood::preInsertFile(const FATEntry *idBeforeThis,
 
 	uint8_t flags = 0;
 	pNewEntry->lenHeader = 0;
-	if (pNewEntry->fAttr & EA_ENCRYPTED) {
+	if (pNewEntry->fAttr & File::Attribute::Encrypted) {
 		if (this->version >= 0x301) {
 			pNewEntry->filter = "xor-blood";
 			flags |= RFF_FILE_ENCRYPTED;
 		} else {
 			// This version doesn't support encryption, remove the attribute
-			pNewEntry->fAttr &= ~EA_ENCRYPTED;
+			pNewEntry->fAttr &= ~File::Attribute::Encrypted;
 		}
 	}
 

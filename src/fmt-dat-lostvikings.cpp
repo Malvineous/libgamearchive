@@ -170,7 +170,7 @@ Archive_DAT_LostVikings::Archive_DAT_LostVikings(std::unique_ptr<stream::inout> 
 			f->iIndex = i;
 			f->lenHeader = 0;
 			f->type = FILETYPE_GENERIC;
-			f->fAttr = EA_NONE;
+			f->fAttr = File::Attribute::Default;
 			f->storedSize = offNext - f->iOffset;
 			f->realSize = f->storedSize;
 			f->bValid = true;

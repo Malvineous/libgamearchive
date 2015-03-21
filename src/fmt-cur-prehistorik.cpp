@@ -170,7 +170,7 @@ Archive_CUR_Prehistorik::Archive_CUR_Prehistorik(std::unique_ptr<stream::inout> 
 		f->iOffset = offNext;
 		f->lenHeader = 0;
 		f->type = FILETYPE_GENERIC;
-		f->fAttr = EA_NONE;
+		f->fAttr = File::Attribute::Default;
 		f->bValid = true;
 		f->storedSize = storedSize;
 

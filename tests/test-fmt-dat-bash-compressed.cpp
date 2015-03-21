@@ -36,7 +36,7 @@ class test_dat_bash_compressed: public test_archive
 			this->type = "dat-bash";
 			this->filename[0] = "ONE.MBG";
 			this->lenMaxFilename = 30;
-			this->insertAttr = EA_COMPRESSED;
+			this->insertAttr = Archive::File::Attribute::Compressed;
 			this->content0_largeSize = 23;
 			this->content0_smallSize = 12;
 		}

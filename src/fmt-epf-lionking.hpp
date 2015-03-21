@@ -57,7 +57,7 @@ class Archive_EPF_LionKing: virtual public Archive_FAT
 		Archive_EPF_LionKing(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_EPF_LionKing();
 
-		virtual int getSupportedAttributes() const;
+		virtual Archive::File::Attribute getSupportedAttributes() const;
 		virtual MetadataTypes getMetadataList() const;
 		virtual std::string getMetadata(MetadataType item) const;
 		virtual void setMetadata(MetadataType item, const std::string& value);

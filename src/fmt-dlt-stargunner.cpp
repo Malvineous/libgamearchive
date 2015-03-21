@@ -147,7 +147,7 @@ Archive_DLT_Stargunner::Archive_DLT_Stargunner(std::unique_ptr<stream::inout> co
 		f->iOffset = offNext;
 		f->lenHeader = DLT_EFAT_ENTRY_LEN;
 		f->type = FILETYPE_GENERIC;
-		f->fAttr = EA_NONE;
+		f->fAttr = File::Attribute::Default;
 		f->bValid = true;
 
 		uint32_t unk;

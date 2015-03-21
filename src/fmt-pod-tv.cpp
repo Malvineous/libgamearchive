@@ -173,7 +173,7 @@ Archive_POD_TV::Archive_POD_TV(std::unique_ptr<stream::inout> content)
 		;
 		f->lenHeader = 0;
 		f->type = FILETYPE_GENERIC;
-		f->fAttr = EA_NONE;
+		f->fAttr = File::Attribute::Default;
 		f->bValid = true;
 		f->realSize = f->storedSize;
 		this->vcFAT.push_back(std::move(f));

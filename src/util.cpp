@@ -78,7 +78,7 @@ void findFile(std::shared_ptr<Archive> *pArchive,
 		auto j = destArchive->find(i.string());
 		if ((!j) || (!destArchive->isValid(j))) break;
 
-		if (j->fAttr & EA_FOLDER) {
+		if (j->fAttr & Archive::File::Attribute::Folder) {
 			// Open the folder and continue with the next path element
 			destArchive = destArchive->openFolder(j);
 			if (!destArchive) break;

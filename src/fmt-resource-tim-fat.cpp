@@ -152,7 +152,7 @@ Archive_Resource_TIM_FAT::Archive_Resource_TIM_FAT(std::unique_ptr<stream::inout
 		f->iIndex = i;
 		f->lenHeader = TIM_EFAT_ENTRY_LEN;
 		f->type = FILETYPE_GENERIC;
-		f->fAttr = EA_NONE;
+		f->fAttr = File::Attribute::Default;
 		f->bValid = true;
 
 		this->content->seekg(f->storedSize, stream::cur);

@@ -105,7 +105,7 @@ void sanitisePath(std::string& strInput)
 // Insert a file at the given location.  Shared by --insert and --add.
 bool insertFile(std::shared_ptr<ga::Archive> pArchive, const std::string& strLocalFile,
 	const std::string& strArchFile, const ga::Archive::FileHandle& idBeforeThis,
-	const std::string& type, int attr, stream::len lenReal)
+	const std::string& type, ga::Archive::File::Attribute attr, stream::len lenReal)
 {
 	// Open the file
 	auto fsIn = std::make_unique<stream::file>(strLocalFile, false);
@@ -164,7 +164,7 @@ void listFiles(const std::string& idPrefix, const std::string& path,
 	int j = 0;
 	for (const auto& i : archive.files()) {
 		int len = path.length() + i->strName.length();
-		if (i->fAttr & ga::EA_FOLDER) {
+		if (i->fAttr & ga::Archive::File::Attribute::Folder) {
 			// This is a folder, not a file
 			if (bScript) {
 				std::cout << "index=" << prefix << j << ";path=" << path
@@ -174,9 +174,9 @@ void listFiles(const std::string& idPrefix, const std::string& path,
 				len++; // because of trailing slash we just added
 				if (len < 25) std::cout << std::string(25 - len, ' ');
 				std::cout << "[dir";
-				if (i->fAttr & ga::EA_HIDDEN) std::cout << "; hidden";
-				if (i->fAttr & ga::EA_COMPRESSED) std::cout << "; compressed";
-				if (i->fAttr & ga::EA_ENCRYPTED) std::cout << "; encrypted";
+				if (i->fAttr & ga::Archive::File::Attribute::Hidden) std::cout << "; hidden";
+				if (i->fAttr & ga::Archive::File::Attribute::Compressed) std::cout << "; compressed";
+				if (i->fAttr & ga::Archive::File::Attribute::Encrypted) std::cout << "; encrypted";
 				std::cout << "]\n";
 			}
 			auto subArch = archive.openFolder(i);
@@ -201,10 +201,10 @@ void listFiles(const std::string& idPrefix, const std::string& path,
 				if (!i->type.empty()) std::cout << i->type << "; ";
 
 				/// Display any attributes
-				if (i->fAttr & ga::EA_EMPTY) std::cout << "empty slot; ";
-				if (i->fAttr & ga::EA_HIDDEN) std::cout << "hidden; ";
-				if (i->fAttr & ga::EA_COMPRESSED) std::cout << "compressed; ";
-				if (i->fAttr & ga::EA_ENCRYPTED) std::cout << "encrypted; ";
+				if (i->fAttr & ga::Archive::File::Attribute::Vacant) std::cout << "empty slot; ";
+				if (i->fAttr & ga::Archive::File::Attribute::Hidden) std::cout << "hidden; ";
+				if (i->fAttr & ga::Archive::File::Attribute::Compressed) std::cout << "compressed; ";
+				if (i->fAttr & ga::Archive::File::Attribute::Encrypted) std::cout << "encrypted; ";
 
 				// Display file size
 				std::cout << i->storedSize << " bytes]\n";
@@ -235,7 +235,7 @@ void extractAll(std::shared_ptr<ga::Archive> archive, bool bScript)
 			strLocalFile = ss.str();
 		}
 
-		if (i->fAttr & ga::EA_FOLDER) {
+		if (i->fAttr & ga::Archive::File::Attribute::Folder) {
 			// Tell the user what's going on
 			if (bScript) {
 				std::cout << "mkdir=" << strLocalFile;
@@ -635,7 +635,7 @@ finishTesting:
 		std::string strLastFiletype;
 
 		// Last attribute value set with -b
-		int iLastAttr = 0;
+		auto iLastAttr = ga::Archive::File::Attribute::Default;
 
 		// Last value set with -z
 		stream::len lenReal = 0;
@@ -760,20 +760,20 @@ finishTesting:
 				bool disable = (nextAttr[0] == '-');
 				if (disable) nextAttr = nextAttr.substr(1);
 
-				int next;
-				if      (nextAttr.compare("empty")      == 0) next = ga::EA_EMPTY;
-				else if (nextAttr.compare("hidden")     == 0) next = ga::EA_HIDDEN;
-				else if (nextAttr.compare("compressed") == 0) next = ga::EA_COMPRESSED;
-				else if (nextAttr.compare("encrypted")  == 0) next = ga::EA_ENCRYPTED;
+				ga::Archive::File::Attribute next;
+				if      (nextAttr.compare("empty")      == 0) next = ga::Archive::File::Attribute::Vacant;
+				else if (nextAttr.compare("hidden")     == 0) next = ga::Archive::File::Attribute::Hidden;
+				else if (nextAttr.compare("compressed") == 0) next = ga::Archive::File::Attribute::Compressed;
+				else if (nextAttr.compare("encrypted")  == 0) next = ga::Archive::File::Attribute::Encrypted;
 				else {
 					std::cerr << "Unknown attribute " << nextAttr
 						<< ", valid values are: empty hidden compressed encrypted"
 						<< std::endl;
 					iRet = RET_UNCOMMON_FAILURE;
-					next = 0;
+					next = ga::Archive::File::Attribute::Default;
 				}
-				if (next != 0) {
-					int allowed = pArchive->getSupportedAttributes();
+				if (next != ga::Archive::File::Attribute::Default) {
+					auto allowed = pArchive->getSupportedAttributes();
 					if (allowed & next) {
 						if (disable) iLastAttr &= ~next;
 						else iLastAttr |= next;

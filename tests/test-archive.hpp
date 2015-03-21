@@ -302,15 +302,15 @@ class test_archive: public test_main
 		 */
 		int lenMaxFilename;
 
-		/// Attributes to set when inserting files.  Defaults to EA_NONE.
+		/// Attributes to set when inserting files.  Defaults to File::Attribute::Default.
 		/**
-		 * This can be set to EA_COMPRESSED if newly inserted files should be
+		 * This can be set to File::Attribute::Compressed if newly inserted files should be
 		 * flagged as compressed, and passed through filters to recover the
 		 * original data for the test to pass.
 		 *
 		 * See test-dat-bash-compressed.cpp for an example.
 		 */
-		unsigned int insertAttr;
+		Archive::File::Attribute insertAttr;
 
 		/// File type of newly inserted files.  Defaults to FILETYPE_GENERIC.
 		std::string insertType;

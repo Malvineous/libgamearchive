@@ -119,7 +119,7 @@ void output_archfile::truncate(stream::len size)
 	assert(this->id);
 
 	stream::len newRealSize;
-	if (this->id->fAttr & EA_COMPRESSED) {
+	if (this->id->fAttr & Archive::File::Attribute::Compressed) {
 		// We're compressed, so the real and stored sizes are both valid
 		newRealSize = this->id->realSize;
 	} else {

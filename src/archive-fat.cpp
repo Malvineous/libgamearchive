@@ -115,7 +115,7 @@ std::unique_ptr<stream::inout> Archive_FAT::open(const FileHandle& id,
 	// TESTED BY: fmt_grp_duke3d_open
 
 	// Make sure we're not trying to open a folder as a file
-	//assert((id->fAttr & EA_FOLDER) == 0);
+	//assert((id->fAttr & File::Attribute::Folder) == 0);
 	// We can't do this because some folder formats have their FAT and
 	// everything stored as a "file" in the parent archive, so the subfolder
 	// code opens this file (even though it's flagged as a folder) and then
@@ -140,7 +140,7 @@ std::unique_ptr<stream::inout> Archive_FAT::open(const FileHandle& id,
 std::shared_ptr<Archive> Archive_FAT::openFolder(const FileHandle& id)
 {
 	// This function should only be called for folders (not files)
-	assert(id->fAttr & EA_FOLDER);
+	assert(id->fAttr & File::Attribute::Folder);
 
 	// Throw an exception if assertions have been disabled.
 	throw stream::error("BUG: Archive format doesn't implement openFolder()");
@@ -148,7 +148,7 @@ std::shared_ptr<Archive> Archive_FAT::openFolder(const FileHandle& id)
 
 Archive::FileHandle Archive_FAT::insert(const FileHandle& idBeforeThis,
 	const std::string& strFilename, stream::len storedSize, std::string type,
-	int attr)
+	File::Attribute attr)
 {
 	// TESTED BY: fmt_grp_duke3d_insert2
 	// TESTED BY: fmt_grp_duke3d_remove_insert
@@ -394,11 +394,6 @@ void Archive_FAT::flush()
 	// Write out to the underlying stream
 	this->content->flush();
 	return;
-}
-
-int Archive_FAT::getSupportedAttributes() const
-{
-	return 0;
 }
 
 void Archive_FAT::shiftFiles(const FATEntry *fatSkip, stream::pos offStart,

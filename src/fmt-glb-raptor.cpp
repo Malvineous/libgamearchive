@@ -181,7 +181,7 @@ Archive_GLB_Raptor::Archive_GLB_Raptor(std::unique_ptr<stream::inout> content)
 		f->iIndex = i;
 		f->lenHeader = 0;
 		f->type = FILETYPE_GENERIC;
-		f->fAttr = EA_NONE;
+		f->fAttr = File::Attribute::Default;
 		f->bValid = true;
 
 		uint32_t glbFlags;
@@ -194,7 +194,7 @@ Archive_GLB_Raptor::Archive_GLB_Raptor(std::unique_ptr<stream::inout> content)
 			>> nullPadded(f->strName, GLB_FILENAME_FIELD_LEN)
 		;
 		if (glbFlags == 0x01) {
-			f->fAttr = EA_ENCRYPTED;
+			f->fAttr = File::Attribute::Encrypted;
 			f->filter = "glb-raptor";
 		}
 		f->realSize = f->storedSize;
@@ -289,7 +289,7 @@ void Archive_GLB_Raptor::preInsertFile(const FATEntry *idBeforeThis, FATEntry *p
 	boost::to_upper(pNewEntry->strName);
 
 	uint32_t flags = 0;
-	if (pNewEntry->fAttr & EA_COMPRESSED) flags = 1;
+	if (pNewEntry->fAttr & File::Attribute::Compressed) flags = 1;
 
 	*this->fat
 		<< u32le(flags)

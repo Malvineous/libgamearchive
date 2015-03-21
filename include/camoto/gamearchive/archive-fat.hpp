@@ -128,14 +128,13 @@ class Archive_FAT: virtual public Archive, public std::enable_shared_from_this<A
 		virtual std::shared_ptr<Archive> openFolder(const FileHandle& id);
 		virtual FileHandle insert(const FileHandle& idBeforeThis,
 			const std::string& strFilename, stream::len storedSize, std::string type,
-			int attr);
+			File::Attribute attr);
 		virtual void remove(FileHandle& id);
 		virtual void rename(FileHandle& id, const std::string& strNewName);
 		virtual void move(const FileHandle& idBeforeThis, FileHandle& id);
 		virtual void resize(FileHandle& id, stream::len newStoredSize,
 			stream::len newRealSize);
 		virtual void flush();
-		virtual int getSupportedAttributes() const;
 
 	protected:
 		/// Shift any files *starting* at or after offStart by delta bytes.

@@ -159,7 +159,7 @@ Archive_DAT_Hocus::Archive_DAT_Hocus(std::unique_ptr<stream::inout> content,
 		if ((f->iOffset == 0) && (f->storedSize == 0)) continue;
 		f->lenHeader = 0;
 		f->type = FILETYPE_GENERIC;
-		f->fAttr = EA_NONE;
+		f->fAttr = File::Attribute::Default;
 		f->bValid = true;
 		f->realSize = f->storedSize;
 

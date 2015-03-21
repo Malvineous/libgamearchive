@@ -312,8 +312,9 @@ class test_rff_blood: public test_archive
 			const char *name = "123456789.A";
 
 			BOOST_CHECK_THROW(
-				Archive::FileHandle ep =
-					this->pArchive->insert(epb, name, 5, FILETYPE_GENERIC, EA_NONE),
+				Archive::FileHandle ep = this->pArchive->insert(
+					epb, name, 5, FILETYPE_GENERIC, Archive::File::Attribute::Default
+				),
 				stream::error
 			);
 
@@ -332,8 +333,9 @@ class test_rff_blood: public test_archive
 			const char *name = "123456789";
 
 			BOOST_CHECK_THROW(
-				Archive::FileHandle ep =
-					this->pArchive->insert(epb, name, 5, FILETYPE_GENERIC, EA_NONE),
+				Archive::FileHandle ep = this->pArchive->insert(
+					epb, name, 5, FILETYPE_GENERIC, Archive::File::Attribute::Default
+				),
 				stream::error
 			);
 
@@ -352,8 +354,9 @@ class test_rff_blood: public test_archive
 			const char *name = "12345.ABCD";
 
 			BOOST_CHECK_THROW(
-				Archive::FileHandle ep =
-					this->pArchive->insert(epb, name, 5, FILETYPE_GENERIC, EA_NONE),
+				Archive::FileHandle ep = this->pArchive->insert(
+					epb, name, 5, FILETYPE_GENERIC, Archive::File::Attribute::Default
+				),
 				stream::error
 			);
 

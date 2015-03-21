@@ -79,7 +79,7 @@ class FixedArchive: virtual public Archive
 		 */
 		virtual FileHandle insert(const FileHandle& idBeforeThis,
 			const std::string& strFilename, stream::pos storedSize, std::string type,
-			int attr
+			File::Attribute attr
 		);
 
 		/**
@@ -106,7 +106,6 @@ class FixedArchive: virtual public Archive
 			stream::pos newRealSize);
 
 		virtual void flush();
-		virtual int getSupportedAttributes() const;
 };
 
 std::unique_ptr<Archive> createFixedArchive(
@@ -134,8 +133,8 @@ FixedArchive::FixedArchive(std::shared_ptr<stream::inout> content,
 		f->strName = i.name;
 		f->type = FILETYPE_GENERIC;
 		f->filter = i.filter;
-		f->fAttr = EA_NONE;
-		if (!i.filter.empty()) f->fAttr |= EA_COMPRESSED;
+		f->fAttr = File::Attribute::Default;
+		if (!i.filter.empty()) f->fAttr |= File::Attribute::Compressed;
 
 		f->index = j++;
 
@@ -188,7 +187,7 @@ std::unique_ptr<stream::inout> FixedArchive::open(const FileHandle& id,
 			// An open substream belonging to file entry 'id' wants to be resized.
 
 			stream::len newRealSize;
-			if (id->fAttr & EA_COMPRESSED) {
+			if (id->fAttr & File::Attribute::Compressed) {
 				// We're compressed, so the real and stored sizes are both valid
 				newRealSize = id->realSize;
 			} else {
@@ -213,7 +212,7 @@ std::unique_ptr<stream::inout> FixedArchive::open(const FileHandle& id,
 std::shared_ptr<Archive> FixedArchive::openFolder(const Archive::FileHandle& id)
 {
 	// This function should only be called for folders (not files)
-	assert(id->fAttr & EA_FOLDER);
+	assert(id->fAttr & File::Attribute::Folder);
 
 	// Throw an exception if assertions have been disabled.
 	throw stream::error("BUG: openFolder() called for archive format that "
@@ -222,8 +221,7 @@ std::shared_ptr<Archive> FixedArchive::openFolder(const Archive::FileHandle& id)
 
 Archive::FileHandle FixedArchive::insert(const FileHandle& idBeforeThis,
 	const std::string& strFilename, stream::pos storedSize, std::string type,
-	int attr
-)
+	File::Attribute attr)
 {
 	throw stream::error("This is a fixed archive, files cannot be inserted.");
 }
@@ -263,11 +261,6 @@ void FixedArchive::flush()
 {
 	// no-op (nothing to flush)
 	return;
-}
-
-int FixedArchive::getSupportedAttributes() const
-{
-	return 0;
 }
 
 } // namespace gamearchive

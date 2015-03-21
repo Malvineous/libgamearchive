@@ -55,7 +55,7 @@ class Archive_DAT_Bash: virtual public Archive_FAT
 		virtual ~Archive_DAT_Bash();
 
 		// As per Archive (see there for docs)
-		virtual int getSupportedAttributes() const;
+		virtual Archive::File::Attribute getSupportedAttributes() const;
 
 		// As per Archive_FAT (see there for docs)
 		virtual void updateFileName(const FATEntry *pid,

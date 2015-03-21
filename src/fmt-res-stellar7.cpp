@@ -158,8 +158,8 @@ Archive_RES_Stellar7_Folder::Archive_RES_Stellar7_Folder(
 		f->iOffset = offNext;
 		f->lenHeader = RES_FAT_ENTRY_LEN;
 		f->type = FILETYPE_GENERIC;
-		f->fAttr = EA_NONE;
-		if (isfolder_length & 0x80000000) f->fAttr |= EA_FOLDER;
+		f->fAttr = File::Attribute::Default;
+		if (isfolder_length & 0x80000000) f->fAttr |= File::Attribute::Folder;
 		f->storedSize = isfolder_length & 0x7FFFFFFF;
 		f->bValid = true;
 		f->realSize = f->storedSize;
@@ -186,7 +186,7 @@ std::shared_ptr<Archive> Archive_RES_Stellar7_Folder::openFolder(
 	const FileHandle& id)
 {
 	// Make sure we're opening a folder
-	assert(id->fAttr & EA_FOLDER);
+	assert(id->fAttr & File::Attribute::Folder);
 
 	return std::make_shared<Archive_RES_Stellar7_Folder>(
 		this->open(id, true)

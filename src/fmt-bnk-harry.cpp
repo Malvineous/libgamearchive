@@ -163,11 +163,11 @@ Archive_BNK_Harry::Archive_BNK_Harry(std::unique_ptr<stream::inout> content,
 		f->iIndex = i;
 		f->lenHeader = BNK_EFAT_ENTRY_LEN;
 		f->type = FILETYPE_GENERIC;
-		f->fAttr = EA_NONE;
+		f->fAttr = File::Attribute::Default;
 		f->bValid = true;
 		f->realSize = f->storedSize;
 
-		if (f->strName[0] == '\0') f->fAttr = EA_EMPTY;
+		if (f->strName[0] == '\0') f->fAttr = File::Attribute::Vacant;
 
 		this->vcFAT.push_back(std::move(f));
 	}

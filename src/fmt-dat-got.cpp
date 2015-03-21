@@ -217,10 +217,10 @@ Archive_DAT_GoT::Archive_DAT_GoT(std::unique_ptr<stream::inout> content)
 		f->lenHeader = 0;
 		f->type = FILETYPE_GENERIC;
 		if (flags & 1) {
-			f->fAttr = EA_COMPRESSED;
+			f->fAttr = File::Attribute::Compressed;
 			f->filter = "lzss-got";
 		} else {
-			f->fAttr = EA_NONE;
+			f->fAttr = File::Attribute::Default;
 		}
 		f->bValid = true;
 		// Blank FAT entries have an offset of zero
@@ -243,9 +243,9 @@ void Archive_DAT_GoT::flush()
 	return;
 }
 
-int Archive_DAT_GoT::getSupportedAttributes() const
+Archive::File::Attribute Archive_DAT_GoT::getSupportedAttributes() const
 {
-	return EA_COMPRESSED;
+	return File::Attribute::Compressed;
 }
 
 void Archive_DAT_GoT::updateFileName(const FATEntry *pid, const std::string& strNewName)
@@ -292,7 +292,7 @@ void Archive_DAT_GoT::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNew
 			TOSTRING(GOT_MAX_FILES));
 	}
 
-	if (pNewEntry->fAttr & EA_COMPRESSED) {
+	if (pNewEntry->fAttr & File::Attribute::Compressed) {
 		pNewEntry->filter = "lzss-got";
 	}
 
@@ -337,7 +337,7 @@ void Archive_DAT_GoT::postInsertFile(FATEntry *pNewEntry)
 	// Write out the entry into the space we allocated in preInsertFile(),
 	// now that the sizes are set.
 	this->fatStream->seekp(GOT_FATENTRY_OFFSET(pNewEntry), stream::start);
-	uint16_t flags = (pNewEntry->fAttr & EA_COMPRESSED) ? 1 : 0; // 0 == not compressed
+	uint16_t flags = (pNewEntry->fAttr & File::Attribute::Compressed) ? 1 : 0; // 0 == not compressed
 	*this->fatStream
 		<< nullPadded(pNewEntry->strName, GOT_FILENAME_FIELD_LEN)
 		<< u32le(pNewEntry->iOffset)

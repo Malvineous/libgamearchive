@@ -184,7 +184,7 @@ Archive_VOL_Cosmo::Archive_VOL_Cosmo(std::unique_ptr<stream::inout> content)
 			f->iIndex = i;
 			f->lenHeader = 0;
 			f->type = FILETYPE_GENERIC;
-			f->fAttr = EA_NONE;
+			f->fAttr = File::Attribute::Default;
 			f->bValid = true;
 			f->realSize = f->storedSize;
 			// Blank FAT entries have an offset of zero

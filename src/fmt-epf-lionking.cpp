@@ -176,7 +176,7 @@ Archive_EPF_LionKing::Archive_EPF_LionKing(std::unique_ptr<stream::inout> conten
 		f->iOffset = offNext;
 		f->lenHeader = 0;
 		f->type = FILETYPE_GENERIC;
-		f->fAttr = EA_NONE;
+		f->fAttr = File::Attribute::Default;
 		f->bValid = true;
 
 		// Read the data in from the FAT entry in the file
@@ -187,7 +187,7 @@ Archive_EPF_LionKing::Archive_EPF_LionKing(std::unique_ptr<stream::inout> conten
 			>> u32le(f->realSize);
 
 		if (flags & EPF_FAT_FLAG_COMPRESSED) {
-			f->fAttr |= EA_COMPRESSED;
+			f->fAttr |= File::Attribute::Compressed;
 			f->filter = "lzw-epfs";
 		}
 
@@ -201,9 +201,9 @@ Archive_EPF_LionKing::~Archive_EPF_LionKing()
 {
 }
 
-int Archive_EPF_LionKing::getSupportedAttributes() const
+Archive::File::Attribute Archive_EPF_LionKing::getSupportedAttributes() const
 {
-	return EA_COMPRESSED;
+	return File::Attribute::Compressed;
 }
 
 Archive_EPF_LionKing::MetadataTypes Archive_EPF_LionKing::getMetadataList() const
@@ -304,7 +304,7 @@ void Archive_EPF_LionKing::preInsertFile(const FATEntry *idBeforeThis, FATEntry 
 	pNewEntry->lenHeader = 0;
 
 	// Set the filter to use if the file should be compressed
-	if (pNewEntry->fAttr & EA_COMPRESSED) {
+	if (pNewEntry->fAttr & File::Attribute::Compressed) {
 		pNewEntry->filter = "lzw-epfs";
 	}
 
@@ -319,7 +319,7 @@ void Archive_EPF_LionKing::postInsertFile(FATEntry *pNewEntry)
 	this->content->insert(EPF_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
 	uint8_t flags = 0;
-	if (pNewEntry->fAttr & EA_COMPRESSED) flags = 1;
+	if (pNewEntry->fAttr & File::Attribute::Compressed) flags = 1;
 	*this->content
 		<< nullPadded(pNewEntry->strName, EPF_FILENAME_FIELD_LEN)
 		<< u8(flags)  // 0 == uncompressed, 1 == compressed

@@ -52,6 +52,25 @@ std::unique_ptr<stream::sub> stream_wrap(std::shared_ptr<stream::inout> base)
 	);
 }
 
+BOOST_AUTO_TEST_CASE(archive_attribute_operators)
+{
+	BOOST_TEST_MESSAGE("Confirm Attribute operators calculate as expected");
+
+	Archive::File::Attribute a;
+
+	a = Archive::File::Attribute::Default;
+	BOOST_REQUIRE_EQUAL((unsigned int)a, 0);
+
+	a |= Archive::File::Attribute::Compressed;
+	BOOST_REQUIRE_EQUAL((unsigned int)a, 4);
+
+	a |= Archive::File::Attribute::Hidden;
+	BOOST_REQUIRE_EQUAL((unsigned int)a, 6);
+
+	a &= ~Archive::File::Attribute::Compressed;
+	BOOST_REQUIRE_EQUAL((unsigned int)a, 2);
+}
+
 test_archive::test_archive()
 	:	init(false),
 		numIsInstanceTests(0),
@@ -66,7 +85,7 @@ test_archive::test_archive()
 	this->filename[3] = "FOUR.DAT";
 	this->filename_shortext = "TEST.A";
 	this->lenMaxFilename = 12;
-	this->insertAttr = EA_NONE;
+	this->insertAttr = Archive::File::Attribute::Default;
 	this->insertType = FILETYPE_GENERIC;
 
 	this->content[0] = "This is one.dat";
