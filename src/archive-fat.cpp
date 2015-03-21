@@ -27,14 +27,6 @@
 namespace camoto {
 namespace gamearchive {
 
-/// Convert a FileHandle into a FATEntry pointer
-inline Archive_FAT::FATEntry *fatentry_cast(const Archive::FileHandle& id)
-{
-	return dynamic_cast<Archive_FAT::FATEntry *>(
-		const_cast<Archive::File*>(&*id)
-	);
-}
-
 Archive_FAT::FATEntry::FATEntry()
 {
 }
@@ -252,7 +244,7 @@ void Archive_FAT::remove(FileHandle& id)
 	// Make sure the caller doesn't try to remove something that doesn't exist!
 	assert(this->isValid(id));
 
-	auto pFAT = fatentry_cast(id);
+	auto pFAT = FATEntry::cast(id);
 	assert(pFAT);
 
 	// Remove the file's entry from the FAT
@@ -288,7 +280,7 @@ void Archive_FAT::rename(FileHandle& id, const std::string& strNewName)
 {
 	// TESTED BY: fmt_grp_duke3d_rename
 	assert(this->isValid(id));
-	auto pFAT = fatentry_cast(id);
+	auto pFAT = FATEntry::cast(id);
 
 	// Make sure filename is within the allowed limit
 	if (
@@ -344,7 +336,7 @@ void Archive_FAT::resize(FileHandle& id, stream::len newStoredSize,
 	stream::len newRealSize)
 {
 	assert(this->isValid(id));
-	auto pFAT = fatentry_cast(id);
+	auto pFAT = FATEntry::cast(id);
 	stream::delta iDelta = newStoredSize - id->storedSize;
 
 	stream::len oldStoredSize = pFAT->storedSize;
@@ -400,7 +392,7 @@ void Archive_FAT::shiftFiles(const FATEntry *fatSkip, stream::pos offStart,
 	stream::delta deltaOffset, int deltaIndex)
 {
 	for (auto& i : this->vcFAT) {
-		auto pFAT = fatentry_cast(i);
+		auto pFAT = FATEntry::cast(i);
 		if (this->entryInRange(pFAT, offStart, fatSkip)) {
 			// This file is located after the one we're deleting, so tweak its offset
 			pFAT->iOffset += deltaOffset;

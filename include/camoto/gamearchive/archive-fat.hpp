@@ -70,9 +70,16 @@ class Archive_FAT: virtual public Archive, public std::enable_shared_from_this<A
 
 			virtual std::string getContent() const;
 
-			private:
-				/// Prevent copying
-				FATEntry(const FATEntry&);
+			/// Prevent copying
+			FATEntry(const FATEntry&) = delete;
+
+			/// Convert a FileHandle into a FATEntry pointer
+			inline static FATEntry *cast(const Archive::FileHandle& id)
+			{
+				return dynamic_cast<Archive_FAT::FATEntry *>(
+					const_cast<Archive::File*>(&*id)
+				);
+			}
 		};
 
 	protected:
