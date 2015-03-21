@@ -161,11 +161,6 @@ Archive_DAT_Sango::~Archive_DAT_Sango()
 {
 }
 
-void Archive_DAT_Sango::updateFileName(const FATEntry *pid, const std::string& strNewName)
-{
-	throw stream::error("This archive format does not support filenames.");
-}
-
 void Archive_DAT_Sango::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 {
 	this->content->seekp(DAT_FATENTRY_OFFSET(pid), stream::start);

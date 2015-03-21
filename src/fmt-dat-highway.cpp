@@ -213,7 +213,6 @@ void Archive_DAT_Highway::updateFileOffset(const FATEntry *pid, stream::delta of
 
 void Archive_DAT_Highway::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 {
-	// This format doesn't have any sizes that need updating.
 	// TESTED BY: fmt_dat_highway_insert*
 	// TESTED BY: fmt_dat_highway_resize*
 	this->content->seekp(DATHH_FILESIZE_OFFSET(pid), stream::start);

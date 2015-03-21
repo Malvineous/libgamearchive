@@ -174,15 +174,6 @@ void Archive_GRP_Duke3D::updateFileName(const FATEntry *pid,
 	return;
 }
 
-void Archive_GRP_Duke3D::updateFileOffset(const FATEntry *pid,
-	stream::delta offDelta)
-{
-	// This format doesn't have any offsets that need updating.  As this function
-	// is only called when removing a file, the "offsets" will be sorted out
-	// when the FAT entry is removed later.
-	return;
-}
-
 void Archive_GRP_Duke3D::updateFileSize(const FATEntry *pid,
 	stream::delta sizeDelta)
 {

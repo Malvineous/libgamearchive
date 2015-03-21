@@ -183,24 +183,12 @@ Archive_DAT_LostVikings::~Archive_DAT_LostVikings()
 {
 }
 
-void Archive_DAT_LostVikings::updateFileName(const FATEntry *pid,
-	const std::string& strNewName)
-{
-	throw stream::error("This archive format has no filenames to rename!");
-}
-
 void Archive_DAT_LostVikings::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 {
 	// TESTED BY: fmt_dat_lostvikings_insert*
 	// TESTED BY: fmt_dat_lostvikings_resize*
 	this->content->seekp(pid->iIndex * DAT_FAT_ENTRY_LEN, stream::start);
 	*this->content << u32le(pid->iOffset);
-	return;
-}
-
-void Archive_DAT_LostVikings::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
-{
-	// No file sizes
 	return;
 }
 

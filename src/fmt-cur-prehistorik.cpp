@@ -212,15 +212,6 @@ void Archive_CUR_Prehistorik::updateFileName(const FATEntry *pid,
 	return;
 }
 
-void Archive_CUR_Prehistorik::updateFileOffset(const FATEntry *pid,
-	stream::delta offDelta)
-{
-	// This format doesn't have any offsets that need updating.  As this function
-	// is only called when removing a file, the "offsets" will be sorted out
-	// when the FAT entry is removed later.
-	return;
-}
-
 void Archive_CUR_Prehistorik::updateFileSize(const FATEntry *pid,
 	stream::delta sizeDelta)
 {

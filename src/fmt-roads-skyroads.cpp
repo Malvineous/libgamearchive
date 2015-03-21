@@ -182,11 +182,6 @@ Archive_Roads_SkyRoads::~Archive_Roads_SkyRoads()
 {
 }
 
-void Archive_Roads_SkyRoads::updateFileName(const FATEntry *pid, const std::string& strNewName)
-{
-	throw stream::error("This format does not have any filenames.");
-}
-
 void Archive_Roads_SkyRoads::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 {
 	// TESTED BY: fmt_skyroads_roads_insert*

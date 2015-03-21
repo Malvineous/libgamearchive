@@ -273,11 +273,6 @@ void Archive_EPF_LionKing::updateFileName(const FATEntry *pid, const std::string
 	return;
 }
 
-void Archive_EPF_LionKing::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
-{
-	return;
-}
-
 void Archive_EPF_LionKing::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 {
 	// TESTED BY: fmt_epf_lionking_insert*

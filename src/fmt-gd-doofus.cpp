@@ -193,17 +193,6 @@ void Archive_GD_Doofus::flush()
 	return;
 }
 
-void Archive_GD_Doofus::updateFileName(const FATEntry *pid, const std::string& strNewName)
-{
-	throw stream::error("This archive format does not support filenames.");
-}
-
-void Archive_GD_Doofus::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
-{
-	// Nothing to do, offsets aren't stored
-	return;
-}
-
 void Archive_GD_Doofus::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 {
 	// Update external FAT

@@ -417,6 +417,23 @@ void Archive_FAT::shiftFiles(const FATEntry *fatSkip, stream::pos offStart,
 	return;
 }
 
+void Archive_FAT::updateFileName(const FATEntry *pid, const std::string& name)
+{
+	throw stream::error("This file format does not store any filenames.");
+}
+
+void Archive_FAT::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
+{
+	// No-op default
+	return;
+}
+
+void Archive_FAT::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
+{
+	// No-op default
+	return;
+}
+
 void Archive_FAT::preInsertFile(const FATEntry *idBeforeThis,
 	FATEntry *pNewEntry)
 {

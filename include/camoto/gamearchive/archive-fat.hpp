@@ -189,8 +189,13 @@ class Archive_FAT: virtual public Archive, public std::enable_shared_from_this<A
 		 *   length then the length check will not happen and this function will
 		 *   need to ensure the filename length is within the limit (if there is
 		 *   one).
+		 *
+		 * @note The default implementation of this function throws an exception
+		 *   explaining that the file format does not store filenames, so you only
+		 *   need to override it for file formats that have a field storing the
+		 *   name of each file.
 		 */
-		virtual void updateFileName(const FATEntry *pid, const std::string& name) = 0;
+		virtual void updateFileName(const FATEntry *pid, const std::string& name);
 
 		/// Adjust the offset of the given file in the on-disk FAT.
 		/**
@@ -204,8 +209,12 @@ class Archive_FAT: virtual public Archive, public std::enable_shared_from_this<A
 		 *
 		 * @note pid->offset is already set to the new offset, do not add offDelta
 		 *   to this or you will get the wrong offset!
+		 *
+		 * @note The default implementation of this function does nothing, so you
+		 *   only need to override it for file formats that have a field storing the
+		 *   offset of each file.
 		 */
-		virtual void updateFileOffset(const FATEntry *pid, stream::delta offDelta) = 0;
+		virtual void updateFileOffset(const FATEntry *pid, stream::delta offDelta);
 
 		/// Adjust the size of the given file in the on-disk FAT.
 		/**
@@ -219,8 +228,12 @@ class Archive_FAT: virtual public Archive, public std::enable_shared_from_this<A
 		 *
 		 * @note pid->size is already set to the new size, do not add sizeDelta
 		 *   to this or you will get the wrong size!
+		 *
+		 * @note The default implementation of this function does nothing, so you
+		 *   only need to override it for file formats that have a field storing the
+		 *   size of each file.
 		 */
-		virtual void updateFileSize(const FATEntry *pid, stream::delta sizeDelta) = 0;
+		virtual void updateFileSize(const FATEntry *pid, stream::delta sizeDelta);
 
 		/// Insert a new entry in the on-disk FAT.
 		/**

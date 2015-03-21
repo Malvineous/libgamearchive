@@ -189,11 +189,6 @@ void Archive_DAT_Hocus::flush()
 	return;
 }
 
-void Archive_DAT_Hocus::updateFileName(const FATEntry *pid, const std::string& strNewName)
-{
-	throw stream::error("This archive format does not support filenames.");
-}
-
 void Archive_DAT_Hocus::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
 {
 	// Only the external FAT file has offsets, not the embedded FAT

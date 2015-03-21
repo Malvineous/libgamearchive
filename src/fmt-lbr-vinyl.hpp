@@ -57,7 +57,6 @@ class Archive_LBR_Vinyl: virtual public Archive_FAT
 		virtual void updateFileName(const FATEntry *pid,
 			const std::string& strNewName);
 		virtual void updateFileOffset(const FATEntry *pid, stream::delta offDelta);
-		virtual void updateFileSize(const FATEntry *pid, stream::delta sizeDelta);
 		virtual void preInsertFile(const FATEntry *idBeforeThis,
 			FATEntry *pNewEntry);
 		virtual void preRemoveFile(const FATEntry *pid);

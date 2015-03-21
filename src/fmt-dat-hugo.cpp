@@ -245,11 +245,6 @@ Archive_DAT_Hugo::~Archive_DAT_Hugo()
 {
 }
 
-void Archive_DAT_Hugo::updateFileName(const FATEntry *pid, const std::string& strNewName)
-{
-	throw stream::error("This archive format has no filenames to rename!");
-}
-
 void Archive_DAT_Hugo::updateFileOffset(const FATEntry *pid,
 	stream::delta offDelta)
 {

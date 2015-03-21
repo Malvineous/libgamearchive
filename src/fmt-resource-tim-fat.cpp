@@ -177,12 +177,6 @@ void Archive_Resource_TIM_FAT::updateFileName(const FATEntry *pid, const std::st
 	return;
 }
 
-void Archive_Resource_TIM_FAT::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
-{
-	// Nothing to do
-	return;
-}
-
 void Archive_Resource_TIM_FAT::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 {
 	// TESTED BY: fmt_resource_tim_fat_insert*

@@ -546,11 +546,6 @@ void Archive_LBR_Vinyl::updateFileOffset(const FATEntry *pid, stream::delta offD
 	return;
 }
 
-void Archive_LBR_Vinyl::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
-{
-	return;
-}
-
 void Archive_LBR_Vinyl::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_lbr_vinyl_insert*

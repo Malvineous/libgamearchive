@@ -172,14 +172,6 @@ void Archive_HOG_Descent::updateFileName(const FATEntry *pid, const std::string&
 	return;
 }
 
-void Archive_HOG_Descent::updateFileOffset(const FATEntry *pid, stream::delta offDelta)
-{
-	// This format doesn't have any offsets that need updating.  As this function
-	// is only called when removing a file, the "offsets" will be sorted out
-	// when the FAT entry is removed later.
-	return;
-}
-
 void Archive_HOG_Descent::updateFileSize(const FATEntry *pid, stream::delta sizeDelta)
 {
 	// TESTED BY: fmt_hog_descent_insert*

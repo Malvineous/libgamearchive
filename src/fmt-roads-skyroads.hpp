@@ -54,8 +54,6 @@ class Archive_Roads_SkyRoads: virtual public Archive_FAT
 		Archive_Roads_SkyRoads(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_Roads_SkyRoads();
 
-		virtual void updateFileName(const FATEntry *pid,
-			const std::string& strNewName);
 		virtual void updateFileOffset(const FATEntry *pid, stream::delta offDelta);
 		virtual void updateFileSize(const FATEntry *pid, stream::delta sizeDelta);
 		virtual void preInsertFile(const FATEntry *idBeforeThis,

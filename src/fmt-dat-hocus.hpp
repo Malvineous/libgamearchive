@@ -62,8 +62,6 @@ class Archive_DAT_Hocus: virtual public Archive_FAT
 
 		virtual void flush();
 
-		virtual void updateFileName(const FATEntry *pid,
-			const std::string& strNewName);
 		virtual void updateFileOffset(const FATEntry *pid, stream::delta offDelta);
 		virtual void updateFileSize(const FATEntry *pid, stream::delta sizeDelta);
 		virtual void preInsertFile(const FATEntry *idBeforeThis,
