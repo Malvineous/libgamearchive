@@ -127,6 +127,9 @@ class Archive_FAT: virtual public Archive, public std::enable_shared_from_this<A
 		Archive_FAT(std::unique_ptr<stream::inout> content, stream::pos offFirstFile,
 			int lenMaxFilename);
 
+		// Empty constructor for descendent virtual classes.
+		Archive_FAT();
+
 	public:
 		virtual ~Archive_FAT();
 

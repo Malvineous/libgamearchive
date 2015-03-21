@@ -62,6 +62,10 @@ Archive_FAT::Archive_FAT(std::unique_ptr<stream::inout> content,
 {
 }
 
+Archive_FAT::Archive_FAT()
+{
+}
+
 Archive_FAT::~Archive_FAT()
 {
 	// Can't flush here as it could throw stream::error and we have no way
