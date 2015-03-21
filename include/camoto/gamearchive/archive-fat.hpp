@@ -38,6 +38,9 @@ namespace gamearchive {
 /// Common value for lenMaxFilename in Archive_FAT::Archive_FAT()
 #define ARCH_STD_DOS_FILENAMES  12     // 8.3 + dot
 
+/// Common value for lenMaxFilename in Archive_FAT::Archive_FAT()
+#define ARCH_NO_FILENAMES (-1)
+
 /// Archive implementation for archives with an associated size/offset table.
 class Archive_FAT: virtual public Archive, public std::enable_shared_from_this<Archive_FAT>
 {
