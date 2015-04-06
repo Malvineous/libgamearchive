@@ -296,6 +296,12 @@ class test_archive: public test_main
 		 */
 		int lenMaxFilename;
 
+		/// Length of files if they are all fixed at the same size.
+		/**
+		 * Set to -1 if filesizes aren't fixed and can be resized arbitrarily.
+		 */
+		int lenFilesizeFixed;
+
 		/// Attributes to set when inserting files.  Defaults to File::Attribute::Default.
 		/**
 		 * This can be set to File::Attribute::Compressed if newly inserted files should be

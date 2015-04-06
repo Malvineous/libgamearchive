@@ -69,6 +69,7 @@ test_archive::test_archive()
 	this->filename[3] = "FOUR.DAT";
 	this->filename_shortext = "TEST.A";
 	this->lenMaxFilename = 12;
+	this->lenFilesizeFixed = -1;
 	this->insertAttr = Archive::File::Attribute::Default;
 	this->insertType = FILETYPE_GENERIC;
 
@@ -116,13 +117,16 @@ void test_archive::addTests()
 	ADD_ARCH_TEST(false, &test_archive::test_insert_remove);
 	ADD_ARCH_TEST(false, &test_archive::test_remove_insert);
 	ADD_ARCH_TEST(false, &test_archive::test_move);
-	ADD_ARCH_TEST(false, &test_archive::test_resize_larger);
-	ADD_ARCH_TEST(false, &test_archive::test_resize_smaller);
-	ADD_ARCH_TEST(false, &test_archive::test_resize_write);
-	ADD_ARCH_TEST(false, &test_archive::test_resize_after_close);
+	if (this->lenFilesizeFixed < 0) {
+		// Only perform these tests if the archive's files can be resized
+		ADD_ARCH_TEST(false, &test_archive::test_resize_larger);
+		ADD_ARCH_TEST(false, &test_archive::test_resize_smaller);
+		ADD_ARCH_TEST(false, &test_archive::test_resize_write);
+		ADD_ARCH_TEST(false, &test_archive::test_resize_after_close);
+		ADD_ARCH_TEST(false, &test_archive::test_insert_zero_then_resize);
+		ADD_ARCH_TEST(false, &test_archive::test_resize_over64k);
+	}
 	ADD_ARCH_TEST(false, &test_archive::test_remove_all_re_add);
-	ADD_ARCH_TEST(false, &test_archive::test_insert_zero_then_resize);
-	ADD_ARCH_TEST(false, &test_archive::test_resize_over64k);
 
 	// Only perform the metadata tests if supported by the archive format
 	if (this->hasMetadata[camoto::Metadata::Description]) {
@@ -138,7 +142,10 @@ void test_archive::addTests()
 	if (this->create) {
 		ADD_ARCH_TEST(true, &test_archive::test_new_isinstance);
 		ADD_ARCH_TEST(true, &test_archive::test_new_to_initialstate);
-		ADD_ARCH_TEST(true, &test_archive::test_new_manipulate_zero_length_files);
+		if (this->lenFilesizeFixed < 0) {
+			// Only perform these tests if the archive's files can be resized
+			ADD_ARCH_TEST(true, &test_archive::test_new_manipulate_zero_length_files);
+		}
 	}
 	return;
 }
