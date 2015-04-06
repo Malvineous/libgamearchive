@@ -61,7 +61,7 @@ class test_archive: public test_main
 		Archive::FileHandle findFile(unsigned int index,
 			const std::string& altname = std::string());
 
-		void test_isinstance_others();
+		virtual void test_isinstance_others();
 		void test_open();
 		void test_rename();
 		void test_rename_long();
@@ -84,7 +84,7 @@ class test_archive: public test_main
 		void test_resize_over64k();
 		void test_shortext();
 
-		void test_new_isinstance();
+		virtual void test_new_isinstance();
 		void test_new_to_initialstate();
 		void test_new_manipulate_zero_length_files();
 
@@ -189,7 +189,7 @@ class test_archive: public test_main
 		void isInstance(ArchiveType::Certainty result, const std::string& content);
 
 		/// Perform an isInstance check now.
-		void test_isInstance(ArchiveType::Certainty result,
+		virtual void test_isInstance(ArchiveType::Certainty result,
 			const std::string& content, unsigned int testNumber);
 
 		/// Add an invalidContent check to run later.
