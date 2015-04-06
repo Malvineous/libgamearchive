@@ -57,8 +57,7 @@ BOOST_AUTO_TEST_CASE(archive_attribute_operators)
 }
 
 test_archive::test_archive()
-	:	init(false),
-		numIsInstanceTests(0),
+	:	numIsInstanceTests(0),
 		numInvalidContentTests(1),
 		numChangeMetadataTests(1)
 {
@@ -178,13 +177,8 @@ void test_archive::runTest(bool empty, std::function<void()> fnTest)
 
 void test_archive::prepareTest(bool emptyArchive)
 {
-	if (!this->init) {
-		BOOST_REQUIRE_NO_THROW(
-			this->pArchType = ArchiveManager::byCode(this->type);
-		);
-		BOOST_REQUIRE_MESSAGE(pArchType, "Could not find archive type " + this->type);
-		this->init = true;
-	}
+	auto pArchType = ArchiveManager::byCode(this->type);
+	BOOST_REQUIRE_MESSAGE(pArchType, "Could not find archive type " + this->type);
 
 	// Make this->suppData valid
 	this->resetSuppData(emptyArchive);
@@ -198,7 +192,7 @@ void test_archive::prepareTest(bool emptyArchive)
 		// This should really use BOOST_REQUIRE_NO_THROW but the message is more
 		// informative without it.
 		//BOOST_REQUIRE_NO_THROW(
-			this->pArchive = this->pArchType->create(
+			this->pArchive = pArchType->create(
 				stream_wrap(this->base), this->suppData);
 		//);
 	} else {
@@ -208,7 +202,7 @@ void test_archive::prepareTest(bool emptyArchive)
 		// This should really use BOOST_REQUIRE_NO_THROW but the message is more
 		// informative without it.
 		//BOOST_REQUIRE_NO_THROW(
-		this->pArchive = this->pArchType->open(
+		this->pArchive = pArchType->open(
 			stream_wrap(this->base), this->suppData);
 		//);
 	}
@@ -1106,6 +1100,8 @@ void test_archive::test_new_isinstance()
 	this->pArchive->flush();
 
 	auto pTestType = ArchiveManager::byCode(this->type);
+	BOOST_REQUIRE_MESSAGE(pTestType,
+		createString("Could not find archive type " << this->type));
 
 	BOOST_REQUIRE_MESSAGE(pTestType->isInstance(*this->base),
 		"Newly created archive was not recognised as a valid instance");

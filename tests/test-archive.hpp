@@ -22,8 +22,8 @@
 #define _CAMOTO_GAMEARCHIVE_TEST_ARCHIVE_HPP_
 
 #include <map>
-#include <boost/test/unit_test.hpp>
 #include <functional>
+#include <boost/test/unit_test.hpp>
 #include <camoto/stream_string.hpp>
 #include <camoto/gamearchive.hpp>
 #include "tests.hpp"
@@ -241,9 +241,6 @@ class test_archive: public test_main
 		/// Underlying data stream containing archive file content.
 		std::shared_ptr<stream::string> base;
 
-		/// Factory class used to open archives in this format.
-		ArchiveManager::handler_t pArchType;
-
 		/// Pointer to the active archive instance.
 		std::shared_ptr<Archive> pArchive;
 
@@ -255,9 +252,6 @@ class test_archive: public test_main
 		camoto::SuppData suppData;
 
 	private:
-		/// Have we allocated pArchType yet?
-		bool init;
-
 		/// Number of isInstance tests, used to number them sequentially.
 		unsigned int numIsInstanceTests;
 
