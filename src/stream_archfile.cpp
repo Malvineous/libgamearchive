@@ -155,7 +155,11 @@ void output_archfile::setRealSize(stream::len newRealSize)
 
 void output_archfile::flush()
 {
-	this->out_parent->flush();
+	// Don't flush the parent stream here because it's shared with the archive,
+	// and we'll end up double-flushing which is bad if the archive is based on
+	// a filtered stream.
+	//this->out_parent->flush();
+
 	if (this->archive.unique()) {
 		// We are the only user of the shared archive, so the caller has no other
 		// means to flush it.  So we will have to flush it for them.
