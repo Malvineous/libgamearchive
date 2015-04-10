@@ -62,6 +62,7 @@ test_archive::test_archive()
 		numChangeMetadataTests(1)
 {
 	this->create = true;
+	this->newIsInstance = true;
 
 	this->filename[0] = "ONE.DAT";
 	this->filename[1] = "TWO.DAT";
@@ -140,7 +141,9 @@ void test_archive::addTests()
 
 	// Tests on new archives (in an empty state)
 	if (this->create) {
-		ADD_ARCH_TEST(true, &test_archive::test_new_isinstance);
+		if (this->newIsInstance) {
+			ADD_ARCH_TEST(true, &test_archive::test_new_isinstance);
+		}
 		ADD_ARCH_TEST(true, &test_archive::test_new_to_initialstate);
 		if (this->lenFilesizeFixed < 0) {
 			// Only perform these tests if the archive's files can be resized
@@ -228,6 +231,7 @@ void test_archive::prepareTest(bool emptyArchive)
 Archive::FileHandle test_archive::findFile(unsigned int index,
 	const std::string& altname)
 {
+	BOOST_TEST_CHECKPOINT("Searching for file #" << index);
 	Archive::FileHandle ep;
 	if (this->lenMaxFilename >= 0) {
 		// Find the file we're going to open by name

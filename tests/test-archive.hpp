@@ -268,6 +268,14 @@ class test_archive: public test_main
 		/// Can new instances of this format be created? (default is true)
 		bool create;
 
+		/// Should we call isInstance() on new archives? (default is true)
+		/**
+		 * This should only be set to false for those archives where new instances
+		 * will fail isInstance tests for a legitimate reason, e.g. empty new
+		 * archives are zero bytes long.
+		 */
+		bool newIsInstance;
+
 		/// Any formats here identify us as an instance of that type, and it
 		/// cannot be avoided.
 		/**
