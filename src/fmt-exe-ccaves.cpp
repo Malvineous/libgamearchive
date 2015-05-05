@@ -24,6 +24,66 @@
 namespace camoto {
 namespace gamearchive {
 
+ArchiveType_EXE_CCaves::ArchiveType_EXE_CCaves()
+{
+}
+
+ArchiveType_EXE_CCaves::~ArchiveType_EXE_CCaves()
+{
+}
+
+std::string ArchiveType_EXE_CCaves::code() const
+{
+	return "exe-ccaves";
+}
+
+std::string ArchiveType_EXE_CCaves::friendlyName() const
+{
+	return "Crystal Caves Executable";
+}
+
+std::vector<std::string> ArchiveType_EXE_CCaves::fileExtensions() const
+{
+	return {"exe"};
+}
+
+std::vector<std::string> ArchiveType_EXE_CCaves::games() const
+{
+	return {"Crystal Caves"};
+}
+
+ArchiveType::Certainty ArchiveType_EXE_CCaves::isInstance(
+	stream::input& content) const
+{
+	stream::pos lenArchive = content.size();
+
+	if (lenArchive == 191984) {
+		// TESTED BY: TODO fixed_exe_ccaves_isinstance_c00
+		content.seekg(0x1E00, stream::start);
+		char buffer[8];
+		content.read(buffer, 8);
+		// Unfortunately no version strings, so check some data I
+		// selected at random...
+		if (strncmp(buffer, "\x55\x89\xE5\x8B\x46\x06\xBA\xA0", 8) != 0)
+			return DefinitelyNo;
+
+		return DefinitelyYes;
+	}
+
+	// TESTED BY: TODO (generic)
+	return DefinitelyNo;
+}
+
+std::shared_ptr<Archive> ArchiveType_EXE_CCaves::create(
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
+{
+	// This isn't a true archive so we can't create new versions of it.
+	throw stream::error("Can't create a new archive in this format.");
+}
+
+std::shared_ptr<Archive> ArchiveType_EXE_CCaves::open(
+	std::unique_ptr<stream::inout> content, SuppData& suppData) const
+{
 /// Offset of the first byte of map data
 #define MAPDATA_START 0x8CE0
 
@@ -71,106 +131,33 @@ namespace gamearchive {
 #define OFF_L14  OFF_L13 + SZ_L13
 #define OFF_L15  OFF_L14 + SZ_L14
 #define OFF_L16  OFF_L15 + SZ_L15
-
-FixedArchiveFile ccaves_file_list[] = {
-	{OFF_INT, SZ_INT, "e1int.ccl", FILTER_NONE, RESIZE_NONE},
-	{OFF_FIN, SZ_FIN, "e1fin.ccl", FILTER_NONE, RESIZE_NONE},
-	{OFF_MAP, SZ_MAP, "e1map.ccl", FILTER_NONE, RESIZE_NONE},
-	{OFF_L01, SZ_L01, "e1l01.ccl", FILTER_NONE, RESIZE_NONE},
-	{OFF_L02, SZ_L02, "e1l02.ccl", FILTER_NONE, RESIZE_NONE},
-	{OFF_L03, SZ_L03, "e1l03.ccl", FILTER_NONE, RESIZE_NONE},
-	{OFF_L04, SZ_L04, "e1l04.ccl", FILTER_NONE, RESIZE_NONE},
-	{OFF_L05, SZ_L05, "e1l05.ccl", FILTER_NONE, RESIZE_NONE},
-	{OFF_L06, SZ_L06, "e1l06.ccl", FILTER_NONE, RESIZE_NONE},
-	{OFF_L07, SZ_L07, "e1l07.ccl", FILTER_NONE, RESIZE_NONE},
-	{OFF_L08, SZ_L08, "e1l08.ccl", FILTER_NONE, RESIZE_NONE},
-	{OFF_L09, SZ_L09, "e1l09.ccl", FILTER_NONE, RESIZE_NONE},
-	{OFF_L10, SZ_L10, "e1l10.ccl", FILTER_NONE, RESIZE_NONE},
-	{OFF_L11, SZ_L11, "e1l11.ccl", FILTER_NONE, RESIZE_NONE},
-	{OFF_L12, SZ_L12, "e1l12.ccl", FILTER_NONE, RESIZE_NONE},
-	{OFF_L13, SZ_L13, "e1l13.ccl", FILTER_NONE, RESIZE_NONE},
-	{OFF_L14, SZ_L14, "e1l14.ccl", FILTER_NONE, RESIZE_NONE},
-	{OFF_L15, SZ_L15, "e1l15.ccl", FILTER_NONE, RESIZE_NONE},
-	{OFF_L16, SZ_L16, "e1l16.ccl", FILTER_NONE, RESIZE_NONE},
-};
-
-ArchiveType_EXE_CCaves::ArchiveType_EXE_CCaves()
-{
-}
-
-ArchiveType_EXE_CCaves::~ArchiveType_EXE_CCaves()
-{
-}
-
-std::string ArchiveType_EXE_CCaves::code() const
-{
-	return "exe-ccaves";
-}
-
-std::string ArchiveType_EXE_CCaves::friendlyName() const
-{
-	return "Crystal Caves Executable";
-}
-
-std::vector<std::string> ArchiveType_EXE_CCaves::fileExtensions() const
-{
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("exe");
-	return vcExtensions;
-}
-
-std::vector<std::string> ArchiveType_EXE_CCaves::games() const
-{
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Crystal Caves");
-	return vcGames;
-}
-
-ArchiveType::Certainty ArchiveType_EXE_CCaves::isInstance(
-	stream::input& content) const
-{
-	stream::pos lenArchive = content.size();
-
-	if (lenArchive == 191984) {
-		// TESTED BY: TODO fixed_exe_ccaves_isinstance_c00
-		content.seekg(0x1E00, stream::start);
-		char buffer[8];
-		content.read(buffer, 8);
-		// Unfortunately no version strings, so check some data I
-		// selected at random...
-		if (strncmp(buffer, "\x55\x89\xE5\x8B\x46\x06\xBA\xA0", 8) != 0)
-			return DefinitelyNo;
-
-		return DefinitelyYes;
-	}
-
-	// TESTED BY: TODO (generic)
-	return DefinitelyNo;
-}
-
-std::shared_ptr<Archive> ArchiveType_EXE_CCaves::create(
-	std::unique_ptr<stream::inout> content, SuppData& suppData) const
-{
-	// This isn't a true archive so we can't create new versions of it.
-	throw stream::error("Can't create a new archive in this format.");
-}
-
-std::shared_ptr<Archive> ArchiveType_EXE_CCaves::open(
-	std::unique_ptr<stream::inout> content, SuppData& suppData) const
-{
-	std::vector<FixedArchiveFile> files;
-	files.reserve(sizeof(ccaves_file_list) / sizeof(FixedArchiveFile));
-	for (unsigned int i = 0; i < sizeof(ccaves_file_list) / sizeof(FixedArchiveFile); i++) {
-		files.push_back(ccaves_file_list[i]);
-	}
-	return createFixedArchive(std::move(content), files);
+	return make_FixedArchive(std::move(content), {
+		{OFF_INT, SZ_INT, "e1int.ccl", FILTER_NONE, RESIZE_NONE},
+		{OFF_FIN, SZ_FIN, "e1fin.ccl", FILTER_NONE, RESIZE_NONE},
+		{OFF_MAP, SZ_MAP, "e1map.ccl", FILTER_NONE, RESIZE_NONE},
+		{OFF_L01, SZ_L01, "e1l01.ccl", FILTER_NONE, RESIZE_NONE},
+		{OFF_L02, SZ_L02, "e1l02.ccl", FILTER_NONE, RESIZE_NONE},
+		{OFF_L03, SZ_L03, "e1l03.ccl", FILTER_NONE, RESIZE_NONE},
+		{OFF_L04, SZ_L04, "e1l04.ccl", FILTER_NONE, RESIZE_NONE},
+		{OFF_L05, SZ_L05, "e1l05.ccl", FILTER_NONE, RESIZE_NONE},
+		{OFF_L06, SZ_L06, "e1l06.ccl", FILTER_NONE, RESIZE_NONE},
+		{OFF_L07, SZ_L07, "e1l07.ccl", FILTER_NONE, RESIZE_NONE},
+		{OFF_L08, SZ_L08, "e1l08.ccl", FILTER_NONE, RESIZE_NONE},
+		{OFF_L09, SZ_L09, "e1l09.ccl", FILTER_NONE, RESIZE_NONE},
+		{OFF_L10, SZ_L10, "e1l10.ccl", FILTER_NONE, RESIZE_NONE},
+		{OFF_L11, SZ_L11, "e1l11.ccl", FILTER_NONE, RESIZE_NONE},
+		{OFF_L12, SZ_L12, "e1l12.ccl", FILTER_NONE, RESIZE_NONE},
+		{OFF_L13, SZ_L13, "e1l13.ccl", FILTER_NONE, RESIZE_NONE},
+		{OFF_L14, SZ_L14, "e1l14.ccl", FILTER_NONE, RESIZE_NONE},
+		{OFF_L15, SZ_L15, "e1l15.ccl", FILTER_NONE, RESIZE_NONE},
+		{OFF_L16, SZ_L16, "e1l16.ccl", FILTER_NONE, RESIZE_NONE},
+	});
 }
 
 SuppFilenames ArchiveType_EXE_CCaves::getRequiredSupps(stream::input& content,
 	const std::string& filenameArchive) const
 {
-	// No supplemental types/empty list
-	return SuppFilenames();
+	return {};
 }
 
 

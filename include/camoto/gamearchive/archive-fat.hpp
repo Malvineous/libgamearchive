@@ -336,7 +336,7 @@ class Archive_FAT: virtual public Archive, public std::enable_shared_from_this<A
 		 */
 		virtual std::unique_ptr<FATEntry> createNewFATEntry();
 
-	/// Test code only, do not use, see below.
+	/// Test code only, do not use, see util.hpp.
 	friend FileHandle DLL_EXPORT getFileAt(const FileVector& files,
 		unsigned int index);
 
@@ -348,14 +348,6 @@ class Archive_FAT: virtual public Archive, public std::enable_shared_from_this<A
 		/// Substream truncate callback to resize the substream.
 		void resizeSubstream(FATEntry *id, stream::len newSize);
 };
-
-/// Function for test code only, do not use.
-/**
- * Searches for files based on the order/index field as that's the order in the
- * archive, which could be different to the order in the vector.
- */
-Archive::FileHandle DLL_EXPORT getFileAt(const Archive::FileVector& files,
-	unsigned int index);
 
 } // namespace gamearchive
 } // namespace camoto

@@ -85,7 +85,7 @@ class test_archive: public test_main
 		void test_shortext();
 
 		virtual void test_new_isinstance();
-		void test_new_to_initialstate();
+		virtual void test_new_to_initialstate();
 		void test_new_manipulate_zero_length_files();
 
 		void test_metadata_get_desc();
@@ -275,6 +275,13 @@ class test_archive: public test_main
 		 * archives are zero bytes long.
 		 */
 		bool newIsInstance;
+
+		/// Is the file structure static?
+		/**
+		 * If true, files can be modified, but they can't be resized, relocated,
+		 * added or removed.  Defaults to false.
+		 */
+		bool staticFiles;
 
 		/// Any formats here identify us as an instance of that type, and it
 		/// cannot be avoided.

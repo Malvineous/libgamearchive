@@ -55,6 +55,15 @@ void DLL_EXPORT findFile(std::shared_ptr<Archive> *pArchive,
 /// Truncate callback for substreams that are a fixed size.
 void preventResize(stream::output_sub* sub, stream::len len);
 
+/// Function for test code only, do not use.
+/**
+ * Searches for files based on the order/index field as that's the order in the
+ * archive, which could be different to the order in the vector.
+ * Works with Archive_FAT::FATEntry and FixedArchive::FixedEntry.
+ */
+Archive::FileHandle DLL_EXPORT getFileAt(const Archive::FileVector& files,
+	unsigned int index);
+
 } // namespace gamearchive
 } // namespace camoto
 

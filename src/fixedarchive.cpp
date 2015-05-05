@@ -27,116 +27,28 @@
 namespace camoto {
 namespace gamearchive {
 
-/// Generic archive with fixed offsets and sizes.
-/**
- * This class provides access to "files" at specific offsets and lengths in a
- * host file (e.g. game levels stored in an .exe file.)
- */
-class FixedArchive: virtual public Archive
-{
-	protected:
-		// The archive stream must be mutable, because we need to change it by
-		// seeking and reading data in our get() functions, which don't logically
-		// change the archive's state.
-		mutable std::shared_ptr<stream::inout> content;
-
-		struct FixedEntry: virtual public File {
-			unsigned int index;  ///< Index into FixedArchiveFile array
-		};
-
-		/// Array of files passed in via the constructor.
-		std::vector<FixedArchiveFile> vcFiles;
-
-		// This is a vector of file entries.  Although we have a specific FAT type
-		// for each entry we can't use a vector of them here because getFileList()
-		// must return a vector of the base type.  So instead each FAT entry type
-		// inherits from the base type so that the specific FAT entry types can
-		// still be added to this vector.
-		//
-		// The entries in this vector can be in any order (not necessarily the
-		// order on-disk.  Use the iIndex member for that.)
-		FileVector vcFixedEntries;
-
-	public:
-		FixedArchive(std::shared_ptr<stream::inout> content,
-			std::vector<FixedArchiveFile> vcFiles);
-		virtual ~FixedArchive();
-
-		virtual FileHandle find(const std::string& strFilename) const;
-		virtual const FileVector& files(void) const;
-		virtual bool isValid(const FileHandle& id) const;
-		virtual std::unique_ptr<stream::inout> open(const FileHandle& id,
-			bool useFilter);
-
-		/**
-		 * @note Will always throw an exception as there are never any subfolders.
-		 */
-		virtual std::shared_ptr<Archive> openFolder(const FileHandle& id);
-
-		/**
-		 * @note Will always throw an exception as the files are fixed and
-		 *       thus can't be added to.
-		 */
-		virtual FileHandle insert(const FileHandle& idBeforeThis,
-			const std::string& strFilename, stream::pos storedSize, std::string type,
-			File::Attribute attr
-		);
-
-		/**
-		 * @note Will always throw an exception as the files are fixed and
-		 *       thus can't be removed.
-		 */
-		virtual void remove(FileHandle& id);
-
-		/**
-		 * @note Will always throw an exception as it makes no sense to rename
-		 *       the made up filenames in this archive format.
-		 */
-		virtual void rename(FileHandle& id, const std::string& strNewName);
-
-		/**
-		 * @note Will always throw an exception as fixed files can't be moved.
-		 */
-		virtual void move(const FileHandle& idBeforeThis, FileHandle& id);
-
-		/**
-		 * @note Will always throw an exception as fixed files can't be resized.
-		 */
-		virtual void resize(FileHandle& id, stream::pos newStoredSize,
-			stream::pos newRealSize);
-
-		virtual void flush();
-};
-
-std::unique_ptr<Archive> createFixedArchive(
-	std::shared_ptr<stream::inout> content, std::vector<FixedArchiveFile> vcFiles)
-{
-	return std::unique_ptr<Archive>(new FixedArchive(content, vcFiles));
-}
-
-
-FixedArchive::FixedArchive(std::shared_ptr<stream::inout> content,
+FixedArchive::FixedArchive(std::unique_ptr<stream::inout> content,
 	std::vector<FixedArchiveFile> vcFiles)
-	:	content(content),
+	:	content(std::move(content)),
 		vcFiles(vcFiles)
 {
 	int j = 0;
 	for (auto& i : this->vcFiles) {
 		auto f = std::make_unique<FixedEntry>();
 		f->bValid = true;
-		f->storedSize = i.size;
-		if (i.fnResize) {
-			f->realSize = i.fnResize(content, j, (stream::len)-1, (stream::len)-1);
-		} else {
-			f->realSize = i.size;
-		}
+		f->storedSize = f->realSize = i.size;
 		f->strName = i.name;
 		f->type = FILETYPE_GENERIC;
 		f->filter = i.filter;
 		f->fAttr = File::Attribute::Default;
 		if (!i.filter.empty()) f->fAttr |= File::Attribute::Compressed;
 
+		f->fixed = &i;
 		f->index = j++;
+
+		if (i.fnResize) {
+			i.fnResize(*this->content, f.get(), (stream::len)-1, (stream::len)-1);
+		}
 
 		this->vcFixedEntries.push_back(std::move(f));
 	}
@@ -244,10 +156,10 @@ void FixedArchive::move(const FileHandle& idBeforeThis, FileHandle& id)
 void FixedArchive::resize(FileHandle& id, stream::pos newStoredSize,
 	stream::pos newRealSize)
 {
-	const FixedEntry *entry = dynamic_cast<const FixedEntry *>(id.get());
+	auto entry = FixedEntry::cast(id);
 	const FixedArchiveFile *file = &this->vcFiles[entry->index];
 	if (file->fnResize) {
-		file->fnResize(this->content, entry->index, newStoredSize, newRealSize);
+		file->fnResize(*this->content, entry, newStoredSize, newRealSize);
 	} else if (id->storedSize != newStoredSize) {
 		throw stream::error(createString("This is a fixed archive, files "
 			"cannot be resized (tried to resize to " << newStoredSize <<

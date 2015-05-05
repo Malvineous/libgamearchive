@@ -63,6 +63,7 @@ test_archive::test_archive()
 {
 	this->create = true;
 	this->newIsInstance = true;
+	this->staticFiles = false;
 
 	this->filename[0] = "ONE.DAT";
 	this->filename[1] = "TWO.DAT";
@@ -109,25 +110,27 @@ void test_archive::addTests()
 		ADD_ARCH_TEST(false, &test_archive::test_rename_long);
 		ADD_ARCH_TEST(false, &test_archive::test_insert_long);
 	}
-	ADD_ARCH_TEST(false, &test_archive::test_insert_mid);
-	ADD_ARCH_TEST(false, &test_archive::test_insert_end);
-	ADD_ARCH_TEST(false, &test_archive::test_insert2);
-	ADD_ARCH_TEST(false, &test_archive::test_remove);
-	ADD_ARCH_TEST(false, &test_archive::test_remove2);
-	ADD_ARCH_TEST(false, &test_archive::test_remove_open);
-	ADD_ARCH_TEST(false, &test_archive::test_insert_remove);
-	ADD_ARCH_TEST(false, &test_archive::test_remove_insert);
-	ADD_ARCH_TEST(false, &test_archive::test_move);
-	if (this->lenFilesizeFixed < 0) {
-		// Only perform these tests if the archive's files can be resized
-		ADD_ARCH_TEST(false, &test_archive::test_resize_larger);
-		ADD_ARCH_TEST(false, &test_archive::test_resize_smaller);
-		ADD_ARCH_TEST(false, &test_archive::test_resize_write);
-		ADD_ARCH_TEST(false, &test_archive::test_resize_after_close);
-		ADD_ARCH_TEST(false, &test_archive::test_insert_zero_then_resize);
-		ADD_ARCH_TEST(false, &test_archive::test_resize_over64k);
+	if (!this->staticFiles) {
+		ADD_ARCH_TEST(false, &test_archive::test_insert_mid);
+		ADD_ARCH_TEST(false, &test_archive::test_insert_end);
+		ADD_ARCH_TEST(false, &test_archive::test_insert2);
+		ADD_ARCH_TEST(false, &test_archive::test_remove);
+		ADD_ARCH_TEST(false, &test_archive::test_remove2);
+		ADD_ARCH_TEST(false, &test_archive::test_remove_open);
+		ADD_ARCH_TEST(false, &test_archive::test_insert_remove);
+		ADD_ARCH_TEST(false, &test_archive::test_remove_insert);
+		ADD_ARCH_TEST(false, &test_archive::test_move);
+		if (this->lenFilesizeFixed < 0) {
+			// Only perform these tests if the archive's files can be resized
+			ADD_ARCH_TEST(false, &test_archive::test_resize_larger);
+			ADD_ARCH_TEST(false, &test_archive::test_resize_smaller);
+			ADD_ARCH_TEST(false, &test_archive::test_resize_write);
+			ADD_ARCH_TEST(false, &test_archive::test_resize_after_close);
+			ADD_ARCH_TEST(false, &test_archive::test_insert_zero_then_resize);
+			ADD_ARCH_TEST(false, &test_archive::test_resize_over64k);
+		}
+		ADD_ARCH_TEST(false, &test_archive::test_remove_all_re_add);
 	}
-	ADD_ARCH_TEST(false, &test_archive::test_remove_all_re_add);
 
 	// Only perform the metadata tests if supported by the archive format
 	if (this->hasMetadata[camoto::Metadata::Description]) {

@@ -44,16 +44,6 @@ std::string Archive_FAT::FATEntry::getContent() const
 	return ss.str();
 }
 
-Archive::FileHandle DLL_EXPORT getFileAt(
-	const Archive::FileVector& files, unsigned int index)
-{
-	for (const auto& i : files) {
-		auto pEntry = dynamic_cast<const Archive_FAT::FATEntry *>(&*i);
-		if (pEntry->iIndex == index) return i;
-	}
-	return std::shared_ptr<Archive::File>();
-}
-
 Archive_FAT::Archive_FAT(std::unique_ptr<stream::inout> content,
 	stream::pos offFirstFile, int lenMaxFilename)
 	:	content(std::make_shared<stream::seg>(std::move(content))),
@@ -89,7 +79,7 @@ Archive::FileHandle Archive_FAT::find(const std::string& strFilename) const
 {
 	// TESTED BY: fmt_grp_duke3d_*
 	for (const auto& i : this->vcFAT) {
-		const FATEntry *pFAT = dynamic_cast<const FATEntry *>(&*i);
+		auto pFAT = dynamic_cast<const FATEntry *>(&*i);
 		if (boost::iequals(pFAT->strName, strFilename)) {
 			return i;
 		}
@@ -101,7 +91,7 @@ bool Archive_FAT::isValid(const FileHandle& id) const
 {
 	// Don't need to cast to get to the bValid member, but the dynamic_cast
 	// requires that id is an instance of FATEntry in order to be valid.
-	const FATEntry *id2 = dynamic_cast<const FATEntry *>(&*id);
+	auto id2 = dynamic_cast<const FATEntry *>(&*id);
 	return ((id2) && (id2->bValid));
 }
 
@@ -182,7 +172,7 @@ Archive::FileHandle Archive_FAT::insert(const FileHandle& idBeforeThis,
 		// Append to end of archive
 		// TESTED BY: fmt_grp_duke3d_insert_end
 		if (this->vcFAT.size()) {
-			const FATEntry *pFATAfterThis = dynamic_cast<const FATEntry *>(this->vcFAT.back().get());
+			auto pFATAfterThis = dynamic_cast<const FATEntry *>(this->vcFAT.back().get());
 			assert(pFATAfterThis);
 			pNewFile->iOffset = pFATAfterThis->iOffset
 				+ pFATAfterThis->lenHeader + pFATAfterThis->storedSize;
