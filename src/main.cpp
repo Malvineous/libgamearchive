@@ -56,6 +56,7 @@
 #include "fmt-hog-descent.hpp"
 #include "fmt-lbr-vinyl.hpp"
 #include "fmt-lib-mythos.hpp"
+#include "fmt-mni-czone.hpp"
 #include "fmt-pcxlib.hpp"
 #include "fmt-pod-tv.hpp"
 #include "fmt-res-stellar7.hpp"
@@ -108,7 +109,8 @@ const std::vector<std::shared_ptr<const ArchiveType> > FormatEnumerator<ArchiveT
 		ArchiveType_GD_Doofus,
 		ArchiveType_DAT_Hugo,
 		ArchiveType_DAT_Hocus,
-		ArchiveType_DA_Levels
+		ArchiveType_DA_Levels,
+		ArchiveType_MNI_CZone
 	>(list);
 	return list;
 }
