@@ -61,6 +61,15 @@ class test_archive: public test_main
 		Archive::FileHandle findFile(unsigned int index,
 			const std::string& altname = std::string());
 
+		/// Find a file by index, by looking into various internal structures.
+		/**
+		 * Searches for files based on the order/index field as that's the order in the
+		 * archive, which could be different to the order in the vector.
+		 * Works with Archive_FAT::FATEntry and FixedArchive::FixedEntry.
+		 */
+		virtual Archive::FileHandle getFileAt(const Archive::FileVector& files,
+			unsigned int index);
+
 		virtual void test_isinstance_others();
 		void test_open();
 		void test_rename();

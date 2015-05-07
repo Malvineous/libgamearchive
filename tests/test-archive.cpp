@@ -21,7 +21,8 @@
 #include <iomanip>
 #include <functional>
 #include <camoto/util.hpp>
-#include <camoto/gamearchive/archive-fat.hpp> // getFileAt()
+#include <camoto/gamearchive/archive-fat.hpp> // Archive_FAT::FATEntry
+#include <camoto/gamearchive/fixedarchive.hpp> // FixedArchive::FixedEntry
 #include "test-archive.hpp"
 
 using namespace camoto;
@@ -267,6 +268,25 @@ Archive::FileHandle test_archive::findFile(unsigned int index,
 				<< " in sample archive"));
 	}
 	return ep;
+}
+
+Archive::FileHandle test_archive::getFileAt(
+	const Archive::FileVector& files, unsigned int index)
+{
+	for (const auto& i : files) {
+		auto pEntry = dynamic_cast<const Archive_FAT::FATEntry *>(&*i);
+		if (pEntry) {
+			if (pEntry->iIndex == index) return i;
+		} else {
+			auto pEntry2 = dynamic_cast<const FixedArchive::FixedEntry *>(&*i);
+			if (pEntry2) {
+				if (pEntry2->index == index) return i;
+			} else {
+				assert(false);
+			}
+		}
+	}
+	return std::shared_ptr<Archive::File>();
 }
 
 void test_archive::resetSuppData(bool emptyArchive)

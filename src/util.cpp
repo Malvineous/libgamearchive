@@ -108,24 +108,5 @@ void preventResize(stream::output_sub* sub, stream::len len)
 		"smaller or larger.");
 }
 
-Archive::FileHandle DLL_EXPORT getFileAt(
-	const Archive::FileVector& files, unsigned int index)
-{
-	for (const auto& i : files) {
-		auto pEntry = dynamic_cast<const Archive_FAT::FATEntry *>(&*i);
-		if (pEntry) {
-			if (pEntry->iIndex == index) return i;
-		} else {
-			auto pEntry2 = dynamic_cast<const FixedArchive::FixedEntry *>(&*i);
-			if (pEntry2) {
-				if (pEntry2->index == index) return i;
-			} else {
-				assert(false);
-			}
-		}
-	}
-	return std::shared_ptr<Archive::File>();
-}
-
 } // namespace gamearchive
 } // namespace camoto

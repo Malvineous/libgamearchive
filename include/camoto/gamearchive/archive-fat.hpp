@@ -336,10 +336,6 @@ class Archive_FAT: virtual public Archive, public std::enable_shared_from_this<A
 		 */
 		virtual std::unique_ptr<FATEntry> createNewFATEntry();
 
-	/// Test code only, do not use, see util.hpp.
-	friend FileHandle DLL_EXPORT getFileAt(const FileVector& files,
-		unsigned int index);
-
 	private:
 		/// Should the given entry be moved during an insert/resize operation?
 		bool entryInRange(const FATEntry *fat, stream::pos offStart,
