@@ -46,7 +46,7 @@ class Archive_FAT: virtual public Archive, public std::enable_shared_from_this<A
 {
 	public:
 
-		/// FAT-related fields to add to fe_const_iterator.
+		/// FAT-related fields to add to FileHandle.
 		/**
 		 * This shouldn't really be public, but sometimes it is handy to access the
 		 * FAT fields (especially from within the unit tests.)
@@ -257,16 +257,13 @@ class Archive_FAT: virtual public Archive, public std::enable_shared_from_this<A
 		 * (but the existing file will have its index moved after this function
 		 * returns.)  All this function has to do is make room in the FAT and write
 		 * out the new entry.  It also needs to set the lenHeader field in
-		 * pNewEntry.  The returned pointer is the one that is used.  Normally
-		 * pNewEntry will be returned, but if a FATEntry has been extended for a
-		 * particular format, this is where the custom class should be created,
-		 * have pNewEntry copied into it, then be returned.
-		 *
-		 * @note Invalidates existing fe_const_iterators. TODO - does it?
+		 * pNewEntry.  If createNewFATEntry() has been overridden to return a custom
+		 * class, then dynamic_cast<> can be used to convert pNewEntry into an
+		 * instance of that class.
 		 *
 		 * @param idBeforeThis
-		 *   The new file is to be inserted before this.  If it is invalid the new
-		 *   file should be appended to the end of the archive.
+		 *   The new file is to be inserted before this.  If it is invalid (null)
+		 *   the new file should be appended to the end of the archive.
 		 *
 		 * @param pNewEntry
 		 *   Initial details about the new entry.  Populate these as required.  This
@@ -306,7 +303,8 @@ class Archive_FAT: virtual public Archive, public std::enable_shared_from_this<A
 		 * resulting from the FAT changing size, which must be handled by this
 		 * function.
 		 *
-		 * Invalidates existing fe_const_iterators.
+		 * @param pid
+		 *   Entry being removed.
 		 *
 		 * @throws stream::error on I/O error.
 		 */
@@ -320,6 +318,9 @@ class Archive_FAT: virtual public Archive, public std::enable_shared_from_this<A
 		 * parameters are still correct, although no longer used (e.g. the offset
 		 * it was at, its size, etc.)
 		 *
+		 * @param pid
+		 *   Entry being removed.
+		 *
 		 * @throws stream::error on I/O error.
 		 */
 		virtual void postRemoveFile(const FATEntry *pid);
@@ -330,9 +331,10 @@ class Archive_FAT: virtual public Archive, public std::enable_shared_from_this<A
 		 * is provided which creates a new FATEntry instance.  If you are
 		 * implementing a new archive format and you need to extend FATEntry to hold
 		 * additional information, you will need to replace this function with one
-		 * that allocates your extended class instead, otherwise the fe_const_iterators
-		 * passed to the other functions will be a mixture of FATEntry and whatever
-		 * your extended class is.  See fmt-dat-hugo.cpp for an example.
+		 * that allocates your extended class instead, otherwise the FATEntry
+		 * pointers passed to the other functions will be a mixture of FATEntry and
+		 * whatever your extended class is from your constructor.  See
+		 * fmt-dat-hugo.cpp for an example.
 		 */
 		virtual std::unique_ptr<FATEntry> createNewFATEntry();
 
@@ -340,9 +342,6 @@ class Archive_FAT: virtual public Archive, public std::enable_shared_from_this<A
 		/// Should the given entry be moved during an insert/resize operation?
 		bool entryInRange(const FATEntry *fat, stream::pos offStart,
 			const FATEntry *fatSkip);
-
-		/// Substream truncate callback to resize the substream.
-		void resizeSubstream(FATEntry *id, stream::len newSize);
 };
 
 } // namespace gamearchive
