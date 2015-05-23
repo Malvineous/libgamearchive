@@ -105,17 +105,18 @@ EXTRA_libgamearchive_la_SOURCES += stream_archfile.hpp
 
 WARNINGS = -Wall -Wextra -Wno-unused-parameter
 
-AM_CPPFLAGS  = $(BOOST_CPPFLAGS)
-AM_CPPFLAGS += -I $(top_srcdir)/include
+AM_CPPFLAGS  = -I $(top_srcdir)/include
+AM_CPPFLAGS += $(BOOST_CPPFLAGS)
 AM_CPPFLAGS += $(libgamecommon_CPPFLAGS)
 AM_CPPFLAGS += $(WARNINGS)
 
 AM_CXXFLAGS  = $(DEBUG_CXXFLAGS)
 AM_CXXFLAGS += $(libgamecommon_CFLAGS)
 
+AM_LDFLAGS = $(BOOST_LDFLAGS)
+
 libgamearchive_la_LDFLAGS = $(AM_LDFLAGS)
 libgamearchive_la_LDFLAGS += -version-info 2:0:0
 
-libgamearchive_la_LIBADD  = $(BOOST_SYSTEM_LIBS)
-libgamearchive_la_LIBADD += $(BOOST_FILESYSTEM_LIBS)
+libgamearchive_la_LIBADD  = $(BOOST_FILESYSTEM_LIB)
 libgamearchive_la_LIBADD += $(libgamecommon_LIBS)
