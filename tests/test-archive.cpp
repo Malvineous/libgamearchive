@@ -441,7 +441,7 @@ boost::test_tools::predicate_result test_archive::is_content_equal(
 }
 
 boost::test_tools::predicate_result test_archive::is_supp_equal(
-	camoto::SuppItem::Type type, const std::string& strExpected)
+	camoto::SuppItem type, const std::string& strExpected)
 {
 	// Flush out any changes to the main archive before we perform the check,
 	// in case this function was called first.
