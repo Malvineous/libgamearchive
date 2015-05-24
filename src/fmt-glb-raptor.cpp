@@ -25,7 +25,7 @@
 #include <functional>
 #include <boost/weak_ptr.hpp>
 #include <camoto/iostream_helpers.hpp>
-#include <camoto/stream_memory.hpp>
+#include <camoto/stream_string.hpp>
 #include <camoto/util.hpp>
 #include "filter-glb-raptor.hpp"
 #include "fmt-glb-raptor.hpp"
@@ -166,7 +166,7 @@ Archive_GLB_Raptor::Archive_GLB_Raptor(std::unique_ptr<stream::inout> content)
 #else
 		auto preFAT = glbFilterType.apply(std::move(substrFAT));
 #endif
-	auto mem = std::make_unique<stream::memory>();
+	auto mem = std::make_unique<stream::string>();
 	stream::copy(*mem, *preFAT);
 	this->fat = std::make_unique<stream::seg>(std::move(mem));
 

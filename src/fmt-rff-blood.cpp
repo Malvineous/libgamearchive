@@ -23,7 +23,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <camoto/iostream_helpers.hpp>
-#include <camoto/stream_memory.hpp>
+#include <camoto/stream_string.hpp>
 #include <camoto/util.hpp> // std::make_unique
 #include "fmt-rff-blood.hpp"
 #include "filter-xor-blood.hpp"
@@ -176,7 +176,7 @@ Archive_RFF_Blood::Archive_RFF_Blood(std::unique_ptr<stream::inout> content)
 
 	// Copy the decrypted FAT into memory
 	this->fatStream = std::make_unique<stream::seg>(
-		std::make_unique<stream::memory>()
+		std::make_unique<stream::string>()
 	);
 	this->fatStream->seekp(0, stream::start);
 	this->fatStream->insert(numFiles * RFF_FAT_ENTRY_LEN);
