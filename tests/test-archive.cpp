@@ -65,6 +65,7 @@ test_archive::test_archive()
 	this->create = true;
 	this->newIsInstance = true;
 	this->staticFiles = false;
+	this->virtualFiles = false;
 
 	this->filename[0] = "ONE.DAT";
 	this->filename[1] = "TWO.DAT";
@@ -100,7 +101,9 @@ void test_archive::addTests()
 {
 	// Tests on existing archives (in the initial state)
 	ADD_ARCH_TEST(false, &test_archive::test_isinstance_others);
-	ADD_ARCH_TEST(false, &test_archive::test_open);
+	if (!this->virtualFiles) {
+		ADD_ARCH_TEST(false, &test_archive::test_open);
+	}
 	if (this->lenMaxFilename >= 0) {
 		// Only perform the rename test if the archive has filenames
 		ADD_ARCH_TEST(false, &test_archive::test_rename);
@@ -286,7 +289,7 @@ Archive::FileHandle test_archive::getFileAt(
 			}
 		}
 	}
-	return std::shared_ptr<Archive::File>();
+	return nullptr;
 }
 
 void test_archive::resetSuppData(bool emptyArchive)

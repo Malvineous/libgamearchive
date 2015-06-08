@@ -292,6 +292,14 @@ class test_archive: public test_main
 		 */
 		bool staticFiles;
 
+		/// Are the files virtual?
+		/**
+		 * If true, files cannot be opened as they are placeholders for other data
+		 * (such as images that must be opened with Tileset::openImage()).
+		 * Defaults to false.
+		 */
+		bool virtualFiles;
+
 		/// Any formats here identify us as an instance of that type, and it
 		/// cannot be avoided.
 		/**
