@@ -38,6 +38,12 @@ namespace gamearchive {
 class ArchiveType
 {
 	public:
+		/// Type of object this class creates
+		typedef Archive obj_t;
+
+		/// Type name as a string
+		static constexpr const char* const obj_t_name = "Archive";
+
 		/// Confidence level when guessing a file format.
 		enum Certainty {
 			DefinitelyNo,  ///< Definitely not in this format

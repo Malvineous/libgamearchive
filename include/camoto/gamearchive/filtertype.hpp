@@ -41,6 +41,12 @@ namespace gamearchive {
 class FilterType
 {
 	public:
+		/// Type of object this class creates
+		typedef stream::inout obj_t;
+
+		/// Type name as a string
+		static constexpr const char* const obj_t_name = "Filter";
+
 		/// Get a short code to identify this filter, e.g. "cmp-zone66"
 		/**
 		 * This can be useful for command-line arguments.
