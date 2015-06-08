@@ -127,7 +127,7 @@ std::shared_ptr<Archive> ArchiveType_EPF_LionKing::open(
 }
 
 SuppFilenames ArchiveType_EPF_LionKing::getRequiredSupps(stream::input& content,
-	const std::string& filenameArchive) const
+	const std::string& filename) const
 {
 	// No supplemental types/empty list
 	return SuppFilenames();

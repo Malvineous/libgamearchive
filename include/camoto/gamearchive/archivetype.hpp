@@ -152,7 +152,7 @@ class ArchiveType
 		 *   Read-only stream containing the archive content.  This is for archives
 		 *   which contain the names of the other files they need.
 		 *
-		 * @param filenameArchive
+		 * @param filename
 		 *   The filename of the archive (no path.)  This is for supplemental files
 		 *   which share the same base name as the archive, but a different filename
 		 *   extension.
@@ -162,10 +162,10 @@ class ArchiveType
 		 *   opened and added to a \ref SuppData map, where it can be passed to
 		 *   create() or open().  Note that the filenames returned can have
 		 *   relative paths, and may even have an absolute path, if one was passed
-		 *   in with filenameArchive.
+		 *   in with filename.
 		 */
 		virtual SuppFilenames getRequiredSupps(stream::input& content,
-			const std::string& filenameArchive) const = 0;
+			const std::string& filename) const = 0;
 };
 
 } // namespace gamearchive

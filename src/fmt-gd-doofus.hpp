@@ -44,7 +44,7 @@ class ArchiveType_GD_Doofus: virtual public ArchiveType
 		virtual std::shared_ptr<Archive> create(
 			std::unique_ptr<stream::inout> content, SuppData& suppData) const;
 		virtual SuppFilenames getRequiredSupps(stream::input& content,
-			const std::string& filenameArchive) const;
+			const std::string& filename) const;
 };
 
 /// Doofus .G-D archive instance.

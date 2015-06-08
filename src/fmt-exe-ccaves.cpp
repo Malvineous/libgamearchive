@@ -155,7 +155,7 @@ std::shared_ptr<Archive> ArchiveType_EXE_CCaves::open(
 }
 
 SuppFilenames ArchiveType_EXE_CCaves::getRequiredSupps(stream::input& content,
-	const std::string& filenameArchive) const
+	const std::string& filename) const
 {
 	return {};
 }

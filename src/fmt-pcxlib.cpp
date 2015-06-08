@@ -166,7 +166,7 @@ std::shared_ptr<Archive> ArchiveType_PCXLib::open(
 }
 
 SuppFilenames ArchiveType_PCXLib::getRequiredSupps(stream::input& content,
-	const std::string& filenameArchive) const
+	const std::string& filename) const
 {
 	// No supplemental types/empty list
 	return SuppFilenames();

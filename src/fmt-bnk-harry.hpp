@@ -44,7 +44,7 @@ class ArchiveType_BNK_Harry: virtual public ArchiveType
 		virtual std::shared_ptr<Archive> open(
 			std::unique_ptr<stream::inout> content, SuppData& suppData) const;
 		virtual SuppFilenames getRequiredSupps(stream::input& content,
-			const std::string& filenameArchive) const;
+			const std::string& filename) const;
 };
 
 /// Halloween Harry .BNK archive instance.

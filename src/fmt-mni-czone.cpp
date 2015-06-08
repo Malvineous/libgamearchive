@@ -83,7 +83,7 @@ std::shared_ptr<Archive> ArchiveType_MNI_CZone::open(
 }
 
 SuppFilenames ArchiveType_MNI_CZone::getRequiredSupps(stream::input& content,
-	const std::string& filenameArchive) const
+	const std::string& filename) const
 {
 	return {};
 }

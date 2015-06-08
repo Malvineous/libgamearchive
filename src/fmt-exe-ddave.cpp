@@ -132,7 +132,7 @@ std::shared_ptr<Archive> ArchiveType_EXE_DDave::open(
 }
 
 SuppFilenames ArchiveType_EXE_DDave::getRequiredSupps(stream::input& content,
-	const std::string& filenameArchive) const
+	const std::string& filename) const
 {
 	return {};
 }

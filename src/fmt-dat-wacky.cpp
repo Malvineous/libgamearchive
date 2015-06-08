@@ -138,7 +138,7 @@ std::shared_ptr<Archive> ArchiveType_DAT_Wacky::open(
 }
 
 SuppFilenames ArchiveType_DAT_Wacky::getRequiredSupps(stream::input& content,
-	const std::string& filenameArchive) const
+	const std::string& filename) const
 {
 	// No supplemental types/empty list
 	return SuppFilenames();

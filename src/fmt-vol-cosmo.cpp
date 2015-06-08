@@ -146,7 +146,7 @@ std::shared_ptr<Archive> ArchiveType_VOL_Cosmo::open(
 }
 
 SuppFilenames ArchiveType_VOL_Cosmo::getRequiredSupps(stream::input& content,
-	const std::string& filenameArchive) const
+	const std::string& filename) const
 {
 	// No supplemental types/empty list
 	return SuppFilenames();

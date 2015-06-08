@@ -112,12 +112,12 @@ std::shared_ptr<Archive> ArchiveType_GD_Doofus::create(
 }
 
 SuppFilenames ArchiveType_GD_Doofus::getRequiredSupps(stream::input& content,
-	const std::string& filenameArchive) const
+	const std::string& filename) const
 {
 	// No supplemental types/empty list
 	SuppFilenames supps;
-	std::string filenameBase = filenameArchive.substr(0,
-		filenameArchive.find_last_of('.'));
+	std::string filenameBase = filename.substr(0,
+		filename.find_last_of('.'));
 	supps[SuppItem::FAT] = "doofus.exe";
 	return supps;
 }

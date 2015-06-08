@@ -87,7 +87,7 @@ std::shared_ptr<Archive> ArchiveType_DA_Levels::open(
 }
 
 SuppFilenames ArchiveType_DA_Levels::getRequiredSupps(stream::input& content,
-	const std::string& filenameArchive) const
+	const std::string& filename) const
 {
 	return {};
 }

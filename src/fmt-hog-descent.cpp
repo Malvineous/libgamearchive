@@ -106,7 +106,7 @@ std::shared_ptr<Archive> ArchiveType_HOG_Descent::open(
 }
 
 SuppFilenames ArchiveType_HOG_Descent::getRequiredSupps(stream::input& content,
-	const std::string& filenameArchive) const
+	const std::string& filename) const
 {
 	// No supplemental types/empty list
 	return SuppFilenames();

@@ -141,20 +141,20 @@ std::shared_ptr<Archive> ArchiveType_DAT_Hugo::open(
 }
 
 SuppFilenames ArchiveType_DAT_Hugo::getRequiredSupps(stream::input& content,
-	const std::string& filenameArchive) const
+	const std::string& filename) const
 {
 	// If this is 'scenery1.dat' then the rest of its data is in 'scenery2.dat'
 	// so we will include it as a supp.
 	SuppFilenames supps;
-	std::string::size_type slash = filenameArchive.find_last_of('/');
+	std::string::size_type slash = filename.find_last_of('/');
 	std::string filenameBase;
 	if (slash != std::string::npos) {
-		filenameBase = filenameArchive.substr(slash+1);
+		filenameBase = filename.substr(slash+1);
 	} else {
-		filenameBase = filenameArchive;
+		filenameBase = filename;
 	}
 	if (boost::iequals(filenameBase, "scenery2.dat")) {
-		std::string firstFilename = filenameArchive;
+		std::string firstFilename = filename;
 		firstFilename[firstFilename.length() - 5] = '1';
 		supps[SuppItem::FAT] = firstFilename;
 	}

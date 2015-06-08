@@ -168,7 +168,7 @@ std::shared_ptr<Archive> ArchiveType_DAT_GoT::open(
 }
 
 SuppFilenames ArchiveType_DAT_GoT::getRequiredSupps(stream::input& content,
-	const std::string& filenameArchive) const
+	const std::string& filename) const
 {
 	// No supplemental types/empty list
 	return SuppFilenames();
