@@ -45,7 +45,7 @@ class FilterType
 		typedef stream::inout obj_t;
 
 		/// Type name as a string
-		static constexpr const char* const obj_t_name = "Filter";
+		static constexpr const char* const obj_t_name = "Filter"; // defined in main.cpp
 
 		/// Get a short code to identify this filter, e.g. "cmp-zone66"
 		/**

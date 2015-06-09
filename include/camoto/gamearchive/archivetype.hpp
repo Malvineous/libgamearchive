@@ -42,7 +42,7 @@ class ArchiveType
 		typedef Archive obj_t;
 
 		/// Type name as a string
-		static constexpr const char* const obj_t_name = "Archive";
+		static constexpr const char* const obj_t_name = "Archive"; // defined in main.cpp
 
 		/// Confidence level when guessing a file format.
 		enum Certainty {

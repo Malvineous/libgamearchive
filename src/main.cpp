@@ -140,4 +140,11 @@ const std::vector<std::shared_ptr<const FilterType> > FormatEnumerator<FilterTyp
 	return list;
 }
 
+namespace gamearchive {
+
+constexpr const char* const ArchiveType::obj_t_name;
+constexpr const char* const FilterType::obj_t_name;
+
+} // namespace gamearchive
+
 } // namespace camoto
