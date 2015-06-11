@@ -75,7 +75,7 @@ const Archive::FileVector& Archive_FAT::files() const
 	return this->vcFAT;
 }
 
-Archive::FileHandle Archive_FAT::find(const std::string& strFilename) const
+const Archive::FileHandle Archive_FAT::find(const std::string& strFilename) const
 {
 	// TESTED BY: fmt_grp_duke3d_*
 	for (const auto& i : this->vcFAT) {
@@ -132,7 +132,7 @@ std::shared_ptr<Archive> Archive_FAT::openFolder(const FileHandle& id)
 	throw stream::error("BUG: Archive format doesn't implement openFolder()");
 }
 
-Archive::FileHandle Archive_FAT::insert(const FileHandle& idBeforeThis,
+const Archive::FileHandle Archive_FAT::insert(const FileHandle& idBeforeThis,
 	const std::string& strFilename, stream::len storedSize, std::string type,
 	File::Attribute attr)
 {
@@ -228,7 +228,7 @@ Archive::FileHandle Archive_FAT::insert(const FileHandle& idBeforeThis,
 	return pNewFile;
 }
 
-void Archive_FAT::remove(FileHandle& id)
+void Archive_FAT::remove(const FileHandle& id)
 {
 	// TESTED BY: fmt_grp_duke3d_remove
 	// TESTED BY: fmt_grp_duke3d_remove2
@@ -270,7 +270,7 @@ void Archive_FAT::remove(FileHandle& id)
 	return;
 }
 
-void Archive_FAT::rename(FileHandle& id, const std::string& strNewName)
+void Archive_FAT::rename(const FileHandle& id, const std::string& strNewName)
 {
 	// TESTED BY: fmt_grp_duke3d_rename
 	assert(this->isValid(id));
@@ -290,7 +290,7 @@ void Archive_FAT::rename(FileHandle& id, const std::string& strNewName)
 	return;
 }
 
-void Archive_FAT::move(const FileHandle& idBeforeThis, FileHandle& id)
+void Archive_FAT::move(const FileHandle& idBeforeThis, const FileHandle& id)
 {
 	// Open the file we want to move
 	auto src = this->open(id, false);
@@ -326,7 +326,7 @@ void Archive_FAT::move(const FileHandle& idBeforeThis, FileHandle& id)
 	return;
 }
 
-void Archive_FAT::resize(FileHandle& id, stream::len newStoredSize,
+void Archive_FAT::resize(const FileHandle& id, stream::len newStoredSize,
 	stream::len newRealSize)
 {
 	assert(this->isValid(id));

@@ -133,19 +133,19 @@ class Archive_FAT: virtual public Archive, public std::enable_shared_from_this<A
 	public:
 		virtual ~Archive_FAT();
 
-		virtual FileHandle find(const std::string& strFilename) const;
+		virtual const FileHandle find(const std::string& strFilename) const;
 		virtual const FileVector& files(void) const;
 		virtual bool isValid(const FileHandle& id) const;
 		virtual std::unique_ptr<stream::inout> open(const FileHandle& id,
 			bool useFilter);
 		virtual std::shared_ptr<Archive> openFolder(const FileHandle& id);
-		virtual FileHandle insert(const FileHandle& idBeforeThis,
+		virtual const FileHandle insert(const FileHandle& idBeforeThis,
 			const std::string& strFilename, stream::len storedSize, std::string type,
 			File::Attribute attr);
-		virtual void remove(FileHandle& id);
-		virtual void rename(FileHandle& id, const std::string& strNewName);
-		virtual void move(const FileHandle& idBeforeThis, FileHandle& id);
-		virtual void resize(FileHandle& id, stream::len newStoredSize,
+		virtual void remove(const FileHandle& id);
+		virtual void rename(const FileHandle& id, const std::string& strNewName);
+		virtual void move(const FileHandle& idBeforeThis, const FileHandle& id);
+		virtual void resize(const FileHandle& id, stream::len newStoredSize,
 			stream::len newRealSize);
 		virtual void flush();
 

@@ -176,7 +176,7 @@ class Archive: virtual public Metadata
 		 * @return Shared pointer to the requested file, or an empty pointer if the
 		 *   file can't be found.
 		 */
-		virtual FileHandle find(const std::string& strFilename) const = 0;
+		virtual const FileHandle find(const std::string& strFilename) const = 0;
 
 		/// Checks that the File instance points to a file that still exists.
 		/**
@@ -282,7 +282,7 @@ class Archive: virtual public Metadata
 		 *   return value will produce a valid iterator to the same file that
 		 *   idBeforeThis pointed to before the call.
 		 */
-		virtual FileHandle insert(const FileHandle& idBeforeThis,
+		virtual const FileHandle insert(const FileHandle& idBeforeThis,
 			const std::string& strFilename, stream::len storedSize, std::string type,
 			File::Attribute attr) = 0;
 
@@ -300,7 +300,7 @@ class Archive: virtual public Metadata
 		 * @post id->valid becomes false.  All existing iterators are invalidated.
 		 *   Any open files remain valid.
 		 */
-		virtual void remove(FileHandle& id) = 0;
+		virtual void remove(const FileHandle& id) = 0;
 
 		/// Rename a file.
 		/**
@@ -312,7 +312,7 @@ class Archive: virtual public Metadata
 		 * @param strNewName
 		 *   The new filename.
 		 */
-		virtual void rename(FileHandle& id, const std::string& strNewName)
+		virtual void rename(const FileHandle& id, const std::string& strNewName)
 			= 0;
 
 		/// Move an entry to a different position within the archive.
@@ -330,7 +330,7 @@ class Archive: virtual public Metadata
 		 * @post All existing iterators are invalidated.  Any open files remain
 		 *   valid.
 		 */
-		virtual void move(const FileHandle& idBeforeThis, FileHandle& id) = 0;
+		virtual void move(const FileHandle& idBeforeThis, const FileHandle& id) = 0;
 
 		/// Enlarge or shrink an existing file.
 		/**
@@ -365,7 +365,7 @@ class Archive: virtual public Metadata
 		 *   does not exist if the resize is done while none of the archive's files
 		 *   are open.
 		 */
-		virtual void resize(FileHandle& id, stream::len newStoredSize,
+		virtual void resize(const FileHandle& id, stream::len newStoredSize,
 			stream::len newRealSize) = 0;
 
 		/// Write out any cached changes to the underlying stream.

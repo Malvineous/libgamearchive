@@ -60,7 +60,7 @@ class FixedArchive: virtual public Archive
 			std::vector<FixedArchiveFile> vcFiles);
 		virtual ~FixedArchive();
 
-		virtual FileHandle find(const std::string& strFilename) const;
+		virtual const FileHandle find(const std::string& strFilename) const;
 		virtual const FileVector& files(void) const;
 		virtual bool isValid(const FileHandle& id) const;
 		virtual std::unique_ptr<stream::inout> open(const FileHandle& id,
@@ -75,7 +75,7 @@ class FixedArchive: virtual public Archive
 		 * @note Will always throw an exception as the files are fixed and
 		 *       thus can't be added to.
 		 */
-		virtual FileHandle insert(const FileHandle& idBeforeThis,
+		virtual const FileHandle insert(const FileHandle& idBeforeThis,
 			const std::string& strFilename, stream::pos storedSize, std::string type,
 			File::Attribute attr
 		);
@@ -84,23 +84,23 @@ class FixedArchive: virtual public Archive
 		 * @note Will always throw an exception as the files are fixed and
 		 *       thus can't be removed.
 		 */
-		virtual void remove(FileHandle& id);
+		virtual void remove(const FileHandle& id);
 
 		/**
 		 * @note Will always throw an exception as it makes no sense to rename
 		 *       the made up filenames in this archive format.
 		 */
-		virtual void rename(FileHandle& id, const std::string& strNewName);
+		virtual void rename(const FileHandle& id, const std::string& strNewName);
 
 		/**
 		 * @note Will always throw an exception as fixed files can't be moved.
 		 */
-		virtual void move(const FileHandle& idBeforeThis, FileHandle& id);
+		virtual void move(const FileHandle& idBeforeThis, const FileHandle& id);
 
 		/**
 		 * @note Will always throw an exception as fixed files can't be resized.
 		 */
-		virtual void resize(FileHandle& id, stream::pos newStoredSize,
+		virtual void resize(const FileHandle& id, stream::pos newStoredSize,
 			stream::pos newRealSize);
 
 		virtual void flush();

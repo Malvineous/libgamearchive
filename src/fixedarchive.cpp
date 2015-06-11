@@ -63,7 +63,7 @@ const Archive::FileVector& FixedArchive::files() const
 	return this->vcFixedEntries;
 }
 
-Archive::FileHandle FixedArchive::find(const std::string& strFilename) const
+const Archive::FileHandle FixedArchive::find(const std::string& strFilename) const
 {
 	// TESTED BY: TODO
 	for (auto& i : this->vcFixedEntries) {
@@ -131,29 +131,29 @@ std::shared_ptr<Archive> FixedArchive::openFolder(const Archive::FileHandle& id)
 		"doesn't have any folders.");
 }
 
-Archive::FileHandle FixedArchive::insert(const FileHandle& idBeforeThis,
+const Archive::FileHandle FixedArchive::insert(const FileHandle& idBeforeThis,
 	const std::string& strFilename, stream::pos storedSize, std::string type,
 	File::Attribute attr)
 {
 	throw stream::error("This is a fixed archive, files cannot be inserted.");
 }
 
-void FixedArchive::remove(FileHandle& id)
+void FixedArchive::remove(const FileHandle& id)
 {
 	throw stream::error("This is a fixed archive, files cannot be removed.");
 }
 
-void FixedArchive::rename(FileHandle& id, const std::string& strNewName)
+void FixedArchive::rename(const FileHandle& id, const std::string& strNewName)
 {
 	throw stream::error("This is a fixed archive, files cannot be renamed.");
 }
 
-void FixedArchive::move(const FileHandle& idBeforeThis, FileHandle& id)
+void FixedArchive::move(const FileHandle& idBeforeThis, const FileHandle& id)
 {
 	throw stream::error("This is a fixed archive, files cannot be moved.");
 }
 
-void FixedArchive::resize(FileHandle& id, stream::pos newStoredSize,
+void FixedArchive::resize(const FileHandle& id, stream::pos newStoredSize,
 	stream::pos newRealSize)
 {
 	auto entry = FixedEntry::cast(id);
