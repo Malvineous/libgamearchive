@@ -171,7 +171,7 @@ class test_archive: public test_main
 		 * This may be called mid-test if the suppBase content should be reset to
 		 * the initial state.
 		 */
-		void resetSuppData(bool emptyArchive);
+		void resetSuppData(bool empty);
 
 		/// Populate suppData with data loaded from suppBase.
 		/**

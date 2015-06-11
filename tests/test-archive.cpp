@@ -192,18 +192,18 @@ void test_archive::runTest(bool empty, std::function<void()> fnTest)
 	return;
 }
 
-void test_archive::prepareTest(bool emptyArchive)
+void test_archive::prepareTest(bool empty)
 {
 	auto pArchType = ArchiveManager::byCode(this->type);
 	BOOST_REQUIRE_MESSAGE(pArchType, "Could not find archive type " + this->type);
 
 	// Make this->suppData valid
-	this->resetSuppData(emptyArchive);
+	this->resetSuppData(empty);
 	this->populateSuppData();
 
 	this->base = std::make_unique<stream::string>();
 
-	if (emptyArchive) {
+	if (empty) {
 		BOOST_TEST_CHECKPOINT("About to create new empty instance of "
 			+ this->basename);
 		// This should really use BOOST_REQUIRE_NO_THROW but the message is more
@@ -292,7 +292,7 @@ Archive::FileHandle test_archive::getFileAt(
 	return nullptr;
 }
 
-void test_archive::resetSuppData(bool emptyArchive)
+void test_archive::resetSuppData(bool empty)
 {
 	this->suppBase.clear();
 	for (auto& i : this->suppResult) {
@@ -303,7 +303,7 @@ void test_archive::resetSuppData(bool emptyArchive)
 			continue;
 		}
 		auto suppSS = std::make_shared<stream::string>();
-		if (!emptyArchive) {
+		if (!empty) {
 			// Populate the suppitem with its initial state
 			*suppSS << i.second->initialstate();
 		}
