@@ -405,7 +405,7 @@ void test_archive::changeMetadata(camoto::Metadata::MetadataType item,
 	this->ts->add(boost::unit_test::make_test_case(
 			boost::unit_test::callback0<>(fnTest),
 			createString("test_archive[" << this->basename << "]::changemetadata_c"
-				<< std::setfill('0') << std::setw(2) << this->numIsInstanceTests)
+				<< std::setfill('0') << std::setw(2) << this->numChangeMetadataTests)
 		));
 	this->numChangeMetadataTests++;
 	return;
