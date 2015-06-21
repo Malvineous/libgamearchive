@@ -187,6 +187,18 @@ class test_archive: public test_main
 		 */
 		void populateSuppData();
 
+		/// Check if all supp data streams match the expected values.
+		/**
+		 * @param fnExpected
+		 *   test_map2d member function to call (on the suppitem instance) to
+		 *   get the expected data, e.g. &test_map2d::initialstate
+		 *
+		 * @param msg
+		 *   Error message in case of data mismatch.
+		 */
+		void checkData(std::function<std::string(test_archive&)> fnExpected,
+			const std::string& msg);
+
 		/// Add an isInstance check to run later.
 		/**
 		 * @param result

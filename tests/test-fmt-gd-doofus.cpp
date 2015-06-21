@@ -287,6 +287,7 @@ class test_gd_doofus: public test_archive
 				epb, "", 0x0f, "unknown/doofus-1234", Archive::File::Attribute::Default
 			);
 
+			this->pArchive->flush();
 			BOOST_CHECK_MESSAGE(
 				this->is_content_equal(this->insert_unknown_type()),
 				"Inserting file with known type wrote wrong filetype code"
