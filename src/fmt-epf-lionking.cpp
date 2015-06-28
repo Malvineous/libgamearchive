@@ -66,27 +66,27 @@ std::string ArchiveType_EPF_LionKing::friendlyName() const
 
 std::vector<std::string> ArchiveType_EPF_LionKing::fileExtensions() const
 {
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("epf");
-	return vcExtensions;
+	return {
+		"epf",
+	};
 }
 
 std::vector<std::string> ArchiveType_EPF_LionKing::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Alien Breed Tower Assault");
-	vcGames.push_back("Arcade Pool");
-	vcGames.push_back("Asterix & Obelix");
-	vcGames.push_back("Jungle Book, The");
-	vcGames.push_back("Lion King, The");
-	vcGames.push_back("Overdrive");
-	vcGames.push_back("Project X");
-	vcGames.push_back("Sensible Golf");
-	vcGames.push_back("Smurfs, The");
-	vcGames.push_back("Spirou");
-	vcGames.push_back("Tin Tin in Tibet");
-	vcGames.push_back("Universe");
-	return vcGames;
+	return {
+		"Alien Breed Tower Assault",
+		"Arcade Pool",
+		"Asterix & Obelix",
+		"Jungle Book, The",
+		"Lion King, The",
+		"Overdrive",
+		"Project X",
+		"Sensible Golf",
+		"Smurfs, The",
+		"Spirou",
+		"Tin Tin in Tibet",
+		"Universe",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_EPF_LionKing::isInstance(

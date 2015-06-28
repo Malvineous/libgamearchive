@@ -55,23 +55,23 @@ std::string ArchiveType_VOL_Cosmo::friendlyName() const
 
 std::vector<std::string> ArchiveType_VOL_Cosmo::fileExtensions() const
 {
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("vol");
-	vcExtensions.push_back("stn");
-	vcExtensions.push_back("cmp");
-	vcExtensions.push_back("ms1");
-	vcExtensions.push_back("ms2");
-	vcExtensions.push_back("ms3");
-	return vcExtensions;
+	return {
+		"vol",
+		"stn",
+		"cmp",
+		"ms1",
+		"ms2",
+		"ms3",
+	};
 }
 
 std::vector<std::string> ArchiveType_VOL_Cosmo::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Cosmo's Cosmic Adventure");
-	vcGames.push_back("Duke Nukem II");
-	vcGames.push_back("Major Stryker");
-	return vcGames;
+	return {
+		"Cosmo's Cosmic Adventure",
+		"Duke Nukem II",
+		"Major Stryker",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_VOL_Cosmo::isInstance(

@@ -72,16 +72,16 @@ std::string ArchiveType_GLB_Raptor::friendlyName() const
 
 std::vector<std::string> ArchiveType_GLB_Raptor::fileExtensions() const
 {
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("glb");
-	return vcExtensions;
+	return {
+		"glb",
+	};
 }
 
 std::vector<std::string> ArchiveType_GLB_Raptor::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Raptor");
-	return vcGames;
+	return {
+		"Raptor",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_GLB_Raptor::isInstance(

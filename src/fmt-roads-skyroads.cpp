@@ -51,16 +51,16 @@ std::string ArchiveType_Roads_SkyRoads::friendlyName() const
 
 std::vector<std::string> ArchiveType_Roads_SkyRoads::fileExtensions() const
 {
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("lzs");
-	return vcExtensions;
+	return {
+		"lzs",
+	};
 }
 
 std::vector<std::string> ArchiveType_Roads_SkyRoads::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("SkyRoads");
-	return vcGames;
+	return {
+		"SkyRoads",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_Roads_SkyRoads::isInstance(

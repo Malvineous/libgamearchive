@@ -58,16 +58,16 @@ std::string ArchiveType_RES_Stellar7::friendlyName() const
 
 std::vector<std::string> ArchiveType_RES_Stellar7::fileExtensions() const
 {
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("res");
-	return vcExtensions;
+	return {
+		"res",
+	};
 }
 
 std::vector<std::string> ArchiveType_RES_Stellar7::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Stellar 7");
-	return vcGames;
+	return {
+		"Stellar 7",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_RES_Stellar7::isInstance(

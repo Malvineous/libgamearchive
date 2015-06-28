@@ -56,17 +56,17 @@ std::string ArchiveType_CUR_Prehistorik::friendlyName() const
 
 std::vector<std::string> ArchiveType_CUR_Prehistorik::fileExtensions() const
 {
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("cur");
-	vcExtensions.push_back("vga");
-	return vcExtensions;
+	return {
+		"cur",
+		"vga",
+	};
 }
 
 std::vector<std::string> ArchiveType_CUR_Prehistorik::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Prehistorik");
-	return vcGames;
+	return {
+		"Prehistorik",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_CUR_Prehistorik::isInstance(

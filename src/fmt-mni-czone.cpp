@@ -44,12 +44,16 @@ std::string ArchiveType_MNI_CZone::friendlyName() const
 
 std::vector<std::string> ArchiveType_MNI_CZone::fileExtensions() const
 {
-	return {"mni"};
+	return {
+		"mni",
+	};
 }
 
 std::vector<std::string> ArchiveType_MNI_CZone::games() const
 {
-	return {"Duke Nukem II"};
+	return {
+		"Duke Nukem II",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_MNI_CZone::isInstance(

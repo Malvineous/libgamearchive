@@ -234,9 +234,9 @@ std::string FilterType_Stargunner::friendlyName() const
 
 std::vector<std::string> FilterType_Stargunner::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Stargunner");
-	return vcGames;
+	return {
+		"Stargunner",
+	};
 }
 
 std::unique_ptr<stream::inout> FilterType_Stargunner::apply(

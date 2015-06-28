@@ -56,20 +56,20 @@ std::string ArchiveType_DAT_Sango::friendlyName() const
 
 std::vector<std::string> ArchiveType_DAT_Sango::fileExtensions() const
 {
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("dat");
-	vcExtensions.push_back("mid");
-	vcExtensions.push_back("pbn");
-	vcExtensions.push_back("pcm");
-	vcExtensions.push_back("pcp");
-	return vcExtensions;
+	return {
+		"dat",
+		"mid",
+		"pbn",
+		"pcm",
+		"pcp",
+	};
 }
 
 std::vector<std::string> ArchiveType_DAT_Sango::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Sango Fighter");
-	return vcGames;
+	return {
+		"Sango Fighter",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_DAT_Sango::isInstance(

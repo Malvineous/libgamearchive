@@ -72,17 +72,17 @@ std::string ArchiveType_BNK_Harry::friendlyName() const
 
 std::vector<std::string> ArchiveType_BNK_Harry::fileExtensions() const
 {
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("bnk");
-	vcExtensions.push_back("-0");
-	return vcExtensions;
+	return {
+		"bnk",
+		"-0",
+	};
 }
 
 std::vector<std::string> ArchiveType_BNK_Harry::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Halloween Harry");
-	return vcGames;
+	return {
+		"Halloween Harry",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_BNK_Harry::isInstance(

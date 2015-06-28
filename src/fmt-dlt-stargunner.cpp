@@ -66,16 +66,16 @@ std::string ArchiveType_DLT_Stargunner::friendlyName() const
 
 std::vector<std::string> ArchiveType_DLT_Stargunner::fileExtensions() const
 {
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("dlt");
-	return vcExtensions;
+	return {
+		"dlt",
+	};
 }
 
 std::vector<std::string> ArchiveType_DLT_Stargunner::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Stargunner");
-	return vcGames;
+	return {
+		"Stargunner",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_DLT_Stargunner::isInstance(

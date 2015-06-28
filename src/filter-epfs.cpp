@@ -50,19 +50,19 @@ std::string FilterType_EPFS::friendlyName() const
 
 std::vector<std::string> FilterType_EPFS::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Alien Breed Tower Assault");
-	vcGames.push_back("Arcade Pool");
-	vcGames.push_back("Jungle Book, The");
-	vcGames.push_back("Lion King, The");
-	vcGames.push_back("Overdrive");
-	vcGames.push_back("Project X");
-	vcGames.push_back("Sensible Golf");
-	vcGames.push_back("Smurfs, The");
-	vcGames.push_back("Spirou");
-	vcGames.push_back("Tin Tin in Tibet");
-	vcGames.push_back("Universe");
-	return vcGames;
+	return {
+		"Alien Breed Tower Assault",
+		"Arcade Pool",
+		"Jungle Book, The",
+		"Lion King, The",
+		"Overdrive",
+		"Project X",
+		"Sensible Golf",
+		"Smurfs, The",
+		"Spirou",
+		"Tin Tin in Tibet",
+		"Universe",
+	};
 }
 
 std::unique_ptr<stream::inout> FilterType_EPFS::apply(

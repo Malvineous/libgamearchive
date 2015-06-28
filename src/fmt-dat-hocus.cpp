@@ -56,16 +56,16 @@ std::string ArchiveType_DAT_Hocus::friendlyName() const
 
 std::vector<std::string> ArchiveType_DAT_Hocus::fileExtensions() const
 {
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("dat");
-	return vcExtensions;
+	return {
+		"dat",
+	};
 }
 
 std::vector<std::string> ArchiveType_DAT_Hocus::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Hocus Pocus");
-	return vcGames;
+	return {
+		"Hocus Pocus",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_DAT_Hocus::isInstance(

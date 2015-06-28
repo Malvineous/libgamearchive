@@ -63,19 +63,19 @@ std::string ArchiveType_Resource_TIM::friendlyName() const
 
 std::vector<std::string> ArchiveType_Resource_TIM::fileExtensions() const
 {
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("001");
-	vcExtensions.push_back("002");
-	vcExtensions.push_back("003");
-	vcExtensions.push_back("004");
-	return vcExtensions;
+	return {
+		"001",
+		"002",
+		"003",
+		"004",
+	};
 }
 
 std::vector<std::string> ArchiveType_Resource_TIM::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("The Incredible Machine");
-	return vcGames;
+	return {
+		"The Incredible Machine",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_Resource_TIM::isInstance(

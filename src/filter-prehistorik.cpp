@@ -57,9 +57,9 @@ std::string FilterType_Prehistorik::friendlyName() const
 
 std::vector<std::string> FilterType_Prehistorik::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Prehistorik");
-	return vcGames;
+	return {
+		"Prehistorik",
+	};
 }
 
 std::unique_ptr<stream::inout> FilterType_Prehistorik::apply(

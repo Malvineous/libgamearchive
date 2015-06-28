@@ -52,9 +52,9 @@ std::string FilterType_Bash::friendlyName() const
 
 std::vector<std::string> FilterType_Bash::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Monster Bash");
-	return vcGames;
+	return {
+		"Monster Bash",
+	};
 }
 
 std::unique_ptr<stream::inout> FilterType_Bash::apply(

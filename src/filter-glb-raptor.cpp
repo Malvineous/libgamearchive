@@ -150,9 +150,9 @@ std::string FilterType_GLB_Raptor_FAT::friendlyName() const
 
 std::vector<std::string> FilterType_GLB_Raptor_FAT::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Raptor");
-	return vcGames;
+	return {
+		"Raptor",
+	};
 }
 
 std::unique_ptr<stream::inout> FilterType_GLB_Raptor_FAT::apply(
@@ -208,9 +208,9 @@ std::string FilterType_GLB_Raptor_File::friendlyName() const
 
 std::vector<std::string> FilterType_GLB_Raptor_File::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Raptor");
-	return vcGames;
+	return {
+		"Raptor",
+	};
 }
 
 std::unique_ptr<stream::inout> FilterType_GLB_Raptor_File::apply(

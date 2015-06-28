@@ -68,12 +68,16 @@ std::string ArchiveType_EXE_DDave::friendlyName() const
 
 std::vector<std::string> ArchiveType_EXE_DDave::fileExtensions() const
 {
-	return {"exe"};
+	return {
+		"exe",
+	};
 }
 
 std::vector<std::string> ArchiveType_EXE_DDave::games() const
 {
-	return {"Dangerous Dave"};
+	return {
+		"Dangerous Dave",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_EXE_DDave::isInstance(

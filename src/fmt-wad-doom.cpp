@@ -65,23 +65,23 @@ std::string ArchiveType_WAD_Doom::friendlyName() const
 
 std::vector<std::string> ArchiveType_WAD_Doom::fileExtensions() const
 {
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("wad");
-	vcExtensions.push_back("rts");
-	return vcExtensions;
+	return {
+		"wad",
+		"rts",
+	};
 }
 
 std::vector<std::string> ArchiveType_WAD_Doom::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Doom");
-	vcGames.push_back("Duke Nukem 3D");
-	vcGames.push_back("Heretic");
-	vcGames.push_back("Hexen");
-	vcGames.push_back("Redneck Rampage");
-	vcGames.push_back("Rise of the Triad");
-	vcGames.push_back("Shadow Warrior");
-	return vcGames;
+	return {
+		"Doom",
+		"Duke Nukem 3D",
+		"Heretic",
+		"Hexen",
+		"Redneck Rampage",
+		"Rise of the Triad",
+		"Shadow Warrior",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_WAD_Doom::isInstance(

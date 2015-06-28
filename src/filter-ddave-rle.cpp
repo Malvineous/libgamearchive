@@ -241,9 +241,9 @@ std::string FilterType_DDaveRLE::friendlyName() const
 
 std::vector<std::string> FilterType_DDaveRLE::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Dangerous Dave");
-	return vcGames;
+	return {
+		"Dangerous Dave",
+	};
 }
 
 std::unique_ptr<stream::inout> FilterType_DDaveRLE::apply(

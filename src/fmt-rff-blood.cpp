@@ -69,16 +69,16 @@ std::string ArchiveType_RFF_Blood::friendlyName() const
 
 std::vector<std::string> ArchiveType_RFF_Blood::fileExtensions() const
 {
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("rff");
-	return vcExtensions;
+	return {
+		"rff",
+	};
 }
 
 std::vector<std::string> ArchiveType_RFF_Blood::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Blood");
-	return vcGames;
+	return {
+		"Blood",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_RFF_Blood::isInstance(

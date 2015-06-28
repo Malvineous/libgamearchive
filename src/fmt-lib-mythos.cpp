@@ -64,17 +64,17 @@ std::string ArchiveType_LIB_Mythos::friendlyName() const
 
 std::vector<std::string> ArchiveType_LIB_Mythos::fileExtensions() const
 {
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("lib");
-	vcExtensions.push_back("snd");
-	return vcExtensions;
+	return {
+		"lib",
+		"snd",
+	};
 }
 
 std::vector<std::string> ArchiveType_LIB_Mythos::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("The Lost Files of Sherlock Holmes: The Case of the Serrated Scalpel");
-	return vcGames;
+	return {
+		"The Lost Files of Sherlock Holmes: The Case of the Serrated Scalpel",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_LIB_Mythos::isInstance(

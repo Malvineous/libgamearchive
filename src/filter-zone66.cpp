@@ -276,9 +276,9 @@ std::string FilterType_Zone66::friendlyName() const
 
 std::vector<std::string> FilterType_Zone66::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Zone 66");
-	return vcGames;
+	return {
+		"Zone 66",
+	};
 }
 
 std::unique_ptr<stream::inout> FilterType_Zone66::apply(

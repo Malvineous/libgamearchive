@@ -66,16 +66,16 @@ std::string ArchiveType_DAT_Highway::friendlyName() const
 
 std::vector<std::string> ArchiveType_DAT_Highway::fileExtensions() const
 {
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("dat");
-	return vcExtensions;
+	return {
+		"dat",
+	};
 }
 
 std::vector<std::string> ArchiveType_DAT_Highway::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Highway Hunter");
-	return vcGames;
+	return {
+		"Highway Hunter",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_DAT_Highway::isInstance(

@@ -53,18 +53,18 @@ std::string ArchiveType_DAT_LostVikings::friendlyName() const
 
 std::vector<std::string> ArchiveType_DAT_LostVikings::fileExtensions() const
 {
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("dat");
-	return vcExtensions;
+	return {
+		"dat",
+	};
 }
 
 std::vector<std::string> ArchiveType_DAT_LostVikings::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("BlackThorne");
-	vcGames.push_back("The Lost Vikings");
-	vcGames.push_back("WarCraft: Orcs & Humans");
-	return vcGames;
+	return {
+		"BlackThorne",
+		"The Lost Vikings",
+		"WarCraft: Orcs & Humans",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_DAT_LostVikings::isInstance(

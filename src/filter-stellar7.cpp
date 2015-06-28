@@ -50,9 +50,9 @@ std::string FilterType_Stellar7::friendlyName() const
 
 std::vector<std::string> FilterType_Stellar7::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Stellar 7");
-	return vcGames;
+	return {
+		"Stellar 7",
+	};
 }
 
 std::unique_ptr<stream::inout> FilterType_Stellar7::apply(

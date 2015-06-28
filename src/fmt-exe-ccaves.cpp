@@ -44,12 +44,16 @@ std::string ArchiveType_EXE_CCaves::friendlyName() const
 
 std::vector<std::string> ArchiveType_EXE_CCaves::fileExtensions() const
 {
-	return {"exe"};
+	return {
+		"exe",
+	};
 }
 
 std::vector<std::string> ArchiveType_EXE_CCaves::games() const
 {
-	return {"Crystal Caves"};
+	return {
+		"Crystal Caves",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_EXE_CCaves::isInstance(

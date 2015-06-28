@@ -62,16 +62,16 @@ std::string ArchiveType_PCXLib::friendlyName() const
 
 std::vector<std::string> ArchiveType_PCXLib::fileExtensions() const
 {
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("pcl");
-	return vcExtensions;
+	return {
+		"pcl",
+	};
 }
 
 std::vector<std::string> ArchiveType_PCXLib::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Word Rescue");
-	return vcGames;
+	return {
+		"Word Rescue",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_PCXLib::isInstance(

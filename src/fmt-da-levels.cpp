@@ -44,12 +44,18 @@ std::string ArchiveType_DA_Levels::friendlyName() const
 
 std::vector<std::string> ArchiveType_DA_Levels::fileExtensions() const
 {
-	return {"da1", "da2", "da3"};
+	return {
+		"da1",
+		"da2",
+		"da3",
+	};
 }
 
 std::vector<std::string> ArchiveType_DA_Levels::games() const
 {
-	return {"Dark Ages"};
+	return {
+		"Dark Ages",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_DA_Levels::isInstance(

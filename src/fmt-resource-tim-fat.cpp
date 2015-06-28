@@ -62,16 +62,16 @@ std::string ArchiveType_Resource_TIM_FAT::friendlyName() const
 
 std::vector<std::string> ArchiveType_Resource_TIM_FAT::fileExtensions() const
 {
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("map");
-	return vcExtensions;
+	return {
+		"map",
+	};
 }
 
 std::vector<std::string> ArchiveType_Resource_TIM_FAT::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("The Incredible Machine");
-	return vcGames;
+	return {
+		"The Incredible Machine",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_Resource_TIM_FAT::isInstance(

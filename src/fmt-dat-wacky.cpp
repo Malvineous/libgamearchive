@@ -63,16 +63,16 @@ std::string ArchiveType_DAT_Wacky::friendlyName() const
 
 std::vector<std::string> ArchiveType_DAT_Wacky::fileExtensions() const
 {
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("dat");
-	return vcExtensions;
+	return {
+		"dat",
+	};
 }
 
 std::vector<std::string> ArchiveType_DAT_Wacky::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Wacky Wheels");
-	return vcGames;
+	return {
+		"Wacky Wheels",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_DAT_Wacky::isInstance(

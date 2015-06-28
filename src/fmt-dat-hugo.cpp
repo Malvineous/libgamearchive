@@ -58,17 +58,17 @@ std::string ArchiveType_DAT_Hugo::friendlyName() const
 
 std::vector<std::string> ArchiveType_DAT_Hugo::fileExtensions() const
 {
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("dat");
-	return vcExtensions;
+	return {
+		"dat",
+	};
 }
 
 std::vector<std::string> ArchiveType_DAT_Hugo::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Hugo II, Whodunit?");
-	vcGames.push_back("Hugo III, Jungle of Doom!");
-	return vcGames;
+	return {
+		"Hugo II, Whodunit?",
+		"Hugo III, Jungle of Doom!",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_DAT_Hugo::isInstance(

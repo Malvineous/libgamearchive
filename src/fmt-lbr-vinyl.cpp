@@ -383,16 +383,16 @@ std::string ArchiveType_LBR_Vinyl::friendlyName() const
 
 std::vector<std::string> ArchiveType_LBR_Vinyl::fileExtensions() const
 {
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("lbr");
-	return vcExtensions;
+	return {
+		"lbr",
+	};
 }
 
 std::vector<std::string> ArchiveType_LBR_Vinyl::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Vinyl Goddess From Mars");
-	return vcGames;
+	return {
+		"Vinyl Goddess From Mars",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_LBR_Vinyl::isInstance(

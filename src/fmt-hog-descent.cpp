@@ -60,16 +60,16 @@ std::string ArchiveType_HOG_Descent::friendlyName() const
 
 std::vector<std::string> ArchiveType_HOG_Descent::fileExtensions() const
 {
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("hog");
-	return vcExtensions;
+	return {
+		"hog",
+	};
 }
 
 std::vector<std::string> ArchiveType_HOG_Descent::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Descent");
-	return vcGames;
+	return {
+		"Descent",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_HOG_Descent::isInstance(

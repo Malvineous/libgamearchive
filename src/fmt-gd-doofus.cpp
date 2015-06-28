@@ -57,16 +57,16 @@ std::string ArchiveType_GD_Doofus::friendlyName() const
 
 std::vector<std::string> ArchiveType_GD_Doofus::fileExtensions() const
 {
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("g-d");
-	return vcExtensions;
+	return {
+		"g-d",
+	};
 }
 
 std::vector<std::string> ArchiveType_GD_Doofus::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Doofus");
-	return vcGames;
+	return {
+		"Doofus",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_GD_Doofus::isInstance(

@@ -236,9 +236,9 @@ std::string FilterType_SkyRoads::friendlyName() const
 
 std::vector<std::string> FilterType_SkyRoads::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("SkyRoads");
-	return vcGames;
+	return {
+		"SkyRoads",
+	};
 }
 
 std::unique_ptr<stream::inout> FilterType_SkyRoads::apply(

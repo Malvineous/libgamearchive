@@ -68,9 +68,9 @@ std::string FilterType_SAM_Base::friendlyName() const
 
 std::vector<std::string> FilterType_SAM_Base::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Secret Agent");
-	return vcGames;
+	return {
+		"Secret Agent",
+	};
 }
 
 std::unique_ptr<stream::inout> FilterType_SAM_Base::apply(

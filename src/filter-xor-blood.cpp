@@ -58,9 +58,9 @@ std::string FilterType_RFF::friendlyName() const
 
 std::vector<std::string> FilterType_RFF::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Blood");
-	return vcGames;
+	return {
+		"Blood",
+	};
 }
 
 std::unique_ptr<stream::inout> FilterType_RFF::apply(

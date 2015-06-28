@@ -62,16 +62,16 @@ std::string ArchiveType_POD_TV::friendlyName() const
 
 std::vector<std::string> ArchiveType_POD_TV::fileExtensions() const
 {
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("pod");
-	return vcExtensions;
+	return {
+		"pod",
+	};
 }
 
 std::vector<std::string> ArchiveType_POD_TV::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Terminal Velocity");
-	return vcGames;
+	return {
+		"Terminal Velocity",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_POD_TV::isInstance(

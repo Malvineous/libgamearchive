@@ -65,18 +65,18 @@ std::string ArchiveType_GRP_Duke3D::friendlyName() const
 
 std::vector<std::string> ArchiveType_GRP_Duke3D::fileExtensions() const
 {
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("grp");
-	return vcExtensions;
+	return {
+		"grp",
+	};
 }
 
 std::vector<std::string> ArchiveType_GRP_Duke3D::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Duke Nukem 3D");
-	vcGames.push_back("Redneck Rampage");
-	vcGames.push_back("Shadow Warrior");
-	return vcGames;
+	return {
+		"Duke Nukem 3D",
+		"Redneck Rampage",
+		"Shadow Warrior",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_GRP_Duke3D::isInstance(

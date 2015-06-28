@@ -217,9 +217,9 @@ std::string FilterType_DAT_GOT::friendlyName() const
 
 std::vector<std::string> FilterType_DAT_GOT::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("God of Thunder");
-	return vcGames;
+	return {
+		"God of Thunder",
+	};
 }
 
 std::unique_ptr<stream::inout> FilterType_DAT_GOT::apply(

@@ -68,16 +68,16 @@ std::string ArchiveType_DAT_GoT::friendlyName() const
 
 std::vector<std::string> ArchiveType_DAT_GoT::fileExtensions() const
 {
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("dat");
-	return vcExtensions;
+	return {
+		"dat",
+	};
 }
 
 std::vector<std::string> ArchiveType_DAT_GoT::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("God of Thunder");
-	return vcGames;
+	return {
+		"God of Thunder",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_DAT_GoT::isInstance(

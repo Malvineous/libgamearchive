@@ -64,16 +64,16 @@ std::string ArchiveType_DAT_Mystic::friendlyName() const
 
 std::vector<std::string> ArchiveType_DAT_Mystic::fileExtensions() const
 {
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("dat");
-	return vcExtensions;
+	return {
+		"dat",
+	};
 }
 
 std::vector<std::string> ArchiveType_DAT_Mystic::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Mystic Towers");
-	return vcGames;
+	return {
+		"Mystic Towers",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_DAT_Mystic::isInstance(

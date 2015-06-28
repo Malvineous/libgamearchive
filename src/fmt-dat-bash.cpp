@@ -63,16 +63,16 @@ std::string ArchiveType_DAT_Bash::friendlyName() const
 
 std::vector<std::string> ArchiveType_DAT_Bash::fileExtensions() const
 {
-	std::vector<std::string> vcExtensions;
-	vcExtensions.push_back("dat");
-	return vcExtensions;
+	return {
+		"dat",
+	};
 }
 
 std::vector<std::string> ArchiveType_DAT_Bash::games() const
 {
-	std::vector<std::string> vcGames;
-	vcGames.push_back("Monster Bash");
-	return vcGames;
+	return {
+		"Monster Bash",
+	};
 }
 
 ArchiveType::Certainty ArchiveType_DAT_Bash::isInstance(
