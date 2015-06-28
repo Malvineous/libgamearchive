@@ -48,7 +48,7 @@ class test_pod_tv: public test_archive
 		{
 			this->type = "pod-tv";
 			this->lenMaxFilename = 32;
-			this->hasMetadata[camoto::Metadata::Description] = true;
+			this->hasMetadata[camoto::Metadata::MetadataType::Description] = true;
 			this->metadataDesc = "Startup 1.1 Gold";
 			this->metadataDescLarger = "This is a test";
 			this->metadataDescSmaller = "Hello";

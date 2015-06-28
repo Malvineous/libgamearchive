@@ -33,7 +33,7 @@ class test_rff_blood_encrypted: public test_archive
 			this->type = "rff-blood";
 			this->lenMaxFilename = 12;
 			this->insertAttr = Archive::File::Attribute::Encrypted;
-			this->hasMetadata[camoto::Metadata::Version] = true;
+			this->hasMetadata[camoto::Metadata::MetadataType::Version] = true;
 			this->metadataVer = "3.1";
 		}
 

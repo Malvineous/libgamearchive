@@ -187,16 +187,16 @@ Archive_POD_TV::~Archive_POD_TV()
 Archive_POD_TV::MetadataTypes Archive_POD_TV::getMetadataList() const
 {
 	// TESTED BY: fmt_pod_tv_get_metadata_description
-	MetadataTypes m;
-	m.push_back(Description);
-	return m;
+	return {
+		MetadataType::Description,
+	};
 }
 
 std::string Archive_POD_TV::getMetadata(MetadataType item) const
 {
 	// TESTED BY: fmt_pod_tv_get_metadata_description
 	switch (item) {
-		case Description: {
+		case MetadataType::Description: {
 			// TODO: see whether description can span two file entries (80 bytes) or
 			// whether the offsets have to be null
 			this->content->seekg(POD_DESCRIPTION_OFFSET, stream::start);
@@ -216,7 +216,7 @@ void Archive_POD_TV::setMetadata(MetadataType item, const std::string& value)
 	// TESTED BY: fmt_pod_tv_set_metadata_description
 	// TESTED BY: fmt_pod_tv_new_to_initialstate
 	switch (item) {
-		case Description:
+		case MetadataType::Description:
 			if (value.length() > POD_DESCRIPTION_LEN) {
 				throw stream::error("description too long");
 			}

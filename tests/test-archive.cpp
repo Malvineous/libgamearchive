@@ -80,8 +80,8 @@ test_archive::test_archive()
 	this->content0_largeSize_unfiltered = this->content0_largeSize;
 	this->content0_smallSize_unfiltered = this->content0_smallSize;
 
-	this->hasMetadata[camoto::Metadata::Description] = false;
-	this->hasMetadata[camoto::Metadata::Version] = false;
+	this->hasMetadata[camoto::Metadata::MetadataType::Description] = false;
+	this->hasMetadata[camoto::Metadata::MetadataType::Version] = false;
 
 	this->metadataDesc = "Metadata description";
 	this->metadataVer = "123";
@@ -127,12 +127,12 @@ void test_archive::addTests()
 	}
 
 	// Only perform the metadata tests if supported by the archive format
-	if (this->hasMetadata[camoto::Metadata::Description]) {
+	if (this->hasMetadata[camoto::Metadata::MetadataType::Description]) {
 		ADD_ARCH_TEST(false, &test_archive::test_metadata_get_desc);
 		ADD_ARCH_TEST(false, &test_archive::test_metadata_set_desc_larger);
 		ADD_ARCH_TEST(false, &test_archive::test_metadata_set_desc_smaller);
 	}
-	if (this->hasMetadata[camoto::Metadata::Version]) {
+	if (this->hasMetadata[camoto::Metadata::MetadataType::Version]) {
 		ADD_ARCH_TEST(false, &test_archive::test_metadata_get_ver);
 	}
 
@@ -1101,10 +1101,10 @@ void test_archive::test_new_to_initialstate()
 {
 	BOOST_TEST_MESSAGE("Creating archive from scratch");
 
-	if (this->hasMetadata[camoto::Metadata::Version]) {
+	if (this->hasMetadata[camoto::Metadata::MetadataType::Version]) {
 		// Need to set this first as (in the case of Blood RFF) it affects what type
 		// of files we are allowed to insert.
-		this->pArchive->setMetadata(camoto::Metadata::Version, this->metadataVer);
+		this->pArchive->setMetadata(camoto::Metadata::MetadataType::Version, this->metadataVer);
 	}
 
 	auto& files2 = this->pArchive->files();
@@ -1132,11 +1132,11 @@ void test_archive::test_new_to_initialstate()
 	pfsNew->write(this->content[1]);
 	pfsNew->flush();
 
-	if (this->hasMetadata[camoto::Metadata::Description]) {
+	if (this->hasMetadata[camoto::Metadata::MetadataType::Description]) {
 		// If this format has metadata, set it to the same value used when comparing
 		// against the initialstate, so that this new archive will hopefully match
 		// the initialstate itself.
-		this->pArchive->setMetadata(camoto::Metadata::Description, this->metadataDesc);
+		this->pArchive->setMetadata(camoto::Metadata::MetadataType::Description, this->metadataDesc);
 	}
 
 	// Make sure there are now the correct number of files in the archive
@@ -1154,14 +1154,14 @@ void test_archive::test_new_manipulate_zero_length_files()
 {
 	BOOST_TEST_MESSAGE("Inserting empty files into archive, then resizing them");
 
-	if (this->hasMetadata[camoto::Metadata::Description]) {
+	if (this->hasMetadata[camoto::Metadata::MetadataType::Description]) {
 		// If this format has metadata, set it to the same value used when comparing
 		// against the initialstate, so that this new archive will hopefully match
 		// the initialstate itself.
-		this->pArchive->setMetadata(camoto::Metadata::Description, this->metadataDesc);
+		this->pArchive->setMetadata(camoto::Metadata::MetadataType::Description, this->metadataDesc);
 	}
-	if (this->hasMetadata[camoto::Metadata::Version]) {
-		this->pArchive->setMetadata(camoto::Metadata::Version, this->metadataVer);
+	if (this->hasMetadata[camoto::Metadata::MetadataType::Version]) {
+		this->pArchive->setMetadata(camoto::Metadata::MetadataType::Version, this->metadataVer);
 	}
 
 	// Insert the file
@@ -1252,10 +1252,9 @@ void test_archive::test_metadata_get_desc()
 	BOOST_TEST_MESSAGE("Get 'description' metadata field");
 
 	// Make sure this format reports having a 'description' metadata field
-	camoto::Metadata::MetadataTypes items = this->pArchive->getMetadataList();
 	bool bFound = false;
-	for (camoto::Metadata::MetadataTypes::iterator i = items.begin(); i != items.end(); i++) {
-		if (*i == camoto::Metadata::Description) {
+	for (auto& i : this->pArchive->getMetadataList()) {
+		if (i == camoto::Metadata::MetadataType::Description) {
 			bFound = true;
 			break;
 		}
@@ -1263,7 +1262,7 @@ void test_archive::test_metadata_get_desc()
 	BOOST_REQUIRE_EQUAL(bFound, true);
 
 	// Change the field's value
-	std::string value = this->pArchive->getMetadata(camoto::Metadata::Description);
+	std::string value = this->pArchive->getMetadata(camoto::Metadata::MetadataType::Description);
 
 	// Make sure we didn't read in extra data (e.g. 400MB with a broken length)
 	BOOST_REQUIRE_EQUAL(value.length(), this->metadataDesc.length());
@@ -1287,7 +1286,7 @@ void test_archive::test_metadata_set_desc_larger()
 
 	// Change the field's value
 	this->pArchive->setMetadata(
-		camoto::Metadata::Description, this->metadataDescLarger);
+		camoto::Metadata::MetadataType::Description, this->metadataDescLarger);
 
 	this->checkData(&test_archive::metadata_set_desc_larger,
 		"Error enlarging 'description' metadata field"
@@ -1303,7 +1302,7 @@ void test_archive::test_metadata_set_desc_smaller()
 
 	// Change the field's value
 	this->pArchive->setMetadata(
-		camoto::Metadata::Description, this->metadataDescSmaller);
+		camoto::Metadata::MetadataType::Description, this->metadataDescSmaller);
 
 	this->checkData(&test_archive::metadata_set_desc_smaller,
 		"Error shrinking 'description' metadata field"
@@ -1315,10 +1314,9 @@ void test_archive::test_metadata_get_ver()
 	BOOST_TEST_MESSAGE("Get 'version' metadata field");
 
 	// Make sure this format reports having a 'version' metadata field
-	camoto::Metadata::MetadataTypes items = this->pArchive->getMetadataList();
 	bool bFound = false;
-	for (camoto::Metadata::MetadataTypes::iterator i = items.begin(); i != items.end(); i++) {
-		if (*i == camoto::Metadata::Version) {
+	for (auto& i : this->pArchive->getMetadataList()) {
+		if (i == camoto::Metadata::MetadataType::Version) {
 			bFound = true;
 			break;
 		}
@@ -1326,7 +1324,7 @@ void test_archive::test_metadata_get_ver()
 	BOOST_REQUIRE_EQUAL(bFound, true);
 
 	// Change the field's value
-	std::string value = this->pArchive->getMetadata(camoto::Metadata::Version);
+	std::string value = this->pArchive->getMetadata(camoto::Metadata::MetadataType::Version);
 
 	// Make sure we didn't read in extra data (e.g. 400MB with a broken length)
 	BOOST_REQUIRE_EQUAL(value.length(), this->metadataVer.length());

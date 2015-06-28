@@ -209,16 +209,16 @@ Archive::File::Attribute Archive_EPF_LionKing::getSupportedAttributes() const
 Archive_EPF_LionKing::MetadataTypes Archive_EPF_LionKing::getMetadataList() const
 {
 	// TESTED BY: fmt_epf_lionking_get_metadata_description
-	MetadataTypes m;
-	m.push_back(Description);
-	return m;
+	return {
+		MetadataType::Description,
+	};
 }
 
 std::string Archive_EPF_LionKing::getMetadata(MetadataType item) const
 {
 	// TESTED BY: fmt_epf_lionking_get_metadata_description
 	switch (item) {
-		case Description: {
+		case MetadataType::Description: {
 			stream::pos offDesc = this->getDescOffset();
 			stream::len sizeDesc = this->offFAT - offDesc;
 			std::string strDesc;
@@ -240,7 +240,7 @@ void Archive_EPF_LionKing::setMetadata(MetadataType item, const std::string& val
 	// TESTED BY: fmt_epf_lionking_set_metadata_description
 	// TESTED BY: fmt_epf_lionking_new_to_initialstate
 	switch (item) {
-		case Description: {
+		case MetadataType::Description: {
 			stream::pos offDesc = this->getDescOffset();
 			stream::len sizeDesc = this->offFAT - offDesc;
 			stream::delta sizeDelta = value.length() - sizeDesc;

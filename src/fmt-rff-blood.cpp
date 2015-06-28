@@ -230,16 +230,16 @@ Archive_RFF_Blood::~Archive_RFF_Blood()
 Archive_RFF_Blood::MetadataTypes Archive_RFF_Blood::getMetadataList() const
 {
 	// TESTED BY: fmt_rff_blood_get_metadata_version
-	MetadataTypes m;
-	m.push_back(Version);
-	return m;
+	return {
+		MetadataType::Version,
+	};
 }
 
 std::string Archive_RFF_Blood::getMetadata(MetadataType item) const
 {
 	// TESTED BY: fmt_rff_blood_get_metadata_version
 	switch (item) {
-		case Version: {
+		case MetadataType::Version: {
 			std::stringstream ss;
 			ss << (this->version >> 8) << '.' << (this->version & 0xFF);
 			return ss.str();
@@ -255,7 +255,7 @@ void Archive_RFF_Blood::setMetadata(MetadataType item, const std::string& value)
 	// TESTED BY: fmt_rff_blood_set_metadata_version
 	// TESTED BY: fmt_rff_blood_new_to_initialstate
 	switch (item) {
-		case Version: {
+		case MetadataType::Version: {
 			int dotPos = value.find_first_of('.');
 			std::string strMajor = value.substr(0, dotPos);
 			std::string strMinor = value.substr(dotPos + 1);

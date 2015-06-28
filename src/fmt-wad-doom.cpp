@@ -176,16 +176,16 @@ Archive_WAD_Doom::~Archive_WAD_Doom()
 Archive_WAD_Doom::MetadataTypes Archive_WAD_Doom::getMetadataList() const
 {
 	// TESTED BY: fmt_wad_doom::test_metadata_get_ver
-	MetadataTypes m;
-	m.push_back(Version);
-	return m;
+	return {
+		MetadataType::Version,
+	};
 }
 
 std::string Archive_WAD_Doom::getMetadata(MetadataType item) const
 {
 	// TESTED BY: fmt_wad_doom::test_metadata_get_ver
 	switch (item) {
-		case Version: {
+		case MetadataType::Version: {
 			this->content->seekg(0, stream::start);
 			char wadtype;
 			this->content->read(&wadtype, 1);
@@ -202,7 +202,7 @@ void Archive_WAD_Doom::setMetadata(MetadataType item, const std::string& value)
 	// TESTED BY: test_wad_doom_changemetadata_c01
 	// TESTED BY: fmt_wad_doom_new_to_initialstate
 	switch (item) {
-		case Version:
+		case MetadataType::Version:
 			if (
 				(value.compare("I") != 0) &&
 				(value.compare("P") != 0)

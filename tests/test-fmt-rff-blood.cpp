@@ -29,7 +29,7 @@ class test_rff_blood: public test_archive
 		{
 			this->type = "rff-blood";
 			this->lenMaxFilename = 12;
-			this->hasMetadata[camoto::Metadata::Version] = true;
+			this->hasMetadata[camoto::Metadata::MetadataType::Version] = true;
 			this->metadataVer = "2.0";
 		}
 

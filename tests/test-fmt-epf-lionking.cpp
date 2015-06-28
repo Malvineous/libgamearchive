@@ -27,7 +27,7 @@ class test_epf_lionking: public test_archive
 		{
 			this->type = "epf-lionking";
 			this->lenMaxFilename = 12;
-			this->hasMetadata[camoto::Metadata::Description] = true;
+			this->hasMetadata[camoto::Metadata::MetadataType::Description] = true;
 			this->metadataDesc = "Extra data";
 			this->metadataDescLarger = "This is a test";
 			this->metadataDescSmaller = "Hello";
