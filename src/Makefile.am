@@ -20,6 +20,7 @@ libgamearchive_la_SOURCES += filter-xor.cpp
 libgamearchive_la_SOURCES += filter-zone66.cpp
 libgamearchive_la_SOURCES += fixedarchive.cpp
 libgamearchive_la_SOURCES += fmt-bnk-harry.cpp
+libgamearchive_la_SOURCES += fmt-bpa-drally.cpp
 libgamearchive_la_SOURCES += fmt-cur-prehistorik.cpp
 libgamearchive_la_SOURCES += fmt-da-levels.cpp
 libgamearchive_la_SOURCES += fmt-dat-bash.cpp

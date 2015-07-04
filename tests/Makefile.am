@@ -14,6 +14,7 @@ tests_SOURCES += test-filter-xor-blood.cpp
 tests_SOURCES += test-filter-xor.cpp
 tests_SOURCES += test-filter-zone66.cpp
 tests_SOURCES += test-fmt-bnk-harry.cpp
+tests_SOURCES += test-fmt-bpa-drally.cpp
 tests_SOURCES += test-fmt-cur-prehistorik.cpp
 tests_SOURCES += test-fmt-dat-bash-compressed.cpp
 tests_SOURCES += test-fmt-dat-bash.cpp

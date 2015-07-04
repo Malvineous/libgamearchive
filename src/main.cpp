@@ -35,6 +35,7 @@
 #include "filter-xor.hpp"
 #include "filter-zone66.hpp"
 #include "fmt-bnk-harry.hpp"
+#include "fmt-bpa-drally.hpp"
 #include "fmt-cur-prehistorik.hpp"
 #include "fmt-da-levels.hpp"
 #include "fmt-dat-bash.hpp"
@@ -77,6 +78,7 @@ const std::vector<std::shared_ptr<const ArchiveType> > FormatEnumerator<ArchiveT
 	std::vector<std::shared_ptr<const ArchiveType> > list;
 	FormatEnumerator<ArchiveType>::addFormat<
 		ArchiveType_BNK_Harry,
+		ArchiveType_BPA_DRally,
 		ArchiveType_DAT_Bash,
 		ArchiveType_DAT_GoT,
 		ArchiveType_DAT_Highway,
