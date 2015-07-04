@@ -134,8 +134,7 @@ std::shared_ptr<Archive> ArchiveType_Roads_SkyRoads::open(
 SuppFilenames ArchiveType_Roads_SkyRoads::getRequiredSupps(stream::input& content,
 	const std::string& filename) const
 {
-	// No supplemental types/empty list
-	return SuppFilenames();
+	return {};
 }
 
 

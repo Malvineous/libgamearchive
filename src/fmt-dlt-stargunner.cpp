@@ -114,8 +114,7 @@ std::shared_ptr<Archive> ArchiveType_DLT_Stargunner::open(
 SuppFilenames ArchiveType_DLT_Stargunner::getRequiredSupps(stream::input& content,
 	const std::string& filename) const
 {
-	// No supplemental types/empty list
-	return SuppFilenames();
+	return {};
 }
 
 

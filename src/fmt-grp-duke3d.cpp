@@ -117,8 +117,7 @@ std::shared_ptr<Archive> ArchiveType_GRP_Duke3D::open(
 SuppFilenames ArchiveType_GRP_Duke3D::getRequiredSupps(stream::input& data,
 	const std::string& filename) const
 {
-	// No supplemental types/empty list
-	return SuppFilenames();
+	return {};
 }
 
 

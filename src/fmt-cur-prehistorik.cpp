@@ -143,8 +143,7 @@ std::shared_ptr<Archive> ArchiveType_CUR_Prehistorik::open(
 SuppFilenames ArchiveType_CUR_Prehistorik::getRequiredSupps(stream::input& data,
 	const std::string& filename) const
 {
-	// No supplemental types/empty list
-	return SuppFilenames();
+	return {};
 }
 
 

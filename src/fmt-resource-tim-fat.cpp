@@ -127,8 +127,7 @@ std::shared_ptr<Archive> ArchiveType_Resource_TIM_FAT::open(
 SuppFilenames ArchiveType_Resource_TIM_FAT::getRequiredSupps(stream::input& content,
 	const std::string& filename) const
 {
-	// No supplemental types/empty list
-	return SuppFilenames();
+	return {};
 }
 
 

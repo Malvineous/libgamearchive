@@ -129,7 +129,6 @@ std::shared_ptr<Archive> ArchiveType_DAT_Hocus::create(
 SuppFilenames ArchiveType_DAT_Hocus::getRequiredSupps(stream::input& content,
 	const std::string& filename) const
 {
-	// No supplemental types/empty list
 	SuppFilenames supps;
 	std::string filenameBase = filename.substr(0,
 		filename.find_last_of('.'));

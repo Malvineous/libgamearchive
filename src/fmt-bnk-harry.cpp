@@ -123,7 +123,6 @@ std::shared_ptr<Archive> ArchiveType_BNK_Harry::open(
 SuppFilenames ArchiveType_BNK_Harry::getRequiredSupps(stream::input& content,
 	const std::string& filename) const
 {
-	// No supplemental types/empty list
 	SuppFilenames supps;
 	std::string filenameBase = filename.substr(0, filename.find_last_of('.'));
 	supps[SuppItem::FAT] = filenameBase + ".fat";

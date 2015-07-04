@@ -148,8 +148,7 @@ std::shared_ptr<Archive> ArchiveType_POD_TV::open(
 SuppFilenames ArchiveType_POD_TV::getRequiredSupps(stream::input& content,
 	const std::string& filename) const
 {
-	// No supplemental types/empty list
-	return SuppFilenames();
+	return {};
 }
 
 

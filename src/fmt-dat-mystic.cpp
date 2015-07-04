@@ -143,8 +143,7 @@ std::shared_ptr<Archive> ArchiveType_DAT_Mystic::open(
 SuppFilenames ArchiveType_DAT_Mystic::getRequiredSupps(stream::input& content,
 	const std::string& filename) const
 {
-	// No supplemental types/empty list
-	return SuppFilenames();
+	return {};
 }
 
 

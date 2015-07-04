@@ -127,8 +127,7 @@ std::shared_ptr<Archive> ArchiveType_RES_Stellar7::open(
 SuppFilenames ArchiveType_RES_Stellar7::getRequiredSupps(stream::input& content,
 	const std::string& filename) const
 {
-	// No supplemental types/empty list
-	return SuppFilenames();
+	return {};
 }
 
 

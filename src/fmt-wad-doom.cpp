@@ -123,8 +123,7 @@ std::shared_ptr<Archive> ArchiveType_WAD_Doom::open(
 SuppFilenames ArchiveType_WAD_Doom::getRequiredSupps(stream::input& content,
 	const std::string& filename) const
 {
-	// No supplemental types/empty list
-	return SuppFilenames();
+	return {};
 }
 
 

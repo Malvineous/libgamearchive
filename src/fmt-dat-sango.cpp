@@ -118,8 +118,7 @@ std::shared_ptr<Archive> ArchiveType_DAT_Sango::open(
 SuppFilenames ArchiveType_DAT_Sango::getRequiredSupps(stream::input& content,
 	const std::string& filename) const
 {
-	// No supplemental types/empty list
-	return SuppFilenames();
+	return {};
 }
 
 
