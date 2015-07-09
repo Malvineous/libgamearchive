@@ -180,7 +180,7 @@ Archive_DAT_GoT::Archive_DAT_GoT(stream::inout_sptr psArchive)
 		psArchive,
 		0,
 		GOT_MAX_FILES * GOT_FAT_ENTRY_LEN,
-		boost::bind<void>(&Archive_DAT_GoT::truncateFAT, this, _1)
+		boost::bind(&Archive_DAT_GoT::truncateFAT, this, _1)
 	);
 
 	filter_sptr fatCryptR(new filter_xor_crypt(0, 128));
