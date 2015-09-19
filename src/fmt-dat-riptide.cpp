@@ -27,19 +27,19 @@
 
 #include "fmt-dat-riptide.hpp"
 
-#define DATHH_FILECOUNT_OFFSET    0
-#define DATHH_HEADER_LEN          2  // FAT len field
-#define DATHH_FAT_OFFSET          DATHH_HEADER_LEN
-#define DATHH_FILENAME_FIELD_LEN  13
-#define DATHH_MAX_FILENAME_LEN    12
-#define DATHH_FAT_ENTRY_LEN       (4+4+4+13)  // u32le size + timestamp + offset + filename
-#define DATHH_FIRST_FILE_OFFSET   DATHH_HEADER_LEN
+#define DATRIP_FILECOUNT_OFFSET    0
+#define DATRIP_HEADER_LEN          2  // FAT len field
+#define DATRIP_FAT_OFFSET          DATRIP_HEADER_LEN
+#define DATRIP_FILENAME_FIELD_LEN  13
+#define DATRIP_MAX_FILENAME_LEN    12
+#define DATRIP_FAT_ENTRY_LEN       (4+4+4+13)  // u32le size + timestamp + offset + filename
+#define DATRIP_FIRST_FILE_OFFSET   DATRIP_HEADER_LEN
 
-#define DATHH_FATENTRY_OFFSET(e) (DATHH_HEADER_LEN + e->iIndex * DATHH_FAT_ENTRY_LEN)
+#define DATRIP_FATENTRY_OFFSET(e) (DATRIP_HEADER_LEN + e->iIndex * DATRIP_FAT_ENTRY_LEN)
 
-#define DATHH_FILESIZE_OFFSET(e)    DATHH_FATENTRY_OFFSET(e)
-#define DATHH_FILEOFFSET_OFFSET(e) (DATHH_FATENTRY_OFFSET(e) + 8)
-#define DATHH_FILENAME_OFFSET(e)   (DATHH_FATENTRY_OFFSET(e) + 12)
+#define DATRIP_FILESIZE_OFFSET(e)    DATRIP_FATENTRY_OFFSET(e)
+#define DATRIP_FILEOFFSET_OFFSET(e) (DATRIP_FATENTRY_OFFSET(e) + 8)
+#define DATRIP_FILENAME_OFFSET(e)   (DATRIP_FATENTRY_OFFSET(e) + 12)
 
 namespace camoto {
 namespace gamearchive {
@@ -83,7 +83,7 @@ ArchiveType::Certainty ArchiveType_DAT_Riptide::isInstance(
 
 	// File too short
 	// TESTED BY: fmt_dat_riptide_isinstance_c01
-	if (lenArchive < DATHH_FIRST_FILE_OFFSET) return DefinitelyNo;
+	if (lenArchive < DATRIP_FIRST_FILE_OFFSET) return DefinitelyNo;
 
 	uint16_t numFiles;
 	content.seekg(0, stream::start);
@@ -155,10 +155,10 @@ SuppFilenames ArchiveType_DAT_Riptide::getRequiredSupps(stream::input& content,
 
 
 Archive_DAT_Riptide::Archive_DAT_Riptide(std::unique_ptr<stream::inout> content)
-	:	Archive_FAT(std::move(content), DATHH_FIRST_FILE_OFFSET, DATHH_MAX_FILENAME_LEN)
+	:	Archive_FAT(std::move(content), DATRIP_FIRST_FILE_OFFSET, DATRIP_MAX_FILENAME_LEN)
 {
 	uint16_t numFiles;
-	this->content->seekg(DATHH_FILECOUNT_OFFSET, stream::start);
+	this->content->seekg(DATRIP_FILECOUNT_OFFSET, stream::start);
 	*this->content >> u16le(numFiles);
 
 	for (unsigned int i = 0; i < numFiles; i++) {
@@ -174,7 +174,7 @@ Archive_DAT_Riptide::Archive_DAT_Riptide(std::unique_ptr<stream::inout> content)
 			>> u32le(f->storedSize)
 			>> u32le(lastModified)
 			>> u32le(f->iOffset)
-			>> nullPadded(f->strName, DATHH_FILENAME_FIELD_LEN)
+			>> nullPadded(f->strName, DATRIP_FILENAME_FIELD_LEN)
 		;
 		f->realSize = f->storedSize;
 
@@ -189,9 +189,9 @@ Archive_DAT_Riptide::~Archive_DAT_Riptide()
 void Archive_DAT_Riptide::updateFileName(const FATEntry *pid, const std::string& strNewName)
 {
 	// TESTED BY: fmt_dat_riptide_rename
-	assert(strNewName.length() <= DATHH_MAX_FILENAME_LEN);
-	this->content->seekp(DATHH_FILENAME_OFFSET(pid), stream::start);
-	*this->content << nullPadded(strNewName, DATHH_FILENAME_FIELD_LEN);
+	assert(strNewName.length() <= DATRIP_MAX_FILENAME_LEN);
+	this->content->seekp(DATRIP_FILENAME_OFFSET(pid), stream::start);
+	*this->content << nullPadded(strNewName, DATRIP_FILENAME_FIELD_LEN);
 	return;
 }
 
@@ -199,7 +199,7 @@ void Archive_DAT_Riptide::updateFileOffset(const FATEntry *pid, stream::delta of
 {
 	// TESTED BY: fmt_dat_riptide_insert*
 	// TESTED BY: fmt_dat_riptide_resize*
-	this->content->seekp(DATHH_FILEOFFSET_OFFSET(pid), stream::start);
+	this->content->seekp(DATRIP_FILEOFFSET_OFFSET(pid), stream::start);
 	*this->content << u32le(pid->iOffset);
 	return;
 }
@@ -208,7 +208,7 @@ void Archive_DAT_Riptide::updateFileSize(const FATEntry *pid, stream::delta size
 {
 	// TESTED BY: fmt_dat_riptide_insert*
 	// TESTED BY: fmt_dat_riptide_resize*
-	this->content->seekp(DATHH_FILESIZE_OFFSET(pid), stream::start);
+	this->content->seekp(DATRIP_FILESIZE_OFFSET(pid), stream::start);
 	*this->content << u32le(pid->storedSize);
 	return;
 }
@@ -216,33 +216,33 @@ void Archive_DAT_Riptide::updateFileSize(const FATEntry *pid, stream::delta size
 void Archive_DAT_Riptide::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewEntry)
 {
 	// TESTED BY: fmt_dat_riptide_insert*
-	assert(pNewEntry->strName.length() <= DATHH_MAX_FILENAME_LEN);
+	assert(pNewEntry->strName.length() <= DATRIP_MAX_FILENAME_LEN);
 
 	if (this->vcFAT.size() >= 65535) {
 		throw stream::error("Maximum number of files in this archive has been reached.");
 	}
 
-	this->content->seekp(DATHH_FATENTRY_OFFSET(pNewEntry), stream::start);
-	this->content->insert(DATHH_FAT_ENTRY_LEN);
+	this->content->seekp(DATRIP_FATENTRY_OFFSET(pNewEntry), stream::start);
+	this->content->insert(DATRIP_FAT_ENTRY_LEN);
 	boost::to_upper(pNewEntry->strName);
 
 	// Update the offsets now there's a new FAT entry taking up space.
 	this->shiftFiles(
 		NULL,
-		DATHH_FAT_OFFSET + this->vcFAT.size() * DATHH_FAT_ENTRY_LEN,
-		DATHH_FAT_ENTRY_LEN,
+		DATRIP_FAT_OFFSET + this->vcFAT.size() * DATRIP_FAT_ENTRY_LEN,
+		DATRIP_FAT_ENTRY_LEN,
 		0
 	);
 
 	// Because the new entry isn't in the vector yet we need to shift it manually
-	pNewEntry->iOffset += DATHH_FAT_ENTRY_LEN;
+	pNewEntry->iOffset += DATRIP_FAT_ENTRY_LEN;
 
 	pNewEntry->lenHeader = 0;
 
 	// Now write all the fields in.  We can't do this earlier like normal, because
 	// the calls to shiftFiles() overwrite anything we have written, because this
 	// file entry isn't in the FAT vector yet.
-	this->content->seekp(DATHH_FATENTRY_OFFSET(pNewEntry), stream::start);
+	this->content->seekp(DATRIP_FATENTRY_OFFSET(pNewEntry), stream::start);
 	*this->content
 		<< u32le(pNewEntry->storedSize)
 
@@ -250,7 +250,7 @@ void Archive_DAT_Riptide::preInsertFile(const FATEntry *idBeforeThis, FATEntry *
 		<< u32le(0)
 
 		<< u32le(pNewEntry->iOffset)
-		<< nullPadded(pNewEntry->strName, DATHH_FILENAME_FIELD_LEN)
+		<< nullPadded(pNewEntry->strName, DATRIP_FILENAME_FIELD_LEN)
 	;
 
 	// Set the format-specific variables
@@ -268,13 +268,13 @@ void Archive_DAT_Riptide::preRemoveFile(const FATEntry *pid)
 	// it'll overwrite something else.)
 	this->shiftFiles(
 		NULL,
-		DATHH_FAT_OFFSET + this->vcFAT.size() * DATHH_FAT_ENTRY_LEN,
-		-DATHH_FAT_ENTRY_LEN,
+		DATRIP_FAT_OFFSET + this->vcFAT.size() * DATRIP_FAT_ENTRY_LEN,
+		-DATRIP_FAT_ENTRY_LEN,
 		0
 	);
 
-	this->content->seekp(DATHH_FATENTRY_OFFSET(pid), stream::start);
-	this->content->remove(DATHH_FAT_ENTRY_LEN);
+	this->content->seekp(DATRIP_FATENTRY_OFFSET(pid), stream::start);
+	this->content->remove(DATRIP_FAT_ENTRY_LEN);
 
 	this->updateFileCount(this->vcFAT.size() - 1);
 	return;
@@ -285,7 +285,7 @@ void Archive_DAT_Riptide::updateFileCount(uint32_t iNewCount)
 	// TESTED BY: fmt_dat_riptide_insert*
 	// TESTED BY: fmt_dat_riptide_remove*
 	assert(iNewCount < 65536);
-	this->content->seekp(DATHH_FILECOUNT_OFFSET, stream::start);
+	this->content->seekp(DATRIP_FILECOUNT_OFFSET, stream::start);
 	*this->content << u16le(iNewCount);
 	return;
 }
