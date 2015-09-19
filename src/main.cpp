@@ -45,6 +45,7 @@
 #include "fmt-dat-hugo.hpp"
 #include "fmt-dat-lostvikings.hpp"
 #include "fmt-dat-mystic.hpp"
+#include "fmt-dat-riptide.hpp"
 #include "fmt-dat-sango.hpp"
 #include "fmt-dat-wacky.hpp"
 #include "fmt-dlt-stargunner.hpp"
@@ -84,6 +85,7 @@ const std::vector<std::shared_ptr<const ArchiveType> > FormatEnumerator<ArchiveT
 		ArchiveType_DAT_Highway,
 		ArchiveType_DAT_LostVikings,
 		ArchiveType_DAT_Mystic,
+		ArchiveType_DAT_Riptide,
 		ArchiveType_DAT_Sango,
 		ArchiveType_DAT_Wacky,
 		ArchiveType_DLT_Stargunner,

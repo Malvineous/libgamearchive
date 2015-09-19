@@ -24,6 +24,7 @@ tests_SOURCES += test-fmt-dat-hocus.cpp
 tests_SOURCES += test-fmt-dat-hugo.cpp
 tests_SOURCES += test-fmt-dat-lostvikings.cpp
 tests_SOURCES += test-fmt-dat-mystic.cpp
+tests_SOURCES += test-fmt-dat-riptide.cpp
 tests_SOURCES += test-fmt-dat-sango.cpp
 tests_SOURCES += test-fmt-dat-wacky.cpp
 tests_SOURCES += test-fmt-dlt-stargunner.cpp
