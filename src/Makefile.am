@@ -72,6 +72,7 @@ EXTRA_libgamearchive_la_SOURCES += filter-xor-sagent.hpp
 EXTRA_libgamearchive_la_SOURCES += filter-xor.hpp
 EXTRA_libgamearchive_la_SOURCES += filter-zone66.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-bnk-harry.hpp
+EXTRA_libgamearchive_la_SOURCES += fmt-bpa-drally.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-cur-prehistorik.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-da-levels.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-dat-bash.hpp

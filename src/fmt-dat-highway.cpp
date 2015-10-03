@@ -163,7 +163,7 @@ Archive_DAT_Highway::Archive_DAT_Highway(std::unique_ptr<stream::inout> content)
 		auto f = this->createNewFATEntry();
 
 		f->iIndex = i;
-		f->lenHeader = DATHH_EFAT_ENTRY_LEN;;
+		f->lenHeader = DATHH_EFAT_ENTRY_LEN;
 		f->type = FILETYPE_GENERIC;
 		f->fAttr = File::Attribute::Default;
 		f->bValid = true;
