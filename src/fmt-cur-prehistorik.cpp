@@ -36,6 +36,17 @@
 namespace camoto {
 namespace gamearchive {
 
+/// Return true if a filename contains an extension that is/should be compressed
+bool isCompressed(const std::string& name)
+{
+	std::string ext = name.substr(name.find_last_of('.') + 1);
+	return
+		boost::iequals(ext, "MDI")
+		|| boost::iequals(ext, "PC1")
+		|| boost::iequals(ext, "MAT")
+	;
+}
+
 ArchiveType_CUR_Prehistorik::ArchiveType_CUR_Prehistorik()
 {
 }
@@ -182,6 +193,18 @@ Archive_CUR_Prehistorik::Archive_CUR_Prehistorik(std::unique_ptr<stream::inout> 
 		f->realSize = f->storedSize;
 		offNext += f->storedSize;
 		this->vcFAT.push_back(std::move(f));
+	}
+
+	// The only way of figuring out whether a file is compressed or not
+	// seems to be by checking the filename extension!
+	for (auto i : this->vcFAT) {
+		auto f = FATEntry::cast(i);
+		if (isCompressed(f->strName)) {
+			this->content->seekg(f->iOffset, stream::start);
+			*this->content >> u32be(f->realSize);
+			f->fAttr = File::Attribute::Compressed;
+			f->filter = "lzss-prehistorik";
+		}
 	}
 }
 
