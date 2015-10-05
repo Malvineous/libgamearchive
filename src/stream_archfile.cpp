@@ -41,7 +41,7 @@ std::unique_ptr<stream::inout> applyFilter(std::unique_ptr<archfile> s,
 	return pFilterType->apply(
 		std::unique_ptr<stream::inout>(std::move(s)),
 		[](stream::output_filtered* filt, stream::len newRealSize) {
-			archfile* arch;
+			archfile* arch = nullptr;
 			while (filt) {
 				auto filt_content = filt->get_stream().get();
 				arch = dynamic_cast<archfile*>(filt_content);
