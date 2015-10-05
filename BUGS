@@ -9,3 +9,10 @@ Known bugs
    return a filename-too-long error when the filename would actually fit due to
    the fake extension being removed.  However the likelihood of this seems
    remote, so it is unlikely to be fixed.
+
+ - Extracting and reinserting vgadave.dav into dave.exe results in very obvious
+   graphical corruption.  This is because the Camoto compressor is slightly more
+   efficient than the original one, so the recompressed file is a few bytes
+   smaller.  Because the file size cannot be set (or it is not known how), this
+   means there are some trailing bytes at the end of the data which the game
+   tries to decompress, which causes it to overwrite parts of memory.
