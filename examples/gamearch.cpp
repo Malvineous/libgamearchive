@@ -269,7 +269,7 @@ void extractAll(std::shared_ptr<ga::Archive> archive, bool bScript)
 				if (bScript) std::cout << ";status=ok";
 
 				std::cout << std::endl;
-			} catch (const fs::filesystem_error& e) {
+			} catch (const fs::filesystem_error&) {
 				if (bScript) {
 					std::cout << ";status=fail";
 				} else {
@@ -551,7 +551,7 @@ int main(int iArgC, char *cArgV[])
 						for (const auto& s : suppList) {
 							try {
 								auto suppStream = std::make_shared<stream::file>(s.second, false);
-							} catch (const stream::open_error& e) {
+							} catch (const stream::open_error&) {
 								bSuppOK = false;
 								std::cout << "  * Could not find/open " << s.second
 									<< ", archive is probably not " << i->code() << std::endl;
@@ -676,7 +676,7 @@ finishTesting:
 								std::cout << " [failed; read/write error: " << e.what() << "]";
 								iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
 							}
-						} catch (const stream::error& e) {
+						} catch (const stream::error&) {
 							std::cout << " [failed; unable to create output file]";
 							iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
 						}
@@ -896,7 +896,7 @@ finishTesting:
 							stream::copy(*psDest, *sSrc);
 							psDest->flush();
 						}
-					} catch (const stream::open_error& e) {
+					} catch (const stream::open_error&) {
 						std::cout << " [failed; unable to open replacement file]";
 						iRet = RET_NONCRITICAL_FAILURE; // one or more files failed
 					} catch (const stream::error& e) {
