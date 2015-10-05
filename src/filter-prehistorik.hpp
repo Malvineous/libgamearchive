@@ -23,11 +23,15 @@
 
 #include <camoto/gamearchive/filtertype.hpp>
 
+#ifndef DLL_EXPORT
+#define DLL_EXPORT
+#endif
+
 namespace camoto {
 namespace gamearchive {
 
 /// Prehistorik decompression filter.
-class FilterType_Prehistorik: virtual public FilterType
+class DLL_EXPORT FilterType_Prehistorik: virtual public FilterType
 {
 	public:
 		FilterType_Prehistorik();

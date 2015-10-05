@@ -25,10 +25,6 @@
 #include <camoto/gamearchive/archivetype.hpp>
 #include <camoto/gamearchive/filtertype.hpp>
 
-#ifndef DLL_EXPORT
-#define DLL_EXPORT
-#endif
-
 namespace camoto {
 namespace gamearchive {
 
