@@ -191,7 +191,7 @@ void Archive_BNK_Harry::updateFileName(const FATEntry *pid, const std::string& s
 	// TESTED BY: fmt_bnk_harry_rename
 	assert(strNewName.length() <= BNK_MAX_FILENAME_LEN);
 
-	uint8_t lenByte = strNewName.length();
+	uint8_t lenByte = (uint8_t)strNewName.length();
 	this->psFAT->seekp(pid->iIndex * BNK_FAT_ENTRY_LEN + BNK_FAT_FILENAME_OFFSET, stream::start);
 	this->psFAT->write(&lenByte, 1);
 	*this->psFAT << nullPadded(strNewName, BNK_MAX_FILENAME_LEN);

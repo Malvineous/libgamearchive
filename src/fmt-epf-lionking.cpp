@@ -340,12 +340,12 @@ void Archive_EPF_LionKing::preRemoveFile(const FATEntry *pid)
 	return;
 }
 
-void Archive_EPF_LionKing::updateFileCount(uint16_t iNewCount)
+void Archive_EPF_LionKing::updateFileCount(unsigned int newCount)
 {
 	// TESTED BY: fmt_epf_lionking_insert*
 	// TESTED BY: fmt_epf_lionking_remove*
 	this->content->seekp(EPF_FILECOUNT_POS, stream::start);
-	*this->content << u16le(iNewCount);
+	*this->content << u16le(newCount);
 	return;
 }
 

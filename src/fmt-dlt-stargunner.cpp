@@ -249,12 +249,12 @@ void Archive_DLT_Stargunner::preRemoveFile(const FATEntry *pid)
 	return;
 }
 
-void Archive_DLT_Stargunner::updateFileCount(uint16_t iNewCount)
+void Archive_DLT_Stargunner::updateFileCount(unsigned int newCount)
 {
 	// TESTED BY: fmt_dlt_stargunner_insert*
 	// TESTED BY: fmt_dlt_stargunner_remove*
 	this->content->seekp(DLT_FILECOUNT_OFFSET, stream::start);
-	*this->content << u16le(iNewCount);
+	*this->content << u16le(newCount);
 	return;
 }
 

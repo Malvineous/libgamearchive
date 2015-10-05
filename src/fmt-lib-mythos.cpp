@@ -255,12 +255,12 @@ void Archive_LIB_Mythos::updateLastEntry(stream::delta lenDelta)
 	return;
 }
 
-void Archive_LIB_Mythos::updateFileCount(uint16_t iNewCount)
+void Archive_LIB_Mythos::updateFileCount(unsigned int newCount)
 {
 	// TESTED BY: fmt_lib_mythos_insert*
 	// TESTED BY: fmt_lib_mythos_remove*
 	this->content->seekp(LIB_FILECOUNT_OFFSET, stream::start);
-	*this->content << u16le(iNewCount);
+	*this->content << u16le(newCount);
 	return;
 }
 

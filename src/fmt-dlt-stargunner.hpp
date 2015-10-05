@@ -63,7 +63,7 @@ class Archive_DLT_Stargunner: virtual public Archive_FAT
 
 	protected:
 		// Update the header with the number of files in the archive
-		void updateFileCount(uint16_t iNewCount);
+		void updateFileCount(unsigned int newCount);
 };
 
 } // namespace gamearchive

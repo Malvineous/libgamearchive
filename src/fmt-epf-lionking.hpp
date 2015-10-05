@@ -71,7 +71,7 @@ class Archive_EPF_LionKing: virtual public Archive_FAT
 		virtual void preRemoveFile(const FATEntry *pid);
 
 	protected:
-		void updateFileCount(uint16_t iNewCount);
+		void updateFileCount(unsigned int newCount);
 
 		/// Update the header with the offset of the FAT (which sits at the end of
 		/// the archive, after the file data.)

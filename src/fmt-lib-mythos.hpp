@@ -68,7 +68,7 @@ class Archive_LIB_Mythos: virtual public Archive_FAT {
 		void updateLastEntry(stream::delta lenDelta);
 
 		// Update the header with the number of files in the archive
-		void updateFileCount(uint16_t iNewCount);
+		void updateFileCount(unsigned int newCount);
 };
 
 } // namespace gamearchive

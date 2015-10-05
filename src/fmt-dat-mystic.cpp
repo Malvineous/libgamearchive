@@ -198,7 +198,7 @@ void Archive_DAT_Mystic::updateFileName(const FATEntry *pid, const std::string& 
 	assert(strNewName.length() <= DAT_MAX_FILENAME_LEN);
 	this->content->seekp(DAT_FILENAME_OFFSET_END(pid), stream::end);
 	*this->content
-		<< u8(strNewName.length())
+		<< u8((uint8_t)strNewName.length())
 		<< nullPadded(strNewName, DAT_FILENAME_FIELD_LEN)
 	;
 	return;
@@ -241,7 +241,7 @@ void Archive_DAT_Mystic::preInsertFile(const FATEntry *idBeforeThis,
 	this->uncommittedFiles++;
 
 	*this->content
-		<< u8(pNewEntry->strName.length())
+		<< u8((uint8_t)pNewEntry->strName.length())
 		<< nullPadded(pNewEntry->strName, DAT_FILENAME_FIELD_LEN)
 		<< u32le(pNewEntry->iOffset)
 		<< u32le(pNewEntry->storedSize)
