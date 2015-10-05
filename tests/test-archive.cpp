@@ -476,11 +476,11 @@ void test_archive::test_isinstance_others()
 				this->skipInstDetect.begin(), this->skipInstDetect.end(), otherType
 			) != this->skipInstDetect.end()) continue;
 
-		BOOST_CHECKPOINT("Checking " << this->type
+		BOOST_TEST_CHECKPOINT("Checking " << this->type
 			<< " content against isInstance() for " << otherType);
 
 		// Put this outside the BOOST_CHECK_MESSAGE macro so if an exception is
-		// thrown we can see the above BOOST_CHECKPOINT message telling us which
+		// thrown we can see the above BOOST_TEST_CHECKPOINT message telling us which
 		// handler is to blame.
 		auto isInstanceResult = pTestType->isInstance(content);
 
