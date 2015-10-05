@@ -246,7 +246,7 @@ void Archive_DAT_Riptide::preInsertFile(const FATEntry *idBeforeThis, FATEntry *
 	*this->content
 		<< u32le(pNewEntry->storedSize)
 
-#warning TODO: Write last-updated time
+		/// @todo Write last-updated time
 		<< u32le(0)
 
 		<< u32le(pNewEntry->iOffset)

@@ -172,7 +172,7 @@ Archive_CUR_Prehistorik::Archive_CUR_Prehistorik(std::unique_ptr<stream::inout> 
 		uint32_t storedSize;
 		*this->content >> u32le(storedSize);
 		offEndFAT -= 4;
-#warning TODO: Does a file with 0 bytes terminate the FAT, or will the game read files past that?
+		/// @todo Does a file with 0 bytes terminate the FAT, or will the game read files past that?
 		if (storedSize == 0) break;
 		auto f = std::make_unique<FATEntry>();
 
