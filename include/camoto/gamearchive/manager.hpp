@@ -30,10 +30,6 @@
 #endif
 
 namespace camoto {
-
-template class FormatEnumerator<gamearchive::ArchiveType>;
-template class FormatEnumerator<gamearchive::FilterType>;
-
 namespace gamearchive {
 
 typedef FormatEnumerator<ArchiveType> ArchiveManager;
