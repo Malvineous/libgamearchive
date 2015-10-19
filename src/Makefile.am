@@ -105,7 +105,6 @@ EXTRA_libgamearchive_la_SOURCES += fmt-rff-blood.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-roads-skyroads.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-vol-cosmo.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-wad-doom.hpp
-EXTRA_libgamearchive_la_SOURCES += stream_archfile.hpp
 
 WARNINGS = -Wall -Wextra -Wno-unused-parameter
 

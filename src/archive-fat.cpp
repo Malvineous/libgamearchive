@@ -22,7 +22,7 @@
 #include <boost/algorithm/string.hpp>
 #include <camoto/util.hpp> // createString
 #include <camoto/gamearchive/archive-fat.hpp>
-#include "stream_archfile.hpp"
+#include <camoto/gamearchive/stream_archfile.hpp>
 
 namespace camoto {
 namespace gamearchive {

@@ -95,6 +95,7 @@ Additional information is available from the Camoto homepage
 #include <camoto/gamearchive/filtertype.hpp>
 #include <camoto/gamearchive/fixedarchive.hpp>
 #include <camoto/gamearchive/manager.hpp>
+#include <camoto/gamearchive/stream_archfile.hpp>
 #include <camoto/gamearchive/util.hpp>
 
 #endif // _CAMOTO_GAMEARCHIVE_HPP_

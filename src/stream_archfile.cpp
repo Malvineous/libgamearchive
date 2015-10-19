@@ -20,7 +20,7 @@
 
 #include <cassert>
 #include <camoto/util.hpp>
-#include "stream_archfile.hpp"
+#include <camoto/gamearchive/stream_archfile.hpp>
 
 namespace camoto {
 namespace gamearchive {
