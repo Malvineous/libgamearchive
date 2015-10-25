@@ -151,14 +151,16 @@ void test_archive::addTests()
 }
 
 void test_archive::addBoundTest(bool empty, std::function<void()> fnTest,
+	boost::unit_test::const_string file, std::size_t line,
 	boost::unit_test::const_string name)
 {
-	std::function<void()> fnTestWrapper = std::bind(&test_archive::runTest,
-		this, empty, fnTest);
-	this->ts->add(boost::unit_test::make_test_case(
-		boost::unit_test::callback0<>(fnTestWrapper),
-		createString(name << '[' << this->basename << ']')
-	));
+	this->ts->add(
+		boost::unit_test::make_test_case(
+			std::bind(&test_archive::runTest, this, empty, fnTest),
+			createString(name << '[' << this->basename << ']'),
+			file, line
+		)
+	);
 	return;
 }
 
@@ -340,13 +342,15 @@ void test_archive::checkData(std::function<std::string(test_archive&)> fnExpecte
 void test_archive::isInstance(ArchiveType::Certainty result,
 	const std::string& content)
 {
-	std::function<void()> fnTest = std::bind(&test_archive::test_isInstance,
-		this, result, content, this->numIsInstanceTests);
-	this->ts->add(boost::unit_test::make_test_case(
-			boost::unit_test::callback0<>(fnTest),
+	this->ts->add(
+		boost::unit_test::make_test_case(
+			std::bind(&test_archive::test_isInstance, this, result, content,
+				this->numIsInstanceTests),
 			createString("test_archive[" << this->basename << "]::isinstance_c"
-				<< std::setfill('0') << std::setw(2) << this->numIsInstanceTests)
-		));
+				<< std::setfill('0') << std::setw(2) << this->numIsInstanceTests),
+			__FILE__, __LINE__
+		)
+	);
 	this->numIsInstanceTests++;
 	return;
 }
@@ -370,13 +374,15 @@ void test_archive::test_isInstance(ArchiveType::Certainty result,
 
 void test_archive::invalidContent(const std::string& content)
 {
-	std::function<void()> fnTest = std::bind(&test_archive::test_invalidContent,
-		this, content, this->numInvalidContentTests);
-	this->ts->add(boost::unit_test::make_test_case(
-			boost::unit_test::callback0<>(fnTest),
+	this->ts->add(
+		boost::unit_test::make_test_case(
+			std::bind(&test_archive::test_invalidContent, this, content,
+				this->numInvalidContentTests),
 			createString("test_archive[" << this->basename << "]::invalidcontent_i"
-				<< std::setfill('0') << std::setw(2) << this->numInvalidContentTests)
-		));
+				<< std::setfill('0') << std::setw(2) << this->numInvalidContentTests),
+			__FILE__, __LINE__
+		)
+	);
 	this->numInvalidContentTests++;
 	return;
 }
@@ -412,13 +418,15 @@ void test_archive::test_invalidContent(const std::string& content,
 void test_archive::changeMetadata(camoto::Metadata::MetadataType item,
 	const std::string& newValue, const std::string& content)
 {
-	std::function<void()> fnTest = std::bind(&test_archive::test_changeMetadata,
-		this, item, newValue, content, this->numChangeMetadataTests);
-	this->ts->add(boost::unit_test::make_test_case(
-			boost::unit_test::callback0<>(fnTest),
+	this->ts->add(
+		boost::unit_test::make_test_case(
+			std::bind(&test_archive::test_changeMetadata, this, item, newValue,
+				content, this->numChangeMetadataTests),
 			createString("test_archive[" << this->basename << "]::changemetadata_c"
-				<< std::setfill('0') << std::setw(2) << this->numChangeMetadataTests)
-		));
+				<< std::setfill('0') << std::setw(2) << this->numChangeMetadataTests),
+			__FILE__, __LINE__
+		)
+	);
 	this->numChangeMetadataTests++;
 	return;
 }

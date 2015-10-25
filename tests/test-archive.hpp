@@ -153,6 +153,7 @@ class test_archive: public test_main
 
 		/// Add a test to the suite.  Used by ADD_ARCH_TEST().
 		void addBoundTest(bool empty, std::function<void()> fnTest,
+			boost::unit_test::const_string file, std::size_t line,
 			boost::unit_test::const_string name);
 
 		/// Reset the archive to the initial state and run the given test.
@@ -408,9 +409,12 @@ class test_archive: public test_main
 };
 
 /// Add a test_archive member function to the test suite
-#define ADD_ARCH_TEST(empty, fn) {	  \
-	std::function<void()> fnTest = std::bind(fn, this); \
-	this->test_archive::addBoundTest(empty, fnTest, BOOST_TEST_STRINGIZE(fn)); \
-}
+#define ADD_ARCH_TEST(empty, fn) \
+	this->test_archive::addBoundTest( \
+		empty, \
+		std::bind(fn, this), \
+		__FILE__, __LINE__, \
+		BOOST_TEST_STRINGIZE(fn) \
+	);
 
 #endif // _CAMOTO_GAMEARCHIVE_TEST_ARCHIVE_HPP_
