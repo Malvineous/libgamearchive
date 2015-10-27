@@ -244,6 +244,10 @@ void Archive_FAT::remove(const FileHandle& id)
 	// Remove the file's entry from the FAT
 	this->preRemoveFile(pFAT);
 
+	// Make a copy of the shared_ptr in vcFAT so that it hangs around for the
+	// rest of this function, even after we have removed it from the vector below.
+	auto idCopy = id;
+
 	// Remove the entry from the vector
 	auto itErase = std::find(this->vcFAT.begin(), this->vcFAT.end(), id);
 	assert(itErase != this->vcFAT.end());
