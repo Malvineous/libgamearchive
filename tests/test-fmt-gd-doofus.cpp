@@ -278,7 +278,7 @@ class test_gd_doofus: public test_archive
 
 		void test_insert_unknown_type()
 		{
-			BOOST_TEST_MESSAGE("Inserting file with unknown file type");
+			BOOST_TEST_MESSAGE(this->basename << ": Inserting file with unknown file type");
 
 			Archive::FileHandle epb = this->findFile(0);
 

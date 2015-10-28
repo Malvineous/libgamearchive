@@ -358,8 +358,8 @@ void test_archive::isInstance(ArchiveType::Certainty result,
 void test_archive::test_isInstance(ArchiveType::Certainty result,
 	const std::string& content, unsigned int testNumber)
 {
-	BOOST_TEST_MESSAGE(createString("isInstance check (" << this->basename
-		<< "; " << std::setfill('0') << std::setw(2) << testNumber << ")"));
+	BOOST_TEST_MESSAGE(this->basename << ": isInstance_c"
+		<< std::setfill('0') << std::setw(2) << testNumber);
 
 	auto pTestType = ArchiveManager::byCode(this->type);
 	BOOST_REQUIRE_MESSAGE(pTestType,
@@ -390,8 +390,8 @@ void test_archive::invalidContent(const std::string& content)
 void test_archive::test_invalidContent(const std::string& content,
 	unsigned int testNumber)
 {
-	BOOST_TEST_MESSAGE(createString("invalidContent check (" << this->basename
-		<< "; " << std::setfill('0') << std::setw(2) << testNumber << ")"));
+	BOOST_TEST_MESSAGE(this->basename << ": invalidContent_i"
+		<< std::setfill('0') << std::setw(2) << testNumber);
 
 	auto pTestType = ArchiveManager::byCode(this->type);
 	BOOST_REQUIRE_MESSAGE(pTestType,
@@ -435,8 +435,8 @@ void test_archive::test_changeMetadata(camoto::Metadata::MetadataType item,
 	const std::string& newValue, const std::string& content,
 	unsigned int testNumber)
 {
-	BOOST_TEST_MESSAGE(createString("changeMetadata check (" << this->basename
-		<< "; " << std::setfill('0') << std::setw(2) << testNumber << ")"));
+	BOOST_TEST_MESSAGE(this->basename << ": changeMetadata_c"
+		<< std::setfill('0') << std::setw(2) << testNumber);
 
 	this->prepareTest(false);
 	this->pArchive->setMetadata(item, newValue);
@@ -467,8 +467,7 @@ boost::test_tools::predicate_result test_archive::is_supp_equal(
 void test_archive::test_isinstance_others()
 {
 	// Check all file formats except this one to avoid any false positives
-	BOOST_TEST_MESSAGE("isInstance check for other formats (not " << this->type
-		<< ")");
+	BOOST_TEST_MESSAGE(this->basename << ": isInstance check against other formats");
 
 	stream::string content;
 	content << this->initialstate();
@@ -501,7 +500,7 @@ void test_archive::test_isinstance_others()
 
 void test_archive::test_open()
 {
-	BOOST_TEST_MESSAGE("Opening file in archive");
+	BOOST_TEST_MESSAGE(this->basename << ": Opening file in archive");
 
 	auto ep = this->findFile(0);
 
@@ -524,7 +523,7 @@ void test_archive::test_open()
 
 void test_archive::test_rename()
 {
-	BOOST_TEST_MESSAGE("Renaming file inside archive");
+	BOOST_TEST_MESSAGE(this->basename << ": Renaming file inside archive");
 
 	BOOST_REQUIRE_MESSAGE(this->lenMaxFilename >= 0,
 		"Tried to run test_archive::test_rename() on a format with no filenames!");
@@ -539,7 +538,7 @@ void test_archive::test_rename()
 
 void test_archive::test_rename_long()
 {
-	BOOST_TEST_MESSAGE("Rename file with name too long");
+	BOOST_TEST_MESSAGE(this->basename << ": Rename file with name too long");
 
 	BOOST_REQUIRE_MESSAGE(this->lenMaxFilename >= 0,
 		"Tried to run test_archive::test_rename_long() on a format with no filenames!");
@@ -575,7 +574,7 @@ void test_archive::test_rename_long()
 
 void test_archive::test_insert_long()
 {
-	BOOST_TEST_MESSAGE("Inserting file with name too long");
+	BOOST_TEST_MESSAGE(this->basename << ": Inserting file with name too long");
 
 	BOOST_REQUIRE_MESSAGE(this->lenMaxFilename >= 0,
 		"Tried to run test_archive::test_insert_long() on a format with no filenames!");
@@ -611,7 +610,7 @@ void test_archive::test_insert_long()
 
 void test_archive::test_insert_end()
 {
-	BOOST_TEST_MESSAGE("Inserting file at end of archive");
+	BOOST_TEST_MESSAGE(this->basename << ": Inserting file at end of archive");
 
 	// Insert the file
 	auto ep = this->pArchive->insert(nullptr,
@@ -638,7 +637,7 @@ void test_archive::test_insert_end()
 
 void test_archive::test_insert_mid()
 {
-	BOOST_TEST_MESSAGE("Inserting file into middle of archive");
+	BOOST_TEST_MESSAGE(this->basename << ": Inserting file into middle of archive");
 
 	Archive::FileHandle epBefore = this->findFile(1);
 
@@ -663,7 +662,7 @@ void test_archive::test_insert_mid()
 
 void test_archive::test_insert2()
 {
-	BOOST_TEST_MESSAGE("Inserting multiple files");
+	BOOST_TEST_MESSAGE(this->basename << ": Inserting multiple files");
 
 	Archive::FileHandle epBefore = this->findFile(1);
 
@@ -703,7 +702,7 @@ void test_archive::test_insert2()
 
 void test_archive::test_remove()
 {
-	BOOST_TEST_MESSAGE("Removing file from archive");
+	BOOST_TEST_MESSAGE(this->basename << ": Removing file from archive");
 
 	Archive::FileHandle ep = this->findFile(0);
 
@@ -717,7 +716,7 @@ void test_archive::test_remove()
 
 void test_archive::test_remove2()
 {
-	BOOST_TEST_MESSAGE("Removing multiple files from archive");
+	BOOST_TEST_MESSAGE(this->basename << ": Removing multiple files from archive");
 
 	Archive::FileHandle ep1 = this->findFile(0);
 	Archive::FileHandle ep2 = this->findFile(1);
@@ -733,7 +732,7 @@ void test_archive::test_remove2()
 
 void test_archive::test_remove_open()
 {
-	BOOST_TEST_MESSAGE("Attemping to remove an open file");
+	BOOST_TEST_MESSAGE(this->basename << ": Attemping to remove an open file");
 
 	auto ep1 = this->findFile(0);
 
@@ -755,7 +754,7 @@ void test_archive::test_remove_open()
 
 void test_archive::test_insert_remove()
 {
-	BOOST_TEST_MESSAGE("Insert then remove file from archive");
+	BOOST_TEST_MESSAGE(this->basename << ": Insert then remove file from archive");
 
 	Archive::FileHandle epBefore = this->findFile(1);
 
@@ -785,7 +784,7 @@ void test_archive::test_insert_remove()
 
 void test_archive::test_remove_insert()
 {
-	BOOST_TEST_MESSAGE("Remove then insert file from archive");
+	BOOST_TEST_MESSAGE(this->basename << ": Remove then insert file from archive");
 
 	Archive::FileHandle ep2 = this->findFile(0);
 
@@ -817,7 +816,7 @@ void test_archive::test_remove_insert()
 
 void test_archive::test_move()
 {
-	BOOST_TEST_MESSAGE("Moving file inside archive");
+	BOOST_TEST_MESSAGE(this->basename << ": Moving file inside archive");
 
 	Archive::FileHandle ep1 = this->findFile(0);
 	Archive::FileHandle ep2 = this->findFile(1);
@@ -832,7 +831,7 @@ void test_archive::test_move()
 
 void test_archive::test_resize_larger()
 {
-	BOOST_TEST_MESSAGE("Enlarging a file inside the archive");
+	BOOST_TEST_MESSAGE(this->basename << ": Enlarging a file inside the archive");
 
 	Archive::FileHandle ep = this->findFile(0);
 
@@ -846,7 +845,7 @@ void test_archive::test_resize_larger()
 
 void test_archive::test_resize_smaller()
 {
-	BOOST_TEST_MESSAGE("Shrink a file inside the archive");
+	BOOST_TEST_MESSAGE(this->basename << ": Shrink a file inside the archive");
 
 	// Find the file we're going to resize
 	Archive::FileHandle ep = this->findFile(0);
@@ -861,7 +860,7 @@ void test_archive::test_resize_smaller()
 
 void test_archive::test_resize_write()
 {
-	BOOST_TEST_MESSAGE("Enlarging a file inside the archive");
+	BOOST_TEST_MESSAGE(this->basename << ": Enlarging a file inside the archive");
 
 	// Find the file we're going to resize
 	Archive::FileHandle ep = this->findFile(0);
@@ -914,7 +913,7 @@ void test_archive::test_resize_write()
 
 void test_archive::test_resize_after_close()
 {
-	BOOST_TEST_MESSAGE("Write to a file after closing the archive");
+	BOOST_TEST_MESSAGE(this->basename << ": Write to a file after closing the archive");
 
 	// Find the file we're going to resize
 	Archive::FileHandle ep = this->findFile(0);
@@ -950,7 +949,7 @@ void test_archive::test_resize_after_close()
 // point where it has no files at all.
 void test_archive::test_remove_all_re_add()
 {
-	BOOST_TEST_MESSAGE("Remove all files then add them again");
+	BOOST_TEST_MESSAGE(this->basename << ": Remove all files then add them again");
 
 	Archive::FileHandle epOne = this->findFile(0);
 	this->pArchive->remove(epOne);
@@ -994,7 +993,7 @@ void test_archive::test_remove_all_re_add()
 // inserted, incorrectly moving it because of the zero size.
 void test_archive::test_insert_zero_then_resize()
 {
-	BOOST_TEST_MESSAGE("Inserting empty file into archive, then resize it");
+	BOOST_TEST_MESSAGE(this->basename << ": Inserting empty file into archive, then resize it");
 
 	// Insert the file
 	Archive::FileHandle ep = this->pArchive->insert(Archive::FileHandle(),
@@ -1019,7 +1018,7 @@ void test_archive::test_insert_zero_then_resize()
 
 void test_archive::test_resize_over64k()
 {
-	BOOST_TEST_MESSAGE("Enlarging a file to over the 64k limit");
+	BOOST_TEST_MESSAGE(this->basename << ": Enlarging a file to over the 64k limit");
 
 	Archive::FileHandle ep = this->findFile(0);
 
@@ -1035,7 +1034,7 @@ void test_archive::test_resize_over64k()
 
 void test_archive::test_shortext()
 {
-	BOOST_TEST_MESSAGE("Rename a file with a short extension");
+	BOOST_TEST_MESSAGE(this->basename << ": Rename a file with a short extension");
 
 	Archive::FileHandle ep = this->findFile(0);
 	this->pArchive->rename(ep, this->filename_shortext);
@@ -1076,7 +1075,7 @@ void test_archive::test_shortext()
 // archive format.
 void test_archive::test_new_isinstance()
 {
-	BOOST_TEST_MESSAGE("Checking new archive is valid instance of itself");
+	BOOST_TEST_MESSAGE(this->basename << ": Checking new archive is valid instance of itself");
 
 	this->pArchive->flush();
 
@@ -1107,7 +1106,7 @@ void test_archive::test_new_isinstance()
 
 void test_archive::test_new_to_initialstate()
 {
-	BOOST_TEST_MESSAGE("Creating archive from scratch");
+	BOOST_TEST_MESSAGE(this->basename << ": Creating archive from scratch");
 
 	if (this->hasMetadata[camoto::Metadata::MetadataType::Version]) {
 		// Need to set this first as (in the case of Blood RFF) it affects what type
@@ -1160,7 +1159,7 @@ void test_archive::test_new_to_initialstate()
 // inserted, incorrectly moving it because of the zero size.
 void test_archive::test_new_manipulate_zero_length_files()
 {
-	BOOST_TEST_MESSAGE("Inserting empty files into archive, then resizing them");
+	BOOST_TEST_MESSAGE(this->basename << ": Inserting empty files into archive, then resizing them");
 
 	if (this->hasMetadata[camoto::Metadata::MetadataType::Description]) {
 		// If this format has metadata, set it to the same value used when comparing
@@ -1257,7 +1256,7 @@ void test_archive::test_new_manipulate_zero_length_files()
 
 void test_archive::test_metadata_get_desc()
 {
-	BOOST_TEST_MESSAGE("Get 'description' metadata field");
+	BOOST_TEST_MESSAGE(this->basename << ": Get 'description' metadata field");
 
 	// Make sure this format reports having a 'description' metadata field
 	bool bFound = false;
@@ -1287,7 +1286,7 @@ void test_archive::test_metadata_get_desc()
 
 void test_archive::test_metadata_set_desc_larger()
 {
-	BOOST_TEST_MESSAGE("Set 'description' metadata field to larger value");
+	BOOST_TEST_MESSAGE(this->basename << ": Set 'description' metadata field to larger value");
 
 	// We assume the format supports this metadata type, as this is checked in
 	// test_metadata_get_desc() above.
@@ -1303,7 +1302,7 @@ void test_archive::test_metadata_set_desc_larger()
 
 void test_archive::test_metadata_set_desc_smaller()
 {
-	BOOST_TEST_MESSAGE("Set 'description' metadata field to smaller value");
+	BOOST_TEST_MESSAGE(this->basename << ": Set 'description' metadata field to smaller value");
 
 	// We assume the format supports this metadata type, as this is checked in
 	// get_metadata_description above.
@@ -1319,7 +1318,7 @@ void test_archive::test_metadata_set_desc_smaller()
 
 void test_archive::test_metadata_get_ver()
 {
-	BOOST_TEST_MESSAGE("Get 'version' metadata field");
+	BOOST_TEST_MESSAGE(this->basename << ": Get 'version' metadata field");
 
 	// Make sure this format reports having a 'version' metadata field
 	bool bFound = false;

@@ -305,7 +305,7 @@ class test_rff_blood: public test_archive
 
 		void test_insert_long_base()
 		{
-			BOOST_TEST_MESSAGE("Inserting file with basename too long");
+			BOOST_TEST_MESSAGE(this->basename << ": Inserting file with basename too long");
 
 			Archive::FileHandle epb = this->findFile(0);
 
@@ -326,7 +326,7 @@ class test_rff_blood: public test_archive
 
 		void test_insert_long_nodot()
 		{
-			BOOST_TEST_MESSAGE("Inserting file with no dot and name too long");
+			BOOST_TEST_MESSAGE(this->basename << ": Inserting file with no dot and name too long");
 
 			Archive::FileHandle epb = this->findFile(0);
 
@@ -347,7 +347,7 @@ class test_rff_blood: public test_archive
 
 		void test_insert_long_ext()
 		{
-			BOOST_TEST_MESSAGE("Inserting file with extension too long");
+			BOOST_TEST_MESSAGE(this->basename << ": Inserting file with extension too long");
 
 			Archive::FileHandle epb = this->findFile(0);
 
