@@ -56,6 +56,7 @@ test_archive::test_archive()
 	this->newIsInstance = true;
 	this->staticFiles = false;
 	this->virtualFiles = false;
+	this->foldersOnly = false;
 
 	this->filename[0] = "ONE.DAT";
 	this->filename[1] = "TWO.DAT";
@@ -250,7 +251,7 @@ Archive::FileHandle test_archive::findFile(unsigned int index,
 
 		// Make sure we found it
 		BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(ep),
-			createString("Couldn't find " << filename << " in sample archive"));
+			"Couldn't find " << filename << " in sample archive");
 
 	} else {
 		// No filenames in this format, do it by order
@@ -259,8 +260,7 @@ Archive::FileHandle test_archive::findFile(unsigned int index,
 
 		// Make sure we found it
 		BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(ep),
-			createString("Couldn't find file at index " << index
-				<< " in sample archive"));
+			"Couldn't find file at index " << index << " in sample archive");
 	}
 	return ep;
 }
@@ -504,6 +504,14 @@ void test_archive::test_open()
 
 	auto ep = this->findFile(0);
 
+	if (this->foldersOnly) {
+		BOOST_REQUIRE_MESSAGE(ep->fAttr & Archive::File::Attribute::Folder,
+			"Folder-only archive contains files!");
+
+		this->pArchive = this->pArchive->openFolder(ep);
+		ep = this->findFile(0);
+	}
+
 	// Open it
 	auto pfsIn = this->pArchive->open(ep, true);
 
@@ -620,6 +628,17 @@ void test_archive::test_insert_end()
 {
 	BOOST_TEST_MESSAGE(this->basename << ": Inserting file at end of archive");
 
+	if (this->foldersOnly) {
+		// Create a folder for the new file
+		auto folder = this->pArchive->insert(nullptr,
+			this->filename[2], 0, {}, Archive::File::Attribute::Folder);
+
+		BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(folder),
+			"Couldn't create new folder in sample archive");
+
+		this->pArchive = this->pArchive->openFolder(folder);
+	}
+
 	// Insert the file
 	auto ep = this->pArchive->insert(nullptr,
 		this->filename[2], this->content[2].length(), this->insertType,
@@ -649,6 +668,18 @@ void test_archive::test_insert_mid()
 
 	Archive::FileHandle epBefore = this->findFile(1);
 
+	if (this->foldersOnly) {
+		// Create a folder for the new file
+		auto folder = this->pArchive->insert(epBefore,
+			this->filename[2], 0, {}, Archive::File::Attribute::Folder);
+
+		BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(folder),
+			"Couldn't create new folder in sample archive");
+
+		this->pArchive = this->pArchive->openFolder(folder);
+		epBefore = nullptr; // insert file at end of new folder
+	}
+
 	// Insert the file
 	Archive::FileHandle ep = this->pArchive->insert(epBefore, this->filename[2],
 		this->content[2].length(), this->insertType, this->insertAttr);
@@ -674,6 +705,19 @@ void test_archive::test_insert2()
 
 	Archive::FileHandle epBefore = this->findFile(1);
 
+	auto origArchive = this->pArchive;
+	if (this->foldersOnly) {
+		// Create a folder for the new file
+		auto folder = this->pArchive->insert(epBefore,
+			this->filename[2], 0, {}, Archive::File::Attribute::Folder);
+
+		BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(folder),
+			"Couldn't create new folder in sample archive");
+
+		this->pArchive = this->pArchive->openFolder(folder);
+		epBefore = nullptr; // insert file at end of new folder
+	}
+
 	// Insert the file
 	Archive::FileHandle ep1 = this->pArchive->insert(epBefore, this->filename[2],
 		this->content[2].length(), this->insertType, this->insertAttr);
@@ -688,7 +732,22 @@ void test_archive::test_insert2()
 	pfsNew1->write(this->content[2]);
 	pfsNew1->flush();
 
+	// Go back to root dir
+	this->pArchive = origArchive;
+
 	epBefore = this->findFile(2, this->filename[1]); // FILENAME2 is now the third fil
+
+	if (this->foldersOnly) {
+		// Create a folder for the new file
+		auto folder = this->pArchive->insert(epBefore,
+			this->filename[3], 0, {}, Archive::File::Attribute::Folder);
+
+		BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(folder),
+			"Couldn't create new folder in sample archive");
+
+		this->pArchive = this->pArchive->openFolder(folder);
+		epBefore = nullptr; // insert file at end of new folder
+	}
 
 	// Insert the file
 	Archive::FileHandle ep2 = this->pArchive->insert(epBefore, this->filename[3],
@@ -743,8 +802,20 @@ void test_archive::test_remove_open()
 	BOOST_TEST_MESSAGE(this->basename << ": Attemping to remove an open file");
 
 	auto ep1 = this->findFile(0);
+	auto ep2 = ep1;
 
-	auto content1 = this->pArchive->open(ep1, false);
+	auto origArchive = this->pArchive;
+	if (this->foldersOnly) {
+		// Create a folder for the new file
+		auto folder = this->pArchive->openFolder(ep1);
+
+		this->pArchive = this->pArchive->openFolder(ep1);
+		ep2 = this->findFile(0);
+	}
+	auto content1 = this->pArchive->open(ep2, false);
+
+	// Go back to root dir
+	this->pArchive = origArchive;
 
 	// Removing an open file should be allowed
 	this->pArchive->remove(ep1);
@@ -766,6 +837,19 @@ void test_archive::test_insert_remove()
 
 	Archive::FileHandle epBefore = this->findFile(1);
 
+	auto origArchive = this->pArchive;
+	if (this->foldersOnly) {
+		// Create a folder for the new file
+		auto folder = this->pArchive->insert(epBefore,
+			this->filename[2], 0, {}, Archive::File::Attribute::Folder);
+
+		BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(folder),
+			"Couldn't create new folder in sample archive");
+
+		this->pArchive = this->pArchive->openFolder(folder);
+		epBefore = nullptr;
+	}
+
 	// Insert the file
 	Archive::FileHandle ep = this->pArchive->insert(epBefore, this->filename[2],
 		this->content[2].length(), this->insertType, this->insertAttr);
@@ -780,6 +864,7 @@ void test_archive::test_insert_remove()
 	pfsNew->write(this->content[2]);
 	pfsNew->flush();
 
+	this->pArchive = origArchive;
 	Archive::FileHandle ep2 = this->findFile(0);
 
 	// Remove it
@@ -801,8 +886,20 @@ void test_archive::test_remove_insert()
 
 	Archive::FileHandle epBefore = this->findFile(0, this->filename[1]);
 
+	if (this->foldersOnly) {
+		// Create a folder for the new file
+		auto folder = this->pArchive->insert(epBefore,
+			this->filename[2], 0, {}, Archive::File::Attribute::Folder);
+
+		BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(folder),
+			"Couldn't create new folder in sample archive");
+
+		this->pArchive = this->pArchive->openFolder(folder);
+		epBefore = nullptr;
+	}
+
 	// Insert the file
-	Archive::FileHandle ep = this->pArchive->insert(epBefore, this->filename[2],
+	auto ep = this->pArchive->insert(epBefore, this->filename[2],
 		this->content[2].length(), this->insertType, this->insertAttr);
 
 	// Make sure it went in ok
@@ -858,6 +955,11 @@ void test_archive::test_resize_smaller()
 	// Find the file we're going to resize
 	Archive::FileHandle ep = this->findFile(0);
 
+	if (this->foldersOnly) {
+		this->pArchive = this->pArchive->openFolder(ep);
+		ep = this->findFile(0);
+	}
+
 	this->pArchive->resize(ep, this->content0_smallSize,
 		this->content0_smallSize_unfiltered);
 
@@ -871,7 +973,13 @@ void test_archive::test_resize_write()
 	BOOST_TEST_MESSAGE(this->basename << ": Enlarging a file inside the archive");
 
 	// Find the file we're going to resize
-	Archive::FileHandle ep = this->findFile(0);
+	auto ep = this->findFile(0);
+
+	auto origArchive = this->pArchive;
+	if (this->foldersOnly) {
+		this->pArchive = this->pArchive->openFolder(ep);
+		ep = this->findFile(0);
+	}
 
 	// We can't call Archive::resize() because that resizes the storage space,
 	// but if there are filters involved the storage space might be quite a
@@ -900,8 +1008,15 @@ void test_archive::test_resize_write()
 		"Error enlarging a file then writing into new space"
 	);
 
+	if (this->foldersOnly) this->pArchive = origArchive;
+
 	// Open the file following it to make sure it was moved out of the way
-	Archive::FileHandle ep2 = this->findFile(1);
+	auto ep2 = this->findFile(1);
+
+	if (this->foldersOnly) {
+		this->pArchive = this->pArchive->openFolder(ep2);
+		ep2 = this->findFile(0);
+	}
 
 	// Open it
 	auto pfsIn = this->pArchive->open(ep2, true);
@@ -925,6 +1040,11 @@ void test_archive::test_resize_after_close()
 
 	// Find the file we're going to resize
 	Archive::FileHandle ep = this->findFile(0);
+
+	if (this->foldersOnly) {
+		this->pArchive = this->pArchive->openFolder(ep);
+		ep = this->findFile(0);
+	}
 
 	auto pfsNew = this->pArchive->open(ep, true);
 
@@ -969,8 +1089,20 @@ void test_archive::test_remove_all_re_add()
 	auto& allfiles = this->pArchive->files();
 	BOOST_REQUIRE_EQUAL(allfiles.size(), 0);
 
+	auto origArchive = this->pArchive;
+	if (this->foldersOnly) {
+		// Create a folder for the new file
+		auto folder = this->pArchive->insert(nullptr,
+			this->filename[0], 0, {}, Archive::File::Attribute::Folder);
+
+		BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(folder),
+			"Couldn't create new folder in sample archive");
+
+		this->pArchive = this->pArchive->openFolder(folder);
+	}
+
 	// Add the files back again
-	epOne = this->pArchive->insert(Archive::FileHandle(), this->filename[0],
+	epOne = this->pArchive->insert(nullptr, this->filename[0],
 		this->content[0].length(), this->insertType, this->insertAttr);
 
 	BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(epOne),
@@ -981,7 +1113,19 @@ void test_archive::test_remove_all_re_add()
 	pfsNew->write(this->content[0]);
 	pfsNew->flush();
 
-	epTwo = this->pArchive->insert(Archive::FileHandle(), this->filename[1],
+	if (this->foldersOnly) {
+		this->pArchive = origArchive;
+		// Create a folder for the new file
+		auto folder = this->pArchive->insert(nullptr,
+			this->filename[1], 0, {}, Archive::File::Attribute::Folder);
+
+		BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(folder),
+			"Couldn't create new folder in sample archive");
+
+		this->pArchive = this->pArchive->openFolder(folder);
+	}
+
+	epTwo = this->pArchive->insert(nullptr, this->filename[1],
 		this->content[1].length(), this->insertType, this->insertAttr);
 
 	BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(epTwo),
@@ -1003,8 +1147,19 @@ void test_archive::test_insert_zero_then_resize()
 {
 	BOOST_TEST_MESSAGE(this->basename << ": Inserting empty file into archive, then resize it");
 
+	if (this->foldersOnly) {
+		// Create a folder for the new file
+		auto folder = this->pArchive->insert(nullptr,
+			this->filename[2], 0, {}, Archive::File::Attribute::Folder);
+
+		BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(folder),
+			"Couldn't create new folder in sample archive");
+
+		this->pArchive = this->pArchive->openFolder(folder);
+	}
+
 	// Insert the file
-	Archive::FileHandle ep = this->pArchive->insert(Archive::FileHandle(),
+	auto ep = this->pArchive->insert(nullptr,
 		this->filename[2], 0, this->insertType, this->insertAttr);
 
 	// Make sure it went in ok
@@ -1029,6 +1184,10 @@ void test_archive::test_resize_over64k()
 	BOOST_TEST_MESSAGE(this->basename << ": Enlarging a file to over the 64k limit");
 
 	Archive::FileHandle ep = this->findFile(0);
+	if (this->foldersOnly) {
+		this->pArchive = this->pArchive->openFolder(ep);
+		ep = this->findFile(0);
+	}
 
 	// Do a potentially illegal resize
 	try {
@@ -1128,8 +1287,20 @@ void test_archive::test_new_to_initialstate()
 	auto& files2 = this->pArchive->files();
 	BOOST_REQUIRE_EQUAL(files2.size(), 0);
 
+	auto origArchive = this->pArchive;
+	if (this->foldersOnly) {
+		// Create a folder for the new file
+		auto folder = this->pArchive->insert(nullptr,
+			this->filename[0], 0, {}, Archive::File::Attribute::Folder);
+
+		BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(folder),
+			"Couldn't create new folder in sample archive");
+
+		this->pArchive = this->pArchive->openFolder(folder);
+	}
+
 	// Add the files to the new archive
-	Archive::FileHandle epOne = this->pArchive->insert(Archive::FileHandle(),
+	auto epOne = this->pArchive->insert(nullptr,
 		this->filename[0], this->content[0].length(), this->insertType,
 		this->insertAttr);
 
@@ -1140,7 +1311,19 @@ void test_archive::test_new_to_initialstate()
 	pfsNew->write(this->content[0]);
 	pfsNew->flush();
 
-	Archive::FileHandle epTwo = pArchive->insert(Archive::FileHandle(),
+	if (this->foldersOnly) {
+		this->pArchive = origArchive;
+		// Create a folder for the new file
+		auto folder = this->pArchive->insert(nullptr,
+			this->filename[1], 0, {}, Archive::File::Attribute::Folder);
+
+		BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(folder),
+			"Couldn't create new folder in sample archive");
+
+		this->pArchive = this->pArchive->openFolder(folder);
+	}
+
+	auto epTwo = pArchive->insert(nullptr,
 		this->filename[1], this->content[1].length(), this->insertType,
 		this->insertAttr);
 
@@ -1150,6 +1333,8 @@ void test_archive::test_new_to_initialstate()
 	pfsNew->write(this->content[1]);
 	pfsNew->flush();
 
+	this->pArchive = origArchive;
+
 	if (this->hasMetadata[camoto::Metadata::MetadataType::Description]) {
 		// If this format has metadata, set it to the same value used when comparing
 		// against the initialstate, so that this new archive will hopefully match
@@ -1157,13 +1342,15 @@ void test_archive::test_new_to_initialstate()
 		this->pArchive->setMetadata(camoto::Metadata::MetadataType::Description, this->metadataDesc);
 	}
 
-	// Make sure there are now the correct number of files in the archive
-	auto& files = this->pArchive->files();
-	BOOST_REQUIRE_EQUAL(files.size(), 2);
-
 	this->checkData(&test_archive::initialstate,
 		"Error inserting files in new/empty archive"
 	);
+
+	// Make sure there are now the correct number of files in the archive.
+	// This is done after the above check so that if something goes wrong,
+	// we can see what the file content looks like.
+	auto& files = this->pArchive->files();
+	BOOST_REQUIRE_EQUAL(files.size(), 2);
 }
 
 // The function shifting files can get confused if a zero-length file is
@@ -1182,8 +1369,21 @@ void test_archive::test_new_manipulate_zero_length_files()
 		this->pArchive->setMetadata(camoto::Metadata::MetadataType::Version, this->metadataVer);
 	}
 
+	auto origArchive = this->pArchive;
+	Archive::FileHandle folder3;
+	if (this->foldersOnly) {
+		// Create a folder for the new file
+		folder3 = this->pArchive->insert(nullptr,
+			this->filename[2], 0, {}, Archive::File::Attribute::Folder);
+
+		BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(folder3),
+			"Couldn't create new folder in sample archive");
+
+		this->pArchive = this->pArchive->openFolder(folder3);
+	}
+
 	// Insert the file
-	auto ep3 = this->pArchive->insert(Archive::FileHandle(),
+	auto ep3 = this->pArchive->insert(nullptr,
 		this->filename[2], 0, this->insertType, this->insertAttr);
 
 	// Make sure it went in ok
@@ -1193,7 +1393,21 @@ void test_archive::test_new_manipulate_zero_length_files()
 	// Open it
 	auto file3 = this->pArchive->open(ep3, true);
 
-	Archive::FileHandle ep1 = pArchive->insert(ep3, this->filename[0], 0,
+	auto ep3_before = ep3;
+	if (this->foldersOnly) {
+		this->pArchive = origArchive;
+		// Create a folder for the new file
+		auto folder = this->pArchive->insert(folder3,
+			this->filename[0], 0, {}, Archive::File::Attribute::Folder);
+
+		BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(folder),
+			"Couldn't create new folder in sample archive");
+
+		this->pArchive = this->pArchive->openFolder(folder);
+		ep3_before.reset();// = nullptr;
+	}
+
+	auto ep1 = this->pArchive->insert(ep3_before, this->filename[0], 0,
 		this->insertType, this->insertAttr);
 
 	// Make sure it went in ok
@@ -1203,7 +1417,19 @@ void test_archive::test_new_manipulate_zero_length_files()
 	// Open it
 	auto file1 = this->pArchive->open(ep1, true);
 
-	auto ep2 = pArchive->insert(ep3, this->filename[1], 0,
+	if (this->foldersOnly) {
+		this->pArchive = origArchive;
+		// Create a folder for the new file
+		auto folder = this->pArchive->insert(folder3,
+			this->filename[1], 0, {}, Archive::File::Attribute::Folder);
+
+		BOOST_REQUIRE_MESSAGE(this->pArchive->isValid(folder),
+			"Couldn't create new folder in sample archive");
+
+		this->pArchive = this->pArchive->openFolder(folder);
+	}
+
+	auto ep2 = this->pArchive->insert(ep3_before, this->filename[1], 0,
 		this->insertType, this->insertAttr);
 
 	// Make sure it went in ok

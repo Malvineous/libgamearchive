@@ -313,6 +313,15 @@ class test_archive: public test_main
 		 */
 		bool virtualFiles;
 
+		/// Does this archive only contain folders and no files?
+		/**
+		 * If true, each time a file is opened, the entry will be opened as a folder
+		 * and the first file within will be opened instead.  Likewise when
+		 * inserting a file, a folder will be inserted instead, and then the file
+		 * will go in as the first file inside the new subfolder.
+		 */
+		bool foldersOnly;
+
 		/// Any formats here identify us as an instance of that type, and it
 		/// cannot be avoided.
 		/**
