@@ -519,6 +519,8 @@ void test_archive::test_open()
 		this->is_equal(this->content[0], out.data),
 		"Error opening file or wrong file opened"
 	);
+
+	// No changes, so no flush
 }
 
 void test_archive::test_rename()
@@ -570,6 +572,9 @@ void test_archive::test_rename_long()
 	BOOST_CHECK_NO_THROW(
 		this->pArchive->rename(ep, name)
 	);
+
+	// Flush to avoid warning when destroying after modifying without flushing
+	this->pArchive->flush();
 }
 
 void test_archive::test_insert_long()
@@ -606,6 +611,9 @@ void test_archive::test_insert_long()
 		Archive::FileHandle ep = this->pArchive->insert(epb, name,
 			this->content[0].length(), this->insertType, this->insertAttr)
 	);
+
+	// Flush to avoid warning when destroying after modifying without flushing
+	this->pArchive->flush();
 }
 
 void test_archive::test_insert_end()
@@ -1025,7 +1033,10 @@ void test_archive::test_resize_over64k()
 	// Do a potentially illegal resize
 	try {
 		pArchive->resize(ep, 65537, 65537);
-	} catch (stream::error) {
+
+		// Flush to avoid warning when destroying after modifying without flushing
+		this->pArchive->flush();
+	} catch (const stream::error&) {
 		this->checkData(&test_archive::initialstate,
 			"Archive corrupted after failed file resize to over 64k"
 		);

@@ -203,6 +203,9 @@ Archive_GLB_Raptor::Archive_GLB_Raptor(std::unique_ptr<stream::inout> content)
 
 Archive_GLB_Raptor::~Archive_GLB_Raptor()
 {
+	// We don't need to flush fatStream here as we are no longer using it, but
+	// this avoids a warning designed to catch accidental omissions of flush().
+	this->fat->flush();
 }
 
 void Archive_GLB_Raptor::flush()

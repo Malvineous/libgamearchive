@@ -224,6 +224,9 @@ Archive_RFF_Blood::Archive_RFF_Blood(std::unique_ptr<stream::inout> content)
 
 Archive_RFF_Blood::~Archive_RFF_Blood()
 {
+	// We don't need to flush fatStream here as we are no longer using it, but
+	// this avoids a warning designed to catch accidental omissions of flush().
+	this->fatStream->flush();
 }
 
 Archive_RFF_Blood::MetadataTypes Archive_RFF_Blood::getMetadataList() const
