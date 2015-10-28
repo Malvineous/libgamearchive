@@ -107,6 +107,13 @@ std::unique_ptr<stream::inout> Archive_FAT::open(const FileHandle& id,
 	// code opens this file (even though it's flagged as a folder) and then
 	// passes the data to the Archive.
 
+	try {
+		this->shared_from_this();
+	} catch (const std::bad_weak_ptr&) {
+		throw camoto::error("BUG: Tried to open a file from a Archive_FAT instance "
+			"that wasn't encapsulated in a shared_ptr!");
+	}
+
 	auto raw = std::make_unique<archfile>(
 		this->shared_from_this(),
 		id,
