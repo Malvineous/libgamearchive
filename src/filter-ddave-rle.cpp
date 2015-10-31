@@ -27,6 +27,7 @@
 #include <camoto/util.hpp> // std::make_unique
 #include <camoto/gamearchive/filtertype.hpp>
 #include "filter-ddave-rle.hpp"
+#include "filter-decomp-size.hpp"
 
 namespace camoto {
 namespace gamearchive {
@@ -252,8 +253,12 @@ std::unique_ptr<stream::inout> FilterType_DDaveRLE::apply(
 {
 	return std::make_unique<stream::filtered>(
 		std::move(target),
-		std::make_shared<filter_ddave_unrle>(),
-		std::make_shared<filter_ddave_rle>(),
+		std::make_unique<filter_decomp_size_remove>(
+			std::make_unique<filter_ddave_unrle>()
+		),
+		std::make_unique<filter_decomp_size_insert>(
+			std::make_unique<filter_ddave_rle>()
+		),
 		resize
 	);
 }
@@ -263,7 +268,9 @@ std::unique_ptr<stream::input> FilterType_DDaveRLE::apply(
 {
 	return std::make_unique<stream::input_filtered>(
 		std::move(target),
-		std::make_shared<filter_ddave_unrle>()
+		std::make_unique<filter_decomp_size_remove>(
+			std::make_unique<filter_ddave_unrle>()
+		)
 	);
 }
 
@@ -273,7 +280,9 @@ std::unique_ptr<stream::output> FilterType_DDaveRLE::apply(
 {
 	return std::make_unique<stream::output_filtered>(
 		std::move(target),
-		std::make_shared<filter_ddave_rle>(),
+		std::make_unique<filter_decomp_size_insert>(
+			std::make_unique<filter_ddave_rle>()
+		),
 		resize
 	);
 }

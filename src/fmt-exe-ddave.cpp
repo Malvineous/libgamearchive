@@ -31,7 +31,7 @@ void ddaveResize(stream::inout& content, FixedArchive::FixedEntry *fat,
 {
 	if ((newStoredSize == (stream::len)-1) && (newRealSize == (stream::len)-1)) {
 		// Not resizing but querying expanded size
-		content.seekp(fat->fixed->offset - 4, stream::start);
+		content.seekp(fat->fixed->offset, stream::start);
 		content >> u32le(fat->realSize);
 		return;
 	}
@@ -39,8 +39,7 @@ void ddaveResize(stream::inout& content, FixedArchive::FixedEntry *fat,
 		throw stream::error("There is not enough space in the Dangerous Dave .exe "
 			"file to fit this data.");
 	}
-	content.seekp(fat->fixed->offset - 4, stream::start);
-	content << u32le(newRealSize);
+
 	fat->realSize = newRealSize;
 	// The stored size is ignored because it's small enough to fit in the existing
 	// slot, and with the decompressed size at the start the game will ignore the
@@ -113,8 +112,8 @@ std::shared_ptr<Archive> ArchiveType_EXE_DDave::open(
 {
 	return make_FixedArchive(std::move(content), {
 		{0x0b4ff, 0x0c620 - 0x0b4ff, "first.bin",   FILTER_NONE, RESIZE_NONE},
-		{0x0c620+4, 0x120f0 - 0x0c620 -4, "cgadave.dav", "rle-ddave", ddaveResize},  // +4/-4 to ignore initial uint32le decompressed size
-		{0x120f0+4, 0x1c4e0 - 0x120f0 -4, "vgadave.dav", "rle-ddave", ddaveResize},  // +4/-4 to ignore initial uint32le decompressed size
+		{0x0c620, 0x120f0 - 0x0c620, "cgadave.dav", "rle-ddave", ddaveResize},
+		{0x120f0, 0x1c4e0 - 0x120f0, "vgadave.dav", "rle-ddave", ddaveResize},
 		{0x1c4e0, 0x1d780 - 0x1c4e0, "sounds.spk",  FILTER_NONE, RESIZE_NONE},
 		{0x1d780, 0x1ea40 - 0x1d780, "menucga.gfx", FILTER_NONE, RESIZE_NONE},
 		{0x1ea40, 0x20ec0 - 0x1ea40, "menuega.gfx", FILTER_NONE, RESIZE_NONE},
