@@ -101,10 +101,7 @@ void test_filter::test_invalidContent(const std::string& content,
 	BOOST_TEST_MESSAGE(this->basename << ": invalidContent_i"
 		<< std::setfill('0') << std::setw(2) << testNumber << ")");
 
-	auto pTestType = FilterManager::byCode(this->type);
-	BOOST_REQUIRE_MESSAGE(pTestType, "Could not find filter type " << this->type);
-
-	auto input = this->pFilterType->apply(
+	auto input = this->apply_in(
 		std::make_unique<stream::input_string>(content)
 	);
 
