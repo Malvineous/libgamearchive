@@ -61,8 +61,7 @@ void filter_decomp_size_remove::transform(uint8_t *out, stream::len *lenOut,
 
 	if (this->lenTarget > 0) {
 		auto origLenOut = *lenOut;
-		auto amount = std::min({*lenIn, *lenOut, (stream::len)this->lenTarget});
-		*lenOut = amount;
+		*lenOut = std::min(*lenOut, (stream::len)this->lenTarget);
 		this->childFilter->transform(out, lenOut, in, lenIn);
 		r += *lenIn;
 		w += *lenOut;
