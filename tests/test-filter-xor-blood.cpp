@@ -18,83 +18,191 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/test/unit_test.hpp>
-#include <camoto/stream_filtered.hpp>
 #include "test-filter.hpp"
 #include "../src/filter-xor-blood.hpp"
 
-using namespace camoto;
 using namespace camoto::gamearchive;
 
-struct rff_decrypt_sample: public test_filter {
-	rff_decrypt_sample()
-	{
-		this->filter.reset(new filter_rff_crypt(0, 0));
-	}
+class test_filter_xor_blood: public test_filter
+{
+	public:
+		test_filter_xor_blood()
+		{
+		}
+
+		void addTests()
+		{
+			this->test_filter::addTests();
+
+			this->content("normal", 8, STRING_WITH_NULLS(
+				"\x00\x01\x02\x03\xFF\xFF\xFF\xFF"
+			), STRING_WITH_NULLS(
+				"\x00\x01\x03\x02\xFD\xFD\xFC\xFC"
+			));
+		}
+
+		std::unique_ptr<stream::input> apply_in(
+			std::unique_ptr<stream::input> content)
+		{
+			return std::make_unique<stream::input_filtered>(
+				std::move(content),
+				std::make_unique<filter_rff_crypt>(0, 0)
+			);
+		}
+
+		std::unique_ptr<stream::output> apply_out(
+			std::unique_ptr<stream::output> content, stream::len *setPrefiltered)
+		{
+			return std::make_unique<stream::output_filtered>(
+				std::move(content),
+				std::make_unique<filter_rff_crypt>(0, 0),
+				[setPrefiltered](stream::output_filtered* s, stream::len l) {
+					if (setPrefiltered) *setPrefiltered = l;
+				}
+			);
+		}
+
+		std::unique_ptr<stream::inout> apply_inout(
+			std::unique_ptr<stream::inout> content, stream::len *setPrefiltered)
+		{
+			return std::make_unique<stream::filtered>(
+				std::move(content),
+				std::make_unique<filter_rff_crypt>(0, 0),
+				std::make_unique<filter_rff_crypt>(0, 0),
+				[setPrefiltered](stream::output_filtered* s, stream::len l) {
+					if (setPrefiltered) *setPrefiltered = l;
+				}
+			);
+		}
 };
 
-BOOST_FIXTURE_TEST_SUITE(rff_decrypt_suite, rff_decrypt_sample)
-
-BOOST_AUTO_TEST_CASE(rff_crypt_read)
+class test_filter_xor_blood_partial: public test_filter
 {
-	BOOST_TEST_MESSAGE("Decode some XOR-encoded data");
+	public:
+		test_filter_xor_blood_partial()
+		{
+		}
 
-	*this->in << STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
+		void addTests()
+		{
+			this->test_filter::addTests();
 
-	this->filter.reset(new filter_rff_crypt(0, 0));
+			this->content("normal", 8, STRING_WITH_NULLS(
+				"\x00\x01\x02\x03\xFF\xFF\xFF\xFF"
+			), STRING_WITH_NULLS(
+				"\x00\x01\x03\x02\xFF\xFF\xFF\xFF"
+			));
+		}
 
-	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS("\x00\x01\x03\x02\xFD\xFD\xFC\xFC")),
-		"Decoding XOR-encoded data failed");
-}
+		std::unique_ptr<stream::input> apply_in(
+			std::unique_ptr<stream::input> content)
+		{
+			return std::make_unique<stream::input_filtered>(
+				std::move(content),
+				std::make_unique<filter_rff_crypt>(4, 0)
+			);
+		}
 
-BOOST_AUTO_TEST_CASE(rff_crypt_partial_read)
+		std::unique_ptr<stream::output> apply_out(
+			std::unique_ptr<stream::output> content, stream::len *setPrefiltered)
+		{
+			return std::make_unique<stream::output_filtered>(
+				std::move(content),
+				std::make_unique<filter_rff_crypt>(4, 0),
+				[setPrefiltered](stream::output_filtered* s, stream::len l) {
+					if (setPrefiltered) *setPrefiltered = l;
+				}
+			);
+		}
+
+		std::unique_ptr<stream::inout> apply_inout(
+			std::unique_ptr<stream::inout> content, stream::len *setPrefiltered)
+		{
+			return std::make_unique<stream::filtered>(
+				std::move(content),
+				std::make_unique<filter_rff_crypt>(4, 0),
+				std::make_unique<filter_rff_crypt>(4, 0),
+				[setPrefiltered](stream::output_filtered* s, stream::len l) {
+					if (setPrefiltered) *setPrefiltered = l;
+				}
+			);
+		}
+};
+
+class test_filter_xor_blood_altseed: public test_filter
 {
-	BOOST_TEST_MESSAGE("Decode some partially XOR-encoded data");
+	public:
+		test_filter_xor_blood_altseed()
+		{
+		}
 
-	*this->in << STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
+		void addTests()
+		{
+			this->test_filter::addTests();
 
-	this->filter.reset(new filter_rff_crypt(4, 0));
+			this->content("normal", 8, STRING_WITH_NULLS(
+				"\x00\x01\x02\x03\xFF\xFF\xFF\xFF"
+			), STRING_WITH_NULLS(
+				"\xFE\xFF\xFD\xFC\xFF\xFF\xFE\xFE"
+			));
+		}
 
-	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS("\x00\x01\x03\x02\xFF\xFF\xFF\xFF")),
-		"Decoding partially XOR-encoded data failed");
-}
+		std::unique_ptr<stream::input> apply_in(
+			std::unique_ptr<stream::input> content)
+		{
+			return std::make_unique<stream::input_filtered>(
+				std::move(content),
+				std::make_unique<filter_rff_crypt>(0, 0xFE)
+			);
+		}
 
-BOOST_AUTO_TEST_CASE(rff_crypt_altseed_read)
+		std::unique_ptr<stream::output> apply_out(
+			std::unique_ptr<stream::output> content, stream::len *setPrefiltered)
+		{
+			return std::make_unique<stream::output_filtered>(
+				std::move(content),
+				std::make_unique<filter_rff_crypt>(0, 0xFE),
+				[setPrefiltered](stream::output_filtered* s, stream::len l) {
+					if (setPrefiltered) *setPrefiltered = l;
+				}
+			);
+		}
+
+		std::unique_ptr<stream::inout> apply_inout(
+			std::unique_ptr<stream::inout> content, stream::len *setPrefiltered)
+		{
+			return std::make_unique<stream::filtered>(
+				std::move(content),
+				std::make_unique<filter_rff_crypt>(0, 0xFE),
+				std::make_unique<filter_rff_crypt>(0, 0xFE),
+				[setPrefiltered](stream::output_filtered* s, stream::len l) {
+					if (setPrefiltered) *setPrefiltered = l;
+				}
+			);
+		}
+};
+
+class test_filter_xor_blood_stream: public test_filter
 {
-	BOOST_TEST_MESSAGE("Decode some XOR-encoded data with alternate seed");
+	public:
+		test_filter_xor_blood_stream()
+		{
+			this->type = "xor-blood";
+		}
 
-	*this->in << STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
+		void addTests()
+		{
+			this->test_filter::addTests();
 
-	this->filter.reset(new filter_rff_crypt(0, 0xFE));
+			this->content("normal", 8, STRING_WITH_NULLS(
+				"\x00\x01\x02\x03\xFF\xFF\xFF\xFF"
+			), STRING_WITH_NULLS(
+				"\x00\x01\x03\x02\xFD\xFD\xFC\xFC"
+			));
+		}
+};
 
-	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS("\xFE\xFF\xFD\xFC\xFF\xFF\xFE\xFE")),
-		"Decoding XOR-encoded data with alternate seed failed");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_FIXTURE_TEST_SUITE(rff_encrypt_suite, test_main)
-
-BOOST_AUTO_TEST_CASE(rff_crypt_write_filteredstream)
-{
-	BOOST_TEST_MESSAGE("Encode some data through filteredstream");
-
-	auto out = std::make_shared<stream::string>();
-
-	auto f = std::make_shared<stream::filtered>(
-		out,
-		std::make_shared<filter_rff_crypt>(0, 0),
-		std::make_shared<filter_rff_crypt>(0, 0),
-		stream::fn_notify_prefiltered_size()
-	);
-
-	f->write("\x00\x01\x02\x03\xFF\xFF\xFF\xFF", 8);
-	f->flush();
-
-	BOOST_CHECK_MESSAGE(is_equal(
-		STRING_WITH_NULLS("\x00\x01\x03\x02\xFD\xFD\xFC\xFC"),
-		out->data),
-		"Encoding data through filteredstream failed");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
+IMPLEMENT_TESTS(filter_xor_blood);
+IMPLEMENT_TESTS(filter_xor_blood_partial);
+IMPLEMENT_TESTS(filter_xor_blood_altseed);
+IMPLEMENT_TESTS(filter_xor_blood_stream);
