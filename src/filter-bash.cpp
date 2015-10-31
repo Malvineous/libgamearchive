@@ -82,7 +82,7 @@ std::unique_ptr<stream::inout> FilterType_Bash::apply(
 			LZW_EOF_PARAM_VALID  | // Has codeword reserved for EOF
 			LZW_RESET_PARAM_VALID  // Has codeword reserved for dictionary reset
 		),
-		stream::fn_notify_prefiltered_size()
+		nullptr
 	);
 
 	return std::make_unique<stream::filtered>(
@@ -131,7 +131,7 @@ std::unique_ptr<stream::output> FilterType_Bash::apply(
 			LZW_EOF_PARAM_VALID  | // Has codeword reserved for EOF
 			LZW_RESET_PARAM_VALID  // Has codeword reserved for dictionary reset
 		),
-		stream::fn_notify_prefiltered_size()
+		nullptr
 	);
 
 	return std::make_unique<stream::output_filtered>(

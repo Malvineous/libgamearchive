@@ -296,13 +296,15 @@ class Archive_FAT: virtual public Archive,
 
 		/// Remove the entry from the FAT.
 		/**
-		 * The file data has already been removed from the archive, but the offsets
+		 * The file data has not yet been removed from the archive, and the offsets
 		 * have not yet been updated.  On return, pid will be removed from the FAT
-		 * vector and the on-disk offsets of files following this one will be
-		 * updated (via calls to updateFileOffset()) - so they don't need changing
-		 * here.  However the offsets will not take into account any changes
-		 * resulting from the FAT changing size, which must be handled by this
-		 * function.
+		 * vector, the on-disk offsets of files following this one will be updated,
+		 * then the file content will be removed.
+		 *
+		 * The offsets are updated via calls to updateFileOffset(), so they don't
+		 * need changing by this function.  However the offsets will not take into
+		 * account any changes resulting from the FAT changing size, which must be
+		 * handled by this function.
 		 *
 		 * @param pid
 		 *   Entry being removed.
