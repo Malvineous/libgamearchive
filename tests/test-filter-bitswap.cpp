@@ -18,7 +18,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/test/unit_test.hpp>
 #include "test-filter.hpp"
 #include "../src/filter-bitswap.hpp"
 

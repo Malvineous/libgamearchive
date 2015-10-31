@@ -19,7 +19,6 @@
  */
 
 #include "test-filter.hpp"
-#include "../src/filter-glb-raptor.hpp"
 
 using namespace camoto::gamearchive;
 

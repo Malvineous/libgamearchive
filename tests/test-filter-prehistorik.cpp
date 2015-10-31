@@ -20,7 +20,6 @@
 
 #include <camoto/bitstream.hpp>
 #include "test-filter.hpp"
-#include "../src/filter-prehistorik.hpp"
 
 using namespace camoto;
 using namespace camoto::gamearchive;

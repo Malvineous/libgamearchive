@@ -19,7 +19,6 @@
  */
 
 #include "test-filter.hpp"
-#include "../src/filter-xor-sagent.hpp"
 
 using namespace camoto::gamearchive;
 

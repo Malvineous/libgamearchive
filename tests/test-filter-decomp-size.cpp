@@ -18,7 +18,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/test/unit_test.hpp>
 #include <camoto/filter-dummy.hpp>
 #include <camoto/util.hpp>
 #include "test-filter.hpp"
