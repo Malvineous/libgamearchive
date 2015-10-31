@@ -89,8 +89,23 @@ class test_filter: public test_main
 		 * @param plain
 		 *   Unfiltered content (e.g. uncompressed, plaintext).
 		 */
-		void content(const std::string& name, const std::string& filtered,
-			const std::string& plain, stream::len prefilteredSize);
+		void content(const std::string& name, stream::len prefilteredSize,
+			const std::string& filtered, const std::string& plain);
+
+		void content_decode(const std::string& name, const std::string& filtered,
+			const std::string& plain);
+
+		void content_encode(const std::string& name, stream::len prefilteredSize,
+			const std::string& filtered, const std::string& plain);
+
+		virtual std::unique_ptr<stream::input> apply_in(
+			std::unique_ptr<stream::input> content);
+
+		virtual std::unique_ptr<stream::output> apply_out(
+			std::unique_ptr<stream::output> content, stream::len *setPrefiltered);
+
+		virtual std::unique_ptr<stream::inout> apply_inout(
+			std::unique_ptr<stream::inout> content, stream::len *setPrefiltered);
 
 	protected:
 		/// Perform an invalidContent check now.
