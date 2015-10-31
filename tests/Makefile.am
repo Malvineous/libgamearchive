@@ -6,6 +6,7 @@ tests_SOURCES += test-filter.cpp
 tests_SOURCES += test-filter-bash-rle.cpp
 tests_SOURCES += test-filter-bitswap.cpp
 tests_SOURCES += test-filter-ddave-rle.cpp
+tests_SOURCES += test-filter-decomp-size.cpp
 tests_SOURCES += test-filter-glb-raptor.cpp
 tests_SOURCES += test-filter-got-lzss.cpp
 tests_SOURCES += test-filter-prehistorik.cpp
