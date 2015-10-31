@@ -18,83 +18,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/test/unit_test.hpp>
-#include <camoto/stream_string.hpp>
-#include <camoto/stream_filtered.hpp>
-#include <camoto/util.hpp>
-#include "../src/filter-got-lzss.hpp"
 #include "test-filter.hpp"
 
-using namespace camoto;
 using namespace camoto::gamearchive;
 
-struct got_lzss_sample: public test_filter {
-	got_lzss_sample()
-	{
-		this->filter.reset(new filter_got_lzss());
-	}
+class test_filter_got_lzss: public test_filter
+{
+	public:
+		test_filter_got_lzss()
+		{
+			this->type = "lzss-got";
+		}
+
+		void addTests()
+		{
+			this->test_filter::addTests();
+
+			this->content("normal", 16, STRING_WITH_NULLS(
+				"\x10\x00\x01\x00"
+				"\xFF""ABCDEFGH"
+				"\xFF""IJKLMNOP"
+			), STRING_WITH_NULLS(
+				"ABCDEFGHIJKLMNOP"
+			));
+
+			this->content("short", 5, STRING_WITH_NULLS(
+				"\x05\x00\x01\x00" "\xFF""ABCDE"
+			), STRING_WITH_NULLS(
+				"ABCDE"
+			));
+		}
 };
 
-struct got_unlzss_sample: public test_filter {
-	got_unlzss_sample()
-	{
-		this->filter.reset(new filter_got_unlzss());
-	}
-};
-
-BOOST_FIXTURE_TEST_SUITE(got_unlzss_suite, got_unlzss_sample)
-
-BOOST_AUTO_TEST_CASE(got_unlzss_read)
-{
-	BOOST_TEST_MESSAGE("Decompress some GoT data");
-
-	*this->in << STRING_WITH_NULLS(
-		"\x10\x00\x01\x00"
-		"\xFF""ABCDEFGH"
-		"\xFF""IJKLMNOP"
-	);
-
-	BOOST_CHECK_MESSAGE(is_equal("ABCDEFGHIJKLMNOP"),
-		"Decompressing GoT data failed");
-}
-
-BOOST_AUTO_TEST_CASE(got_unlzss_read_short)
-{
-	BOOST_TEST_MESSAGE("Decompress a little GoT data");
-
-	*this->in << STRING_WITH_NULLS("\x05\x00\x01\x00" "\xFF""ABCDE");
-
-	BOOST_CHECK_MESSAGE(is_equal("ABCDE"),
-		"Decompressing a little GoT data failed");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-
-BOOST_FIXTURE_TEST_SUITE(got_lzss_suite, got_lzss_sample)
-
-BOOST_AUTO_TEST_CASE(got_lzss_read)
-{
-	BOOST_TEST_MESSAGE("Compress some GoT data");
-
-	*this->in << "ABCDEFGHIJKLMNOP";
-
-	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS(
-		"\x10\x00\x01\x00"
-		"\xFF""ABCDEFGH"
-		"\xFF""IJKLMNOP"
-	)),
-		"Compressing GoT data failed");
-}
-
-BOOST_AUTO_TEST_CASE(got_lzss_read_short)
-{
-	BOOST_TEST_MESSAGE("Compress a little GoT data");
-
-	*this->in << "ABCDE";
-
-	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS("\x05\x00\x01\x00" "\xFF""ABCDE")),
-		"Compressing a little GoT data failed");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
+IMPLEMENT_TESTS(filter_got_lzss);
