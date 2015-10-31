@@ -29,6 +29,9 @@
 #include "filter-ddave-rle.hpp"
 #include "filter-decomp-size.hpp"
 
+/// RLE codes must not cross this boundary (almost one 16-bit memory segment)
+const unsigned long SPLIT_BOUNDARY = 0xFF00;
+
 namespace camoto {
 namespace gamearchive {
 
@@ -92,6 +95,7 @@ void filter_ddave_rle::reset(stream::len lenInput)
 	this->prev = 0;
 	this->count = 0;
 	this->step = 0;
+	this->total_read = 0;
 	return;
 }
 
@@ -123,14 +127,29 @@ void filter_ddave_rle::transform(uint8_t *out, stream::len *lenOut,
 			case 0:
 				this->prev = *in++;
 				r++;
+				this->total_read++;
 				this->count = 1;
 				step = 10;
 				break;
 			case 10:
+				if (
+					(this->total_read > 0)
+					&& ((this->total_read % SPLIT_BOUNDARY) == 0)
+				) {
+					// Have to break any RLE code at this boundary
+					if (this->buflen) {
+						// Write out the buffer as escape data
+						step = 50;
+					} else {
+						// Flush the RLE codes by faking a change in character
+						step = 11;
+					}
+				}
 				if (*in == this->prev) {
 					this->count++;
 					in++;
 					r++;
+					this->total_read++;
 					if (this->count == 130) {
 						// If we've reached the maximum repeat amount, write out a code
 						*out++ = '\x7F';
@@ -139,8 +158,6 @@ void filter_ddave_rle::transform(uint8_t *out, stream::len *lenOut,
 					} else if ((count == 3) && (this->buflen)) {
 						// If we've reached the point where it is worth writing out the
 						// repeat code (eventually), flush the buffer now
-						//*out++ = (uint8_t)(0x80 + this->buflen - 1);
-						//w++;
 						step = 50;
 					}
 					break;

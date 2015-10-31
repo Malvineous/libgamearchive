@@ -52,6 +52,7 @@ class filter_ddave_rle: virtual public filter
 		uint8_t prev;        ///< Previous byte read
 		unsigned int count;  ///< How many prev has been seen so far
 		unsigned int step;   ///< Which point in the algorithm are we up to?
+		unsigned int total_read; ///< Total number of cleartext bytes read
 
 	public:
 		virtual void reset(stream::len lenInput);
