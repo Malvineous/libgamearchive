@@ -40,7 +40,8 @@ struct FixedArchiveFile;
  * This class provides access to "files" at specific offsets and lengths in a
  * host file (e.g. game levels stored in an .exe file.)
  */
-class FixedArchive: virtual public Archive
+class FixedArchive: virtual public Archive,
+	public std::enable_shared_from_this<FixedArchive>
 {
 	public:
 		struct FixedEntry: virtual public File {

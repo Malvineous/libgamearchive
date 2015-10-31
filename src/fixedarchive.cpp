@@ -23,6 +23,7 @@
 #include <functional>
 #include <camoto/util.hpp>
 #include <camoto/gamearchive/fixedarchive.hpp>
+#include <camoto/gamearchive/stream_archfile.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -85,40 +86,27 @@ bool FixedArchive::isValid(const FileHandle& id) const
 std::unique_ptr<stream::inout> FixedArchive::open(const FileHandle& id,
 	bool useFilter)
 {
-	if (!id->filter.empty() && useFilter) {
-		throw stream::error("Filtering on fixed archives is not yet implemented!");
+	try {
+		this->shared_from_this();
+	} catch (const std::bad_weak_ptr&) {
+		throw camoto::error("BUG: Tried to open a file from a FixedArchive "
+			"instance that wasn't encapsulated in a shared_ptr!");
 	}
-	// TESTED BY: TODO
-	const FixedEntry *entry = dynamic_cast<const FixedEntry *>(id.get());
-	const FixedArchiveFile *file = &this->vcFiles[entry->index];
-	return std::make_unique<stream::sub>(
-		this->content,
-		file->offset,
-		file->size,
-		[id, this](stream::output_sub* sub, stream::len newSize) {
-			// An open substream belonging to file entry 'id' wants to be resized.
 
-			stream::len newRealSize;
-			if (id->fAttr & File::Attribute::Compressed) {
-				// We're compressed, so the real and stored sizes are both valid
-				newRealSize = id->realSize;
-			} else {
-				// We're not compressed, so the real size won't be updated by a filter,
-				// so we need to update it here.
-				newRealSize = newSize;
-			}
-
-			// Resize the file in the archive.  This function will also tell the
-			// substream it can now write to a larger area.
-			// We are updating both the stored (in-archive) and the real (extracted)
-			// sizes, to handle the case where no filters are used and the sizes are
-			// the same.  When filters are in use, the flush() function that writes
-			// the filtered data out should call us first, then call the archive's
-			// resize() function with the correct real/extracted size.
-			FileHandle& id_noconst = const_cast<FileHandle&>(id);
-			this->resize(id_noconst, newSize, newRealSize);
-		}
+	auto raw = std::make_unique<archfile>(
+		this->shared_from_this(),
+		id,
+		this->content
 	);
+
+	if (useFilter && !id->filter.empty()) {
+		return applyFilter(
+			std::move(raw),
+			id->filter
+		);
+	}
+
+	return std::move(raw);
 }
 
 std::shared_ptr<Archive> FixedArchive::openFolder(const Archive::FileHandle& id)

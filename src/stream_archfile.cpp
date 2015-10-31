@@ -64,7 +64,8 @@ std::unique_ptr<stream::inout> applyFilter(std::unique_ptr<archfile> s,
 archfile_core::archfile_core(const Archive::FileHandle& id)
 	:	sub_core(0, 0),
 		id(const_cast<Archive::FileHandle&>(id)),
-		fat(dynamic_cast<const Archive_FAT::FATEntry *>(&*id))
+		fat(Archive_FAT::FATEntry::cast(id)),
+		fatFixed(FixedArchive::FixedEntry::cast(id))
 {
 }
 
@@ -80,18 +81,28 @@ void archfile_core::resize(stream::len len)
 
 stream::pos archfile_core::sub_start() const
 {
-	if (!this->fat->bValid) {
-		throw stream::error("Attempt to access closed or deleted file.");
+	if (this->fat) {
+		if (!this->fat->bValid) {
+			throw stream::error("Attempt to access closed or deleted file.");
+		}
+		return this->fat->iOffset + this->fat->lenHeader;
+	} else if (this->fatFixed) {
+		return this->fatFixed->fixed->offset;
 	}
-	return this->fat->iOffset + this->fat->lenHeader;
+	throw stream::error("Unknown subfile type (not FATEntry or FixedEntry).");
 }
 
 stream::len archfile_core::sub_size() const
 {
-	if (!this->fat->bValid) {
-		throw stream::error("Attempt to access closed or deleted file.");
+	if (this->fat) {
+		if (!this->fat->bValid) {
+			throw stream::error("Attempt to access closed or deleted file.");
+		}
+		return this->fat->storedSize;
+	} else if (this->fatFixed) {
+		return this->fatFixed->fixed->size;
 	}
-	return this->fat->storedSize;
+	throw stream::error("Unknown subfile type (not FATEntry or FixedEntry).");
 }
 
 

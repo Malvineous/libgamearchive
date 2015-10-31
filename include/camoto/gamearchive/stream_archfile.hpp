@@ -24,6 +24,7 @@
 #include <camoto/gamearchive/manager.hpp>
 #include <camoto/stream_sub.hpp>
 #include <camoto/gamearchive/archive-fat.hpp>
+#include <camoto/gamearchive/fixedarchive.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -75,9 +76,17 @@ class archfile_core: virtual public stream::sub_core
 
 		/// FATEntry cast of id
 		/**
-		 * This avoids doing a dynamic_cast on each and every read/write.
+		 * This avoids doing a dynamic_cast on each and every read/write, for
+		 * Archive_FAT files.
 		 */
 		const Archive_FAT::FATEntry *fat;
+
+		/// FixedEntry cast of id
+		/**
+		 * This avoids doing a dynamic_cast on each and every read/write, for
+		 * FixedArchive files.
+		 */
+		const FixedArchive::FixedEntry *fatFixed;
 };
 
 /// Read-only stream to access a section within another stream.

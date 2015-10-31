@@ -42,7 +42,8 @@ namespace gamearchive {
 #define ARCH_NO_FILENAMES (-1)
 
 /// Archive implementation for archives with an associated size/offset table.
-class Archive_FAT: virtual public Archive, public std::enable_shared_from_this<Archive_FAT>
+class Archive_FAT: virtual public Archive,
+	public std::enable_shared_from_this<Archive_FAT>
 {
 	public:
 
