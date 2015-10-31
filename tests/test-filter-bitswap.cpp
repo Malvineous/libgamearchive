@@ -19,31 +19,63 @@
  */
 
 #include <boost/test/unit_test.hpp>
-#include <boost/iostreams/filtering_stream.hpp>
-#include <boost/iostreams/copy.hpp>
-#include <sstream>
 #include "test-filter.hpp"
 #include "../src/filter-bitswap.hpp"
 
 using namespace camoto::gamearchive;
 
-struct bitswap_sample: public test_filter {
-	bitswap_sample()
-	{
-		this->filter.reset(new filter_bitswap());
-	}
+class test_filter_bitswap: public test_filter
+{
+	public:
+		test_filter_bitswap()
+		{
+		}
+
+		void addTests()
+		{
+			this->test_filter::addTests();
+
+			// Swap some data
+			this->content("normal", 8, STRING_WITH_NULLS(
+				"\x00\x01\x03\x0F\x1E\x55\xAA\xFF"
+			), STRING_WITH_NULLS(
+				"\x00\x80\xC0\xF0\x78\xAA\x55\xFF"
+			));
+		}
+
+		std::unique_ptr<stream::input> apply_in(
+			std::unique_ptr<stream::input> content)
+		{
+			return std::make_unique<stream::input_filtered>(
+				std::move(content),
+				std::make_unique<filter_bitswap>()
+			);
+		}
+
+		std::unique_ptr<stream::output> apply_out(
+			std::unique_ptr<stream::output> content, stream::len *setPrefiltered)
+		{
+			return std::make_unique<stream::output_filtered>(
+				std::move(content),
+				std::make_unique<filter_bitswap>(),
+				[setPrefiltered](stream::output_filtered* s, stream::len l) {
+					if (setPrefiltered) *setPrefiltered = l;
+				}
+			);
+		}
+
+		std::unique_ptr<stream::inout> apply_inout(
+			std::unique_ptr<stream::inout> content, stream::len *setPrefiltered)
+		{
+			return std::make_unique<stream::filtered>(
+				std::move(content),
+				std::make_unique<filter_bitswap>(),
+				std::make_unique<filter_bitswap>(),
+				[setPrefiltered](stream::output_filtered* s, stream::len l) {
+					if (setPrefiltered) *setPrefiltered = l;
+				}
+			);
+		}
 };
 
-BOOST_FIXTURE_TEST_SUITE(bitswap_suite, bitswap_sample)
-
-BOOST_AUTO_TEST_CASE(bitswap_read)
-{
-	BOOST_TEST_MESSAGE("Decode some bitswapped data");
-
-	*this->in << STRING_WITH_NULLS("\x00\x01\x03\x0F\x1E\x55\xAA\xFF");
-
-	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS("\x00\x80\xC0\xF0\x78\xAA\x55\xFF")),
-		"Decoding bitswapped data failed");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
+IMPLEMENT_TESTS(filter_bitswap);
