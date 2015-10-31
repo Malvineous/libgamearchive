@@ -25,82 +25,50 @@
 using namespace camoto;
 using namespace camoto::gamearchive;
 
-BOOST_FIXTURE_TEST_SUITE(prehistorik_filter_suite, test_filter)
-
-BOOST_AUTO_TEST_CASE(prehistorik_read)
+class test_filter_prehistorik: public test_filter
 {
-	BOOST_TEST_MESSAGE("Read data through Prehistorik filter");
+	public:
+		test_filter_prehistorik()
+		{
+			this->type = "lzss-prehistorik";
+		}
 
-	FilterType_Prehistorik filter;
+		void addTests()
+		{
+			this->test_filter::addTests();
 
-	std::shared_ptr<stream::string> exp(new stream::string());
-	bitstream bit_exp(exp, bitstream::bigEndian);
-	bit_exp.write(8, 0);
-	bit_exp.write(8, 0);
-	bit_exp.write(8, 0);
-	bit_exp.write(8, 18);
-	bit_exp.write(9, 'H');
-	bit_exp.write(9, 'e');
-	bit_exp.write(9, 'l');
-	bit_exp.write(9, 'l');
-	bit_exp.write(9, 'o');
-	bit_exp.write(9, ' ');
-	bit_exp.write(9, 'h');
-	bit_exp.write(9, 'e');
-	bit_exp.write(9, 'l');
-	bit_exp.write(9, 'l');
-	bit_exp.write(9, 'o');
-	bit_exp.write(9, ' ');
-	bit_exp.write(9, 'h');
-	bit_exp.write(9, 'e');
-	bit_exp.write(9, 'l');
-	bit_exp.write(9, 'l');
-	bit_exp.write(9, 'o');
-	bit_exp.write(9, '.');
-	bit_exp.flushByte();
+			std::shared_ptr<stream::string> exp(new stream::string());
+			bitstream bit_exp(exp, bitstream::bigEndian);
+			bit_exp.write(8, 0);
+			bit_exp.write(8, 0);
+			bit_exp.write(8, 0);
+			bit_exp.write(8, 18);
+			bit_exp.write(9, 'H');
+			bit_exp.write(9, 'e');
+			bit_exp.write(9, 'l');
+			bit_exp.write(9, 'l');
+			bit_exp.write(9, 'o');
+			bit_exp.write(9, ' ');
+			bit_exp.write(9, 'h');
+			bit_exp.write(9, 'e');
+			bit_exp.write(9, 'l');
+			bit_exp.write(9, 'l');
+			bit_exp.write(9, 'o');
+			bit_exp.write(9, ' ');
+			bit_exp.write(9, 'h');
+			bit_exp.write(9, 'e');
+			bit_exp.write(9, 'l');
+			bit_exp.write(9, 'l');
+			bit_exp.write(9, 'o');
+			bit_exp.write(9, '.');
+			bit_exp.flushByte();
 
-	this->test_equal_read(&filter, exp->data, STRING_WITH_NULLS(
-		"Hello hello hello."
-	));
-}
+			this->content("normal", 18,
+				exp->data,
+			STRING_WITH_NULLS(
+				"Hello hello hello."
+			));
+		}
+};
 
-BOOST_AUTO_TEST_CASE(prehistorik_write)
-{
-	BOOST_TEST_MESSAGE("Write data through Prehistorik filter");
-
-	FilterType_Prehistorik filter;
-
-	std::shared_ptr<stream::string> exp(new stream::string());
-	bitstream bit_exp(exp, bitstream::bigEndian);
-	bit_exp.write(8, 0);
-	bit_exp.write(8, 0);
-	bit_exp.write(8, 0);
-	bit_exp.write(8, 18);
-	bit_exp.write(9, 'H');
-	bit_exp.write(9, 'e');
-	bit_exp.write(9, 'l');
-	bit_exp.write(9, 'l');
-	bit_exp.write(9, 'o');
-	bit_exp.write(9, ' ');
-	bit_exp.write(9, 'h');
-	bit_exp.write(9, 'e');
-	bit_exp.write(9, 'l');
-	bit_exp.write(9, 'l');
-	bit_exp.write(9, 'o');
-	bit_exp.write(9, ' ');
-	bit_exp.write(9, 'h');
-	bit_exp.write(9, 'e');
-	bit_exp.write(9, 'l');
-	bit_exp.write(9, 'l');
-	bit_exp.write(9, 'o');
-	bit_exp.write(9, '.');
-	bit_exp.flushByte();
-
-	this->test_equal_write(&filter,
-		STRING_WITH_NULLS(
-			"Hello hello hello."
-		), exp->data
-	);
-}
-
-BOOST_AUTO_TEST_SUITE_END()
+IMPLEMENT_TESTS(filter_prehistorik);
