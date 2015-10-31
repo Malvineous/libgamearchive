@@ -18,51 +18,170 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/test/unit_test.hpp>
-#include <boost/iostreams/filtering_stream.hpp>
-#include <boost/iostreams/copy.hpp>
-#include <sstream>
 #include "test-filter.hpp"
 #include "../src/filter-xor.hpp"
 
 using namespace camoto::gamearchive;
 
-BOOST_FIXTURE_TEST_SUITE(xor_suite, test_filter)
-
-BOOST_AUTO_TEST_CASE(xor_read)
+class test_filter_xor: public test_filter
 {
-	BOOST_TEST_MESSAGE("Decode some XOR-encoded data");
+	public:
+		test_filter_xor()
+		{
+		}
 
-	*this->in << STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
+		void addTests()
+		{
+			this->test_filter::addTests();
 
-	this->filter.reset(new filter_xor_crypt(0, 0));
+			this->content("normal", 8, STRING_WITH_NULLS(
+				"\x00\x01\x02\x03\xFF\xFF\xFF\xFF"
+			), STRING_WITH_NULLS(
+				"\x00\x00\x00\x00\xFB\xFA\xF9\xF8"
+			));
+		}
 
-	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS("\x00\x00\x00\x00\xFB\xFA\xF9\xF8")),
-		"Decoding XOR-encoded data failed");
-}
+		std::unique_ptr<stream::input> apply_in(
+			std::unique_ptr<stream::input> content)
+		{
+			return std::make_unique<stream::input_filtered>(
+				std::move(content),
+				std::make_unique<filter_xor_crypt>(0, 0)
+			);
+		}
 
-BOOST_AUTO_TEST_CASE(xor_partial_read)
+		std::unique_ptr<stream::output> apply_out(
+			std::unique_ptr<stream::output> content, stream::len *setPrefiltered)
+		{
+			return std::make_unique<stream::output_filtered>(
+				std::move(content),
+				std::make_unique<filter_xor_crypt>(0, 0),
+				[setPrefiltered](stream::output_filtered* s, stream::len l) {
+					if (setPrefiltered) *setPrefiltered = l;
+				}
+			);
+		}
+
+		std::unique_ptr<stream::inout> apply_inout(
+			std::unique_ptr<stream::inout> content, stream::len *setPrefiltered)
+		{
+			return std::make_unique<stream::filtered>(
+				std::move(content),
+				std::make_unique<filter_xor_crypt>(0, 0),
+				std::make_unique<filter_xor_crypt>(0, 0),
+				[setPrefiltered](stream::output_filtered* s, stream::len l) {
+					if (setPrefiltered) *setPrefiltered = l;
+				}
+			);
+		}
+};
+
+class test_filter_xor_partial: public test_filter
 {
-	BOOST_TEST_MESSAGE("Decode some partially XOR-encoded data");
+	public:
+		test_filter_xor_partial()
+		{
+		}
 
-	*this->in << STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
+		void addTests()
+		{
+			this->test_filter::addTests();
 
-	this->filter.reset(new filter_xor_crypt(4, 0));
+			this->content("normal", 8, STRING_WITH_NULLS(
+				"\x00\x01\x02\x03\xFF\xFF\xFF\xFF"
+			), STRING_WITH_NULLS(
+				"\x00\x00\x00\x00\xFF\xFF\xFF\xFF"
+			));
+		}
 
-	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS("\x00\x00\x00\x00\xFF\xFF\xFF\xFF")),
-		"Decoding partially XOR-encoded data failed");
-}
+		std::unique_ptr<stream::input> apply_in(
+			std::unique_ptr<stream::input> content)
+		{
+			return std::make_unique<stream::input_filtered>(
+				std::move(content),
+				std::make_unique<filter_xor_crypt>(4, 0)
+			);
+		}
 
-BOOST_AUTO_TEST_CASE(xor_altseed_read)
+		std::unique_ptr<stream::output> apply_out(
+			std::unique_ptr<stream::output> content, stream::len *setPrefiltered)
+		{
+			return std::make_unique<stream::output_filtered>(
+				std::move(content),
+				std::make_unique<filter_xor_crypt>(4, 0),
+				[setPrefiltered](stream::output_filtered* s, stream::len l) {
+					if (setPrefiltered) *setPrefiltered = l;
+				}
+			);
+		}
+
+		std::unique_ptr<stream::inout> apply_inout(
+			std::unique_ptr<stream::inout> content, stream::len *setPrefiltered)
+		{
+			return std::make_unique<stream::filtered>(
+				std::move(content),
+				std::make_unique<filter_xor_crypt>(4, 0),
+				std::make_unique<filter_xor_crypt>(4, 0),
+				[setPrefiltered](stream::output_filtered* s, stream::len l) {
+					if (setPrefiltered) *setPrefiltered = l;
+				}
+			);
+		}
+};
+
+class test_filter_xor_altseed: public test_filter
 {
-	BOOST_TEST_MESSAGE("Decode some XOR-encoded data with alternate seed");
+	public:
+		test_filter_xor_altseed()
+		{
+		}
 
-	*this->in << STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF");
+		void addTests()
+		{
+			this->test_filter::addTests();
 
-	this->filter.reset(new filter_xor_crypt(0, 0xFE));
+			this->content("normal", 8, STRING_WITH_NULLS(
+				"\x00\x01\x02\x03\xFF\xFF\xFF\xFF"
+			), STRING_WITH_NULLS(
+				"\xFE\xFE\x02\x02\xFD\xFC\xFB\xFA"
+			));
+		}
 
-	BOOST_CHECK_MESSAGE(is_equal(STRING_WITH_NULLS("\xFE\xFE\x02\x02\xFD\xFC\xFB\xFA")),
-		"Decoding XOR-encoded data with alternate seed failed");
-}
+		std::unique_ptr<stream::input> apply_in(
+			std::unique_ptr<stream::input> content)
+		{
+			return std::make_unique<stream::input_filtered>(
+				std::move(content),
+				std::make_unique<filter_xor_crypt>(0, 0xFE)
+			);
+		}
 
-BOOST_AUTO_TEST_SUITE_END()
+		std::unique_ptr<stream::output> apply_out(
+			std::unique_ptr<stream::output> content, stream::len *setPrefiltered)
+		{
+			return std::make_unique<stream::output_filtered>(
+				std::move(content),
+				std::make_unique<filter_xor_crypt>(0, 0xFE),
+				[setPrefiltered](stream::output_filtered* s, stream::len l) {
+					if (setPrefiltered) *setPrefiltered = l;
+				}
+			);
+		}
+
+		std::unique_ptr<stream::inout> apply_inout(
+			std::unique_ptr<stream::inout> content, stream::len *setPrefiltered)
+		{
+			return std::make_unique<stream::filtered>(
+				std::move(content),
+				std::make_unique<filter_xor_crypt>(0, 0xFE),
+				std::make_unique<filter_xor_crypt>(0, 0xFE),
+				[setPrefiltered](stream::output_filtered* s, stream::len l) {
+					if (setPrefiltered) *setPrefiltered = l;
+				}
+			);
+		}
+};
+
+IMPLEMENT_TESTS(filter_xor);
+IMPLEMENT_TESTS(filter_xor_partial);
+IMPLEMENT_TESTS(filter_xor_altseed);
