@@ -21,33 +21,26 @@
 #include "test-filter.hpp"
 #include "../src/filter-xor-sagent.hpp"
 
-using namespace camoto;
 using namespace camoto::gamearchive;
 
-BOOST_FIXTURE_TEST_SUITE(sam_suite, test_filter)
-
-BOOST_AUTO_TEST_CASE(sam_read)
+class test_filter_sam: public test_filter
 {
-	BOOST_TEST_MESSAGE("Decode some Secret Agent XOR-encoded data");
+	public:
+		test_filter_sam()
+		{
+			this->type = "xor-sagent-map";
+		}
 
-	FilterType_SAM_Map filter;
+		void addTests()
+		{
+			this->test_filter::addTests();
 
-	this->test_equal_read(&filter,
-		STRING_WITH_NULLS("\xC2\x76\x4E\x5E\xB1\x69\x19\xE9"),
-		STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF")
-	);
-}
+			this->content("normal", 8, STRING_WITH_NULLS(
+				"\xC2\x76\x4E\x5E\xB1\x69\x19\xE9"
+			), STRING_WITH_NULLS(
+				"\x00\x01\x02\x03\xFF\xFF\xFF\xFF"
+			));
+		}
+};
 
-BOOST_AUTO_TEST_CASE(sam_write)
-{
-	BOOST_TEST_MESSAGE("Encode some data using Secret Agent XOR cipher");
-
-	FilterType_SAM_Map filter;
-
-	this->test_equal_write(&filter,
-		STRING_WITH_NULLS("\x00\x01\x02\x03\xFF\xFF\xFF\xFF"),
-		STRING_WITH_NULLS("\xC2\x76\x4E\x5E\xB1\x69\x19\xE9")
-	);
-}
-
-BOOST_AUTO_TEST_SUITE_END()
+IMPLEMENT_TESTS(filter_sam);
