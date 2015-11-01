@@ -27,20 +27,6 @@
 	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
 	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
 
-#define POD_DESC2_larger \
-	"This is a test\0\0" \
-	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
-
-#define POD_DESC2_smaller \
-	"Hello\0\0\0\0\0\0\0\0\0\0\0" \
-	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" \
-	"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
-
 class test_pod_tv: public test_archive
 {
 	public:
@@ -48,10 +34,12 @@ class test_pod_tv: public test_archive
 		{
 			this->type = "pod-tv";
 			this->lenMaxFilename = 32;
-			this->hasMetadata[camoto::Metadata::MetadataType::Description] = true;
-			this->metadataDesc = "Startup 1.1 Gold";
-			this->metadataDescLarger = "This is a test";
-			this->metadataDescSmaller = "Hello";
+
+			Attribute comment;
+			comment.type = Attribute::Type::Text;
+			comment.textValue = "Startup 1.1 Gold";
+			comment.textMaxLength = 80;
+			this->attributes.push_back(comment);
 		}
 
 		void addTests()
@@ -96,6 +84,38 @@ class test_pod_tv: public test_archive
 				"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
 				"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
 				"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x05"
+				"ONE.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xa4\x00\x00\x00"
+				"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xb3\x00\x00\x00"
+				"This is one.dat"
+				"This is two.dat"
+			));
+
+			// a01: Shorten comment attribute
+			this->changeAttribute(0, "Hello", STRING_WITH_NULLS(
+				"\x02\x00\x00\x00"
+
+				"Hello\0\0\0\0\0\0\0\0\0\0\0"
+				"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+				"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+				"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+				"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+
+				"ONE.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xa4\x00\x00\x00"
+				"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xb3\x00\x00\x00"
+				"This is one.dat"
+				"This is two.dat"
+			));
+
+			// a02: Lengthen comment attribute
+			this->changeAttribute(0, "This is a test", STRING_WITH_NULLS(
+				"\x02\x00\x00\x00"
+
+				"This is a test\0\0"
+				"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+				"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+				"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+				"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+
 				"ONE.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xa4\x00\x00\x00"
 				"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xb3\x00\x00\x00"
 				"This is one.dat"
@@ -233,28 +253,6 @@ class test_pod_tv: public test_archive
 				"ONE.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x17\x00\x00\x00" "\xa4\x00\x00\x00"
 				"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xbb\x00\x00\x00"
 				"Now resized to 23 chars"
-				"This is two.dat"
-			);
-		}
-
-		virtual std::string metadata_set_desc_larger()
-		{
-			return STRING_WITH_NULLS(
-				"\x02\x00\x00\x00" POD_DESC2_larger
-				"ONE.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xa4\x00\x00\x00"
-				"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xb3\x00\x00\x00"
-				"This is one.dat"
-				"This is two.dat"
-			);
-		}
-
-		virtual std::string metadata_set_desc_smaller()
-		{
-			return STRING_WITH_NULLS(
-				"\x02\x00\x00\x00" POD_DESC2_smaller
-				"ONE.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xa4\x00\x00\x00"
-				"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xb3\x00\x00\x00"
-				"This is one.dat"
 				"This is two.dat"
 			);
 		}

@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(archive_attribute_operators)
 test_archive::test_archive()
 	:	numIsInstanceTests(0),
 		numInvalidContentTests(1),
-		numChangeMetadataTests(1)
+		numChangeAttributeTests(1)
 {
 	this->create = true;
 	this->newIsInstance = true;
@@ -74,18 +74,10 @@ test_archive::test_archive()
 	this->content[3] = "This is four.dat";
 	this->content0_overwritten = "Now resized to 23 chars";
 
-	//this->content0_normalSize = 15;
 	this->content0_largeSize = 20;
 	this->content0_smallSize = 10;
-//	this->content0_overwrittenSize = this->content0_overwritten.length();
 	this->content0_largeSize_unfiltered = this->content0_largeSize;
 	this->content0_smallSize_unfiltered = this->content0_smallSize;
-
-	this->hasMetadata[camoto::Metadata::MetadataType::Description] = false;
-	this->hasMetadata[camoto::Metadata::MetadataType::Version] = false;
-
-	this->metadataDesc = "Metadata description";
-	this->metadataVer = "123";
 }
 
 void test_archive::addTests()
@@ -127,14 +119,9 @@ void test_archive::addTests()
 		ADD_ARCH_TEST(false, &test_archive::test_remove_all_re_add);
 	}
 
-	// Only perform the metadata tests if supported by the archive format
-	if (this->hasMetadata[camoto::Metadata::MetadataType::Description]) {
-		ADD_ARCH_TEST(false, &test_archive::test_metadata_get_desc);
-		ADD_ARCH_TEST(false, &test_archive::test_metadata_set_desc_larger);
-		ADD_ARCH_TEST(false, &test_archive::test_metadata_set_desc_smaller);
-	}
-	if (this->hasMetadata[camoto::Metadata::MetadataType::Version]) {
-		ADD_ARCH_TEST(false, &test_archive::test_metadata_get_ver);
+	// Only perform the attribute tests if supported by the archive format
+	if (!this->attributes.empty()) {
+		ADD_ARCH_TEST(false, &test_archive::test_attributes);
 	}
 
 	// Tests on new archives (in an empty state)
@@ -317,6 +304,32 @@ void test_archive::populateSuppData()
 	return;
 }
 
+void test_archive::setAttributes()
+{
+	int i = 0;
+	for (auto& a : this->attributes) {
+		switch (a.type) {
+			case Attribute::Type::Integer:
+				this->pArchive->attribute(i, a.integerValue);
+				break;
+			case Attribute::Type::Enum:
+				this->pArchive->attribute(i, a.enumValue);
+				break;
+			case Attribute::Type::Filename:
+				this->pArchive->attribute(i, a.filenameValue);
+				break;
+			case Attribute::Type::Text:
+				this->pArchive->attribute(i, a.textValue);
+				break;
+			case Attribute::Type::Image:
+				this->pArchive->attribute(i, a.imageIndex);
+				break;
+		}
+		i++;
+	}
+	return;
+}
+
 void test_archive::checkData(std::function<std::string(test_archive&)> fnExpected,
 	const std::string& msg)
 {
@@ -415,36 +428,78 @@ void test_archive::test_invalidContent(const std::string& content,
 	return;
 }
 
-void test_archive::changeMetadata(camoto::Metadata::MetadataType item,
+void test_archive::changeAttribute(unsigned int attributeIndex,
 	const std::string& newValue, const std::string& content)
 {
 	this->ts->add(
 		boost::unit_test::make_test_case(
-			std::bind(&test_archive::test_changeMetadata, this, item, newValue,
-				content, this->numChangeMetadataTests),
-			createString("test_archive[" << this->basename << "]::changemetadata_c"
-				<< std::setfill('0') << std::setw(2) << this->numChangeMetadataTests),
+			std::bind(
+				(void(test_archive::*)(unsigned int, const std::string&,
+					const std::string&, unsigned int))&test_archive::test_changeAttribute,
+				this, attributeIndex,
+				newValue, content, this->numChangeAttributeTests),
+			createString("test_archive[" << this->basename << "]::changeAttribute_a"
+				<< std::setfill('0') << std::setw(2) << this->numChangeAttributeTests),
 			__FILE__, __LINE__
 		)
 	);
-	this->numChangeMetadataTests++;
+	this->numChangeAttributeTests++;
 	return;
 }
 
-void test_archive::test_changeMetadata(camoto::Metadata::MetadataType item,
+void test_archive::changeAttribute(unsigned int attributeIndex,
+	unsigned int newValue, const std::string& content)
+{
+	this->ts->add(
+		boost::unit_test::make_test_case(
+			std::bind(
+				(void(test_archive::*)(unsigned int, int,
+					const std::string&, unsigned int))&test_archive::test_changeAttribute,
+				this, attributeIndex,
+				newValue, content, this->numChangeAttributeTests),
+			createString("test_archive[" << this->basename << "]::changeAttribute_a"
+				<< std::setfill('0') << std::setw(2) << this->numChangeAttributeTests),
+			__FILE__, __LINE__
+		)
+	);
+	this->numChangeAttributeTests++;
+	return;
+}
+
+void test_archive::test_changeAttribute(unsigned int attributeIndex,
 	const std::string& newValue, const std::string& content,
 	unsigned int testNumber)
 {
-	BOOST_TEST_MESSAGE(this->basename << ": changeMetadata_c"
+	BOOST_TEST_MESSAGE(this->basename << ": changeAttribute_a"
 		<< std::setfill('0') << std::setw(2) << testNumber);
 
 	this->prepareTest(false);
-	this->pArchive->setMetadata(item, newValue);
+	this->pArchive->attribute(attributeIndex, newValue);
+	this->pArchive->flush();
 
 	// Can't use checkData() here as we don't have parameter for target suppData
 	BOOST_CHECK_MESSAGE(
 		this->is_content_equal(content),
-		"Error setting metadata field"
+		"Error setting string attribute"
+	);
+	return;
+}
+
+void test_archive::test_changeAttribute(unsigned int attributeIndex,
+	int newValue, const std::string& content,
+	unsigned int testNumber)
+{
+	BOOST_TEST_MESSAGE(this->basename << ": changeAttribute_a"
+		<< std::setfill('0') << std::setw(2) << testNumber);
+
+	this->prepareTest(false);
+	this->pArchive->attribute(attributeIndex, newValue);
+	this->pArchive->flush();
+
+	// Can't use checkData() here as we don't have parameter for target suppData
+	BOOST_CHECK_MESSAGE(
+		this->is_content_equal(content),
+		"Error setting int attribute"
 	);
 	return;
 }
@@ -1237,6 +1292,43 @@ void test_archive::test_shortext()
 	);
 }
 
+void test_archive::test_attributes()
+{
+	BOOST_TEST_MESSAGE(this->basename << ": Test attributes");
+
+	auto& attrAllArchive = this->pArchive->attributes();
+	int i = 0;
+	for (auto& attrExpected : this->attributes) {
+		auto& attrArchive = attrAllArchive[i];
+
+		BOOST_REQUIRE_EQUAL((int)attrExpected.type, (int)attrArchive.type);
+
+		switch (attrExpected.type) {
+			case Attribute::Type::Integer:
+				BOOST_REQUIRE_EQUAL(attrExpected.integerValue, attrArchive.integerValue);
+				break;
+			case Attribute::Type::Enum:
+				BOOST_REQUIRE_EQUAL(attrExpected.enumValue, attrArchive.enumValue);
+				break;
+			case Attribute::Type::Filename:
+				BOOST_REQUIRE_MESSAGE(
+					this->is_equal(attrExpected.filenameValue, attrArchive.filenameValue),
+					"Error getting filename attribute"
+				);
+				break;
+			case Attribute::Type::Text:
+				BOOST_REQUIRE_MESSAGE(
+					this->is_equal(attrExpected.textValue, attrArchive.textValue),
+					"Error getting text attribute"
+				);
+				break;
+			case Attribute::Type::Image:
+				BOOST_REQUIRE_EQUAL(attrExpected.imageIndex, attrArchive.imageIndex);
+		}
+		i++;
+	}
+}
+
 //
 // Tests on empty archives
 //
@@ -1278,11 +1370,9 @@ void test_archive::test_new_to_initialstate()
 {
 	BOOST_TEST_MESSAGE(this->basename << ": Creating archive from scratch");
 
-	if (this->hasMetadata[camoto::Metadata::MetadataType::Version]) {
-		// Need to set this first as (in the case of Blood RFF) it affects what type
-		// of files we are allowed to insert.
-		this->pArchive->setMetadata(camoto::Metadata::MetadataType::Version, this->metadataVer);
-	}
+	// Need to set this first as (in the case of Blood RFF) it affects what type
+	// of files we are allowed to insert.
+	this->setAttributes();
 
 	auto& files2 = this->pArchive->files();
 	BOOST_REQUIRE_EQUAL(files2.size(), 0);
@@ -1335,13 +1425,6 @@ void test_archive::test_new_to_initialstate()
 
 	this->pArchive = origArchive;
 
-	if (this->hasMetadata[camoto::Metadata::MetadataType::Description]) {
-		// If this format has metadata, set it to the same value used when comparing
-		// against the initialstate, so that this new archive will hopefully match
-		// the initialstate itself.
-		this->pArchive->setMetadata(camoto::Metadata::MetadataType::Description, this->metadataDesc);
-	}
-
 	this->checkData(&test_archive::initialstate,
 		"Error inserting files in new/empty archive"
 	);
@@ -1359,15 +1442,7 @@ void test_archive::test_new_manipulate_zero_length_files()
 {
 	BOOST_TEST_MESSAGE(this->basename << ": Inserting empty files into archive, then resizing them");
 
-	if (this->hasMetadata[camoto::Metadata::MetadataType::Description]) {
-		// If this format has metadata, set it to the same value used when comparing
-		// against the initialstate, so that this new archive will hopefully match
-		// the initialstate itself.
-		this->pArchive->setMetadata(camoto::Metadata::MetadataType::Description, this->metadataDesc);
-	}
-	if (this->hasMetadata[camoto::Metadata::MetadataType::Version]) {
-		this->pArchive->setMetadata(camoto::Metadata::MetadataType::Version, this->metadataVer);
-	}
+	this->setAttributes();
 
 	auto origArchive = this->pArchive;
 	Archive::FileHandle folder3;
@@ -1485,111 +1560,4 @@ void test_archive::test_new_manipulate_zero_length_files()
 	this->checkData(&test_archive::insert_end,
 		"Error manipulating zero-length files"
 	);
-}
-
-//
-// Metadata tests
-//
-
-void test_archive::test_metadata_get_desc()
-{
-	BOOST_TEST_MESSAGE(this->basename << ": Get 'description' metadata field");
-
-	// Make sure this format reports having a 'description' metadata field
-	bool bFound = false;
-	for (auto& i : this->pArchive->getMetadataList()) {
-		if (i == camoto::Metadata::MetadataType::Description) {
-			bFound = true;
-			break;
-		}
-	}
-	BOOST_REQUIRE_EQUAL(bFound, true);
-
-	// Change the field's value
-	std::string value = this->pArchive->getMetadata(camoto::Metadata::MetadataType::Description);
-
-	// Make sure we didn't read in extra data (e.g. 400MB with a broken length)
-	BOOST_REQUIRE_EQUAL(value.length(), this->metadataDesc.length());
-
-	// Put it in a stringstream to allow use of the standard checking mechanism
-	stream::string out;
-	out << value;
-
-	BOOST_CHECK_MESSAGE(
-		this->is_equal(this->metadataDesc, out.data),
-		"Error getting 'description' metadata field"
-	);
-}
-
-void test_archive::test_metadata_set_desc_larger()
-{
-	BOOST_TEST_MESSAGE(this->basename << ": Set 'description' metadata field to larger value");
-
-	// We assume the format supports this metadata type, as this is checked in
-	// test_metadata_get_desc() above.
-
-	// Change the field's value
-	this->pArchive->setMetadata(
-		camoto::Metadata::MetadataType::Description, this->metadataDescLarger);
-
-	this->checkData(&test_archive::metadata_set_desc_larger,
-		"Error enlarging 'description' metadata field"
-	);
-}
-
-void test_archive::test_metadata_set_desc_smaller()
-{
-	BOOST_TEST_MESSAGE(this->basename << ": Set 'description' metadata field to smaller value");
-
-	// We assume the format supports this metadata type, as this is checked in
-	// get_metadata_description above.
-
-	// Change the field's value
-	this->pArchive->setMetadata(
-		camoto::Metadata::MetadataType::Description, this->metadataDescSmaller);
-
-	this->checkData(&test_archive::metadata_set_desc_smaller,
-		"Error shrinking 'description' metadata field"
-	);
-}
-
-void test_archive::test_metadata_get_ver()
-{
-	BOOST_TEST_MESSAGE(this->basename << ": Get 'version' metadata field");
-
-	// Make sure this format reports having a 'version' metadata field
-	bool bFound = false;
-	for (auto& i : this->pArchive->getMetadataList()) {
-		if (i == camoto::Metadata::MetadataType::Version) {
-			bFound = true;
-			break;
-		}
-	}
-	BOOST_REQUIRE_EQUAL(bFound, true);
-
-	// Change the field's value
-	std::string value = this->pArchive->getMetadata(camoto::Metadata::MetadataType::Version);
-
-	// Make sure we didn't read in extra data (e.g. 400MB with a broken length)
-	BOOST_REQUIRE_EQUAL(value.length(), this->metadataVer.length());
-
-	// Put it in a stringstream to allow use of the standard checking mechanism
-	stream::string out;
-	out << value;
-
-	BOOST_CHECK_MESSAGE(
-		this->is_equal(this->metadataVer, out.data),
-		"Error getting 'version' metadata field"
-	);
-}
-
-
-std::string test_archive::metadata_set_desc_larger()
-{
-	throw new test_metadata_not_supported;
-}
-
-std::string test_archive::metadata_set_desc_smaller()
-{
-	throw new test_metadata_not_supported;
 }

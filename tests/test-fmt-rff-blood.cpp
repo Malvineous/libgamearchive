@@ -29,8 +29,11 @@ class test_rff_blood: public test_archive
 		{
 			this->type = "rff-blood";
 			this->lenMaxFilename = 12;
-			this->hasMetadata[camoto::Metadata::MetadataType::Version] = true;
-			this->metadataVer = "2.0";
+
+			Attribute ver;
+			ver.type = Attribute::Type::Enum;
+			ver.enumValue = 0; // version 0x200
+			this->attributes.push_back(ver);
 		}
 
 		void addTests()

@@ -27,10 +27,12 @@ class test_epf_lionking: public test_archive
 		{
 			this->type = "epf-lionking";
 			this->lenMaxFilename = 12;
-			this->hasMetadata[camoto::Metadata::MetadataType::Description] = true;
-			this->metadataDesc = "Extra data";
-			this->metadataDescLarger = "This is a test";
-			this->metadataDescSmaller = "Hello";
+
+			Attribute comment;
+			comment.type = Attribute::Type::Text;
+			comment.textValue = "Extra data";
+			comment.textMaxLength = 0;
+			this->attributes.push_back(comment);
 		}
 
 		void addTests()
@@ -71,6 +73,27 @@ class test_epf_lionking: public test_archive
 				"This is one.dat"
 				"This is two.dat"
 				"Extra data"
+				"ONE.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00"
+				"TWO.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00"
+			));
+
+			// a01: Shorten comment attribute
+			this->changeAttribute(0, "Short", STRING_WITH_NULLS(
+				"EPFS"      "\x2E\x00\x00\x00" "\x00" "\x02\x00"
+				"This is one.dat"
+				"This is two.dat"
+				"Short"
+				"ONE.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00"
+				"TWO.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00"
+			));
+
+			// a02: Lengthen comment attribute
+			this->changeAttribute(0, "Longer than the original value",
+				STRING_WITH_NULLS(
+				"EPFS"      "\x47\x00\x00\x00" "\x00" "\x02\x00"
+				"This is one.dat"
+				"This is two.dat"
+				"Longer than the original value"
 				"ONE.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00"
 				"TWO.DAT\0\0\0\0\0\0" "\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00"
 			));

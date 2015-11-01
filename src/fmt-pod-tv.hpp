@@ -54,9 +54,7 @@ class Archive_POD_TV: virtual public Archive_FAT
 		Archive_POD_TV(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_POD_TV();
 
-		virtual MetadataTypes getMetadataList() const;
-		virtual std::string getMetadata(MetadataType item) const;
-		virtual void setMetadata(MetadataType item, const std::string& value);
+		virtual void flush();
 
 		virtual void updateFileName(const FATEntry *pid,
 			const std::string& strNewName);

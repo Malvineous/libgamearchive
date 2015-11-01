@@ -194,73 +194,56 @@ Archive_EPF_LionKing::Archive_EPF_LionKing(std::unique_ptr<stream::inout> conten
 		this->vcFAT.push_back(std::move(f));
 	}
 	// TODO: hidden data after FAT until EOF?
+
+	// Read metadata
+	this->v_attributes.emplace_back();
+	auto& attrDesc = this->v_attributes.back();
+	attrDesc.type = Attribute::Type::Text;
+	attrDesc.name = CAMOTO_ATTRIBUTE_COMMENT;
+	attrDesc.desc = "Description";
+	attrDesc.textMaxLength = 0; // unlimited
+
+	stream::pos offDesc = this->getDescOffset();
+	stream::len sizeDesc = this->offFAT - offDesc;
+	std::string strDesc;
+	if (sizeDesc) {
+		this->content->seekg(offDesc, stream::start);
+		*this->content >> fixedLength(attrDesc.textValue, sizeDesc);
+	}
 }
 
 Archive_EPF_LionKing::~Archive_EPF_LionKing()
 {
 }
 
+void Archive_EPF_LionKing::flush()
+{
+	auto& attrDesc = this->v_attributes[0];
+	if (attrDesc.changed) {
+		stream::pos offDesc = this->getDescOffset();
+		stream::len sizeDesc = this->offFAT - offDesc;
+		stream::delta sizeDelta = attrDesc.textValue.length() - sizeDesc;
+		this->content->seekp(offDesc, stream::start);
+		if (sizeDelta < 0) {
+			// TESTED BY: ?
+			this->content->remove(-sizeDelta);
+		} else {
+			// TESTED BY: ?
+			this->content->insert(sizeDelta);
+		}
+		*this->content << attrDesc.textValue; // TODO: confirm no terminating null
+		this->offFAT += sizeDelta;
+		this->updateFATOffset();
+		attrDesc.changed = false;
+	}
+
+	this->Archive_FAT::flush();
+	return;
+}
+
 Archive::File::Attribute Archive_EPF_LionKing::getSupportedAttributes() const
 {
 	return File::Attribute::Compressed;
-}
-
-Archive_EPF_LionKing::MetadataTypes Archive_EPF_LionKing::getMetadataList() const
-{
-	// TESTED BY: fmt_epf_lionking_get_metadata_description
-	return {
-		MetadataType::Description,
-	};
-}
-
-std::string Archive_EPF_LionKing::getMetadata(MetadataType item) const
-{
-	// TESTED BY: fmt_epf_lionking_get_metadata_description
-	switch (item) {
-		case MetadataType::Description: {
-			stream::pos offDesc = this->getDescOffset();
-			stream::len sizeDesc = this->offFAT - offDesc;
-			std::string strDesc;
-			if (sizeDesc) {
-				this->content->seekg(offDesc, stream::start);
-				*this->content >> fixedLength(strDesc, sizeDesc);
-				//content->read(strDesc.c_str(), sizeDesc);
-			}
-			return strDesc;
-		}
-		default:
-			assert(false);
-			throw stream::error("unsupported metadata item");
-	}
-}
-
-void Archive_EPF_LionKing::setMetadata(MetadataType item, const std::string& value)
-{
-	// TESTED BY: fmt_epf_lionking_set_metadata_description
-	// TESTED BY: fmt_epf_lionking_new_to_initialstate
-	switch (item) {
-		case MetadataType::Description: {
-			stream::pos offDesc = this->getDescOffset();
-			stream::len sizeDesc = this->offFAT - offDesc;
-			stream::delta sizeDelta = value.length() - sizeDesc;
-			this->content->seekp(offDesc, stream::start);
-			if (sizeDelta < 0) {
-				// TESTED BY: ?
-				this->content->remove(-sizeDelta);
-			} else {
-				// TESTED BY: ?
-				this->content->insert(sizeDelta);
-			}
-			*this->content << value; // TODO: confirm no terminating null
-			this->offFAT += sizeDelta;
-			this->updateFATOffset();
-			break;
-		}
-		default:
-			assert(false);
-			throw stream::error("unsupported metadata item");
-	}
-	return;
 }
 
 void Archive_EPF_LionKing::updateFileName(const FATEntry *pid, const std::string& strNewName)

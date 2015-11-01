@@ -28,7 +28,7 @@
 
 #include <camoto/stream.hpp>
 #include <stdint.h>
-#include <camoto/metadata.hpp>
+#include <camoto/attribute.hpp>
 
 namespace camoto {
 namespace gamearchive {
@@ -57,7 +57,7 @@ class Archive;
  *       of the functions seek around the underlying stream and thus will break
  *       if two or more functions are executing at the same time.
  */
-class Archive: virtual public Metadata
+class Archive: public HasAttributes
 {
 	public:
 		/// Base class to represent entries in the file.

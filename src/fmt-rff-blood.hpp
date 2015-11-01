@@ -57,9 +57,7 @@ class Archive_RFF_Blood: virtual public Archive_FAT
 		Archive_RFF_Blood(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_RFF_Blood();
 
-		virtual MetadataTypes getMetadataList() const;
-		virtual std::string getMetadata(MetadataType item) const;
-		virtual void setMetadata(MetadataType item, const std::string& value);
+		virtual void attribute(unsigned int index, int newValue);
 
 		/// Write out the FAT with the updated encryption key.
 		virtual void flush();

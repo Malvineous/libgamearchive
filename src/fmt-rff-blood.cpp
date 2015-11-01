@@ -220,6 +220,23 @@ Archive_RFF_Blood::Archive_RFF_Blood(std::unique_ptr<stream::inout> content)
 		f->realSize = f->storedSize;
 		this->vcFAT.push_back(std::move(f));
 	}
+
+	// Populate attributes
+	this->v_attributes.emplace_back();
+	auto& attrDesc = this->v_attributes.back();
+	attrDesc.type = Attribute::Type::Enum;
+	attrDesc.name = "Version";
+	attrDesc.desc = "File version";
+	attrDesc.enumValueNames.emplace_back("v2.0 - no encryption");
+	attrDesc.enumValueNames.emplace_back("v3.1 - selectable encryption");
+	switch (this->version) {
+		case 0x200: attrDesc.enumValue = 0; break;
+		case 0x301: attrDesc.enumValue = 1; break;
+		default:
+			throw camoto::error(createString("Unknown RFF version 0x" << std::hex
+				<< this->version
+				<< ".  Please report this, with a sample file if possible!"));
+	}
 }
 
 Archive_RFF_Blood::~Archive_RFF_Blood()
@@ -229,70 +246,45 @@ Archive_RFF_Blood::~Archive_RFF_Blood()
 	this->fatStream->flush();
 }
 
-Archive_RFF_Blood::MetadataTypes Archive_RFF_Blood::getMetadataList() const
+void Archive_RFF_Blood::attribute(unsigned int index, int newValue)
 {
-	// TESTED BY: fmt_rff_blood_get_metadata_version
-	return {
-		MetadataType::Version,
-	};
-}
-
-std::string Archive_RFF_Blood::getMetadata(MetadataType item) const
-{
-	// TESTED BY: fmt_rff_blood_get_metadata_version
-	switch (item) {
-		case MetadataType::Version: {
-			std::stringstream ss;
-			ss << (this->version >> 8) << '.' << (this->version & 0xFF);
-			return ss.str();
+	if (index == 0) { // setting the version
+		unsigned int newVersion;
+		switch (newValue) {
+			case 0: newVersion = 0x200; break;
+			case 1: newVersion = 0x301; break;
+			default: newVersion = 0; break;
 		}
-		default:
-			assert(false);
-			throw stream::error("unsupported metadata item");
-	}
-}
-
-void Archive_RFF_Blood::setMetadata(MetadataType item, const std::string& value)
-{
-	// TESTED BY: fmt_rff_blood_set_metadata_version
-	// TESTED BY: fmt_rff_blood_new_to_initialstate
-	switch (item) {
-		case MetadataType::Version: {
-			int dotPos = value.find_first_of('.');
-			std::string strMajor = value.substr(0, dotPos);
-			std::string strMinor = value.substr(dotPos + 1);
-			int iMajor = strtoul(strMajor.c_str(), NULL, 10);
-			int iMinor = strtoul(strMinor.c_str(), NULL, 10);
-			int newVersion = (iMajor << 8) | iMinor;
-			if (
-				(newVersion != 0x200) &&
-				(newVersion != 0x301)
-			) {
-				throw stream::error("only versions 2.0 and 3.1 are supported");
-			}
-			if (newVersion < 0x301) {
-				// Moving from a version that supports encryption to one that doesn't,
-				// so make sure there are no encrypted files.
-				for (auto& i : this->vcFAT) {
-					auto pFAT = dynamic_cast<const FATEntry *>(&*i);
-					if (pFAT->fAttr & File::Attribute::Encrypted) {
-						throw stream::error("cannot change to this version while the "
-							"archive contains encrypted files (the target version does not "
-							"support encryption)");
-					}
+		if (newVersion < 0x301) {
+			// Moving from a version that supports encryption to one that doesn't,
+			// so make sure there are no encrypted files.
+			for (auto& i : this->vcFAT) {
+				auto pFAT = FATEntry::cast(i);
+				if (pFAT->fAttr & File::Attribute::Encrypted) {
+					throw camoto::error("Cannot change to this RFF version while the "
+						"archive contains encrypted files (the target version does not "
+						"support encryption)");
 				}
 			}
-			this->version = newVersion;
-
-			// Write new version number into file header
-			this->content->seekg(4, stream::start);
-			*this->content << u16le(this->version);
-			*this->content << u16le(0); // TODO: write 1 here for 0x200?
-			break;
 		}
-		default:
-			assert(false);
-			throw stream::error("unsupported metadata item");
+		// If we're here then it's possible to change the version, so let the
+		// standard implementation do that so it can range check as well.
+	}
+	this->Archive_FAT::attribute(index, newValue);
+	if (this->v_attributes[0].changed) {
+		// Version has changed, write an update to the file
+		switch (this->v_attributes[0].enumValue) {
+			case 0: this->version = 0x200; break;
+			case 1: this->version = 0x301; break;
+			default: assert(false); break;
+		}
+
+		// Write new version number into file header
+		this->content->seekg(4, stream::start);
+		*this->content << u16le(this->version);
+		*this->content << u16le(0); // TODO: write 1 here for 0x200?
+
+		this->v_attributes[0].changed = false;
 	}
 	return;
 }

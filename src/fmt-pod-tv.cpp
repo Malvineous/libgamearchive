@@ -177,55 +177,35 @@ Archive_POD_TV::Archive_POD_TV(std::unique_ptr<stream::inout> content)
 		f->realSize = f->storedSize;
 		this->vcFAT.push_back(std::move(f));
 	}
+
+	// Read metadata
+	this->v_attributes.emplace_back();
+	auto& attrDesc = this->v_attributes.back();
+	attrDesc.type = Attribute::Type::Text;
+	attrDesc.name = CAMOTO_ATTRIBUTE_COMMENT;
+	attrDesc.desc = "POD file description";
+	attrDesc.textMaxLength = POD_DESCRIPTION_LEN;
+	this->content->seekg(POD_DESCRIPTION_OFFSET, stream::start);
+	*this->content >> nullTerminated(attrDesc.textValue, POD_DESCRIPTION_LEN);
 }
 
 Archive_POD_TV::~Archive_POD_TV()
 {
 }
 
-Archive_POD_TV::MetadataTypes Archive_POD_TV::getMetadataList() const
+void Archive_POD_TV::flush()
 {
-	// TESTED BY: fmt_pod_tv_get_metadata_description
-	return {
-		MetadataType::Description,
-	};
-}
+	auto& attrDesc = this->v_attributes[0];
+	if (attrDesc.changed) {
+		assert(attrDesc.textValue.length() <= POD_DESCRIPTION_LEN);
 
-std::string Archive_POD_TV::getMetadata(MetadataType item) const
-{
-	// TESTED BY: fmt_pod_tv_get_metadata_description
-	switch (item) {
-		case MetadataType::Description: {
-			// TODO: see whether description can span two file entries (80 bytes) or
-			// whether the offsets have to be null
-			this->content->seekg(POD_DESCRIPTION_OFFSET, stream::start);
-			char description[POD_DESCRIPTION_LEN + 1];
-			this->content->read(description, POD_DESCRIPTION_LEN);
-			description[POD_DESCRIPTION_LEN] = 0;
-			return std::string(description);
-		}
-		default:
-			assert(false);
-			throw stream::error("unsupported metadata item");
-	}
-}
+		this->content->seekp(POD_DESCRIPTION_OFFSET, stream::start);
+		*this->content
+			<< nullPadded(attrDesc.textValue, POD_DESCRIPTION_LEN);
 
-void Archive_POD_TV::setMetadata(MetadataType item, const std::string& value)
-{
-	// TESTED BY: fmt_pod_tv_set_metadata_description
-	// TESTED BY: fmt_pod_tv_new_to_initialstate
-	switch (item) {
-		case MetadataType::Description:
-			if (value.length() > POD_DESCRIPTION_LEN) {
-				throw stream::error("description too long");
-			}
-			this->content->seekp(POD_DESCRIPTION_OFFSET, stream::start);
-			*this->content << nullPadded(value, POD_DESCRIPTION_LEN);
-			break;
-		default:
-			assert(false);
-			throw stream::error("unsupported metadata item");
+		attrDesc.changed = false;
 	}
+	this->Archive_FAT::flush();
 	return;
 }
 

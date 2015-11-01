@@ -166,55 +166,46 @@ Archive_WAD_Doom::Archive_WAD_Doom(std::unique_ptr<stream::inout> content)
 		f->realSize = f->storedSize;
 		this->vcFAT.push_back(std::move(f));
 	}
+
+	// Read metadata
+	this->v_attributes.emplace_back();
+	auto& attrType = this->v_attributes.back();
+	attrType.type = Attribute::Type::Enum;
+	attrType.name = "Type";
+	attrType.desc = "Type of WAD format.  IWAD files must contain all data for "
+		"the game.  PWAD files take priority and can override files, with any "
+		"files missing from a PWAD being read from the IWAD instead.  In other "
+		"words, an IWAD contains the original game, and a PWAD contains a mod, "
+		"which replaces some parts of the original game where needed.";
+	attrType.enumValueNames.emplace_back("IWAD");
+	attrType.enumValueNames.emplace_back("PWAD");
+
+	this->content->seekg(0, stream::start);
+	char wadType;
+	this->content->read(&wadType, 1);
+	if (wadType == 'I') attrType.enumValue = 0;
+	else attrType.enumValue = 1;
 }
 
 Archive_WAD_Doom::~Archive_WAD_Doom()
 {
 }
 
-Archive_WAD_Doom::MetadataTypes Archive_WAD_Doom::getMetadataList() const
+void Archive_WAD_Doom::flush()
 {
-	// TESTED BY: fmt_wad_doom::test_metadata_get_ver
-	return {
-		MetadataType::Version,
-	};
-}
-
-std::string Archive_WAD_Doom::getMetadata(MetadataType item) const
-{
-	// TESTED BY: fmt_wad_doom::test_metadata_get_ver
-	switch (item) {
-		case MetadataType::Version: {
-			this->content->seekg(0, stream::start);
-			char wadtype;
-			this->content->read(&wadtype, 1);
-			return std::string(1, wadtype);
+	auto& attrType = this->v_attributes[0];
+	if (attrType.changed) {
+		uint8_t val;
+		switch (attrType.enumValue) {
+			case 0: val = 'I'; break;
+			case 1: val = 'P'; break;
+			default: throw camoto::error("Unknown WAD type.");
 		}
-		default:
-			assert(false);
-			throw stream::error("unsupported metadata item");
+		this->content->seekp(0, stream::start);
+		*this->content << u8(val);
+		attrType.changed = false;
 	}
-}
-
-void Archive_WAD_Doom::setMetadata(MetadataType item, const std::string& value)
-{
-	// TESTED BY: test_wad_doom_changemetadata_c01
-	// TESTED BY: fmt_wad_doom_new_to_initialstate
-	switch (item) {
-		case MetadataType::Version:
-			if (
-				(value.compare("I") != 0) &&
-				(value.compare("P") != 0)
-			) {
-				throw stream::error("Version can only be set to I or P for IWAD or PWAD");
-			}
-			this->content->seekp(0, stream::start);
-			this->content->write(&(value[0]), 1);
-			break;
-		default:
-			assert(false);
-			throw stream::error("unsupported metadata item");
-	}
+	this->Archive_FAT::flush();
 	return;
 }
 

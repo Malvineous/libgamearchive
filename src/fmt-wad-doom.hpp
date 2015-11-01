@@ -54,9 +54,7 @@ class Archive_WAD_Doom: virtual public Archive_FAT
 		Archive_WAD_Doom(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_WAD_Doom();
 
-		virtual MetadataTypes getMetadataList() const;
-		virtual std::string getMetadata(MetadataType item) const;
-		virtual void setMetadata(MetadataType item, const std::string& value);
+		virtual void flush();
 
 		virtual void updateFileName(const FATEntry *pid,
 			const std::string& strNewName);

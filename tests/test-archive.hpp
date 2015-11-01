@@ -92,15 +92,11 @@ class test_archive: public test_main
 		void test_insert_zero_then_resize();
 		void test_resize_over64k();
 		void test_shortext();
+		void test_attributes();
 
 		virtual void test_new_isinstance();
 		virtual void test_new_to_initialstate();
 		void test_new_manipulate_zero_length_files();
-
-		void test_metadata_get_desc();
-		void test_metadata_set_desc_larger();
-		void test_metadata_set_desc_smaller();
-		void test_metadata_get_ver();
 
 	protected:
 		/// Initial state.
@@ -145,12 +141,6 @@ class test_archive: public test_main
 		/// Result of ONE.DAT being enlarged to 23 bytes and data written to EOF.
 		virtual std::string resize_write() = 0;
 
-		/// Result of setting the description to descLarger.
-		virtual std::string metadata_set_desc_larger();
-
-		/// Result of setting the description to descSmaller.
-		virtual std::string metadata_set_desc_smaller();
-
 		/// Add a test to the suite.  Used by ADD_ARCH_TEST().
 		void addBoundTest(bool empty, std::function<void()> fnTest,
 			boost::unit_test::const_string file, std::size_t line,
@@ -187,6 +177,9 @@ class test_archive: public test_main
 		 * resetSuppData() first to return everything to the initialstate.
 		 */
 		void populateSuppData();
+
+		/// Set the attributes supplied by the test case.
+		void setAttributes();
 
 		/// Check if all supp data streams match the expected values.
 		/**
@@ -230,26 +223,34 @@ class test_archive: public test_main
 		void test_invalidContent(const std::string& content,
 			unsigned int testNumber);
 
-		/// Add an changeMetadata check to run later.
+		/// Add an changeAttribute check to run later.
 		/**
-		 * These checks make sure metadata alterations work correctly.
+		 * These checks make sure attribute alterations work correctly.
 		 *
-		 * @param item
-		 *   Metadata item to change.
+		 * @param attributeIndex
+		 *   Zero-based index of the attribute to change.
 		 *
 		 * @param newValue
-		 *   New content for metadata item.
+		 *   New content for the attribute.
 		 *
 		 * @param content
 		 *   Expected result after taking the initialstate() and changing the
-		 *   given metadata item as specified.
+		 *   given attribute as specified.
 		 */
-		void changeMetadata(camoto::Metadata::MetadataType item,
+		void changeAttribute(unsigned int attributeIndex,
 			const std::string& newValue, const std::string& content);
 
-		/// Perform a changeMetadata check now.
-		void test_changeMetadata(camoto::Metadata::MetadataType item,
+		void changeAttribute(unsigned int attributeIndex,
+			unsigned int newValue, const std::string& content);
+
+		/// Perform a changeAttribute<std::string> check now.
+		void test_changeAttribute(unsigned int attributeIndex,
 			const std::string& newValue, const std::string& content,
+			unsigned int testNumber);
+
+		/// Perform a changeAttribute<int> check now.
+		void test_changeAttribute(unsigned int attributeIndex,
+			int newValue, const std::string& content,
 			unsigned int testNumber);
 
 		/// Does the archive content match the parameter?
@@ -281,7 +282,7 @@ class test_archive: public test_main
 		unsigned int numInvalidContentTests;
 
 		/// Number of changeMetadata tests, used to number them sequentially.
-		unsigned int numChangeMetadataTests;
+		unsigned int numChangeAttributeTests;
 
 	public:
 		/// File type code for this format.
@@ -387,30 +388,8 @@ class test_archive: public test_main
 		/// Length of shrunk file 1 before compression (used in arch header only.)
 		unsigned int content0_smallSize_unfiltered;
 
-		/// Does this format support metadata?
-		std::map<camoto::Metadata::MetadataType, bool> hasMetadata;
-
-		/// Default value for metadata 'description' field.
-		std::string metadataDesc;
-
-		/// Metadata text to set for 'description' when the field should be
-		/// shorter than the initial state.
-		/**
-		 * After setting the description to this value, the archive file should
-		 * match the value returned by metadata_set_desc_smaller().
-		 */
-		std::string metadataDescSmaller;
-
-		/// Metadata text to set for 'description' when the field should be
-		/// longer than the initial state.
-		/**
-		 * After setting the description to this value, the archive file should
-		 * match the value returned by metadata_set_desc_larger().
-		 */
-		std::string metadataDescLarger;
-
-		/// Default value for metadata 'version' field.
-		std::string metadataVer;
+		/// List of attributes this format supports, can be empty.
+		std::vector<camoto::Attribute> attributes;
 
 		/// Link between supplementary items and the class containing the expected
 		/// content for each test case.

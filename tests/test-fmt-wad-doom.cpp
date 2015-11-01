@@ -29,8 +29,10 @@ class test_wad_doom: public test_archive
 			this->filename[2] = "THREE";
 			this->lenMaxFilename = 8;
 
-			this->hasMetadata[camoto::Metadata::MetadataType::Version] = true;
-			this->metadataVer = "I"; // matches initialstate
+			Attribute wadType;
+			wadType.type = Attribute::Type::Enum;
+			wadType.enumValue = 0; // IWAD
+			this->attributes.push_back(wadType);
 		}
 
 		void addTests()
@@ -70,8 +72,8 @@ class test_wad_doom: public test_archive
 				"This is one.dat"
 			));
 
-			// test_wad_doom_changemetadata_c01
-			this->changeMetadata(camoto::Metadata::MetadataType::Version, "P", STRING_WITH_NULLS(
+			// a01: IWAD -> PWAD
+			this->changeAttribute(0, 1/*PWAD*/, STRING_WITH_NULLS(
 				"PWAD" "\x02\x00\x00\x00" "\x0c\x00\x00\x00"
 				"\x2c\x00\x00\x00" "\x0f\x00\x00\x00" "ONE.DAT\0"
 				"\x3b\x00\x00\x00" "\x0f\x00\x00\x00" "TWO.DAT\0"
