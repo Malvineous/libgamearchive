@@ -21,9 +21,8 @@
 #ifndef _CAMOTO_FILTER_DECOMP_SIZE_HPP_
 #define _CAMOTO_FILTER_DECOMP_SIZE_HPP_
 
-#include <camoto/stream.hpp>
-#include <stdint.h>
-#include <camoto/gamearchive/filtertype.hpp>
+#include <memory>
+#include <camoto/filter.hpp>
 
 namespace camoto {
 namespace gamearchive {
