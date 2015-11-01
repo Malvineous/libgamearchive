@@ -32,6 +32,8 @@ namespace fs = boost::filesystem;
 namespace ga = camoto::gamearchive;
 namespace stream = camoto::stream;
 
+#include "common-attributes.hpp"
+
 #define PROGNAME "gamearch"
 
 /*** Return values ***/
@@ -361,6 +363,9 @@ int main(int iArgC, char *cArgV[])
 		("insert,i", po::value<std::string>(),
 			"add a file at a specific point in the archive")
 
+		("metadata,m",
+			"list archive attributes/metadata")
+
 		("overwrite,o", po::value<std::string>(),
 			"replace a file in the archive with new data")
 
@@ -647,6 +652,9 @@ finishTesting:
 
 			} else if (i->string_key.compare("extract-all") == 0) {
 				extractAll(pArchive, bScript);
+
+			} else if (i->string_key.compare("metadata") == 0) {
+				listAttributes(pArchive.get(), bScript);
 
 			} else if (i->string_key.compare("extract") == 0) {
 				std::string strArchFile, strLocalFile;

@@ -6,7 +6,9 @@ gamearch_SOURCES = gamearch.cpp
 gamecomp_SOURCES = gamecomp.cpp
 hello_SOURCES = hello.cpp
 
-WARNINGS = -Wall -Wextra -Wno-unused-parameter
+EXTRA_gamearch_SOURCES = common-attributes.hpp
+
+WARNINGS = -Wall -Wextra -Wno-unused-parameter -Wswitch-enum
 
 AM_CPPFLAGS  = -I $(top_srcdir)/include
 AM_CPPFLAGS += $(BOOST_CPPFLAGS)

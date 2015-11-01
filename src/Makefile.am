@@ -108,7 +108,7 @@ EXTRA_libgamearchive_la_SOURCES += fmt-roads-skyroads.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-vol-cosmo.hpp
 EXTRA_libgamearchive_la_SOURCES += fmt-wad-doom.hpp
 
-WARNINGS = -Wall -Wextra -Wno-unused-parameter
+WARNINGS = -Wall -Wextra -Wno-unused-parameter -Wswitch-enum
 
 AM_CPPFLAGS  = -I $(top_srcdir)/include
 AM_CPPFLAGS += $(BOOST_CPPFLAGS)
