@@ -28,8 +28,8 @@
 namespace camoto {
 namespace gamearchive {
 
-typedef FormatEnumerator<ArchiveType> ArchiveManager;
-typedef FormatEnumerator<FilterType> FilterManager;
+typedef FormatEnumerator<ArchiveType> CAMOTO_GAMEARCHIVE_API ArchiveManager;
+typedef FormatEnumerator<FilterType> CAMOTO_GAMEARCHIVE_API FilterManager;
 
 } // namespace gamearchive
 } // namespace camoto

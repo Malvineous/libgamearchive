@@ -148,8 +148,8 @@ const std::vector<std::shared_ptr<const FilterType> > CAMOTO_GAMEARCHIVE_API
 
 namespace gamearchive {
 
-constexpr const char* const ArchiveType::obj_t_name;
-constexpr const char* const FilterType::obj_t_name;
+constexpr CAMOTO_GAMEARCHIVE_API const char* const ArchiveType::obj_t_name;
+constexpr CAMOTO_GAMEARCHIVE_API const char* const FilterType::obj_t_name;
 
 } // namespace gamearchive
 

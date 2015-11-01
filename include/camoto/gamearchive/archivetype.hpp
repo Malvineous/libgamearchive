@@ -23,8 +23,7 @@
 #define _CAMOTO_GAMEARCHIVE_ARCHIVETYPE_HPP_
 
 #include <vector>
-#include <map>
-
+#include <camoto/config.hpp>
 #include <camoto/stream.hpp>
 #include <camoto/suppitem.hpp>
 #include <camoto/gamearchive/archive.hpp>
@@ -35,7 +34,7 @@ namespace camoto {
 namespace gamearchive {
 
 /// Interface to a particular archive format.
-class ArchiveType
+class CAMOTO_GAMEARCHIVE_API ArchiveType
 {
 	public:
 		/// Type of object this class creates

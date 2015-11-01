@@ -25,6 +25,7 @@
 
 #include <memory>
 #include <vector>
+#include <camoto/config.hpp>
 #include <camoto/filter.hpp>
 #include <camoto/stream.hpp>
 #include <camoto/stream_filtered.hpp>
@@ -38,7 +39,7 @@ namespace gamearchive {
  * iostreams so that the data passing through the stream is altered in some
  * way, such as by being compressed or decompressed.
  */
-class FilterType
+class CAMOTO_GAMEARCHIVE_API FilterType
 {
 	public:
 		/// Type of object this class creates
