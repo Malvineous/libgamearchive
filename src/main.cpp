@@ -69,16 +69,13 @@
 #include "fmt-vol-cosmo.hpp"
 #include "fmt-wad-doom.hpp"
 
-#ifndef DLL_EXPORT
-#define DLL_EXPORT
-#endif
-
 using namespace camoto::gamearchive;
 
 namespace camoto {
 
 template <>
-const std::vector<std::shared_ptr<const ArchiveType> > DLL_EXPORT FormatEnumerator<ArchiveType>::formats()
+const std::vector<std::shared_ptr<const ArchiveType> > CAMOTO_GAMEARCHIVE_API
+	FormatEnumerator<ArchiveType>::formats()
 {
 	std::vector<std::shared_ptr<const ArchiveType> > list;
 	FormatEnumerator<ArchiveType>::addFormat<
@@ -124,7 +121,8 @@ const std::vector<std::shared_ptr<const ArchiveType> > DLL_EXPORT FormatEnumerat
 }
 
 template <>
-const std::vector<std::shared_ptr<const FilterType> > DLL_EXPORT FormatEnumerator<FilterType>::formats()
+const std::vector<std::shared_ptr<const FilterType> > CAMOTO_GAMEARCHIVE_API
+	FormatEnumerator<FilterType>::formats()
 {
 	std::vector<std::shared_ptr<const FilterType> > list;
 	FormatEnumerator<FilterType>::addFormat<

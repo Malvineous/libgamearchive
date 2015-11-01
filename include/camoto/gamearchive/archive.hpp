@@ -25,9 +25,8 @@
 #include <memory>
 #include <exception>
 #include <vector>
-
+#include <camoto/config.hpp>
 #include <camoto/stream.hpp>
-#include <stdint.h>
 #include <camoto/attribute.hpp>
 
 namespace camoto {
@@ -57,7 +56,7 @@ class Archive;
  *       of the functions seek around the underlying stream and thus will break
  *       if two or more functions are executing at the same time.
  */
-class Archive: public HasAttributes
+class CAMOTO_GAMEARCHIVE_API Archive: public HasAttributes
 {
 	public:
 		/// Base class to represent entries in the file.
@@ -65,7 +64,7 @@ class Archive: public HasAttributes
 		 * Will be extended by descendent classes to hold format-specific data.
 		 * The entries here will be valid for all archive types.
 		 */
-		struct File {
+		struct CAMOTO_GAMEARCHIVE_API File {
 			/// Which attributes can be set for a file.
 			enum class Attribute {
 				Default    = 0x00,  ///< No attributes set

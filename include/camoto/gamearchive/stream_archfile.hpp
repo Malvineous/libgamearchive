@@ -21,7 +21,7 @@
 #ifndef _CAMOTO_STREAM_ARCHFILE_HPP_
 #define _CAMOTO_STREAM_ARCHFILE_HPP_
 
-#include <camoto/gamearchive/manager.hpp>
+#include <camoto/config.hpp>
 #include <camoto/stream_sub.hpp>
 #include <camoto/gamearchive/archive-fat.hpp>
 #include <camoto/gamearchive/fixedarchive.hpp>
@@ -30,7 +30,7 @@ namespace camoto {
 namespace gamearchive {
 
 /// Substream parts in common with read and write
-class archfile_core: virtual public stream::sub_core
+class CAMOTO_GAMEARCHIVE_API archfile_core: virtual public stream::sub_core
 {
 	protected:
 		archfile_core(const Archive::FileHandle& id);
@@ -90,7 +90,7 @@ class archfile_core: virtual public stream::sub_core
 };
 
 /// Read-only stream to access a section within another stream.
-class input_archfile:
+class CAMOTO_GAMEARCHIVE_API input_archfile:
 	virtual public stream::input_sub,
 	virtual public archfile_core
 {
@@ -113,7 +113,7 @@ class input_archfile:
 };
 
 /// Write-only stream to access a section within another stream.
-class output_archfile:
+class CAMOTO_GAMEARCHIVE_API output_archfile:
 	virtual public stream::output_sub,
 	virtual public archfile_core
 {
@@ -152,7 +152,7 @@ class output_archfile:
 };
 
 /// Read/write stream accessing a file within an Archive.
-class archfile:
+class CAMOTO_GAMEARCHIVE_API archfile:
 	virtual public stream::sub,
 	virtual public input_archfile,
 	virtual public output_archfile
@@ -166,8 +166,8 @@ class archfile:
 			std::shared_ptr<stream::inout> content);
 };
 
-std::unique_ptr<stream::inout> applyFilter(std::unique_ptr<archfile> s,
-	const std::string& filter);
+std::unique_ptr<stream::inout> CAMOTO_GAMEARCHIVE_API applyFilter(
+	std::unique_ptr<archfile> s, const std::string& filter);
 
 } // namespace gamearchive
 } // namespace camoto

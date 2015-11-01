@@ -23,14 +23,10 @@
 
 #include <memory>
 #include <map>
-
+#include <camoto/config.hpp>
 #include <camoto/stream_sub.hpp>
 #include <camoto/stream_seg.hpp>
 #include <camoto/gamearchive/archive.hpp>
-
-#ifndef DLL_EXPORT
-#define DLL_EXPORT
-#endif
 
 namespace camoto {
 namespace gamearchive {
@@ -42,7 +38,7 @@ namespace gamearchive {
 #define ARCH_NO_FILENAMES (-1)
 
 /// Archive implementation for archives with an associated size/offset table.
-class Archive_FAT: virtual public Archive,
+class CAMOTO_GAMEARCHIVE_API Archive_FAT: virtual public Archive,
 	public std::enable_shared_from_this<Archive_FAT>
 {
 	public:
@@ -52,7 +48,7 @@ class Archive_FAT: virtual public Archive,
 		 * This shouldn't really be public, but sometimes it is handy to access the
 		 * FAT fields (especially from within the unit tests.)
 		 */
-		struct FATEntry: virtual public File {
+		struct CAMOTO_GAMEARCHIVE_API FATEntry: virtual public File {
 			/// Index of file in archive.
 			/**
 			 * We can't use the index into the vector as entries are passed around

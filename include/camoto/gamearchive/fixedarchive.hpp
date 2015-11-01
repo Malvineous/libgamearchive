@@ -23,12 +23,9 @@
 #define _CAMOTO_FIXEDARCHIVE_HPP_
 
 #include <vector>
+#include <camoto/config.hpp>
 #include <camoto/gamearchive/archive.hpp>
 #include <camoto/stream_sub.hpp>
-
-#ifndef DLL_EXPORT
-#define DLL_EXPORT
-#endif
 
 namespace camoto {
 namespace gamearchive {
@@ -40,11 +37,11 @@ struct FixedArchiveFile;
  * This class provides access to "files" at specific offsets and lengths in a
  * host file (e.g. game levels stored in an .exe file.)
  */
-class FixedArchive: virtual public Archive,
+class CAMOTO_GAMEARCHIVE_API FixedArchive: virtual public Archive,
 	public std::enable_shared_from_this<FixedArchive>
 {
 	public:
-		struct FixedEntry: virtual public File {
+		struct CAMOTO_GAMEARCHIVE_API FixedEntry: virtual public File {
 			const FixedArchiveFile *fixed;
 			unsigned int index;  ///< Index into FixedArchiveFile array
 
@@ -107,7 +104,7 @@ class FixedArchive: virtual public Archive,
 		virtual void flush();
 
 	/// Test code only, do not use, see util.hpp.
-	friend FileHandle DLL_EXPORT getFileAt(const FileVector& files,
+	friend FileHandle CAMOTO_GAMEARCHIVE_API getFileAt(const FileVector& files,
 		unsigned int index);
 
 	protected:

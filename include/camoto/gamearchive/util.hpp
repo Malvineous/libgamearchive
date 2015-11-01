@@ -21,12 +21,9 @@
 #ifndef _CAMOTO_GAMEARCHIVE_UTIL_HPP_
 #define _CAMOTO_GAMEARCHIVE_UTIL_HPP_
 
+#include <camoto/config.hpp>
 #include <camoto/stream_sub.hpp>
 #include <camoto/gamearchive/archive.hpp>
-
-#ifndef DLL_EXPORT
-#define DLL_EXPORT
-#endif
 
 namespace camoto {
 namespace gamearchive {
@@ -49,11 +46,12 @@ namespace gamearchive {
  * @param filename
  *   Filename to look for.
  */
-void DLL_EXPORT findFile(std::shared_ptr<Archive> *pArchive,
+void CAMOTO_GAMEARCHIVE_API findFile(std::shared_ptr<Archive> *pArchive,
 	Archive::FileHandle *pFile, const std::string& filename);
 
 /// Truncate callback for substreams that are a fixed size.
-void preventResize(stream::output_sub* sub, stream::len len);
+void CAMOTO_GAMEARCHIVE_API preventResize(stream::output_sub* sub,
+	stream::len len);
 
 } // namespace gamearchive
 } // namespace camoto
