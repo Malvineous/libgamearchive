@@ -181,6 +181,7 @@ Archive_POD_TV::Archive_POD_TV(std::unique_ptr<stream::inout> content)
 	// Read metadata
 	this->v_attributes.emplace_back();
 	auto& attrDesc = this->v_attributes.back();
+	attrDesc.changed = false;
 	attrDesc.type = Attribute::Type::Text;
 	attrDesc.name = CAMOTO_ATTRIBUTE_COMMENT;
 	attrDesc.desc = "POD file description";

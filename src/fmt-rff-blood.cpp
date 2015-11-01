@@ -223,15 +223,16 @@ Archive_RFF_Blood::Archive_RFF_Blood(std::unique_ptr<stream::inout> content)
 
 	// Populate attributes
 	this->v_attributes.emplace_back();
-	auto& attrDesc = this->v_attributes.back();
-	attrDesc.type = Attribute::Type::Enum;
-	attrDesc.name = "Version";
-	attrDesc.desc = "File version";
-	attrDesc.enumValueNames.emplace_back("v2.0 - no encryption");
-	attrDesc.enumValueNames.emplace_back("v3.1 - selectable encryption");
+	auto& attrVer = this->v_attributes.back();
+	attrVer.changed = false;
+	attrVer.type = Attribute::Type::Enum;
+	attrVer.name = "Version";
+	attrVer.desc = "File version";
+	attrVer.enumValueNames.emplace_back("v2.0 - no encryption");
+	attrVer.enumValueNames.emplace_back("v3.1 - selectable encryption");
 	switch (this->version) {
-		case 0x200: attrDesc.enumValue = 0; break;
-		case 0x301: attrDesc.enumValue = 1; break;
+		case 0x200: attrVer.enumValue = 0; break;
+		case 0x301: attrVer.enumValue = 1; break;
 		default:
 			throw camoto::error(createString("Unknown RFF version 0x" << std::hex
 				<< this->version

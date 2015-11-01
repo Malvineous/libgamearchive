@@ -170,6 +170,7 @@ Archive_WAD_Doom::Archive_WAD_Doom(std::unique_ptr<stream::inout> content)
 	// Read metadata
 	this->v_attributes.emplace_back();
 	auto& attrType = this->v_attributes.back();
+	attrType.changed = false;
 	attrType.type = Attribute::Type::Enum;
 	attrType.name = "Type";
 	attrType.desc = "Type of WAD format.  IWAD files must contain all data for "

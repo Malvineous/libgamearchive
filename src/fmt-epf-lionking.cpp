@@ -198,6 +198,7 @@ Archive_EPF_LionKing::Archive_EPF_LionKing(std::unique_ptr<stream::inout> conten
 	// Read metadata
 	this->v_attributes.emplace_back();
 	auto& attrDesc = this->v_attributes.back();
+	attrDesc.changed = false;
 	attrDesc.type = Attribute::Type::Text;
 	attrDesc.name = CAMOTO_ATTRIBUTE_COMMENT;
 	attrDesc.desc = "Description";
