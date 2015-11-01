@@ -1299,6 +1299,8 @@ void test_archive::test_attributes()
 	auto& attrAllArchive = this->pArchive->attributes();
 	int i = 0;
 	for (auto& attrExpected : this->attributes) {
+		BOOST_REQUIRE_MESSAGE(i < attrAllArchive.size(),
+			"Cannot find attribute #" << i);
 		auto& attrArchive = attrAllArchive[i];
 
 		BOOST_REQUIRE_EQUAL((int)attrExpected.type, (int)attrArchive.type);
