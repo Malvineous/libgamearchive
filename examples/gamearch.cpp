@@ -646,19 +646,19 @@ finishTesting:
 		stream::len lenReal = 0;
 
 		// Run through the actions on the command line
-		for (std::vector<po::option>::iterator i = pa.options.begin(); i != pa.options.end(); i++) {
-			if (i->string_key.compare("list") == 0) {
+		for (auto& i : pa.options) {
+			if (i.string_key.compare("list") == 0) {
 				listFiles(std::string(), std::string(), *pArchive, bScript);
 
-			} else if (i->string_key.compare("extract-all") == 0) {
+			} else if (i.string_key.compare("extract-all") == 0) {
 				extractAll(pArchive, bScript);
 
-			} else if (i->string_key.compare("metadata") == 0) {
+			} else if (i.string_key.compare("metadata") == 0) {
 				listAttributes(pArchive.get(), bScript);
 
-			} else if (i->string_key.compare("extract") == 0) {
+			} else if (i.string_key.compare("extract") == 0) {
 				std::string strArchFile, strLocalFile;
-				bool bAltDest = split(i->value[0], '=', &strArchFile, &strLocalFile);
+				bool bAltDest = split(i.value[0], '=', &strArchFile, &strLocalFile);
 				if (!bAltDest) sanitisePath(strLocalFile);
 
 				std::cout << " extracting: " << strArchFile;
@@ -695,8 +695,8 @@ finishTesting:
 				}
 				std::cout << std::endl;
 
-			} else if (i->string_key.compare("delete") == 0) {
-				std::string& strArchFile = i->value[0];
+			} else if (i.string_key.compare("delete") == 0) {
+				std::string& strArchFile = i.value[0];
 				std::cout << "   deleting: " << strArchFile << std::flush;
 
 				try {
@@ -715,9 +715,9 @@ finishTesting:
 				}
 				std::cout << std::endl;
 
-			} else if (i->string_key.compare("insert") == 0) {
+			} else if (i.string_key.compare("insert") == 0) {
 				std::string strSource, strInsertBefore;
-				if (!split(i->value[0], ':', &strSource, &strInsertBefore)) {
+				if (!split(i.value[0], ':', &strSource, &strInsertBefore)) {
 					std::cerr << PROGNAME ": -i/--insert requires a file to insert "
 						"before (parameter should end with \":beforeme.xyz\")\n"
 						"Or use --add instead." << std::endl;
@@ -757,14 +757,14 @@ finishTesting:
 				std::cout << std::endl;
 
 			// Remember --filetype/-y
-			} else if (i->string_key.compare("filetype") == 0) {
-			//} else if (i->string_key.compare("y") == 0) {
-				strLastFiletype = i->value[0];
+			} else if (i.string_key.compare("filetype") == 0) {
+			//} else if (i.string_key.compare("y") == 0) {
+				strLastFiletype = i.value[0];
 
 			// Remember --attributes/-b
-			} else if (i->string_key.compare("attribute") == 0) {
-			//} else if (i->string_key.compare("b") == 0) {
-				std::string nextAttr = i->value[0];
+			} else if (i.string_key.compare("attribute") == 0) {
+			//} else if (i.string_key.compare("b") == 0) {
+				std::string nextAttr = i.value[0];
 				bool disable = (nextAttr[0] == '-');
 				if (disable) nextAttr = nextAttr.substr(1);
 
@@ -792,35 +792,35 @@ finishTesting:
 				}
 
 			// Remember --uncompressed-size/-z
-			} else if (i->string_key.compare("uncompressed-size") == 0) {
-			//} else if (i->string_key.compare("z") == 0) {
+			} else if (i.string_key.compare("uncompressed-size") == 0) {
+			//} else if (i.string_key.compare("z") == 0) {
 				if (bUseFilters) {
 					std::cerr << PROGNAME ": -z/--uncompressed-size only needs to be "
 						"specified when it can't be determined automatically (i.e. when "
 						"-u/--unfiltered is in use.)" << std::endl;
 					return RET_BADARGS;
 				}
-				lenReal = strtoul(i->value[0].c_str(), NULL, 0);
+				lenReal = strtoul(i.value[0].c_str(), NULL, 0);
 
 			// Ignore --type/-t
-			} else if (i->string_key.compare("type") == 0) {
-			} else if (i->string_key.compare("t") == 0) {
+			} else if (i.string_key.compare("type") == 0) {
+			} else if (i.string_key.compare("t") == 0) {
 			// Ignore --script/-s
-			} else if (i->string_key.compare("script") == 0) {
-			} else if (i->string_key.compare("s") == 0) {
+			} else if (i.string_key.compare("script") == 0) {
+			} else if (i.string_key.compare("s") == 0) {
 			// Ignore --force/-f
-			} else if (i->string_key.compare("force") == 0) {
-			} else if (i->string_key.compare("f") == 0) {
+			} else if (i.string_key.compare("force") == 0) {
+			} else if (i.string_key.compare("f") == 0) {
 
-			} else if ((!i->string_key.empty()) && (i->value.size() > 0)) {
+			} else if ((!i.string_key.empty()) && (i.value.size() > 0)) {
 				// None of the above (single param) options matched, so it's probably
 				// an option with up to two filenames (with an equal-sign as a
 				// separator.)  It could also be the --type option, which we'll ignore.
-				std::string& strParam = i->value[0];
+				std::string& strParam = i.value[0];
 				std::string strArchFile, strLocalFile;
 				bool bAltDest = split(strParam, '=', &strArchFile, &strLocalFile);
 
-				if (i->string_key.compare("add") == 0) {
+				if (i.string_key.compare("add") == 0) {
 					std::cout << "     adding: " << strArchFile;
 					if (!strLastFiletype.empty()) std::cout << " as type " << strLastFiletype;
 					if (bAltDest) std::cout << " (from " << strLocalFile << ")";
@@ -836,7 +836,7 @@ finishTesting:
 						iRet = RET_UNCOMMON_FAILURE; // some files failed, but not in a usual way
 					}
 
-				} else if (i->string_key.compare("rename") == 0) {
+				} else if (i.string_key.compare("rename") == 0) {
 					if ((!bAltDest) || (boost::equals(strArchFile, strLocalFile))) {
 						std::cout << "ignoring attempt to rename " << strArchFile
 							<< " into the same name" << std::endl;
@@ -861,7 +861,7 @@ finishTesting:
 						std::cout << std::endl;
 					}
 
-				} else if (i->string_key.compare("overwrite") == 0) {
+				} else if (i.string_key.compare("overwrite") == 0) {
 					std::cout << "overwriting: " << strArchFile;
 					if (bAltDest) std::cout << " (from " << strLocalFile << ")";
 					if (lenReal != 0) std::cout << ", with uncompressed size set to " << lenReal;
