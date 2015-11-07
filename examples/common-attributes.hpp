@@ -66,8 +66,12 @@ void listAttributes(camoto::HasAttributes *obj, bool bScript)
 
 				if (bScript) std::cout << "attribute" << attrNum << "_value=";
 				else std::cout << "  Current value: ";
-				if (a.enumValue > a.enumValueNames.size()) {
-					std::cout << (bScript ? "error" : "[out of range]");
+				if (a.enumValue >= a.enumValueNames.size()) {
+					if (bScript) {
+						std::cout << "error";
+					} else {
+						std::cout << "[out of range: " << a.enumValue << "]";
+					}
 				} else {
 					if (bScript) std::cout << a.enumValue;
 					else std::cout << "[" << a.enumValue << "] "
@@ -79,16 +83,14 @@ void listAttributes(camoto::HasAttributes *obj, bool bScript)
 					<< "_choice_count=" << a.enumValueNames.size() << "\n";
 
 				int option = 0;
-				for (std::vector<std::string>::const_iterator
-					     j = a.enumValueNames.begin(); j != a.enumValueNames.end(); j++
-				) {
+				for (auto& j : a.enumValueNames) {
 					if (bScript) {
 						std::cout << "attribute" << attrNum << "_choice" << option
 							<< "=";
 					} else {
 						std::cout << "  Allowed value " << option << ": ";
 					}
-					std::cout << *j << "\n";
+					std::cout << j << "\n";
 					option++;
 				}
 				break;
