@@ -54,7 +54,7 @@ class test_archive: public test_main
 		/**
 		 * @param empty
 		 *   true resets to an empty archive (via ArchiveType::create()) while
-		 *   false resets to initialstate() and calls ArchiveType::open().
+		 *   false resets to content_12() and calls ArchiveType::open().
 		 */
 		virtual void prepareTest(bool empty);
 
@@ -106,40 +106,40 @@ class test_archive: public test_main
 		 *
 		 * It should contain two files: ONE.DAT followed by TWO.DAT.
 		 */
-		virtual std::string initialstate() = 0;
+		virtual std::string content_12() = 0;
 
 		/// Result of renaming ONE.DAT to THREE.DAT.
-		virtual std::string rename() = 0;
+		virtual std::string content_1r2() = 0;
 
 		/// Result of inserting THREE.DAT at the end of the archive.
-		virtual std::string insert_end() = 0;
+		virtual std::string content_123() = 0;
 
 		/// Result of inserting THREE.DAT in between ONE.DAT and TWO.DAT.
-		virtual std::string insert_mid() = 0;
+		virtual std::string content_132() = 0;
 
 		/// Result of inserting THREE.DAT followed by FOUR.DAT, after ONE.DAT.
-		virtual std::string insert2() = 0;
+		virtual std::string content_1342() = 0;
 
 		/// Result of removing ONE.DAT.
-		virtual std::string remove() = 0;
+		virtual std::string content_2() = 0;
 
 		/// Result of removing ONE.DAT and TWO.DAT, leaving no files.
-		virtual std::string remove2() = 0;
+		virtual std::string content_0() = 0;
 
 		/// Result of inserting THREE.DAT after ONE.DAT, then removing ONE.DAT.
-		virtual std::string insert_remove() = 0;
+		virtual std::string content_32() = 0;
 
 		/// Result of ONE.DAT and TWO.DAT swapping positions.
-		virtual std::string move() = 0;
+		virtual std::string content_21() = 0;
 
 		/// Result of ONE.DAT being enlarged to 20 bytes.
-		virtual std::string resize_larger() = 0;
+		virtual std::string content_1l2() = 0;
 
 		/// Result of ONE.DAT being shrunk to 10 bytes.
-		virtual std::string resize_smaller() = 0;
+		virtual std::string content_1s2() = 0;
 
 		/// Result of ONE.DAT being enlarged to 23 bytes and data written to EOF.
-		virtual std::string resize_write() = 0;
+		virtual std::string content_1w2() = 0;
 
 		/// Add a test to the suite.  Used by ADD_ARCH_TEST().
 		void addBoundTest(bool empty, std::function<void()> fnTest,
@@ -150,7 +150,7 @@ class test_archive: public test_main
 		/**
 		 * @param empty
 		 *   true resets to an empty archive (via ArchiveType::create()) while
-		 *   false resets to initialstate() and calls ArchiveType::open().
+		 *   false resets to content_12() and calls ArchiveType::open().
 		 *
 		 * @param fnTest
 		 *   Function to call once archive is back to initial state.
@@ -168,13 +168,13 @@ class test_archive: public test_main
 		/**
 		 * This may be called mid-test if new suppData structures are needed to
 		 * create a new Archive instance, since the original ones have been
-		 * std::move()'d to the original Archive instance and won't be available to
+		 * std::content_21()'d to the original Archive instance and won't be available to
 		 * create a new Archive with.
 		 *
 		 * This repopulates suppData from the existing suppBase content, so it is
 		 * possible to access modified data this way.  If you don't want suppData
 		 * that may have been modified by a previous Archive instance, call
-		 * resetSuppData() first to return everything to the initialstate.
+		 * resetSuppData() first to return everything to the content_12.
 		 */
 		void populateSuppData();
 
@@ -185,7 +185,7 @@ class test_archive: public test_main
 		/**
 		 * @param fnExpected
 		 *   test_map2d member function to call (on the suppitem instance) to
-		 *   get the expected data, e.g. &test_map2d::initialstate
+		 *   get the expected data, e.g. &test_map2d::content_12
 		 *
 		 * @param msg
 		 *   Error message in case of data mismatch.
@@ -234,7 +234,7 @@ class test_archive: public test_main
 		 *   New content for the attribute.
 		 *
 		 * @param content
-		 *   Expected result after taking the initialstate() and changing the
+		 *   Expected result after taking the content_12() and changing the
 		 *   given attribute as specified.
 		 */
 		void changeAttribute(unsigned int attributeIndex,
@@ -326,7 +326,7 @@ class test_archive: public test_main
 		/// Any formats here identify us as an instance of that type, and it
 		/// cannot be avoided.
 		/**
-		 * If "otherformat" is listed here then we will not pass our initialstate
+		 * If "otherformat" is listed here then we will not pass our content_12
 		 * to otherformat's isInstance function.  This is kind of backwards but is
 		 * is the way the test functions are designed.
 		 */

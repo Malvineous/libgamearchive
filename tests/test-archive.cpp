@@ -193,7 +193,7 @@ void test_archive::prepareTest(bool empty)
 				stream_wrap(this->base), this->suppData);
 		//);
 	} else {
-		*base << this->initialstate();
+		*base << this->content_12();
 		BOOST_TEST_CHECKPOINT("About to open " + this->basename
 			+ " initialstate as an archive");
 		// This should really use BOOST_REQUIRE_NO_THROW but the message is more
@@ -284,7 +284,7 @@ void test_archive::resetSuppData(bool empty)
 		auto suppSS = std::make_shared<stream::string>();
 		if (!empty) {
 			// Populate the suppitem with its initial state
-			*suppSS << i.second->initialstate();
+			*suppSS << i.second->content_12();
 		}
 		this->suppBase[item] = suppSS;
 	}
@@ -525,7 +525,7 @@ void test_archive::test_isinstance_others()
 	BOOST_TEST_MESSAGE(this->basename << ": isInstance check against other formats");
 
 	stream::string content;
-	content << this->initialstate();
+	content << this->content_12();
 
 	for (const auto& pTestType : ArchiveManager::formats()) {
 		// Don't check our own type, that's done by the other isinstance_* tests
@@ -597,7 +597,7 @@ void test_archive::test_rename()
 
 	this->pArchive->rename(ep, this->filename[2]);
 
-	this->checkData(&test_archive::rename,
+	this->checkData(&test_archive::content_1r2,
 		"Error renaming file");
 }
 
@@ -623,7 +623,7 @@ void test_archive::test_rename_long()
 		stream::error
 	);
 
-	this->checkData(&test_archive::initialstate,
+	this->checkData(&test_archive::content_12,
 		"Archive corrupted after failed rename"
 	);
 
@@ -662,7 +662,7 @@ void test_archive::test_insert_long()
 		stream::error
 	);
 
-	this->checkData(&test_archive::initialstate,
+	this->checkData(&test_archive::content_12,
 		"Archive corrupted after failed insert"
 	);
 
@@ -712,7 +712,7 @@ void test_archive::test_insert_end()
 	pfsNew->write(this->content[2]);
 	pfsNew->flush();
 
-	this->checkData(&test_archive::insert_end,
+	this->checkData(&test_archive::content_123,
 		"Error inserting file at end of archive"
 	);
 }
@@ -749,7 +749,7 @@ void test_archive::test_insert_mid()
 	pfsNew->write(this->content[2]);
 	pfsNew->flush();
 
-	this->checkData(&test_archive::insert_mid,
+	this->checkData(&test_archive::content_132,
 		"Error inserting file in middle of archive"
 	);
 }
@@ -817,7 +817,7 @@ void test_archive::test_insert2()
 	pfsNew2->write(this->content[3]);
 	pfsNew2->flush();
 
-	this->checkData(&test_archive::insert2,
+	this->checkData(&test_archive::content_1342,
 		"Error inserting two files"
 	);
 }
@@ -831,7 +831,7 @@ void test_archive::test_remove()
 	// Remove it
 	this->pArchive->remove(ep);
 
-	this->checkData(&test_archive::remove,
+	this->checkData(&test_archive::content_2,
 		"Error removing file"
 	);
 }
@@ -847,7 +847,7 @@ void test_archive::test_remove2()
 	this->pArchive->remove(ep1);
 	this->pArchive->remove(ep2);
 
-	this->checkData(&test_archive::remove2,
+	this->checkData(&test_archive::content_0,
 		"Error removing multiple files"
 	);
 }
@@ -875,7 +875,7 @@ void test_archive::test_remove_open()
 	// Removing an open file should be allowed
 	this->pArchive->remove(ep1);
 
-	this->checkData(&test_archive::remove,
+	this->checkData(&test_archive::content_2,
 		"Error removing open file"
 	);
 
@@ -925,7 +925,7 @@ void test_archive::test_insert_remove()
 	// Remove it
 	this->pArchive->remove(ep2);
 
-	this->checkData(&test_archive::insert_remove,
+	this->checkData(&test_archive::content_32,
 		"Error inserting then removing file"
 	);
 }
@@ -969,7 +969,7 @@ void test_archive::test_remove_insert()
 
 	// This test checks against the insert_remove result instead, as the end
 	// result should be the same as that test.
-	this->checkData(&test_archive::insert_remove,
+	this->checkData(&test_archive::content_32,
 		"Error removing then inserting file"
 	);
 }
@@ -984,7 +984,7 @@ void test_archive::test_move()
 	// Swap the file positions
 	this->pArchive->move(ep1, ep2);
 
-	this->checkData(&test_archive::move,
+	this->checkData(&test_archive::content_21,
 		"Error moving file"
 	);
 }
@@ -998,7 +998,7 @@ void test_archive::test_resize_larger()
 	this->pArchive->resize(ep, this->content0_largeSize,
 		this->content0_largeSize_unfiltered);
 
-	this->checkData(&test_archive::resize_larger,
+	this->checkData(&test_archive::content_1l2,
 		"Error enlarging a file"
 	);
 }
@@ -1018,7 +1018,7 @@ void test_archive::test_resize_smaller()
 	this->pArchive->resize(ep, this->content0_smallSize,
 		this->content0_smallSize_unfiltered);
 
-	this->checkData(&test_archive::resize_smaller,
+	this->checkData(&test_archive::content_1s2,
 		"Error shrinking a file"
 	);
 }
@@ -1059,7 +1059,7 @@ void test_archive::test_resize_write()
 	// Make sure it's the right size
 	BOOST_REQUIRE_EQUAL(pfsNew->size(), this->content0_overwritten.length());
 
-	this->checkData(&test_archive::resize_write,
+	this->checkData(&test_archive::content_1w2,
 		"Error enlarging a file then writing into new space"
 	);
 
@@ -1122,7 +1122,7 @@ void test_archive::test_resize_after_close()
 	// Make sure it's the right size
 	BOOST_REQUIRE_EQUAL(pfsNew->size(), this->content0_overwritten.length());
 
-	this->checkData(&test_archive::resize_write,
+	this->checkData(&test_archive::content_1w2,
 		"Error writing to a file after closing the archive"
 	);
 }
@@ -1191,7 +1191,7 @@ void test_archive::test_remove_all_re_add()
 	pfsNew->write(this->content[1]);
 	pfsNew->flush();
 
-	this->checkData(&test_archive::initialstate,
+	this->checkData(&test_archive::content_12,
 		"Error removing all files then reinserting them again"
 	);
 }
@@ -1229,7 +1229,7 @@ void test_archive::test_insert_zero_then_resize()
 	pfsNew->write(this->content[2]);
 	pfsNew->flush();
 
-	this->checkData(&test_archive::insert_end,
+	this->checkData(&test_archive::content_123,
 		"Error resizing newly inserted empty file"
 	);
 }
@@ -1251,7 +1251,7 @@ void test_archive::test_resize_over64k()
 		// Flush to avoid warning when destroying after modifying without flushing
 		this->pArchive->flush();
 	} catch (const stream::error&) {
-		this->checkData(&test_archive::initialstate,
+		this->checkData(&test_archive::content_12,
 			"Archive corrupted after failed file resize to over 64k"
 		);
 	}
@@ -1287,7 +1287,7 @@ void test_archive::test_shortext()
 
 	this->pArchive->rename(ep, this->filename[0]);
 
-	this->checkData(&test_archive::initialstate,
+	this->checkData(&test_archive::content_12,
 		"Failed to rename file with short extension back to long"
 	);
 }
@@ -1427,7 +1427,7 @@ void test_archive::test_new_to_initialstate()
 
 	this->pArchive = origArchive;
 
-	this->checkData(&test_archive::initialstate,
+	this->checkData(&test_archive::content_12,
 		"Error inserting files in new/empty archive"
 	);
 
@@ -1559,7 +1559,7 @@ void test_archive::test_new_manipulate_zero_length_files()
 	//file3->write(CONTENT3, sizeof(CONTENT3) - 1);
 	file3->flush();
 
-	this->checkData(&test_archive::insert_end,
+	this->checkData(&test_archive::content_123,
 		"Error manipulating zero-length files"
 	);
 }

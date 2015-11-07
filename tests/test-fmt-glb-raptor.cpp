@@ -37,7 +37,7 @@ class test_glb_raptor: public test_archive
 			this->test_archive::addTests();
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::DefinitelyYes, this->initialstate());
+			this->isInstance(ArchiveType::DefinitelyYes, this->content_12());
 
 			// c01: Wrong signature bytes
 			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
@@ -49,7 +49,7 @@ class test_glb_raptor: public test_archive
 			));
 		}
 
-		virtual std::string initialstate()
+		virtual std::string content_12()
 		{
 #ifdef GLB_CLEARTEXT
 			return STRING_WITH_NULLS(
@@ -70,7 +70,7 @@ class test_glb_raptor: public test_archive
 #endif
 		}
 
-		virtual std::string rename()
+		virtual std::string content_1r2()
 		{
 #ifdef GLB_CLEARTEXT
 			return STRING_WITH_NULLS(
@@ -91,7 +91,7 @@ class test_glb_raptor: public test_archive
 #endif
 		}
 
-		virtual std::string insert_end()
+		virtual std::string content_123()
 		{
 #ifdef GLB_CLEARTEXT
 			return STRING_WITH_NULLS(
@@ -116,7 +116,7 @@ class test_glb_raptor: public test_archive
 #endif
 		}
 
-		virtual std::string insert_mid()
+		virtual std::string content_132()
 		{
 #ifdef GLB_CLEARTEXT
 			return STRING_WITH_NULLS(
@@ -141,7 +141,7 @@ class test_glb_raptor: public test_archive
 #endif
 		}
 
-		virtual std::string insert2()
+		virtual std::string content_1342()
 		{
 #ifdef GLB_CLEARTEXT
 			return STRING_WITH_NULLS(
@@ -170,7 +170,7 @@ class test_glb_raptor: public test_archive
 #endif
 		}
 
-		virtual std::string remove()
+		virtual std::string content_2()
 		{
 #ifdef GLB_CLEARTEXT
 			return STRING_WITH_NULLS(
@@ -187,7 +187,7 @@ class test_glb_raptor: public test_archive
 #endif
 		}
 
-		virtual std::string remove2()
+		virtual std::string content_0()
 		{
 #ifdef GLB_CLEARTEXT
 			return STRING_WITH_NULLS(
@@ -200,7 +200,7 @@ class test_glb_raptor: public test_archive
 #endif
 		}
 
-		virtual std::string insert_remove()
+		virtual std::string content_32()
 		{
 #ifdef GLB_CLEARTEXT
 			return STRING_WITH_NULLS(
@@ -221,7 +221,7 @@ class test_glb_raptor: public test_archive
 #endif
 		}
 
-		virtual std::string move()
+		virtual std::string content_21()
 		{
 #ifdef GLB_CLEARTEXT
 			return STRING_WITH_NULLS(
@@ -242,7 +242,7 @@ class test_glb_raptor: public test_archive
 #endif
 		}
 
-		virtual std::string resize_larger()
+		virtual std::string content_1l2()
 		{
 #ifdef GLB_CLEARTEXT
 			return STRING_WITH_NULLS(
@@ -263,7 +263,7 @@ class test_glb_raptor: public test_archive
 #endif
 		}
 
-		virtual std::string resize_smaller()
+		virtual std::string content_1s2()
 		{
 #ifdef GLB_CLEARTEXT
 			return STRING_WITH_NULLS(
@@ -284,7 +284,7 @@ class test_glb_raptor: public test_archive
 #endif
 		}
 
-		virtual std::string resize_write()
+		virtual std::string content_1w2()
 		{
 #ifdef GLB_CLEARTEXT
 			return STRING_WITH_NULLS(

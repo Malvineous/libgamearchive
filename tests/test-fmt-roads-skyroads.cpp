@@ -34,7 +34,7 @@ class test_roads_skyroads: public test_archive
 			this->test_archive::addTests();
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::DefinitelyYes, this->initialstate());
+			this->isInstance(ArchiveType::DefinitelyYes, this->content_12());
 
 			// c01: Lack of a header means an empty file is a valid empty archive.
 			this->isInstance(ArchiveType::DefinitelyYes, STRING_WITH_NULLS(
@@ -69,7 +69,7 @@ class test_roads_skyroads: public test_archive
 			));
 		}
 
-		virtual std::string initialstate()
+		virtual std::string content_12()
 		{
 			return STRING_WITH_NULLS(
 				"\x08\x00" "\x0f\x00"
@@ -79,13 +79,13 @@ class test_roads_skyroads: public test_archive
 			);
 		}
 
-		virtual std::string rename()
+		virtual std::string content_1r2()
 		{
 			// No filenames to rename
 			throw 1;
 		}
 
-		virtual std::string insert_end()
+		virtual std::string content_123()
 		{
 			return STRING_WITH_NULLS(
 				"\x0c\x00" "\x0f\x00"
@@ -97,7 +97,7 @@ class test_roads_skyroads: public test_archive
 			);
 		}
 
-		virtual std::string insert_mid()
+		virtual std::string content_132()
 		{
 			return STRING_WITH_NULLS(
 				"\x0c\x00" "\x0f\x00"
@@ -109,7 +109,7 @@ class test_roads_skyroads: public test_archive
 			);
 		}
 
-		virtual std::string insert2()
+		virtual std::string content_1342()
 		{
 			return STRING_WITH_NULLS(
 				"\x10\x00" "\x0f\x00"
@@ -123,7 +123,7 @@ class test_roads_skyroads: public test_archive
 			);
 		}
 
-		virtual std::string remove()
+		virtual std::string content_2()
 		{
 			return STRING_WITH_NULLS(
 				"\x04\x00" "\x0f\x00"
@@ -131,14 +131,14 @@ class test_roads_skyroads: public test_archive
 			);
 		}
 
-		virtual std::string remove2()
+		virtual std::string content_0()
 		{
 			return STRING_WITH_NULLS(
 				""
 			);
 		}
 
-		virtual std::string insert_remove()
+		virtual std::string content_32()
 		{
 			return STRING_WITH_NULLS(
 				"\x08\x00" "\x11\x00"
@@ -148,7 +148,7 @@ class test_roads_skyroads: public test_archive
 			);
 		}
 
-		virtual std::string move()
+		virtual std::string content_21()
 		{
 			return STRING_WITH_NULLS(
 				"\x08\x00" "\x0f\x00"
@@ -158,7 +158,7 @@ class test_roads_skyroads: public test_archive
 			);
 		}
 
-		virtual std::string resize_larger()
+		virtual std::string content_1l2()
 		{
 			return STRING_WITH_NULLS(
 				"\x08\x00" "\x14\x00"
@@ -168,7 +168,7 @@ class test_roads_skyroads: public test_archive
 			);
 		}
 
-		virtual std::string resize_smaller()
+		virtual std::string content_1s2()
 		{
 			return STRING_WITH_NULLS(
 				"\x08\x00" "\x0a\x00"
@@ -178,7 +178,7 @@ class test_roads_skyroads: public test_archive
 			);
 		}
 
-		virtual std::string resize_write()
+		virtual std::string content_1w2()
 		{
 			return STRING_WITH_NULLS(
 				"\x08\x00" "\x17\x00"

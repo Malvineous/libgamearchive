@@ -39,7 +39,7 @@ class test_suppfat_gd_doofus: public test_archive
 			return rows;
 		}
 
-		virtual std::string initialstate()
+		virtual std::string content_12()
 		{
 			return STRING_WITH_NULLS(
 				"\x0f\x00" "\xEE\x59" "\x00\x00\x00\x00"
@@ -47,7 +47,7 @@ class test_suppfat_gd_doofus: public test_archive
 			) + this->emptyFAT(FAT_SIZE - 2);
 		}
 
-		virtual std::string rename()
+		virtual std::string content_1r2()
 		{
 			return STRING_WITH_NULLS(
 				"\x0f\x00" "\xEE\x59" "\x00\x00\x00\x00"
@@ -55,7 +55,7 @@ class test_suppfat_gd_doofus: public test_archive
 			) + this->emptyFAT(FAT_SIZE - 2);
 		}
 
-		virtual std::string insert_end()
+		virtual std::string content_123()
 		{
 			return STRING_WITH_NULLS(
 				"\x0f\x00" "\xEE\x59" "\x00\x00\x00\x00"
@@ -64,7 +64,7 @@ class test_suppfat_gd_doofus: public test_archive
 			) + this->emptyFAT(FAT_SIZE - 3);
 		}
 
-		virtual std::string insert_mid()
+		virtual std::string content_132()
 		{
 			return STRING_WITH_NULLS(
 				"\x0f\x00" "\xEE\x59" "\x00\x00\x00\x00"
@@ -73,7 +73,7 @@ class test_suppfat_gd_doofus: public test_archive
 			) + this->emptyFAT(FAT_SIZE - 3);
 		}
 
-		virtual std::string insert2()
+		virtual std::string content_1342()
 		{
 			return STRING_WITH_NULLS(
 				"\x0f\x00" "\xEE\x59" "\x00\x00\x00\x00"
@@ -83,21 +83,21 @@ class test_suppfat_gd_doofus: public test_archive
 			) + this->emptyFAT(FAT_SIZE - 4);
 		}
 
-		virtual std::string remove()
+		virtual std::string content_2()
 		{
 			return STRING_WITH_NULLS(
 				"\x0f\x00" "\xEE\x59" "\x00\x00\x00\x00"
 			) + this->emptyFAT(FAT_SIZE - 1);
 		}
 
-		virtual std::string remove2()
+		virtual std::string content_0()
 		{
 			return STRING_WITH_NULLS(
 				""
 			) + this->emptyFAT(FAT_SIZE - 0);
 		}
 
-		virtual std::string insert_remove()
+		virtual std::string content_32()
 		{
 			return STRING_WITH_NULLS(
 				"\x11\x00" "\xEE\x59" "\x00\x00\x00\x00"
@@ -105,7 +105,7 @@ class test_suppfat_gd_doofus: public test_archive
 			) + this->emptyFAT(FAT_SIZE - 2);
 		}
 
-		virtual std::string move()
+		virtual std::string content_21()
 		{
 			return STRING_WITH_NULLS(
 				"\x0f\x00" "\xEE\x59" "\x00\x00\x00\x00"
@@ -113,7 +113,7 @@ class test_suppfat_gd_doofus: public test_archive
 			) + this->emptyFAT(FAT_SIZE - 2);
 		}
 
-		virtual std::string resize_larger()
+		virtual std::string content_1l2()
 		{
 			return STRING_WITH_NULLS(
 				"\x14\x00" "\xEE\x59" "\x00\x00\x00\x00"
@@ -121,7 +121,7 @@ class test_suppfat_gd_doofus: public test_archive
 			) + this->emptyFAT(FAT_SIZE - 2);
 		}
 
-		virtual std::string resize_smaller()
+		virtual std::string content_1s2()
 		{
 			return STRING_WITH_NULLS(
 				"\x0a\x00" "\xEE\x59" "\x00\x00\x00\x00"
@@ -129,7 +129,7 @@ class test_suppfat_gd_doofus: public test_archive
 			) + this->emptyFAT(FAT_SIZE - 2);
 		}
 
-		virtual std::string resize_write()
+		virtual std::string content_1w2()
 		{
 			return STRING_WITH_NULLS(
 				"\x17\x00" "\xEE\x59" "\x00\x00\x00\x00"
@@ -166,10 +166,10 @@ class test_gd_doofus: public test_archive
 			ADD_ARCH_TEST(false, &test_gd_doofus::test_insert_unknown_type);
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::Unsure, this->initialstate());
+			this->isInstance(ArchiveType::Unsure, this->content_12());
 		}
 
-		virtual std::string initialstate()
+		virtual std::string content_12()
 		{
 			return STRING_WITH_NULLS(
 				"This is one.dat"
@@ -177,7 +177,7 @@ class test_gd_doofus: public test_archive
 			);
 		}
 
-		virtual std::string rename()
+		virtual std::string content_1r2()
 		{
 			return STRING_WITH_NULLS(
 				"This is one.dat"
@@ -185,7 +185,7 @@ class test_gd_doofus: public test_archive
 			);
 		}
 
-		virtual std::string insert_end()
+		virtual std::string content_123()
 		{
 			return STRING_WITH_NULLS(
 				"This is one.dat"
@@ -194,7 +194,7 @@ class test_gd_doofus: public test_archive
 			);
 		}
 
-		virtual std::string insert_mid()
+		virtual std::string content_132()
 		{
 			return STRING_WITH_NULLS(
 				"This is one.dat"
@@ -203,7 +203,7 @@ class test_gd_doofus: public test_archive
 			);
 		}
 
-		virtual std::string insert2()
+		virtual std::string content_1342()
 		{
 			return STRING_WITH_NULLS(
 				"This is one.dat"
@@ -213,21 +213,21 @@ class test_gd_doofus: public test_archive
 			);
 		}
 
-		virtual std::string remove()
+		virtual std::string content_2()
 		{
 			return STRING_WITH_NULLS(
 				"This is two.dat"
 			);
 		}
 
-		virtual std::string remove2()
+		virtual std::string content_0()
 		{
 			return STRING_WITH_NULLS(
 				""
 			);
 		}
 
-		virtual std::string insert_remove()
+		virtual std::string content_32()
 		{
 			return STRING_WITH_NULLS(
 				"This is three.dat"
@@ -235,7 +235,7 @@ class test_gd_doofus: public test_archive
 			);
 		}
 
-		virtual std::string move()
+		virtual std::string content_21()
 		{
 			return STRING_WITH_NULLS(
 				"This is two.dat"
@@ -243,7 +243,7 @@ class test_gd_doofus: public test_archive
 			);
 		}
 
-		virtual std::string resize_larger()
+		virtual std::string content_1l2()
 		{
 			return STRING_WITH_NULLS(
 				"This is one.dat\0\0\0\0\0"
@@ -251,7 +251,7 @@ class test_gd_doofus: public test_archive
 			);
 		}
 
-		virtual std::string resize_smaller()
+		virtual std::string content_1s2()
 		{
 			return STRING_WITH_NULLS(
 				"This is on"
@@ -259,7 +259,7 @@ class test_gd_doofus: public test_archive
 			);
 		}
 
-		virtual std::string resize_write()
+		virtual std::string content_1w2()
 		{
 			return STRING_WITH_NULLS(
 				"Now resized to 23 chars"

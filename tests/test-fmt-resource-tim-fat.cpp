@@ -52,7 +52,7 @@ class test_resource_tim_fat: public test_archive
 			this->test_archive::addTests();
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::DefinitelyYes, this->initialstate());
+			this->isInstance(ArchiveType::DefinitelyYes, this->content_12());
 
 			// c01: File too short
 			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
@@ -75,7 +75,7 @@ class test_resource_tim_fat: public test_archive
 			));
 		}
 
-		virtual std::string initialstate()
+		virtual std::string content_12()
 		{
 			return STRING_WITH_NULLS(
 				"\x00\x00" "\x00\x00" "\x02\x00"
@@ -84,7 +84,7 @@ class test_resource_tim_fat: public test_archive
 			);
 		}
 
-		virtual std::string rename()
+		virtual std::string content_1r2()
 		{
 			return STRING_WITH_NULLS(
 				"\x00\x00" "\x00\x00" "\x02\x00"
@@ -93,7 +93,7 @@ class test_resource_tim_fat: public test_archive
 			);
 		}
 
-		virtual std::string insert_end()
+		virtual std::string content_123()
 		{
 			return STRING_WITH_NULLS(
 				"\x00\x00" "\x00\x00" "\x03\x00"
@@ -103,7 +103,7 @@ class test_resource_tim_fat: public test_archive
 			);
 		}
 
-		virtual std::string insert_mid()
+		virtual std::string content_132()
 		{
 			return STRING_WITH_NULLS(
 				"\x00\x00" "\x00\x00" "\x03\x00"
@@ -113,7 +113,7 @@ class test_resource_tim_fat: public test_archive
 			);
 		}
 
-		virtual std::string insert2()
+		virtual std::string content_1342()
 		{
 			return STRING_WITH_NULLS(
 				"\x00\x00" "\x00\x00" "\x04\x00"
@@ -124,7 +124,7 @@ class test_resource_tim_fat: public test_archive
 			);
 		}
 
-		virtual std::string remove()
+		virtual std::string content_2()
 		{
 			return STRING_WITH_NULLS(
 				"\x00\x00" "\x00\x00" "\x01\x00"
@@ -132,14 +132,14 @@ class test_resource_tim_fat: public test_archive
 			);
 		}
 
-		virtual std::string remove2()
+		virtual std::string content_0()
 		{
 			return STRING_WITH_NULLS(
 				"\x00\x00" "\x00\x00" "\x00\x00"
 			);
 		}
 
-		virtual std::string insert_remove()
+		virtual std::string content_32()
 		{
 			return STRING_WITH_NULLS(
 				"\x00\x00" "\x00\x00" "\x02\x00"
@@ -148,7 +148,7 @@ class test_resource_tim_fat: public test_archive
 			);
 		}
 
-		virtual std::string move()
+		virtual std::string content_21()
 		{
 			return STRING_WITH_NULLS(
 				"\x00\x00" "\x00\x00" "\x02\x00"
@@ -157,7 +157,7 @@ class test_resource_tim_fat: public test_archive
 			);
 		}
 
-		virtual std::string resize_larger()
+		virtual std::string content_1l2()
 		{
 			return STRING_WITH_NULLS(
 				"\x00\x00" "\x00\x00" "\x02\x00"
@@ -166,7 +166,7 @@ class test_resource_tim_fat: public test_archive
 			);
 		}
 
-		virtual std::string resize_smaller()
+		virtual std::string content_1s2()
 		{
 			return STRING_WITH_NULLS(
 				"\x00\x00" "\x00\x00" "\x02\x00"
@@ -175,7 +175,7 @@ class test_resource_tim_fat: public test_archive
 			);
 		}
 
-		virtual std::string resize_write()
+		virtual std::string content_1w2()
 		{
 			return STRING_WITH_NULLS(
 				"\x00\x00" "\x00\x00" "\x02\x00"
