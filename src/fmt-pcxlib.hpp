@@ -54,6 +54,8 @@ class Archive_PCXLib: virtual public Archive_FAT
 		Archive_PCXLib(std::unique_ptr<stream::inout> content);
 		virtual ~Archive_PCXLib();
 
+		virtual void flush();
+
 		virtual void updateFileName(const FATEntry *pid,
 			const std::string& strNewName);
 		virtual void updateFileOffset(const FATEntry *pid, stream::delta offDelta);

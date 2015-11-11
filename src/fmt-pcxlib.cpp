@@ -28,8 +28,13 @@
 #include "fmt-pcxlib.hpp"
 
 #define PCX_MAX_FILES         65535
-#define PCX_FAT_OFFSET        (2+50+42+2+32)
-#define PCX_FILECOUNT_OFFSET  (2+50+42)
+#define PCX_FAT_OFFSET        (2+50+2+40+2+32)
+#define PCX_COPYRIGHT_OFFSET  2
+#define PCX_COPYRIGHT_LEN     50
+#define PCX_VER_OFFSET        (2+50)
+#define PCX_LABEL_OFFSET      (2+50+2)
+#define PCX_LABEL_LEN         40
+#define PCX_FILECOUNT_OFFSET  (2+50+2+40)
 #define PCX_FAT_ENTRY_LEN     (1+13+4+4+2+2)
 #define PCX_MAX_FILENAME_LEN  12
 #define PCX_FIRST_FILE_OFFSET PCX_FAT_OFFSET
@@ -83,12 +88,20 @@ ArchiveType::Certainty ArchiveType_PCXLib::isInstance(
 	if (lenArchive < PCX_FAT_OFFSET) return DefinitelyNo;
 
 	content.seekg(0, stream::start);
-	uint32_t version;
-	content >> u16le(version);
+	uint32_t sig;
+	content >> u16le(sig);
 
-	// Only accept known versions
+	// Check signature
 	// TESTED BY: fmt_pcxlib_isinstance_c02
-	if (version != 0xCA01) return DefinitelyNo;
+	if (sig != 0xCA01) return DefinitelyNo;
+
+	content.seekg(PCX_VER_OFFSET, stream::start);
+	uint32_t ver;
+	content >> u16le(ver);
+
+	// Check version
+	// TESTED BY: fmt_pcxlib_isinstance_c08
+	if (ver != 0x0064) return DefinitelyNo;
 
 	content.seekg(PCX_FILECOUNT_OFFSET, stream::start);
 	uint32_t numFiles;
@@ -143,19 +156,18 @@ std::shared_ptr<Archive> ArchiveType_PCXLib::create(
 	content->seekp(0, stream::start);
 	content->write(
 		"\x01\xCA" "Copyright (c) Genus Microprogramming, Inc. 1988-90"
+		"\x64\x00" // version
 		"\x00\x00\x00\x00\x00\x00\x00\x00"
 		"\x00\x00\x00\x00\x00\x00\x00\x00"
 		"\x00\x00\x00\x00\x00\x00\x00\x00"
 		"\x00\x00\x00\x00\x00\x00\x00\x00"
 		"\x00\x00\x00\x00\x00\x00\x00\x00"
-		"\x00\x00"
 		"\x00\x00" // file count
 		"\x00\x00\x00\x00\x00\x00\x00\x00"
 		"\x00\x00\x00\x00\x00\x00\x00\x00"
 		"\x00\x00\x00\x00\x00\x00\x00\x00"
 		"\x00\x00\x00\x00\x00\x00\x00\x00",
 		128);
-
 	return std::make_shared<Archive_PCXLib>(std::move(content));
 }
 
@@ -179,6 +191,30 @@ Archive_PCXLib::Archive_PCXLib(std::unique_ptr<stream::inout> content)
 
 	if (lenArchive < PCX_FAT_OFFSET) {
 		throw stream::error("Truncated file");
+	}
+
+	// Read metadata
+	{
+		this->v_attributes.emplace_back();
+		auto& a = this->v_attributes.back();
+		a.changed = false;
+		a.type = Attribute::Type::Text;
+		a.name = "Copyright";
+		a.desc = "File format designer's copyright string";
+		a.textMaxLength = PCX_COPYRIGHT_LEN;
+		this->content->seekg(PCX_COPYRIGHT_OFFSET, stream::start);
+		*this->content >> nullTerminated(a.textValue, PCX_COPYRIGHT_LEN);
+	}
+	{
+		this->v_attributes.emplace_back();
+		auto& a = this->v_attributes.back();
+		a.changed = false;
+		a.type = Attribute::Type::Text;
+		a.name = CAMOTO_ATTRIBUTE_TITLE;
+		a.desc = "Volume label";
+		a.textMaxLength = PCX_LABEL_LEN;
+		this->content->seekg(PCX_LABEL_OFFSET, stream::start);
+		*this->content >> nullTerminated(a.textValue, PCX_LABEL_LEN);
 	}
 
 	this->content->seekg(PCX_FILECOUNT_OFFSET, stream::start);
@@ -218,6 +254,40 @@ Archive_PCXLib::Archive_PCXLib(std::unique_ptr<stream::inout> content)
 
 Archive_PCXLib::~Archive_PCXLib()
 {
+}
+
+void Archive_PCXLib::flush()
+{
+	// Write copyright attribute
+	{
+		auto& a = this->v_attributes[0];
+		if (a.changed) {
+			assert(a.textValue.length() <= PCX_COPYRIGHT_LEN);
+
+			this->content->seekp(PCX_COPYRIGHT_OFFSET, stream::start);
+			*this->content
+				<< nullPadded(a.textValue, PCX_COPYRIGHT_LEN);
+
+			a.changed = false;
+		}
+	}
+
+	// Write volume label attribute
+	{
+		auto& a = this->v_attributes[1];
+		if (a.changed) {
+			assert(a.textValue.length() <= PCX_LABEL_LEN);
+
+			this->content->seekp(PCX_LABEL_OFFSET, stream::start);
+			*this->content
+				<< nullPadded(a.textValue, PCX_LABEL_LEN);
+
+			a.changed = false;
+		}
+	}
+
+	this->Archive_FAT::flush();
+	return;
 }
 
 void Archive_PCXLib::updateFileName(const FATEntry *pid, const std::string& strNewName)
