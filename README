@@ -117,4 +117,9 @@ All supported file formats are fully documented on the ModdingWiki - see:
 
  * http://www.shikadi.net/moddingwiki/Category:Archive_formats
 
+If you'd like to contribute (please do!) there is a tutorial about how to add
+a new file format to the library here:
+
+ * http://www.shikadi.net/camoto/help/archive/new
+
 This library is released under the GPLv3 license.
