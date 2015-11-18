@@ -456,7 +456,7 @@ int main(int iArgC, char *cArgV[])
 					std::string code = i->code();
 					std::cout << code;
 					int len = code.length();
-					if (len < 20) std::cout << std::string(20-code.length(), ' ');
+					if (len < 20) std::cout << std::string(20 - len, ' ');
 					std::cout << ' ' << i->friendlyName() << '\n';
 				}
 				return RET_OK;
@@ -558,7 +558,7 @@ int main(int iArgC, char *cArgV[])
 						bool bSuppOK = true;
 						for (const auto& s : suppList) {
 							try {
-								auto suppStream = std::make_shared<stream::file>(s.second, false);
+								stream::file test_presence(s.second, false);
 							} catch (const stream::open_error&) {
 								bSuppOK = false;
 								std::cout << "  * Could not find/open " << s.second
@@ -596,7 +596,7 @@ finishTesting:
 
 		if (!bCreate) {
 			// Check to see if the file is actually in this format
-			if (!pArchType->isInstance(*psArchive)) {
+			if (pArchType->isInstance(*psArchive) == ga::ArchiveType::DefinitelyNo) {
 				if (bForceOpen) {
 					std::cerr << "Warning: " << strFilename << " is not a "
 						<< pArchType->friendlyName() << ", open forced." << std::endl;
@@ -633,7 +633,7 @@ finishTesting:
 				pArchive = pArchType->open(std::move(psArchive), suppData);
 			}
 			assert(pArchive);
-		} catch (const stream::error& e) {
+		} catch (const camoto::error& e) {
 			std::cerr << "Error " << (bCreate ? "creating" : "opening")
 				<< " archive file: " << e.what() << std::endl;
 			return RET_SHOWSTOPPER;
