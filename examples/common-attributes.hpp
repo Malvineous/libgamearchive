@@ -19,7 +19,7 @@
  */
 
 /// List all the attributes in the object.
-void listAttributes(camoto::HasAttributes *obj, bool bScript)
+void listAttributes(const camoto::HasAttributes *obj, bool bScript)
 {
 	auto attributes = obj->attributes();
 	std::cout << (bScript ? "attribute_count=" : "Number of attributes: ")
@@ -142,6 +142,38 @@ void listAttributes(camoto::HasAttributes *obj, bool bScript)
 				break;
 		}
 		attrNum++;
+	}
+	return;
+}
+
+/// Set an attribute
+void setAttribute(camoto::HasAttributes *obj, bool bScript,
+	unsigned int index, const std::string& value)
+{
+	auto attributes = obj->attributes();
+	if (index >= attributes.size()) {
+		throw camoto::error(createString("Index " << index << " is out of range ("
+			<< attributes.size() << " attributes available)."));
+	}
+	auto& a = attributes[index];
+	switch (a.type) {
+		case camoto::Attribute::Type::Integer:
+		case camoto::Attribute::Type::Enum:
+		case camoto::Attribute::Type::Image: {
+			long val = strtol(value.c_str(), nullptr, 0);
+			obj->attribute(index, val);
+			break;
+		}
+
+		case camoto::Attribute::Type::Filename:
+		case camoto::Attribute::Type::Text: {
+			obj->attribute(index, value);
+			break;
+		}
+
+		default:
+			throw camoto::error(createString("Attribute " << index
+				<< " has an unknown type (fix this!)"));
 	}
 	return;
 }
