@@ -23,7 +23,6 @@
 
 #include <boost/algorithm/string.hpp>
 #include <functional>
-#include <boost/weak_ptr.hpp>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/stream_string.hpp>
 #include <camoto/util.hpp>

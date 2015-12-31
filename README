@@ -29,6 +29,7 @@ File formats from the following games have been implemented:
   * Doom (.wad)
   * Duke Nukem II (.cmp)
   * Duke Nukem 3D (.grp, .rts)
+  * Galactix (.glb)
   * God of Thunder (.dat) [no decompression yet]
   * Halloween Harry (.bnk, harry.-0)
   * Highway Hunter (.dat)

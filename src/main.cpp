@@ -53,6 +53,7 @@
 #include "fmt-exe-ccaves.hpp"
 #include "fmt-exe-ddave.hpp"
 #include "fmt-gd-doofus.hpp"
+#include "fmt-glb-galactix.hpp"
 #include "fmt-glb-raptor.hpp"
 #include "fmt-grp-duke3d.hpp"
 #include "fmt-hog-descent.hpp"
@@ -92,6 +93,7 @@ const std::vector<std::shared_ptr<const ArchiveType> > CAMOTO_GAMEARCHIVE_API
 		ArchiveType_EPF_LionKing,
 		ArchiveType_EXE_CCaves,
 		ArchiveType_EXE_DDave,
+		ArchiveType_GLB_Galactix,
 		ArchiveType_GLB_Raptor,
 		ArchiveType_GRP_Duke3D,
 		ArchiveType_HOG_Descent,
