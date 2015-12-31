@@ -99,12 +99,18 @@ ArchiveType::Certainty ArchiveType_DAT_Wacky::isInstance(
 	char fn[DAT_FILENAME_FIELD_LEN];
 	for (int i = 0; i < numFiles; i++) {
 		content.read(fn, DAT_FILENAME_FIELD_LEN);
+
+		// Make sure the filename isn't completely blank
+		// TESTED BY: fmt_dat_wacky_isinstance_c05
+		if (fn[0] == 0) return DefinitelyNo;
+
 		// Make sure there aren't any invalid characters in the filename
 		for (int j = 0; j < DAT_FILENAME_FIELD_LEN; j++) {
 			if (!fn[j]) break; // stop on terminating null
 
 			// Fail on control characters in the filename
-			if (fn[j] < 32) return DefinitelyNo; // TESTED BY: fmt_dat_wacky_isinstance_c01
+			// TESTED BY: fmt_dat_wacky_isinstance_c01
+			if (fn[j] < 32) return DefinitelyNo;
 		}
 
 		uint32_t offEntry, lenEntry;

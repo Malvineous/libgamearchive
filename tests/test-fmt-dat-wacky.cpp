@@ -67,6 +67,15 @@ class test_dat_wacky: public test_archive
 				"This is one.dat"
 				"This is two.dat"
 			));
+
+			// c05: Blank filename
+			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+				"\x02\x00"
+				"\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\x2c\x00\x00\x00"
+				"TWO.DAT\0\0\0\0\0\0\0"        "\x0f\x00\x00\x00" "\x3b\x00\x00\x00"
+				"This is one.dat"
+				"This is two.dat"
+			));
 		}
 
 		virtual std::string content_12()
