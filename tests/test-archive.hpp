@@ -373,19 +373,22 @@ class test_archive: public test_main
 		/// Content of each file in the archive.
 		std::string content[4];
 
-		/// Content of first file after being overwritten.
+		/// Content of first file after being overwritten in content_1w2().  Length
+		/// of data to resize file to is the length of this string.
 		std::string content0_overwritten;
 
-		/// Length to enlarge file 1 to.
+		/// Length to enlarge file 1 to in content_1l2().
 		unsigned int content0_largeSize;
 
-		/// Length of enlarged file 1 before compression (used in arch header only.)
+		/// Length of enlarged file 1 in content_1l2() before compression (used in
+		/// arch header only.)
 		unsigned int content0_largeSize_unfiltered;
 
-		/// Length to shrink file 1 to.
+		/// Length to shrink file 1 to in content_1s2().
 		unsigned int content0_smallSize;
 
-		/// Length of shrunk file 1 before compression (used in arch header only.)
+		/// Length of shrunk file 1 in content_1s2() before compression (used in
+		/// arch header only.)
 		unsigned int content0_smallSize_unfiltered;
 
 		/// List of attributes this format supports, can be empty.

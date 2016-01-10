@@ -86,7 +86,7 @@ ArchiveType::Certainty ArchiveType_GRP_Duke3D::isInstance(
 
 	// File too short
 	// TESTED BY: fmt_grp_duke3d_isinstance_c02
-	if (lenArchive < GRP_FAT_ENTRY_LEN) return DefinitelyNo; // too short
+	if (lenArchive < GRP_FAT_ENTRY_LEN) return DefinitelyNo;
 
 	char sig[12];
 	content.seekg(0, stream::start);
