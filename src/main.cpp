@@ -48,6 +48,7 @@
 #include "fmt-dat-riptide.hpp"
 #include "fmt-dat-sango.hpp"
 #include "fmt-dat-wacky.hpp"
+#include "fmt-dat-zool.hpp"
 #include "fmt-dlt-stargunner.hpp"
 #include "fmt-epf-lionking.hpp"
 #include "fmt-exe-ccaves.hpp"
@@ -89,6 +90,7 @@ const std::vector<std::shared_ptr<const ArchiveType> > CAMOTO_GAMEARCHIVE_API
 		ArchiveType_DAT_Riptide,
 		ArchiveType_DAT_Sango,
 		ArchiveType_DAT_Wacky,
+		ArchiveType_DAT_Zool,
 		ArchiveType_DLT_Stargunner,
 		ArchiveType_EPF_LionKing,
 		ArchiveType_EXE_CCaves,

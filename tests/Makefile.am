@@ -28,6 +28,7 @@ tests_SOURCES += test-fmt-dat-mystic.cpp
 tests_SOURCES += test-fmt-dat-riptide.cpp
 tests_SOURCES += test-fmt-dat-sango.cpp
 tests_SOURCES += test-fmt-dat-wacky.cpp
+tests_SOURCES += test-fmt-dat-zool.cpp
 tests_SOURCES += test-fmt-dlt-stargunner.cpp
 tests_SOURCES += test-fmt-epf-lionking.cpp
 tests_SOURCES += test-fmt-gd-doofus.cpp

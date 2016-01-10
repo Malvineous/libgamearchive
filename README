@@ -66,6 +66,7 @@ File formats from the following games have been implemented:
   * Wacky Wheels (.dat)
   * WarCraft: Orcs & Humans (.dat)
   * Word Rescue (.1)
+  * Zool (.dat) [no decompression yet]
 
 Many more formats are planned.  The library also implements the following
 compression/encryption algorithms used by these games:
