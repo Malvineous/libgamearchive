@@ -89,6 +89,8 @@ const Archive::FileHandle Archive_FAT::find(const std::string& strFilename) cons
 
 bool Archive_FAT::isValid(const FileHandle& id) const
 {
+	// Make sure it's not empty, as the &* below will dereference it
+	if (!id) return false;
 	// Don't need to cast to get to the bValid member, but the dynamic_cast
 	// requires that id is an instance of FATEntry in order to be valid.
 	auto id2 = dynamic_cast<const FATEntry *>(&*id);

@@ -250,8 +250,8 @@ class CAMOTO_GAMEARCHIVE_API Archive: public HasAttributes
 		 * @post Existing iterators become invalid.  Any open files remain valid.
 		 *
 		 * @param idBeforeThis
-		 *   The new file will be inserted before this one.  If it is not valid,
-		 *   the new file will be last in the archive.
+		 *   The new file will be inserted before this one.  If it is not valid or
+		 *   a null/empty pointer, the new file will be last in the archive.
 		 *
 		 * @param strFilename
 		 *   Filename of the new file.
