@@ -3,7 +3,7 @@
  * @brief Implementation of Zool .DAT file reader/writer.
  *
  * This file format is fully documented on the ModdingWiki:
- *   http://www.shikadi.net/moddingwiki/DAT_Format
+ *   http://www.shikadi.net/moddingwiki/DAT_Format_%28Zool%29
  *
  * Copyright (C) 2010-2016 Adam Nielsen <malvineous@shikadi.net>
  *
