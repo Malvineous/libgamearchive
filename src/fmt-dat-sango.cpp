@@ -78,27 +78,27 @@ ArchiveType::Certainty ArchiveType_DAT_Sango::isInstance(
 	stream::pos lenArchive = content.size();
 
 	// TESTED BY: fmt_dat_sango_isinstance_c01
-	if (lenArchive < DAT_FAT_ENTRY_LEN) return DefinitelyNo; // too short
+	if (lenArchive < DAT_FAT_ENTRY_LEN) return Certainty::DefinitelyNo; // too short
 
 	uint32_t offEndFAT;
 	content.seekg(0, stream::start);
 	content >> u32le(offEndFAT);
 	// TESTED BY: fmt_dat_sango_isinstance_c02
-	if (offEndFAT > lenArchive) return DefinitelyNo;
+	if (offEndFAT > lenArchive) return Certainty::DefinitelyNo;
 
 	uint32_t offNext = 4; // in case of no files
 	for (unsigned int offset = 4; offset < offEndFAT; offset += 4) {
 		content >> u32le(offNext);
 		// TESTED BY: fmt_dat_sango_isinstance_c03
-		if (offNext > lenArchive) return DefinitelyNo;
+		if (offNext > lenArchive) return Certainty::DefinitelyNo;
 	}
 
 	// Last offset must equal file size
 	// TESTED BY: fmt_dat_sango_isinstance_c04
-	if (offNext != lenArchive) return DefinitelyNo;
+	if (offNext != lenArchive) return Certainty::DefinitelyNo;
 
 	// TESTED BY: fmt_dat_sango_isinstance_c00
-	return DefinitelyYes;
+	return Certainty::DefinitelyYes;
 }
 
 std::shared_ptr<Archive> ArchiveType_DAT_Sango::create(

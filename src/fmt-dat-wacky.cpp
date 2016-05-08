@@ -80,7 +80,7 @@ ArchiveType::Certainty ArchiveType_DAT_Wacky::isInstance(
 {
 	stream::pos lenArchive = content.size();
 	// TESTED BY: fmt_dat_wacky_isinstance_c02
-	if (lenArchive < DAT_FAT_OFFSET) return DefinitelyNo; // too short
+	if (lenArchive < DAT_FAT_OFFSET) return Certainty::DefinitelyNo; // too short
 
 	content.seekg(0, stream::start);
 	uint16_t numFiles;
@@ -88,12 +88,12 @@ ArchiveType::Certainty ArchiveType_DAT_Wacky::isInstance(
 
 	// If the archive has no files, it'd better be tiny
 	// TESTED BY: fmt_dat_wacky_isinstance_c04
-	if ((numFiles == 0) && (lenArchive > DAT_FAT_OFFSET)) return DefinitelyNo;
+	if ((numFiles == 0) && (lenArchive > DAT_FAT_OFFSET)) return Certainty::DefinitelyNo;
 
 	uint32_t lenFAT = numFiles * DAT_FAT_ENTRY_LEN;
 
 	// If the FAT is larger than the entire archive then it's not a DAT file
-	if (lenFAT + DAT_FAT_OFFSET > lenArchive) return DefinitelyNo;
+	if (lenFAT + DAT_FAT_OFFSET > lenArchive) return Certainty::DefinitelyNo;
 
 	// Check each FAT entry
 	char fn[DAT_FILENAME_FIELD_LEN];
@@ -102,7 +102,7 @@ ArchiveType::Certainty ArchiveType_DAT_Wacky::isInstance(
 
 		// Make sure the filename isn't completely blank
 		// TESTED BY: fmt_dat_wacky_isinstance_c05
-		if (fn[0] == 0) return DefinitelyNo;
+		if (fn[0] == 0) return Certainty::DefinitelyNo;
 
 		// Make sure there aren't any invalid characters in the filename
 		for (int j = 0; j < DAT_FILENAME_FIELD_LEN; j++) {
@@ -110,7 +110,7 @@ ArchiveType::Certainty ArchiveType_DAT_Wacky::isInstance(
 
 			// Fail on control characters in the filename
 			// TESTED BY: fmt_dat_wacky_isinstance_c01
-			if (fn[j] < 32) return DefinitelyNo;
+			if (fn[j] < 32) return Certainty::DefinitelyNo;
 		}
 
 		uint32_t offEntry, lenEntry;
@@ -120,13 +120,13 @@ ArchiveType::Certainty ArchiveType_DAT_Wacky::isInstance(
 		// If a file entry points past the end of the archive then it's an invalid
 		// format.
 		// TESTED BY: fmt_dat_wacky_isinstance_c03
-		if (offEntry + lenEntry > lenArchive) return DefinitelyNo;
+		if (offEntry + lenEntry > lenArchive) return Certainty::DefinitelyNo;
 	}
 
 	// If we've made it this far, this is almost certainly a DAT file.
 
 	// TESTED BY: fmt_dat_wacky_isinstance_c00
-	return DefinitelyYes;
+	return Certainty::DefinitelyYes;
 }
 
 std::shared_ptr<Archive> ArchiveType_DAT_Wacky::create(

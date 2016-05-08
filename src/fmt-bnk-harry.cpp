@@ -89,19 +89,19 @@ ArchiveType::Certainty ArchiveType_BNK_Harry::isInstance(
 	stream::input& content) const
 {
 	stream::pos lenArchive = content.size();
-	if (lenArchive == 0) return DefinitelyYes; // empty archive
-	if (lenArchive < BNK_HH_EFAT_ENTRY_LEN) return DefinitelyNo; // too short
+	if (lenArchive == 0) return Certainty::DefinitelyYes; // empty archive
+	if (lenArchive < BNK_HH_EFAT_ENTRY_LEN) return Certainty::DefinitelyNo; // too short
 
 	char sig[5];
 	content.seekg(0, stream::start);
 	content.read(sig, 5);
 
 	// TESTED BY: fmt_bnk_harry_isinstance_c01
-	if (strncmp(sig, "\x04-ID-", 5)) return DefinitelyNo;
+	if (strncmp(sig, "\x04-ID-", 5)) return Certainty::DefinitelyNo;
 
 	// If we've made it this far, this is almost certainly a BNK file.
 	// TESTED BY: fmt_bnk_harry_isinstance_c00
-	return DefinitelyYes;
+	return Certainty::DefinitelyYes;
 }
 
 std::shared_ptr<Archive> ArchiveType_BNK_Harry::create(

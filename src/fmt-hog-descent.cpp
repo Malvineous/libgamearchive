@@ -78,17 +78,17 @@ ArchiveType::Certainty ArchiveType_HOG_Descent::isInstance(
 	stream::pos lenArchive = content.size();
 
 	// TESTED BY: fmt_hog_descent_isinstance_c02
-	if (lenArchive < HOG_HEADER_LEN) return DefinitelyNo; // too short
+	if (lenArchive < HOG_HEADER_LEN) return Certainty::DefinitelyNo; // too short
 
 	char sig[HOG_HEADER_LEN];
 	content.seekg(0, stream::start);
 	content.read(sig, HOG_HEADER_LEN);
 
 	// TESTED BY: fmt_hog_descent_isinstance_c00
-	if (strncmp(sig, "DHF", HOG_HEADER_LEN) == 0) return DefinitelyYes;
+	if (strncmp(sig, "DHF", HOG_HEADER_LEN) == 0) return Certainty::DefinitelyYes;
 
 	// TESTED BY: fmt_hog_descent_isinstance_c01
-	return DefinitelyNo;
+	return Certainty::DefinitelyNo;
 }
 
 std::shared_ptr<Archive> ArchiveType_HOG_Descent::create(

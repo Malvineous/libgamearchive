@@ -87,17 +87,17 @@ ArchiveType::Certainty ArchiveType_CUR_Prehistorik::isInstance(
 
 	// File too short
 	// TESTED BY: fmt_cur_prehistorik_isinstance_c01
-	if (lenArchive < CUR_HEADER_LEN) return DefinitelyNo;
+	if (lenArchive < CUR_HEADER_LEN) return Certainty::DefinitelyNo;
 
 	uint16_t offEndFAT;
 	content.seekg(0, stream::start);
 	content >> u16le(offEndFAT);
 	// FAT is too short
 	// TESTED BY: fmt_cur_prehistorik_isinstance_c02
-	if (offEndFAT < CUR_HEADER_LEN) return DefinitelyNo;
+	if (offEndFAT < CUR_HEADER_LEN) return Certainty::DefinitelyNo;
 	// FAT ends past EOF
 	// TESTED BY: fmt_cur_prehistorik_isinstance_c03
-	if (offEndFAT > lenArchive) return DefinitelyNo;
+	if (offEndFAT > lenArchive) return Certainty::DefinitelyNo;
 	stream::pos offNext = offEndFAT;
 	for (unsigned int i = 0; offEndFAT >= 4; i++) {
 		uint32_t storedSize;
@@ -110,31 +110,31 @@ ArchiveType::Certainty ArchiveType_CUR_Prehistorik::isInstance(
 		unsigned int lenFilename = filename.length() + 1;
 		// Filename too long
 		// TESTED BY: fmt_cur_prehistorik_isinstance_c04
-		if (lenFilename >= CUR_MAX_FILENAME_LEN) return DefinitelyNo;
+		if (lenFilename >= CUR_MAX_FILENAME_LEN) return Certainty::DefinitelyNo;
 
 		for (auto i : filename) {
 			// Control char in filename
 			// TESTED BY: fmt_cur_prehistorik_isinstance_c05
-			if ((i < 32) || (i == 127)) return DefinitelyNo;
+			if ((i < 32) || (i == 127)) return Certainty::DefinitelyNo;
 		}
 
 		// FAT ends mid-filename
 		// TESTED BY: fmt_cur_prehistorik_isinstance_c06
-		if (offEndFAT < lenFilename) return DefinitelyNo;
+		if (offEndFAT < lenFilename) return Certainty::DefinitelyNo;
 		offEndFAT -= lenFilename;
 
 		offNext += storedSize;
 		// File goes past archive EOF
 		// TESTED BY: fmt_cur_prehistorik_isinstance_c07
-		if (offNext > lenArchive) return DefinitelyNo;
+		if (offNext > lenArchive) return Certainty::DefinitelyNo;
 	}
 
 	// Last file doesn't end at archive EOF
 	// TESTED BY: fmt_cur_prehistorik_isinstance_c08
-	if (offNext != lenArchive) return DefinitelyNo;
+	if (offNext != lenArchive) return Certainty::DefinitelyNo;
 
 	// TESTED BY: fmt_cur_prehistorik_isinstance_c00
-	return DefinitelyYes;
+	return Certainty::DefinitelyYes;
 }
 
 std::shared_ptr<Archive> ArchiveType_CUR_Prehistorik::create(

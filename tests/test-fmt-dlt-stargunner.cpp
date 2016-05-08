@@ -39,17 +39,17 @@ class test_dlt_stargunner: public test_archive
 			this->test_archive::addTests();
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::DefinitelyYes, this->content_12());
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, this->content_12());
 
 			// c01: Bad signature
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"DAVY" "\x00\x01" "\x02\x00"
 				FILENAME1_ENC "\x00\x00\x00\x00" "\x0F\x00\x00\x00" "This is one.dat"
 				FILENAME2_ENC "\x00\x00\x00\x00" "\x0F\x00\x00\x00" "This is two.dat"
 			));
 
 			// c02: Too short
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"DAVE" "\x00\x01" "\x00"
 			));
 		}

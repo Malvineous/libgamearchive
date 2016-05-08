@@ -87,17 +87,17 @@ ArchiveType::Certainty ArchiveType_RFF_Blood::isInstance(
 	stream::pos lenArchive = content.size();
 
 	// TESTED BY: fmt_rff_blood_isinstance_c02
-	if (lenArchive < RFF_HEADER_LEN) return DefinitelyNo; // too short
+	if (lenArchive < RFF_HEADER_LEN) return Certainty::DefinitelyNo; // too short
 
 	char sig[4];
 	content.seekg(0, stream::start);
 	content.read(sig, 4);
 
 	// TESTED BY: fmt_rff_blood_isinstance_c00
-	if (strncmp(sig, "RFF\x1A", 4) == 0) return DefinitelyYes;
+	if (strncmp(sig, "RFF\x1A", 4) == 0) return Certainty::DefinitelyYes;
 
 	// TESTED BY: fmt_rff_blood_isinstance_c01
-	return DefinitelyNo;
+	return Certainty::DefinitelyNo;
 }
 
 std::shared_ptr<Archive> ArchiveType_RFF_Blood::create(

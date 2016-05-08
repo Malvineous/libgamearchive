@@ -35,15 +35,15 @@ class test_lbr_vinyl: public test_archive
 			this->test_archive::addTests();
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::DefinitelyYes, this->content_12());
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, this->content_12());
 
 			// c01: File too short
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x00"
 			));
 
 			// c02: Offset beyond EOF
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x02\x00"
 				"\x00\x00" "\x0e\x00\x00\x00"
 				"\x00\x00" "\xff\x00\x00\x00"
@@ -52,13 +52,13 @@ class test_lbr_vinyl: public test_archive
 			));
 
 			// c03: Handle truncated FAT
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x02\x00"
 				"\x00\x00" "\x0e\x00\x00\x00"
 			));
 
 			// c04: Offset is inside FAT
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x02\x00"
 				"\x00\x00" "\x0e\x00\x00\x00"
 				"\x00\x00" "\x02\x00\x00\x00"
@@ -67,7 +67,7 @@ class test_lbr_vinyl: public test_archive
 			));
 
 			// c05: No files but trailing data (which would be data for the first file)
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x00\x00"
 				"\x00\x00" "\x0e\x00\x00\x00"
 				"\x00\x00" "\x1d\x00\x00\x00"

@@ -91,13 +91,13 @@ ArchiveType::Certainty ArchiveType_EXE_DDave::isInstance(
 		content.read(buffer, 25);
 		// No version strings, so check some data unlikely to be modded
 		if (strncmp(buffer, "Trouble loading tileset!$", 25) != 0)
-			return DefinitelyNo;
+			return Certainty::DefinitelyNo;
 
-		return DefinitelyYes;
+		return Certainty::DefinitelyYes;
 	}
 
 	// TESTED BY: TODO (generic)
-	return DefinitelyNo;
+	return Certainty::DefinitelyNo;
 }
 
 std::shared_ptr<Archive> ArchiveType_EXE_DDave::create(

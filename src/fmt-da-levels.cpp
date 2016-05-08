@@ -63,9 +63,9 @@ ArchiveType::Certainty ArchiveType_DA_Levels::isInstance(
 {
 	stream::pos lenArchive = content.size();
 	if (lenArchive == 1152 * 10) {
-		return PossiblyYes;
+		return Certainty::PossiblyYes;
 	}
-	return DefinitelyNo;
+	return Certainty::DefinitelyNo;
 }
 
 std::shared_ptr<Archive> ArchiveType_DA_Levels::create(

@@ -156,7 +156,7 @@ class test_dat_hocus: public test_archive
 			this->test_archive::addTests();
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::Unsure, this->content_12());
+			this->isInstance(ArchiveType::Certainty::Unsure, this->content_12());
 		}
 
 		virtual std::string content_12()

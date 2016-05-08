@@ -52,15 +52,15 @@ class test_resource_tim_fat: public test_archive
 			this->test_archive::addTests();
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::DefinitelyYes, this->content_12());
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, this->content_12());
 
 			// c01: File too short
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x00\x00" "\x00\x00" "\x02"
 			));
 
 			// c02: Data trailing after last file
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x00\x00" "\x00\x00" "\x02\x00"
 				"RESOURCE.001\0" "\x02\x00" CONTENT1
 				"RESOURCE.002\0" "\x02\x00" CONTENT2
@@ -68,7 +68,7 @@ class test_resource_tim_fat: public test_archive
 			));
 
 			// c03: Count field truncated
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x00\x00" "\x00\x00" "\x02\x00"
 				"RESOURCE.001\0" "\x02\x00" CONTENT1
 				"RESOURCE.002\0" "\x02"

@@ -84,17 +84,17 @@ ArchiveType::Certainty ArchiveType_DLT_Stargunner::isInstance(
 	stream::pos lenArchive = content.size();
 
 	// TESTED BY: fmt_dlt_stargunner_isinstance_c02
-	if (lenArchive < DLT_HEADER_LEN) return DefinitelyNo; // too short
+	if (lenArchive < DLT_HEADER_LEN) return Certainty::DefinitelyNo; // too short
 
 	char sig[4];
 	content.seekg(0, stream::start);
 	content.read(sig, 4);
 
 	// TESTED BY: fmt_dlt_stargunner_isinstance_c00
-	if (strncmp(sig, "DAVE", 4) == 0) return DefinitelyYes;
+	if (strncmp(sig, "DAVE", 4) == 0) return Certainty::DefinitelyYes;
 
 	// TESTED BY: fmt_dlt_stargunner_isinstance_c01
-	return DefinitelyNo;
+	return Certainty::DefinitelyNo;
 }
 
 std::shared_ptr<Archive> ArchiveType_DLT_Stargunner::create(

@@ -34,15 +34,15 @@ class test_dat_mystic: public test_archive
 			this->test_archive::addTests();
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::DefinitelyYes, this->content_12());
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, this->content_12());
 
 			// c01: File too short
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x00"
 			));
 
 			// c02: Too many files
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"This is one.dat"
 				"This is two.dat"
 				"\x07" "ONE.DAT\0\0\0\0\0" "\x00\x00\x00\x00" "\x0f\x00\x00\x00"
@@ -51,13 +51,13 @@ class test_dat_mystic: public test_archive
 			));
 
 			// c03: Too small to contain FAT
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x07" "TWO.DAT\0\0\0\0\0" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00"
 				"\x02\x00"
 			));
 
 			// c04: Filename length longer than field size
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"This is one.dat"
 				"This is two.dat"
 				"\x17" "ONE.DAT\0\0\0\0\0" "\x00\x00\x00\x00" "\x0f\x00\x00\x00"
@@ -66,7 +66,7 @@ class test_dat_mystic: public test_archive
 			));
 
 			// c05a: File starts or ends past archive EOF
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"This is one.dat"
 				"This is two.dat"
 				"\x07" "ONE.DAT\0\0\0\0\0" "\x00\xf0\x00\x00" "\x0f\x00\x00\x00"
@@ -75,7 +75,7 @@ class test_dat_mystic: public test_archive
 			));
 
 			// c05b: File starts or ends past archive EOF
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"This is one.dat"
 				"This is two.dat"
 				"\x07" "ONE.DAT\0\0\0\0\0" "\x00\x00\x00\x00" "\x0f\xf0\x00\x00"
@@ -84,7 +84,7 @@ class test_dat_mystic: public test_archive
 			));
 
 			// c06: File contains extra data beyond what is recorded in the FAT
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"This is one.dat"
 				"This is two.dat"
 				"A"

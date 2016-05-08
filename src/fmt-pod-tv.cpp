@@ -80,7 +80,7 @@ ArchiveType::Certainty ArchiveType_POD_TV::isInstance(
 	stream::pos lenArchive = content.size();
 
 	// Must have filecount + description
-	if (lenArchive < POD_FAT_OFFSET) return DefinitelyNo;
+	if (lenArchive < POD_FAT_OFFSET) return Certainty::DefinitelyNo;
 
 	content.seekg(0, stream::start);
 	uint32_t numFiles;
@@ -93,13 +93,13 @@ ArchiveType::Certainty ArchiveType_POD_TV::isInstance(
 	for (int j = 0; j < POD_DESCRIPTION_LEN; j++) {
 		// Fail on control characters in the description
 		if ((description[j]) && (description[j] < 32)) {
-			return DefinitelyNo; // TESTED BY: fmt_pod_tv_isinstance_c04
+			return Certainty::DefinitelyNo; // TESTED BY: fmt_pod_tv_isinstance_c04
 		}
 	}
 
 	// Make sure the FAT fits inside the archive
 	if (POD_FAT_OFFSET + numFiles * POD_FAT_ENTRY_LEN > lenArchive) {
-		return DefinitelyNo;
+		return Certainty::DefinitelyNo;
 	}
 
 	// Check each FAT entry
@@ -112,7 +112,7 @@ ArchiveType::Certainty ArchiveType_POD_TV::isInstance(
 			if (!fn[j]) break; // stop on terminating null
 
 			// Fail on control characters in the filename
-			if (fn[j] < 32) return DefinitelyNo; // TESTED BY: fmt_pod_tv_isinstance_c01
+			if (fn[j] < 32) return Certainty::DefinitelyNo; // TESTED BY: fmt_pod_tv_isinstance_c01
 		}
 
 		uint32_t offEntry, lenEntry;
@@ -121,12 +121,12 @@ ArchiveType::Certainty ArchiveType_POD_TV::isInstance(
 		// If a file entry points past the end of the archive then it's an invalid
 		// format.
 		// TESTED BY: fmt_pod_tv_isinstance_c0[23]
-		if (offEntry + lenEntry > lenArchive) return DefinitelyNo;
+		if (offEntry + lenEntry > lenArchive) return Certainty::DefinitelyNo;
 	}
 
 	// If we've made it this far, this is almost certainly a POD file.
 	// TESTED BY: fmt_pod_tv_isinstance_c00
-	return DefinitelyYes;
+	return Certainty::DefinitelyYes;
 }
 
 std::shared_ptr<Archive> ArchiveType_POD_TV::create(

@@ -46,10 +46,10 @@ class test_dat_bash_compressed: public test_archive
 			this->test_archive::addTests();
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::DefinitelyYes, this->content_12());
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, this->content_12());
 
 			// c01: access charst in by filename
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x20\x00" "\x12\x00"
 					"ONE.DAT\x05\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
 					"\x0f\x00"
@@ -61,12 +61,12 @@ class test_dat_bash_compressed: public test_archive
 			));
 
 			// c02: Blank archive
-			this->isInstance(ArchiveType::DefinitelyYes, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, STRING_WITH_NULLS(
 				""
 			));
 
 			// c03: File ends past EOF
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x20\x00" "\x12\x01"
 					"ONE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
 					"\x0f\x00"
@@ -78,7 +78,7 @@ class test_dat_bash_compressed: public test_archive
 			));
 
 			// c04: Truncated FAT entry
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x20\x00" "\x12\x00"
 					"ONE.DAT\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
 					"\x0f\x00"

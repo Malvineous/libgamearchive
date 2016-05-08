@@ -70,7 +70,7 @@ ArchiveType::Certainty ArchiveType_Roads_SkyRoads::isInstance(
 	// An empty file is valid as an archive with no files (since this format
 	// lacks a header.)
 	// TESTED BY: fmt_skyroads_roads_isinstance_c01
-	if (lenArchive == 0) return DefinitelyYes;
+	if (lenArchive == 0) return Certainty::DefinitelyYes;
 
 	content.seekg(0, stream::start);
 	uint16_t lenFAT;
@@ -78,15 +78,15 @@ ArchiveType::Certainty ArchiveType_Roads_SkyRoads::isInstance(
 
 	// If the FAT is larger than the entire archive then it's not a SkyRoads roads file
 	// TESTED BY: fmt_skyroads_roads_isinstance_c02
-	if (lenFAT > lenArchive) return DefinitelyNo;
+	if (lenFAT > lenArchive) return Certainty::DefinitelyNo;
 
 	// If the FAT is smaller than a single entry then it's not a SkyRoads roads file
 	// TESTED BY: fmt_skyroads_roads_isinstance_c03
-	if (lenFAT < SRR_FAT_ENTRY_LEN) return DefinitelyNo;
+	if (lenFAT < SRR_FAT_ENTRY_LEN) return Certainty::DefinitelyNo;
 
 	// The FAT is not an even multiple of FAT entries.
 	// TESTED BY: fmt_skyroads_roads_isinstance_c04
-	if (lenFAT % SRR_FAT_ENTRY_LEN) return DefinitelyNo;
+	if (lenFAT % SRR_FAT_ENTRY_LEN) return Certainty::DefinitelyNo;
 
 	// Check each FAT entry
 	content.seekg(0, stream::start);
@@ -99,15 +99,15 @@ ArchiveType::Certainty ArchiveType_Roads_SkyRoads::isInstance(
 		// If a file entry points past the end of the archive then it's an invalid
 		// format.
 		// TESTED BY: fmt_skyroads_roads_isinstance_c05
-		if (offEntry > lenArchive) return DefinitelyNo;
+		if (offEntry > lenArchive) return Certainty::DefinitelyNo;
 
 		// Offsets must increase or we'll get a negative file size.
 		// TESTED BY: fmt_skyroads_roads_isinstance_c06
-		if (offEntry < offPrev) return DefinitelyNo;
+		if (offEntry < offPrev) return Certainty::DefinitelyNo;
 
 		// Assume files cannot be zero length.  This helps avoid false positives
 		// with Sango .dat files.
-		if (lenDecomp == 0) return DefinitelyNo;
+		if (lenDecomp == 0) return Certainty::DefinitelyNo;
 
 		offPrev = offEntry;
 	}
@@ -116,7 +116,7 @@ ArchiveType::Certainty ArchiveType_Roads_SkyRoads::isInstance(
 	// TODO: What about data in between files?
 
 	// TESTED BY: fmt_skyroads_roads_isinstance_c00
-	return DefinitelyYes;
+	return Certainty::DefinitelyYes;
 }
 
 std::shared_ptr<Archive> ArchiveType_Roads_SkyRoads::create(

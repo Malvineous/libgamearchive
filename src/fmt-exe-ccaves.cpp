@@ -69,13 +69,13 @@ ArchiveType::Certainty ArchiveType_EXE_CCaves::isInstance(
 		// Unfortunately no version strings, so check some data I
 		// selected at random...
 		if (strncmp(buffer, "\x55\x89\xE5\x8B\x46\x06\xBA\xA0", 8) != 0)
-			return DefinitelyNo;
+			return Certainty::DefinitelyNo;
 
-		return DefinitelyYes;
+		return Certainty::DefinitelyYes;
 	}
 
 	// TESTED BY: TODO (generic)
-	return DefinitelyNo;
+	return Certainty::DefinitelyNo;
 }
 
 std::shared_ptr<Archive> ArchiveType_EXE_CCaves::create(

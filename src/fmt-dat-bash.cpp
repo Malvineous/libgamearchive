@@ -80,7 +80,7 @@ ArchiveType::Certainty ArchiveType_DAT_Bash::isInstance(
 {
 	stream::pos lenArchive = content.size();
 	// TESTED BY: fmt_dat_bash_isinstance_c02
-	//if (lenArchive < DAT_FAT_OFFSET) return DefinitelyNo; // too short
+	//if (lenArchive < DAT_FAT_OFFSET) return Certainty::DefinitelyNo; // too short
 
 	content.seekg(0, stream::start);
 
@@ -92,7 +92,7 @@ ArchiveType::Certainty ArchiveType_DAT_Bash::isInstance(
 		if (pos + DAT_EFAT_ENTRY_LEN > lenArchive) {
 			// File ends on an incomplete FAT entry
 			// TESTED BY: fmt_dat_bash_isinstance_c04
-			return DefinitelyNo;
+			return Certainty::DefinitelyNo;
 		}
 		content
 			>> u16le(type)
@@ -104,7 +104,7 @@ ArchiveType::Certainty ArchiveType_DAT_Bash::isInstance(
 			if (!fn[j]) break; // stop on terminating null
 
 			// Fail on control characters in the filename
-			if (fn[j] < 32) return DefinitelyNo; // TESTED BY: fmt_dat_bash_isinstance_c01
+			if (fn[j] < 32) return Certainty::DefinitelyNo; // TESTED BY: fmt_dat_bash_isinstance_c01
 		}
 
 		pos += lenEntry + DAT_EFAT_ENTRY_LEN;
@@ -112,7 +112,7 @@ ArchiveType::Certainty ArchiveType_DAT_Bash::isInstance(
 		// If a file entry points past the end of the archive then it's an invalid
 		// format.
 		// TESTED BY: fmt_dat_bash_isinstance_c03
-		if (pos > lenArchive) return DefinitelyNo;
+		if (pos > lenArchive) return Certainty::DefinitelyNo;
 
 		content.seekg(pos, stream::start);
 	}
@@ -120,7 +120,7 @@ ArchiveType::Certainty ArchiveType_DAT_Bash::isInstance(
 	// If we've made it this far, this is almost certainly a DAT file.
 
 	// TESTED BY: fmt_dat_bash_isinstance_c00, c02
-	return DefinitelyYes;
+	return Certainty::DefinitelyYes;
 }
 
 std::shared_ptr<Archive> ArchiveType_DAT_Bash::create(

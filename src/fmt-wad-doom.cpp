@@ -90,20 +90,20 @@ ArchiveType::Certainty ArchiveType_WAD_Doom::isInstance(
 	stream::pos lenArchive = content.size();
 
 	// TESTED BY: fmt_wad_doom_isinstance_c03
-	if (lenArchive < WAD_HEADER_LEN) return DefinitelyNo; // too short
+	if (lenArchive < WAD_HEADER_LEN) return Certainty::DefinitelyNo; // too short
 
 	char sig[4];
 	content.seekg(0, stream::start);
 	content.read(sig, 4);
 
 	// TESTED BY: fmt_wad_doom_isinstance_c00
-	if (strncmp(sig, "IWAD", 4) == 0) return DefinitelyYes;
+	if (strncmp(sig, "IWAD", 4) == 0) return Certainty::DefinitelyYes;
 
 	// TESTED BY: fmt_wad_doom_isinstance_c01
-	if (strncmp(sig, "PWAD", 4) == 0) return DefinitelyYes;
+	if (strncmp(sig, "PWAD", 4) == 0) return Certainty::DefinitelyYes;
 
 	// TESTED BY: fmt_wad_doom_isinstance_c02
-	return DefinitelyNo;
+	return Certainty::DefinitelyNo;
 }
 
 std::shared_ptr<Archive> ArchiveType_WAD_Doom::create(

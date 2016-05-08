@@ -45,10 +45,10 @@ class test_rff_blood: public test_archive
 			ADD_ARCH_TEST(false, &test_rff_blood::test_insert_long_ext);
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::DefinitelyYes, this->content_12());
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, this->content_12());
 
 			// c01: Bad signature
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"FFR\x1a" "\x00\x02\x00\x00" "\x3e\x00\x00\x00" "\x02\x00\x00\x00"
 				"\x00\x00\x00\x00" "\x00\x00\x00\x00" "\x00\x00\x00\x00" "\x00\x00\x00\x00"
 				"This is one.dat"
@@ -64,7 +64,7 @@ class test_rff_blood: public test_archive
 			));
 
 			// c02: File too short
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"RFF"
 			));
 

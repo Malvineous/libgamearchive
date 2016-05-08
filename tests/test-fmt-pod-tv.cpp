@@ -47,10 +47,10 @@ class test_pod_tv: public test_archive
 			this->test_archive::addTests();
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::DefinitelyYes, this->content_12());
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, this->content_12());
 
 			// c01: Control characters in filename
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x02\x00\x00\x00" POD_DESC
 				"ONE.DAT\x05\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xa4\x00\x00\x00"
 				"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xb3\x00\x00\x00"
@@ -59,7 +59,7 @@ class test_pod_tv: public test_archive
 			));
 
 			// c02: File offset past end of archive
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x02\x00\x00\x00" POD_DESC
 				"ONE.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xa4\x01\x00\x00"
 				"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xb3\x00\x00\x00"
@@ -68,7 +68,7 @@ class test_pod_tv: public test_archive
 			));
 
 			// c03: File length larger than archive
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x02\x00\x00\x00" POD_DESC
 				"ONE.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x01\x00\x00" "\xa4\x00\x00\x00"
 				"TWO.DAT\0\0\0\0\0\0\0\0\0" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\xb3\x00\x00\x00"
@@ -77,7 +77,7 @@ class test_pod_tv: public test_archive
 			));
 
 			// c04: Control characters in the description field
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x02\x00\x00\x00"
 				"Startup 1.1 Gold"
 				"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"

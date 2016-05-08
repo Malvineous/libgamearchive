@@ -84,10 +84,10 @@ ArchiveType::Certainty ArchiveType_Resource_TIM::isInstance(
 	try {
 		stream::len lenArchive = content.size();
 		// TESTED BY: fmt_resource_tim_new_isinstance
-		if (lenArchive == 0) return DefinitelyYes; // empty archive
+		if (lenArchive == 0) return Certainty::DefinitelyYes; // empty archive
 
 		// TESTED BY: fmt_resource_tim_isinstance_c01
-		if (lenArchive < TIM_EFAT_ENTRY_LEN) return DefinitelyNo; // too short
+		if (lenArchive < TIM_EFAT_ENTRY_LEN) return Certainty::DefinitelyNo; // too short
 
 		stream::pos step = 0;
 		uint32_t fileSize;
@@ -98,15 +98,15 @@ ArchiveType::Certainty ArchiveType_Resource_TIM::isInstance(
 		}
 
 		// TESTED BY: fmt_resource_tim_isinstance_c02
-		if (step != lenArchive) return DefinitelyNo;
+		if (step != lenArchive) return Certainty::DefinitelyNo;
 	} catch (const stream::incomplete_read&) {
 		// TESTED BY: fmt_resource_tim_isinstance_c03
-		return DefinitelyNo;
+		return Certainty::DefinitelyNo;
 	}
 
 	// If we've made it this far, this is almost certainly in the correct format.
 	// TESTED BY: fmt_resource_tim_isinstance_c00
-	return DefinitelyYes;
+	return Certainty::DefinitelyYes;
 }
 
 std::shared_ptr<Archive> ArchiveType_Resource_TIM::create(

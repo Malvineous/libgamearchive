@@ -87,7 +87,7 @@ ArchiveType::Certainty ArchiveType_DAT_GoT::isInstance(
 
 	// Make sure the archive is large enough to hold a FAT
 	// TESTED BY: fmt_dat_got_isinstance_c02
-	if (lenArchive < GOT_FAT_LENGTH) return DefinitelyNo;
+	if (lenArchive < GOT_FAT_LENGTH) return Certainty::DefinitelyNo;
 
 	// Create a substream to decrypt the FAT
 	auto fatSubStream = std::make_unique<stream::input_sub>(
@@ -119,7 +119,7 @@ ArchiveType::Certainty ArchiveType_DAT_GoT::isInstance(
 				if (!fn[j]) break; // stop on terminating null
 
 				// Fail on control characters in the filename
-				if (fn[j] < 32) return DefinitelyNo; // TESTED BY: fmt_dat_got_isinstance_c01
+				if (fn[j] < 32) return Certainty::DefinitelyNo; // TESTED BY: fmt_dat_got_isinstance_c01
 			}
 
 			uint32_t offEntry, lenEntry, lenDecomp;
@@ -135,16 +135,16 @@ ArchiveType::Certainty ArchiveType_DAT_GoT::isInstance(
 			// format.
 			// TESTED BY: fmt_dat_got_isinstance_c03
 			// TESTED BY: fmt_dat_got_isinstance_c04
-			if (offEntry + lenEntry > lenArchive) return DefinitelyNo;
+			if (offEntry + lenEntry > lenArchive) return Certainty::DefinitelyNo;
 		}
 	} catch (const stream::incomplete_read&) {
-		return DefinitelyNo;
+		return Certainty::DefinitelyNo;
 	}
 
 	// If we've made it this far, this is almost certainly a GoT file.
 
 	// TESTED BY: fmt_dat_got_isinstance_c00
-	return DefinitelyYes;
+	return Certainty::DefinitelyYes;
 }
 
 std::shared_ptr<Archive> ArchiveType_DAT_GoT::create(

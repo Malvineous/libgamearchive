@@ -34,27 +34,27 @@ class test_dat_hugo: public test_archive
 			this->test_archive::addTests();
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::DefinitelyYes, this->content_12());
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, this->content_12());
 
 			// c01: File offset/size is past EOF
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x50\x00\x00\x00" "\x0f\x00\x00\x00"
 				"This is one.dat"
 			));
 
 			// c02: Too short
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x08\x00\x00\x00" "\x0f\x00\x00"
 			));
 
 			// c03: First file finishes past EOF
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x08\x00\x00\x00" "\x50\x00\x00\x00"
 				"This is one.dat"
 			));
 
 			// c04: Empty file can be valid
-			this->isInstance(ArchiveType::PossiblyYes, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::PossiblyYes, STRING_WITH_NULLS(
 				""
 			));
 		}

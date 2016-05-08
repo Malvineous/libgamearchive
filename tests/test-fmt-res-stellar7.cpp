@@ -39,10 +39,10 @@ class test_res_stellar7: public test_archive
 			this->test_archive::addTests();
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::DefinitelyYes, this->content_12());
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, this->content_12());
 
 			// c01: Control characters in filename
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x5NE:" "\x0f\x00\x00\x00"
 				"This is one.dat"
 				"TWO:" "\x0f\x00\x00\x00"
@@ -50,7 +50,7 @@ class test_res_stellar7: public test_archive
 			));
 
 			// c02: Offset past EOF
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"ONE:" "\xef\x00\x00\x00"
 				"This is one.dat"
 				"TWO:" "\x0f\x00\x00\x00"

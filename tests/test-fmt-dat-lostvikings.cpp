@@ -34,25 +34,25 @@ class test_dat_lostvikings: public test_archive
 			this->test_archive::addTests();
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::DefinitelyYes, this->content_12());
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, this->content_12());
 
 			// c01: Empty archive
-			this->isInstance(ArchiveType::PossiblyYes, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::PossiblyYes, STRING_WITH_NULLS(
 				""
 			));
 
 			// c02: Archive too small
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x00\x00\x00"
 			));
 
 			// c03: First file is smaller than FAT
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x03\x00\x00\x00"
 			));
 
 			// c04: File past EOF
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x08\x00\x00\x00"
 				"\xf7\x00\x00\x00"
 				"This is one.dat"
@@ -60,7 +60,7 @@ class test_dat_lostvikings: public test_archive
 			));
 
 			// c05: File with negative size
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x08\x00\x00\x00"
 				"\x07\x00\x00\x00"
 				"This is one.dat"
@@ -68,7 +68,7 @@ class test_dat_lostvikings: public test_archive
 			));
 
 			// c06: Single empty file - valid except for Sango misdetection avoidance
-			this->isInstance(ArchiveType::Unsure /*DefinitelyYes*/, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::Unsure /*DefinitelyYes*/, STRING_WITH_NULLS(
 				"\x04\x00\x00\x00"
 			));
 		}

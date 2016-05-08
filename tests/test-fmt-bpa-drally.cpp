@@ -50,10 +50,10 @@ class test_bpa_drally: public test_archive
 			this->test_archive::addTests();
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::DefinitelyYes, this->content_12());
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, this->content_12());
 
 			// c01: File too short
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x00\x00\x00\x00"
 				"\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x00\x00\x00\x00"
 				"\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x00\x00\x00\x00"
@@ -62,7 +62,7 @@ class test_bpa_drally: public test_archive
 			) + std::string(4267, '\0'));
 
 			// c02: File just long enough
-			this->isInstance(ArchiveType::DefinitelyYes, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, STRING_WITH_NULLS(
 				"\x00\x00\x00\x00"
 				"\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x00\x00\x00\x00"
 				"\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x00\x00\x00\x00"
@@ -71,7 +71,7 @@ class test_bpa_drally: public test_archive
 			) + std::string(4267, '\0'));
 
 			// c03: More than 255 files
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x00\x01\x00\x00"
 				ONE_DAT "\0\0\0\0\0\0"       "\x0f\x00\x00\x00"
 				TWO_DAT "\0\0\0\0\0\0"       "\x0f\x00\x00\x00"
@@ -83,7 +83,7 @@ class test_bpa_drally: public test_archive
 			));
 
 			// c04: Control characters in filename
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x02\x00\x00\x00"
 				ONE_DAT "\x60\0\0\0\0\0"     "\x0f\x00\x00\x00"
 				TWO_DAT "\0\0\0\0\0\0"       "\x0f\x00\x00\x00"
@@ -95,7 +95,7 @@ class test_bpa_drally: public test_archive
 			));
 
 			// c05: File goes past EOF
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x02\x00\x00\x00"
 				ONE_DAT "\0\0\0\0\0\0"       "\x0f\x00\x00\x00"
 				TWO_DAT "\0\0\0\0\0\0"       "\x0f\x00\x01\x00"

@@ -34,38 +34,38 @@ class test_vol_cosmo: public test_archive
 			this->test_archive::addTests();
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::DefinitelyYes, this->content_12());
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, this->content_12());
 
 			// c01: Control characters in filename
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"ONE.DAT\x05\0\0\0\0"      "\xa0\x0f\x00\x00" "\x0f\x00\x00\x00"
 			) + std::string(3980, '\0') + STRING_WITH_NULLS(
 				"This is one.dat"
 			));
 
 			// c02: First file offset is within fixed-length FAT
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"ONE.DAT\0\0\0\0\0"        "\x05\x00\x00\x00" "\x0f\x00\x00\x00"
 			) + std::string(3980, '\0') + STRING_WITH_NULLS(
 				"This is one.dat"
 			));
 
 			// c03: File length is past EOF
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"ONE.DAT\0\0\0\0\0"        "\xa0\x0f\x00\x00" "\x1f\x00\x00\x00"
 			) + std::string(3980, '\0') + STRING_WITH_NULLS(
 				"This is one.dat"
 			));
 
 			// c04: FAT is larger than entire archive
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"ONE.DAT\0\0\0\0\0"        "\xff\xff\x00\x00" "\x0f\x00\x00\x00"
 			) + std::string(3980, '\0') + STRING_WITH_NULLS(
 				"This is one.dat"
 			));
 
 			// c05: Empty file is valid
-			this->isInstance(ArchiveType::DefinitelyYes, std::string(4000, '\0'));
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, std::string(4000, '\0'));
 		}
 
 		virtual std::string content_12()

@@ -401,7 +401,7 @@ ArchiveType::Certainty ArchiveType_LBR_Vinyl::isInstance(
 	stream::pos lenArchive = content.size();
 
 	// TESTED BY: fmt_lbr_vinyl_isinstance_c01
-	if (lenArchive < LBR_HEADER_LEN) return DefinitelyNo; // too short
+	if (lenArchive < LBR_HEADER_LEN) return Certainty::DefinitelyNo; // too short
 
 	content.seekg(0, stream::start);
 
@@ -412,13 +412,13 @@ ArchiveType::Certainty ArchiveType_LBR_Vinyl::isInstance(
 	// data after the FAT if there are zero files in the archive (because that
 	// data would belong to the first file, which doesn't exist.)
 	// TESTED BY: fmt_lbr_vinyl_isinstance_c05
-	if ((numFiles == 0) && (lenArchive != 2)) return DefinitelyNo;
+	if ((numFiles == 0) && (lenArchive != 2)) return Certainty::DefinitelyNo;
 
 	stream::pos offContent = LBR_HEADER_LEN + LBR_FAT_ENTRY_LEN * numFiles;
 
 	// Abort if the FAT is truncated.
 	// TESTED BY: fmt_lbr_vinyl_isinstance_c03
-	if (offContent > lenArchive) return DefinitelyNo;
+	if (offContent > lenArchive) return Certainty::DefinitelyNo;
 
 	uint16_t hash;
 	uint32_t offset;
@@ -429,15 +429,15 @@ ArchiveType::Certainty ArchiveType_LBR_Vinyl::isInstance(
 		;
 		// Make sure the offset is within the archive file.
 		// TESTED BY: fmt_lbr_vinyl_isinstance_c02
-		if (offset > lenArchive) return DefinitelyNo;
+		if (offset > lenArchive) return Certainty::DefinitelyNo;
 
 		// Make sure the offset is after the FAT.
 		// TESTED BY: fmt_lbr_vinyl_isinstance_c04
-		if (offset < offContent) return DefinitelyNo;
+		if (offset < offContent) return Certainty::DefinitelyNo;
 	}
 
 	// TESTED BY: fmt_lbr_vinyl_isinstance_c00
-	return DefinitelyYes;
+	return Certainty::DefinitelyYes;
 }
 
 std::shared_ptr<Archive> ArchiveType_LBR_Vinyl::create(

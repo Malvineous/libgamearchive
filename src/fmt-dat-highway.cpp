@@ -85,7 +85,7 @@ ArchiveType::Certainty ArchiveType_DAT_Highway::isInstance(
 
 	// File too short
 	// TESTED BY: fmt_dat_highway_isinstance_c01
-	if (lenArchive < DATHH_FIRST_FILE_OFFSET) return DefinitelyNo;
+	if (lenArchive < DATHH_FIRST_FILE_OFFSET) return Certainty::DefinitelyNo;
 
 	uint16_t lenFAT;
 	content.seekg(0, stream::start);
@@ -93,11 +93,11 @@ ArchiveType::Certainty ArchiveType_DAT_Highway::isInstance(
 
 	// FAT is not a multiple of the FAT entry length
 	// TESTED BY: fmt_dat_highway_isinstance_c02
-	if (lenFAT % DATHH_FAT_ENTRY_LEN) return DefinitelyNo;
+	if (lenFAT % DATHH_FAT_ENTRY_LEN) return Certainty::DefinitelyNo;
 
 	// FAT length too small to hold final null entry
 	// TESTED BY: fmt_dat_highway_isinstance_c07
-	if (lenFAT < DATHH_FAT_ENTRY_LEN) return DefinitelyNo;
+	if (lenFAT < DATHH_FAT_ENTRY_LEN) return Certainty::DefinitelyNo;
 
 	unsigned int numFiles = lenFAT / DATHH_FAT_ENTRY_LEN;
 	uint32_t offFile;
@@ -109,23 +109,23 @@ ArchiveType::Certainty ArchiveType_DAT_Highway::isInstance(
 
 		// Offset past EOF
 		// TESTED BY: fmt_dat_highway_isinstance_c03
-		if (offFile > lenArchive) return DefinitelyNo;
+		if (offFile > lenArchive) return Certainty::DefinitelyNo;
 
 		// File starts inside FAT
 		// TESTED BY: fmt_dat_highway_isinstance_c04
-		if ((offFile != 0) && (offFile < lenFAT + 2u)) return DefinitelyNo;
+		if ((offFile != 0) && (offFile < lenFAT + 2u)) return Certainty::DefinitelyNo;
 
 		// Filename isn't null terminated
 		// TESTED BY: fmt_dat_highway_isinstance_c05
-		if (c != 0) return DefinitelyNo;
+		if (c != 0) return Certainty::DefinitelyNo;
 	}
 
 	// Final file must be empty
 	// TESTED BY: fmt_dat_highway_isinstance_c06
-	if (offFile != 0) return DefinitelyNo;
+	if (offFile != 0) return Certainty::DefinitelyNo;
 
 	// TESTED BY: fmt_dat_highway_isinstance_c00
-	return DefinitelyYes;
+	return Certainty::DefinitelyYes;
 }
 
 std::shared_ptr<Archive> ArchiveType_DAT_Highway::create(

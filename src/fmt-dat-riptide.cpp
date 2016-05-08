@@ -83,7 +83,7 @@ ArchiveType::Certainty ArchiveType_DAT_Riptide::isInstance(
 
 	// File too short
 	// TESTED BY: fmt_dat_riptide_isinstance_c01
-	if (lenArchive < DATRIP_FIRST_FILE_OFFSET) return DefinitelyNo;
+	if (lenArchive < DATRIP_FIRST_FILE_OFFSET) return Certainty::DefinitelyNo;
 
 	uint16_t numFiles;
 	content.seekg(0, stream::start);
@@ -92,14 +92,14 @@ ArchiveType::Certainty ArchiveType_DAT_Riptide::isInstance(
 	// If the file count is zero, the archive must be only two bytes long
 	// TESTED BY: fmt_dat_riptide_isinstance_c02
 	if (numFiles == 0) {
-		if (lenArchive == 2) return DefinitelyYes;
-		return DefinitelyNo;
+		if (lenArchive == 2) return Certainty::DefinitelyYes;
+		return Certainty::DefinitelyNo;
 	}
 
 	// FAT too short
 	// TESTED BY: fmt_dat_riptide_isinstance_c03
 	unsigned long lenFAT = numFiles * (4+4+4+13);
-	if (lenArchive < lenFAT) return DefinitelyNo;
+	if (lenArchive < lenFAT) return Certainty::DefinitelyNo;
 
 	uint32_t offFile, lenFile;
 	char name[13];
@@ -111,11 +111,11 @@ ArchiveType::Certainty ArchiveType_DAT_Riptide::isInstance(
 
 		// Offset past EOF
 		// TESTED BY: fmt_dat_riptide_isinstance_c04
-		if (offFile + lenFile > lenArchive) return DefinitelyNo;
+		if (offFile + lenFile > lenArchive) return Certainty::DefinitelyNo;
 
 		// File starts inside FAT
 		// TESTED BY: fmt_dat_riptide_isinstance_c05
-		if ((offFile != 0) && (offFile < lenFAT + 2u)) return DefinitelyNo;
+		if ((offFile != 0) && (offFile < lenFAT + 2u)) return Certainty::DefinitelyNo;
 
 		// Filename isn't null terminated
 		// TESTED BY: fmt_dat_riptide_isinstance_c06
@@ -126,11 +126,11 @@ ArchiveType::Certainty ArchiveType_DAT_Riptide::isInstance(
 				break;
 			}
 		}
-		if (!foundNull) return DefinitelyNo;
+		if (!foundNull) return Certainty::DefinitelyNo;
 	}
 
 	// TESTED BY: fmt_dat_riptide_isinstance_c00
-	return DefinitelyYes;
+	return Certainty::DefinitelyYes;
 }
 
 std::shared_ptr<Archive> ArchiveType_DAT_Riptide::create(

@@ -82,13 +82,13 @@ ArchiveType::Certainty ArchiveType_GLB_Galactix::isInstance(
 	std::string sig;
 	content.seekg(4, stream::start);
 	content >> nullTerminated(sig, 22);
-	if (sig.compare("GLIB FILE") != 0) return DefinitelyNo;
+	if (sig.compare("GLIB FILE") != 0) return Certainty::DefinitelyNo;
 
 	// Don't really need to bother checking offset validity and other things,
 	// the signature is good enough.
 
 	// TESTED BY: fmt_glb_galactix_isinstance_c00
-	return DefinitelyYes;
+	return Certainty::DefinitelyYes;
 }
 
 std::shared_ptr<Archive> ArchiveType_GLB_Galactix::create(

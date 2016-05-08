@@ -93,7 +93,7 @@ ArchiveType::Certainty ArchiveType_GLB_Raptor::isInstance(
 	for (unsigned int i = 0; i < sizeof(sig_match); i++) {
 		if (sig[i] != sig_match[i]) {
 			// TESTED BY: fmt_glb_raptor_isinstance_c01
-			return DefinitelyNo;
+			return Certainty::DefinitelyNo;
 		}
 	}
 
@@ -101,7 +101,7 @@ ArchiveType::Certainty ArchiveType_GLB_Raptor::isInstance(
 	// the signature is good enough.
 
 	// TESTED BY: fmt_glb_raptor_isinstance_c00
-	return DefinitelyYes;
+	return Certainty::DefinitelyYes;
 }
 
 std::shared_ptr<Archive> ArchiveType_GLB_Raptor::create(

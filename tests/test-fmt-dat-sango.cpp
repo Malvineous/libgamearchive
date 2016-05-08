@@ -34,15 +34,15 @@ class test_dat_sango: public test_archive
 			this->test_archive::addTests();
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::DefinitelyYes, this->content_12());
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, this->content_12());
 
 			// c01: File too short
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x00\x00"
 			));
 
 			// c02: FAT length larger than archive
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\xff\x00\x00\x00"
 				"\x1b\x00\x00\x00"
 				"\x2a\x00\x00\x00"
@@ -51,7 +51,7 @@ class test_dat_sango: public test_archive
 			));
 
 			// c03: File length larger than archive
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x0c\x00\x00\x00"
 				"\xff\x00\x00\x00"
 				"\x2a\x00\x00\x00"
@@ -60,7 +60,7 @@ class test_dat_sango: public test_archive
 			));
 
 			// c04: Last offset does not equal archive size
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x0c\x00\x00\x00"
 				"\x1b\x00\x00\x00"
 				"\x2b\x00\x00\x00"

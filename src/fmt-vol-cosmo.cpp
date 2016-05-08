@@ -78,7 +78,7 @@ ArchiveType::Certainty ArchiveType_VOL_Cosmo::isInstance(
 	stream::input& content) const
 {
 	stream::pos lenArchive = content.size();
-	if (lenArchive < VOL_FAT_ENTRY_LEN) return DefinitelyNo; // too short
+	if (lenArchive < VOL_FAT_ENTRY_LEN) return Certainty::DefinitelyNo; // too short
 
 	content.seekg(12, stream::start);
 	uint32_t lenFAT;
@@ -86,12 +86,12 @@ ArchiveType::Certainty ArchiveType_VOL_Cosmo::isInstance(
 
 	// If the FAT is larger than the entire archive then it's not a VOL file
 	// TESTED BY: fmt_vol_cosmo_isinstance_c04
-	if (lenFAT > lenArchive) return DefinitelyNo;
+	if (lenFAT > lenArchive) return Certainty::DefinitelyNo;
 
 	// If the FAT is smaller than a single entry then it's not a VOL file, but
 	// allow a zero-length FAT in the case of an empty archive.
 	// TESTED BY: fmt_vol_cosmo_isinstance_c02
-	if ((lenFAT > 0) && (lenFAT < VOL_FAT_ENTRY_LEN)) return DefinitelyNo;
+	if ((lenFAT > 0) && (lenFAT < VOL_FAT_ENTRY_LEN)) return Certainty::DefinitelyNo;
 
 	// Check each FAT entry
 	char fn[VOL_MAX_FILENAME_LEN];
@@ -104,7 +104,7 @@ ArchiveType::Certainty ArchiveType_VOL_Cosmo::isInstance(
 
 			// Fail on control characters in the filename
 			// TESTED BY: fmt_vol_cosmo_isinstance_c01
-			if (fn[j] < 32) return DefinitelyNo;
+			if (fn[j] < 32) return Certainty::DefinitelyNo;
 		}
 
 		uint32_t offEntry, lenEntry;
@@ -113,22 +113,22 @@ ArchiveType::Certainty ArchiveType_VOL_Cosmo::isInstance(
 		// If a file entry points past the end of the archive then it's an invalid
 		// format.
 		// TESTED BY: fmt_vol_cosmo_isinstance_c03
-		if (offEntry + lenEntry > lenArchive) return DefinitelyNo;
+		if (offEntry + lenEntry > lenArchive) return Certainty::DefinitelyNo;
 	}
 
 	// If we've made it this far, this is almost certainly a VOL file.
 
 	// The FAT is not an even multiple of FAT entries.  Not sure whether this
 	// is a requirement.
-	//if (lenFAT % VOL_FAT_ENTRY_LEN) return PossiblyYes;
+	//if (lenFAT % VOL_FAT_ENTRY_LEN) return Certainty::PossiblyYes;
 
-	if (lenArchive < VOL_FAT_LENGTH) return PossiblyYes; // too short though
+	if (lenArchive < VOL_FAT_LENGTH) return Certainty::PossiblyYes; // too short though
 
 	// The FAT is not 4000 bytes.  Not sure whether this is a requirement.
-	if ((lenFAT != 0) && (lenFAT != 4000)) return PossiblyYes;
+	if ((lenFAT != 0) && (lenFAT != 4000)) return Certainty::PossiblyYes;
 
 	// TESTED BY: fmt_vol_cosmo_isinstance_c00
-	return DefinitelyYes;
+	return Certainty::DefinitelyYes;
 }
 
 std::shared_ptr<Archive> ArchiveType_VOL_Cosmo::create(

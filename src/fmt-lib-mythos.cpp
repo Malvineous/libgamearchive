@@ -83,17 +83,17 @@ ArchiveType::Certainty ArchiveType_LIB_Mythos::isInstance(
 	stream::pos lenArchive = content.size();
 
 	// TESTED BY: fmt_lib_mythos_isinstance_c02
-	if (lenArchive < LIB_FAT_ENTRY_LEN) return DefinitelyNo; // too short
+	if (lenArchive < LIB_FAT_ENTRY_LEN) return Certainty::DefinitelyNo; // too short
 
 	char sig[4];
 	content.seekg(0, stream::start);
 	content.read(sig, 4);
 
 	// TESTED BY: fmt_lib_mythos_isinstance_c01
-	if (strncmp(sig, "LIB\x1A", 4) != 0) return DefinitelyNo;
+	if (strncmp(sig, "LIB\x1A", 4) != 0) return Certainty::DefinitelyNo;
 
 	// TESTED BY: fmt_lib_mythos_isinstance_c00
-	return DefinitelyYes;
+	return Certainty::DefinitelyYes;
 }
 
 std::shared_ptr<Archive> ArchiveType_LIB_Mythos::create(

@@ -414,7 +414,7 @@ void test_archive::test_invalidContent(const std::string& content,
 	*ss << content;
 
 	// Make sure isInstance reports this is valid
-	BOOST_CHECK_EQUAL(pTestType->isInstance(*ss), ArchiveType::DefinitelyYes);
+	BOOST_CHECK_EQUAL(pTestType->isInstance(*ss), ArchiveType::Certainty::DefinitelyYes);
 
 	// Make this->suppData valid again, reusing previous data
 	this->populateSuppData();
@@ -546,7 +546,7 @@ void test_archive::test_isinstance_others()
 		// handler is to blame.
 		auto isInstanceResult = pTestType->isInstance(content);
 
-		BOOST_CHECK_MESSAGE(isInstanceResult < ArchiveType::DefinitelyYes,
+		BOOST_CHECK_MESSAGE(isInstanceResult < ArchiveType::Certainty::DefinitelyYes,
 			"isInstance() for " << otherType << " incorrectly recognises content for "
 			<< this->type);
 	}
@@ -1347,7 +1347,8 @@ void test_archive::test_new_isinstance()
 	BOOST_REQUIRE_MESSAGE(pTestType,
 		createString("Could not find archive type " << this->type));
 
-	BOOST_REQUIRE_MESSAGE(pTestType->isInstance(*this->base),
+	BOOST_REQUIRE_MESSAGE(
+		pTestType->isInstance(*this->base) != ArchiveType::Certainty::DefinitelyNo,
 		"Newly created archive was not recognised as a valid instance");
 
 	BOOST_TEST_CHECKPOINT("New archive reported valid, trying to open");

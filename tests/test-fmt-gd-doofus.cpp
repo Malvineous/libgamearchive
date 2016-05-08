@@ -166,7 +166,7 @@ class test_gd_doofus: public test_archive
 			ADD_ARCH_TEST(false, &test_gd_doofus::test_insert_unknown_type);
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::Unsure, this->content_12());
+			this->isInstance(ArchiveType::Certainty::Unsure, this->content_12());
 		}
 
 		virtual std::string content_12()

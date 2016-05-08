@@ -92,7 +92,7 @@ ArchiveType::Certainty ArchiveType_RES_Stellar7::isInstance(
 
 			// Fail on control characters in the filename
 			// TESTED BY: fmt_res_stellar7_isinstance_c01
-			if (fn[j] < 32) return DefinitelyNo;
+			if (fn[j] < 32) return Certainty::DefinitelyNo;
 		}
 		uint32_t isfolder_length;
 		content >> u32le(isfolder_length);
@@ -101,15 +101,15 @@ ArchiveType::Certainty ArchiveType_RES_Stellar7::isInstance(
 
 		// Make sure the files don't run past the end of the archive
 		// TESTED BY: fmt_res_stellar7_isinstance_c02
-		if (offNext > lenArchive) return DefinitelyNo;
+		if (offNext > lenArchive) return Certainty::DefinitelyNo;
 
 		content.seekg(iSize, stream::cur);
 	}
 
-	if (i == RES_SAFETY_MAX_FILECOUNT) return PossiblyYes;
+	if (i == RES_SAFETY_MAX_FILECOUNT) return Certainty::PossiblyYes;
 
 	// TESTED BY: fmt_res_stellar7_isinstance_c00
-	return DefinitelyYes;
+	return Certainty::DefinitelyYes;
 }
 
 std::shared_ptr<Archive> ArchiveType_RES_Stellar7::create(

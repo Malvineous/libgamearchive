@@ -54,10 +54,10 @@ class test_dat_zool: public test_archive
 			ADD_ARCH_TEST(false, &test_dat_zool::test_shrink_fat);
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::DefinitelyYes, this->content_12());
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, this->content_12());
 
 			// c01: File too short
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x01\x00"
 				"ONE     " "\x01\x00"
 				"TWO     " "\x02\x00"
@@ -65,7 +65,7 @@ class test_dat_zool: public test_archive
 			));
 
 			// c02: Incorrect archive size
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x0F\x00"
 				"ONE     " "\x01\x00"
 				"TWO     " "\x02\x00"

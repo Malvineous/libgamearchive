@@ -108,7 +108,7 @@ ArchiveType::Certainty ArchiveType_BPA_DRally::isInstance(
 	// File too short
 	// TESTED BY: fmt_bpa_drally_isinstance_c01
 	// TESTED BY: fmt_bpa_drally_isinstance_c02
-	if (lenArchive < BPA_FIRST_FILE_OFFSET) return DefinitelyNo;
+	if (lenArchive < BPA_FIRST_FILE_OFFSET) return Certainty::DefinitelyNo;
 
 	content.seekg(0, stream::start);
 	uint32_t numFiles;
@@ -116,7 +116,7 @@ ArchiveType::Certainty ArchiveType_BPA_DRally::isInstance(
 
 	// Can't store more than 255 files in the fixed-length FAT.
 	// TESTED BY: fmt_bpa_drally_isinstance_c03
-	if (numFiles > 255) return DefinitelyNo;
+	if (numFiles > 255) return Certainty::DefinitelyNo;
 
 	stream::pos lenContent = BPA_FIRST_FILE_OFFSET;
 
@@ -131,7 +131,7 @@ ArchiveType::Certainty ArchiveType_BPA_DRally::isInstance(
 
 			// Fail on control characters in the filename
 			// TESTED BY: fmt_bpa_drally_isinstance_c04
-			if (c < 32) return DefinitelyNo;
+			if (c < 32) return Certainty::DefinitelyNo;
 		}
 
 		uint32_t lenEntry;
@@ -141,12 +141,12 @@ ArchiveType::Certainty ArchiveType_BPA_DRally::isInstance(
 		// If a file entry points past the end of the archive then it's an invalid
 		// format.
 		// TESTED BY: fmt_bpa_drally_isinstance_c05
-		if (lenContent > lenArchive) return DefinitelyNo;
+		if (lenContent > lenArchive) return Certainty::DefinitelyNo;
 	}
 
 	// If we've made it this far, this is almost certainly a BPA file.
 	// TESTED BY: fmt_bpa_drally_isinstance_c00
-	return DefinitelyYes;
+	return Certainty::DefinitelyYes;
 }
 
 std::shared_ptr<Archive> ArchiveType_BPA_DRally::create(

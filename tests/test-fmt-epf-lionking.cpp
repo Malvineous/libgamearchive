@@ -40,10 +40,10 @@ class test_epf_lionking: public test_archive
 			this->test_archive::addTests();
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::DefinitelyYes, this->content_12());
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, this->content_12());
 
 			// c01: Bad signature
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"EPSF"      "\x33\x00\x00\x00" "\x00" "\x02\x00"
 				"This is one.dat"
 				"This is two.dat"
@@ -53,7 +53,7 @@ class test_epf_lionking: public test_archive
 			));
 
 			// c02: File too short
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"EPF"
 			));
 

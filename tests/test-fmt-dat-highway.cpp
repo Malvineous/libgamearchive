@@ -39,16 +39,16 @@ class test_dat_highway: public test_archive
 			this->test_archive::addTests();
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::DefinitelyYes, this->content_12());
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, this->content_12());
 
 			// c01: File too short
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x11\x00"
 				"\x00\x00\x00\x00" "\0\0\0\0\0\0\0\0\0\0\0\0" // "\0"
 			));
 
 			// c02: FAT is not a multiple of the FAT entry length
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x34\x00"
 				"\x36\x00\x00\x00" "one.dat\0\0\0\0\0\0"
 				"\x49\x00\x00\x00" "two.dat\0\0\0\0\0\0"
@@ -59,7 +59,7 @@ class test_dat_highway: public test_archive
 			));
 
 			// c03: Offset past EOF
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x33\x00"
 				"\x35\x10\x00\x00" "one.dat\0\0\0\0\0\0"
 				"\x48\x00\x00\x00" "two.dat\0\0\0\0\0\0"
@@ -69,7 +69,7 @@ class test_dat_highway: public test_archive
 			));
 
 			// c04: File starts inside FAT
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x33\x00"
 				"\x35\x00\x00\x00" "one.dat\0\0\0\0\0\0"
 				"\x04\x00\x00\x00" "two.dat\0\0\0\0\0\0"
@@ -79,7 +79,7 @@ class test_dat_highway: public test_archive
 			));
 
 			// c05: Filename isn't null terminated
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x33\x00"
 				"\x35\x00\x00\x00" "one.dat\0\0\0\0\0*"
 				"\x48\x00\x00\x00" "two.dat\0\0\0\0\0\0"
@@ -89,7 +89,7 @@ class test_dat_highway: public test_archive
 			));
 
 			// c06: Final file must be empty
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x33\x00"
 				"\x35\x00\x00\x00" "one.dat\0\0\0\0\0\0"
 				"\x48\x00\x00\x00" "two.dat\0\0\0\0\0\0"
@@ -99,7 +99,7 @@ class test_dat_highway: public test_archive
 			));
 
 			// c07: FAT length too small to hold final null entry
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x00\x00" // Don't use 0x10 because it's not a multiple of 0x11
 				"\x00\x00\x00\x00" "\0\0\0\0\0\0\0\0\0\0\0\0\0"
 			));

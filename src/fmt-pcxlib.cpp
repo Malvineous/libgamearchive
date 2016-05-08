@@ -85,7 +85,7 @@ ArchiveType::Certainty ArchiveType_PCXLib::isInstance(
 	stream::pos lenArchive = content.size();
 	// File too short to hold header
 	// TESTED BY: fmt_pcxlib_isinstance_c01
-	if (lenArchive < PCX_FAT_OFFSET) return DefinitelyNo;
+	if (lenArchive < PCX_FAT_OFFSET) return Certainty::DefinitelyNo;
 
 	content.seekg(0, stream::start);
 	uint32_t sig;
@@ -93,7 +93,7 @@ ArchiveType::Certainty ArchiveType_PCXLib::isInstance(
 
 	// Check signature
 	// TESTED BY: fmt_pcxlib_isinstance_c02
-	if (sig != 0xCA01) return DefinitelyNo;
+	if (sig != 0xCA01) return Certainty::DefinitelyNo;
 
 	content.seekg(PCX_VER_OFFSET, stream::start);
 	uint32_t ver;
@@ -101,7 +101,7 @@ ArchiveType::Certainty ArchiveType_PCXLib::isInstance(
 
 	// Check version
 	// TESTED BY: fmt_pcxlib_isinstance_c08
-	if (ver != 0x0064) return DefinitelyNo;
+	if (ver != 0x0064) return Certainty::DefinitelyNo;
 
 	content.seekg(PCX_FILECOUNT_OFFSET, stream::start);
 	uint32_t numFiles;
@@ -110,7 +110,7 @@ ArchiveType::Certainty ArchiveType_PCXLib::isInstance(
 	// File too short to hold FAT
 	// TESTED BY: fmt_pcxlib_isinstance_c03
 	if (lenArchive < PCX_FAT_OFFSET + numFiles * PCX_FAT_ENTRY_LEN) {
-		return DefinitelyNo;
+		return Certainty::DefinitelyNo;
 	}
 
 	content.seekg(PCX_FAT_OFFSET, stream::start);
@@ -131,23 +131,23 @@ ArchiveType::Certainty ArchiveType_PCXLib::isInstance(
 
 		// No/invalid sync byte
 		// TESTED BY: fmt_pcxlib_isinstance_c04
-		if (sync != 0x00) return DefinitelyNo;
+		if (sync != 0x00) return Certainty::DefinitelyNo;
 
 		// Bad filename
 		// TESTED BY: fmt_pcxlib_isinstance_c05
-		if (ext[0] != '.') return DefinitelyNo;
+		if (ext[0] != '.') return Certainty::DefinitelyNo;
 
 		// File inside FAT
 		// TESTED BY: fmt_pcxlib_isinstance_c06
-		if (offset <= PCX_FAT_OFFSET + PCX_FAT_ENTRY_LEN) return DefinitelyNo;
+		if (offset <= PCX_FAT_OFFSET + PCX_FAT_ENTRY_LEN) return Certainty::DefinitelyNo;
 
 		// Truncated file
 		// TESTED BY: fmt_pcxlib_isinstance_c07
-		if (offset + size > lenArchive) return DefinitelyNo;
+		if (offset + size > lenArchive) return Certainty::DefinitelyNo;
 	}
 
 	// TESTED BY: fmt_pcxlib_isinstance_c00
-	return DefinitelyYes;
+	return Certainty::DefinitelyYes;
 }
 
 std::shared_ptr<Archive> ArchiveType_PCXLib::create(

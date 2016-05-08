@@ -362,7 +362,7 @@ class test_dat_got: public test_archive
 			this->test_archive::addTests();
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::DefinitelyYes, this->content_12());
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, this->content_12());
 
 #ifdef USE_XOR
 #define CONTENT \
@@ -374,7 +374,7 @@ class test_dat_got: public test_archive
 	"TWO\0\0\0\0\0\0" "\x0f\x17\x00\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00" "\x00\x00"
 #endif
 			// c01: Control char in filename
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				CONTENT
 				EMPTY_FILE_3
 				EMPTY_FILE_4
@@ -394,7 +394,7 @@ class test_dat_got: public test_archive
 	"TWO\0\0\0\0\0\0" "\x0f\x17\x00\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00" "\x00\x00"
 #endif
 			// c02: Too short
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				CONTENT
 				EMPTY_FILE_3
 				EMPTY_FILE_4
@@ -413,7 +413,7 @@ class test_dat_got: public test_archive
 	"ONE\0\0\0\0\0\0" "\x00\x17\x00\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00" "\x00\x00" \
 	"TWO\0\0\0\0\0\0" "\xf0\x17\x00\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00" "\x00\x00"
 #endif
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				CONTENT
 				EMPTY_FILE_3
 				EMPTY_FILE_4
@@ -433,7 +433,7 @@ class test_dat_got: public test_archive
 	"ONE\0\0\0\0\0\0" "\x00\x17\x00\x00" "\x0f\x00\x00\x00" "\x0f\x00\x00\x00" "\x00\x00" \
 	"TWO\0\0\0\0\0\0" "\x0f\x17\x00\x00" "\xf0\x00\x00\x00" "\x0f\x00\x00\x00" "\x00\x00"
 #endif
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				CONTENT
 				EMPTY_FILE_3
 				EMPTY_FILE_4

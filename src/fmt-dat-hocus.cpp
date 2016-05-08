@@ -73,7 +73,7 @@ ArchiveType::Certainty ArchiveType_DAT_Hocus::isInstance(
 {
 	// There is literally no identifying information in this archive format!
 	// TESTED BY: fmt_dat_hocus_isinstance_c00
-	return Unsure;
+	return Certainty::Unsure;
 }
 
 std::shared_ptr<Archive> ArchiveType_DAT_Hocus::open(

@@ -74,11 +74,11 @@ ArchiveType::Certainty ArchiveType_DAT_LostVikings::isInstance(
 
 	// Empty files could be empty archives
 	// TESTED BY: fmt_dat_lostvikings_isinstance_c01
-	if (lenArchive == 0) return PossiblyYes;
+	if (lenArchive == 0) return Certainty::PossiblyYes;
 
 	// If the archive is smaller than a single entry then it's not a valid file.
 	// TESTED BY: fmt_dat_lostvikings_isinstance_c02
-	if (lenArchive < DAT_FAT_ENTRY_LEN) return DefinitelyNo;
+	if (lenArchive < DAT_FAT_ENTRY_LEN) return Certainty::DefinitelyNo;
 
 	content.seekg(0, stream::start);
 	uint32_t offEntry;
@@ -86,7 +86,7 @@ ArchiveType::Certainty ArchiveType_DAT_LostVikings::isInstance(
 
 	// If the FAT is smaller than a single entry then it's not a valid file.
 	// TESTED BY: fmt_dat_lostvikings_isinstance_c03
-	if (offEntry < DAT_FAT_ENTRY_LEN) return DefinitelyNo;
+	if (offEntry < DAT_FAT_ENTRY_LEN) return Certainty::DefinitelyNo;
 
 	// Check each FAT entry
 	uint32_t offLast = 0;
@@ -95,14 +95,14 @@ ArchiveType::Certainty ArchiveType_DAT_LostVikings::isInstance(
 		// If a file entry points past the end of the archive then it's an invalid
 		// format.
 		// TESTED BY: fmt_dat_lostvikings_isinstance_c04
-		if (offEntry > lenArchive) return DefinitelyNo;
+		if (offEntry > lenArchive) return Certainty::DefinitelyNo;
 
 		// Files can't be negative size
 		// TESTED BY: fmt_dat_lostvikings_isinstance_c05
-		if (offEntry < offLast) return DefinitelyNo;
+		if (offEntry < offLast) return Certainty::DefinitelyNo;
 
 		// Files must have decompression indicator
-//		if (offEntry - offLast < 2) return DefinitelyNo;
+//		if (offEntry - offLast < 2) return Certainty::DefinitelyNo;
 
 		offLast = offEntry;
 		if (i < numFiles - 1) {
@@ -114,13 +114,13 @@ ArchiveType::Certainty ArchiveType_DAT_LostVikings::isInstance(
 
 	if (lenArchive - offLast == 0) {
 		// Last file is empty, so this is probably a Sango Fighter file instead.
-		return Unsure;
+		return Certainty::Unsure;
 	}
 
 	// If we've made it this far, this is almost certainly a DAT file.
 
 	// TESTED BY: fmt_dat_lostvikings_isinstance_c00
-	return DefinitelyYes;
+	return Certainty::DefinitelyYes;
 }
 
 std::shared_ptr<Archive> ArchiveType_DAT_LostVikings::create(

@@ -74,7 +74,7 @@ ArchiveType::Certainty ArchiveType_GD_Doofus::isInstance(
 {
 	// There is literally no identifying information in this archive format!
 	// TESTED BY: fmt_dat_doofus_isinstance_c00
-	return Unsure;
+	return Certainty::Unsure;
 }
 
 std::shared_ptr<Archive> ArchiveType_GD_Doofus::open(

@@ -44,7 +44,7 @@ class CAMOTO_GAMEARCHIVE_API ArchiveType
 		static constexpr const char* const obj_t_name = "Archive"; // defined in main.cpp
 
 		/// Confidence level when guessing a file format.
-		enum Certainty {
+		enum class Certainty {
 			DefinitelyNo,  ///< Definitely not in this format
 			Unsure,        ///< The checks were inconclusive, it could go either way
 			PossiblyYes,   ///< Everything checked out OK, but there's no signature
@@ -166,6 +166,10 @@ class CAMOTO_GAMEARCHIVE_API ArchiveType
 		virtual SuppFilenames getRequiredSupps(stream::input& content,
 			const std::string& filename) const = 0;
 };
+
+/// ostream handler for printing Certainty types in test-case errors
+CAMOTO_GAMEARCHIVE_API std::ostream& operator << (std::ostream& s,
+	const ArchiveType::Certainty& r);
 
 } // namespace gamearchive
 } // namespace camoto

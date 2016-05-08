@@ -83,18 +83,18 @@ ArchiveType::Certainty ArchiveType_DAT_Mystic::isInstance(
 
 	// File too short
 	// TESTED BY: fmt_dat_mystic_isinstance_c01
-	if (lenArchive < 2) return DefinitelyNo; // too short
+	if (lenArchive < 2) return Certainty::DefinitelyNo; // too short
 
 	uint16_t fileCount;
 	content.seekg(DAT_FILECOUNT_OFFSET_END, stream::end);
 	content >> u16le(fileCount);
 	// Too many files
 	// TESTED BY: fmt_dat_mystic_isinstance_c02
-	if (fileCount >= DAT_SAFETY_MAX_FILECOUNT) return DefinitelyNo;
+	if (fileCount >= DAT_SAFETY_MAX_FILECOUNT) return Certainty::DefinitelyNo;
 
 	// Too small to contain FAT
 	// TESTED BY: fmt_dat_mystic_isinstance_c03
-	if ((stream::len)(2 + fileCount * DAT_FAT_ENTRY_LEN) > lenArchive) return DefinitelyNo;
+	if ((stream::len)(2 + fileCount * DAT_FAT_ENTRY_LEN) > lenArchive) return Certainty::DefinitelyNo;
 
 	// Don't count the FAT in the rest of the calculations using the archive size,
 	// just count the actual data storage space.
@@ -108,22 +108,22 @@ ArchiveType::Certainty ArchiveType_DAT_Mystic::isInstance(
 		content >> u8(lenFilename);
 		// Filename length longer than field size
 		// TESTED BY: fmt_dat_mystic_isinstance_c04
-		if (lenFilename > 12) return DefinitelyNo;
+		if (lenFilename > 12) return Certainty::DefinitelyNo;
 		content.seekg(12, stream::cur);
 		uint32_t off, len;
 		content >> u32le(off) >> u32le(len);
 		// File starts or ends past archive EOF
 		// TESTED BY: fmt_dat_mystic_isinstance_c05
-		if (off + len > lenArchive) return DefinitelyNo;
+		if (off + len > lenArchive) return Certainty::DefinitelyNo;
 		totalDataSize += len;
 	}
 
 	// File contains extra data beyond what is recorded in the FAT
 	// TESTED BY: fmt_dat_mystic_isinstance_c06
-	if (totalDataSize != lenArchive) return DefinitelyNo;
+	if (totalDataSize != lenArchive) return Certainty::DefinitelyNo;
 
 	// TESTED BY: fmt_dat_mystic_isinstance_c00
-	return DefinitelyYes;
+	return Certainty::DefinitelyYes;
 }
 
 std::shared_ptr<Archive> ArchiveType_DAT_Mystic::create(

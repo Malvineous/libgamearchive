@@ -86,7 +86,7 @@ ArchiveType::Certainty ArchiveType_GRP_Duke3D::isInstance(
 
 	// File too short
 	// TESTED BY: fmt_grp_duke3d_isinstance_c02
-	if (lenArchive < GRP_FAT_ENTRY_LEN) return DefinitelyNo;
+	if (lenArchive < GRP_FAT_ENTRY_LEN) return Certainty::DefinitelyNo;
 
 	char sig[12];
 	content.seekg(0, stream::start);
@@ -94,10 +94,10 @@ ArchiveType::Certainty ArchiveType_GRP_Duke3D::isInstance(
 
 	// Bad signature
 	// TESTED BY: fmt_grp_duke3d_isinstance_c01
-	if (strncmp(sig, "KenSilverman", 12) != 0) return DefinitelyNo;
+	if (strncmp(sig, "KenSilverman", 12) != 0) return Certainty::DefinitelyNo;
 
 	// TESTED BY: fmt_grp_duke3d_isinstance_c00
-	return DefinitelyYes;
+	return Certainty::DefinitelyYes;
 }
 
 std::shared_ptr<Archive> ArchiveType_GRP_Duke3D::create(

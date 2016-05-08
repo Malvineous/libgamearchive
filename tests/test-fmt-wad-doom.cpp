@@ -40,10 +40,10 @@ class test_wad_doom: public test_archive
 			this->test_archive::addTests();
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::DefinitelyYes, this->content_12());
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, this->content_12());
 
 			// c01: Alt sig
-			this->isInstance(ArchiveType::DefinitelyYes, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, STRING_WITH_NULLS(
 				"PWAD" "\x02\x00\x00\x00" "\x0c\x00\x00\x00"
 				"\x2c\x00\x00\x00" "\x0f\x00\x00\x00" "ONE.DAT\0"
 				"\x3b\x00\x00\x00" "\x0f\x00\x00\x00" "TWO.DAT\0"
@@ -52,7 +52,7 @@ class test_wad_doom: public test_archive
 			));
 
 			// c02: Bad signature
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"XWAD" "\x02\x00\x00\x00" "\x0c\x00\x00\x00"
 				"\x2c\x00\x00\x00" "\x0f\x00\x00\x00" "ONE.DAT\0"
 				"\x3b\x00\x00\x00" "\x0f\x00\x00\x00" "TWO.DAT\0"
@@ -61,7 +61,7 @@ class test_wad_doom: public test_archive
 			));
 
 			// c03: File too short
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"IWAD" "\x00\x00\x00\x00" "\x0b\x00\x00"
 			));
 

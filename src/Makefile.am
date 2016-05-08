@@ -2,6 +2,7 @@ lib_LTLIBRARIES = libgamearchive.la
 
 libgamearchive_la_SOURCES  = main.cpp
 libgamearchive_la_SOURCES += archive.cpp
+libgamearchive_la_SOURCES += archivetype.cpp
 libgamearchive_la_SOURCES += archive-fat.cpp
 libgamearchive_la_SOURCES += filter-bash-rle.cpp
 libgamearchive_la_SOURCES += filter-bash.cpp

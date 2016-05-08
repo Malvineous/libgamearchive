@@ -37,10 +37,10 @@ class test_glb_galactix: public test_archive
 			this->test_archive::addTests();
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::DefinitelyYes, this->content_12());
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, this->content_12());
 
 			// c01: Wrong signature bytes
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x02\x00\x00\x00" "XLIB FILE\x00\x00\x00" "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" "\x00\x00"
 				"\x54\x00\x00\x00" "ONE.DAT\x00\x00\x00\x00\x00" "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" "\x0f\x00"
 				"\x63\x00\x00\x00" "TWO.DAT\x00\x00\x00\x00\x00" "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" "\x0f\x00"

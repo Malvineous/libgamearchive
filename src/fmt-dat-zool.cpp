@@ -84,7 +84,7 @@ ArchiveType::Certainty ArchiveType_DAT_Zool::isInstance(
 
 	// File too short
 	// TESTED BY: fmt_dat_zool_isinstance_c01
-	if (lenArchive < DAT_CHUNK_SIZE) return DefinitelyNo;
+	if (lenArchive < DAT_CHUNK_SIZE) return Certainty::DefinitelyNo;
 
 	uint16_t eofChunk;
 	content.seekg(0, stream::start);
@@ -92,10 +92,10 @@ ArchiveType::Certainty ArchiveType_DAT_Zool::isInstance(
 
 	// Incorrect archive size
 	// TESTED BY: fmt_dat_zool_isinstance_c02
-	if (eofChunk * DAT_CHUNK_SIZE != lenArchive) return DefinitelyNo;
+	if (eofChunk * DAT_CHUNK_SIZE != lenArchive) return Certainty::DefinitelyNo;
 
 	// TESTED BY: fmt_dat_zool_isinstance_c00
-	return DefinitelyYes;
+	return Certainty::DefinitelyYes;
 }
 
 std::shared_ptr<Archive> ArchiveType_DAT_Zool::create(

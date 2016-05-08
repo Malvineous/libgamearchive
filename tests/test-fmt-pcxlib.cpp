@@ -62,10 +62,10 @@ class test_pcxlib: public test_archive
 			this->test_archive::addTests();
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::DefinitelyYes, this->content_12());
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, this->content_12());
 
 			// c01: File too short for signature
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x01\xCA"
 				"Copyright (c) Genus Microprogramming, Inc. 1988-90"
 				"\x64\x00"
@@ -74,7 +74,7 @@ class test_pcxlib: public test_archive
 			));
 
 			// c02: Bad signature
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\xff\xff"
 				"Copyright (c) Genus Microprogramming, Inc. 1988-90"
 				"\x64\x00"
@@ -88,7 +88,7 @@ class test_pcxlib: public test_archive
 			));
 
 			// c03: File too short for FAT
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x01\xCA"
 				"Copyright (c) Genus Microprogramming, Inc. 1988-90"
 				"\x64\x00"
@@ -99,7 +99,7 @@ class test_pcxlib: public test_archive
 			));
 
 			// c04: No/invalid sync byte
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x01\xCA"
 				"Copyright (c) Genus Microprogramming, Inc. 1988-90"
 				"\x64\x00"
@@ -113,7 +113,7 @@ class test_pcxlib: public test_archive
 			));
 
 			// c05: Bad filename
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x01\xCA"
 				"Copyright (c) Genus Microprogramming, Inc. 1988-90"
 				"\x64\x00"
@@ -127,7 +127,7 @@ class test_pcxlib: public test_archive
 			));
 
 			// c06: File inside FAT
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x01\xCA"
 				"Copyright (c) Genus Microprogramming, Inc. 1988-90"
 				"\x64\x00"
@@ -141,7 +141,7 @@ class test_pcxlib: public test_archive
 			));
 
 			// c07: Truncated file
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x01\xCA"
 				"Copyright (c) Genus Microprogramming, Inc. 1988-90"
 				"\x64\x00"
@@ -155,7 +155,7 @@ class test_pcxlib: public test_archive
 			));
 
 			// c08: Wrong version
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\xff\xff"
 				"Copyright (c) Genus Microprogramming, Inc. 1988-90"
 				"\x64\x00"

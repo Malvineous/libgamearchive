@@ -34,21 +34,21 @@ class test_cur_prehistorik: public test_archive
 			this->test_archive::addTests();
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::DefinitelyYes, this->content_12());
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, this->content_12());
 
 			// c01: File too short
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x06\x00"
 				"\x00\x00\x00"
 			));
 			// c01a: File not too short
-			this->isInstance(ArchiveType::DefinitelyYes, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, STRING_WITH_NULLS(
 				"\x06\x00"
 				"\x00\x00\x00\x00"
 			));
 
 			// c02: FAT is too short
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x05\x00"
 				"\x0f\x00\x00\x00" "ONE.DAT\0"
 				"\x0f\x00\x00\x00" "TWO.DAT\0"
@@ -58,7 +58,7 @@ class test_cur_prehistorik: public test_archive
 			));
 
 			// c03: FAT ends past EOF
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\xFF\x00"
 				"\x0f\x00\x00\x00" "ONE.DAT\0"
 				"\x0f\x00\x00\x00" "TWO.DAT\0"
@@ -68,7 +68,7 @@ class test_cur_prehistorik: public test_archive
 			));
 
 			// c04: Filename too long
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x1E\x00"
 				"\x1f\x00\x00\x00" "ONE.DAT0123456789ABCDEF\0"
 				"\x0f\x00\x00\x00" "TWO.DAT\0"
@@ -78,7 +78,7 @@ class test_cur_prehistorik: public test_archive
 			));
 
 			// c05: Control char in filename
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x1E\x00"
 				"\x0f\x00\x00\x00" "ON\x05.DAT\0"
 				"\x0f\x00\x00\x00" "TWO.DAT\0"
@@ -88,7 +88,7 @@ class test_cur_prehistorik: public test_archive
 			));
 
 			// c06: FAT ends mid-filename
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x18\x00"
 				"\x0f\x00\x00\x00" "ONE.DAT\0"
 				"\x0f\x00\x00\x00" "TWO.DA"
@@ -97,7 +97,7 @@ class test_cur_prehistorik: public test_archive
 			));
 
 			// c07: File goes past archive EOF
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x1E\x00"
 				"\x0f\x00\x00\x00" "ONE.DAT\0"
 				"\xff\x00\x00\x00" "TWO.DAT\0"
@@ -107,7 +107,7 @@ class test_cur_prehistorik: public test_archive
 			));
 
 			// c08: Last file doesn't end at archive EOF
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x1E\x00"
 				"\x0f\x00\x00\x00" "ONE.DAT\0"
 				"\x0e\x00\x00\x00" "TWO.DAT\0"

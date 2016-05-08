@@ -34,10 +34,10 @@ class test_dat_wacky: public test_archive
 			this->test_archive::addTests();
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::DefinitelyYes, this->content_12());
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, this->content_12());
 
 			// c01: Invalid char in filename
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x02\x00"
 				"ONE.DAT\x05\0\0\0\0\0\0"      "\x0f\x00\x00\x00" "\x2c\x00\x00\x00"
 				"TWO.DAT\0\0\0\0\0\0\0"        "\x0f\x00\x00\x00" "\x3b\x00\x00\x00"
@@ -46,12 +46,12 @@ class test_dat_wacky: public test_archive
 			));
 
 			// c02: File too short
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x01"
 			));
 
 			// c03: File past EOF
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x02\x00"
 				"ONE.DAT\0\0\0\0\0\0\0"        "\x0f\x01\x00\x00" "\x2c\x00\x00\x00"
 				"TWO.DAT\0\0\0\0\0\0\0"        "\x0f\x00\x00\x00" "\x3b\x00\x00\x00"
@@ -60,7 +60,7 @@ class test_dat_wacky: public test_archive
 			));
 
 			// c04: Content larger than file count suggests
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x00\x00"
 				"ONE.DAT\0\0\0\0\0\0\0"        "\x0f\x00\x00\x00" "\x2c\x00\x00\x00"
 				"TWO.DAT\0\0\0\0\0\0\0"        "\x0f\x00\x00\x00" "\x3b\x00\x00\x00"
@@ -69,7 +69,7 @@ class test_dat_wacky: public test_archive
 			));
 
 			// c05: Blank filename
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x02\x00"
 				"\0\0\0\0\0\0\0\0\0\0\0\0\0\0" "\x0f\x00\x00\x00" "\x2c\x00\x00\x00"
 				"TWO.DAT\0\0\0\0\0\0\0"        "\x0f\x00\x00\x00" "\x3b\x00\x00\x00"

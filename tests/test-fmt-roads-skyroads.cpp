@@ -34,36 +34,36 @@ class test_roads_skyroads: public test_archive
 			this->test_archive::addTests();
 
 			// c00: Initial state
-			this->isInstance(ArchiveType::DefinitelyYes, this->content_12());
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, this->content_12());
 
 			// c01: Lack of a header means an empty file is a valid empty archive.
-			this->isInstance(ArchiveType::DefinitelyYes, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyYes, STRING_WITH_NULLS(
 				""
 			));
 
 			// c02: FAT is larger than archive
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x50\x00\x00\x00"
 			));
 
 			// c03: FAT is smaller than single entry
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x01\x00\x00"
 			));
 
 			// c04: FAT is truncated
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x07\x00\x00\x00" "\x07\x00\x00"
 			));
 
 			// c05: File offset is beyond EOF
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x08\x00\x00\x00" "\x50\x00\x00\x00"
 				"blahblah"
 			));
 
 			// c06: Sequential offsets decrease, resulting in negative file size
-			this->isInstance(ArchiveType::DefinitelyNo, STRING_WITH_NULLS(
+			this->isInstance(ArchiveType::Certainty::DefinitelyNo, STRING_WITH_NULLS(
 				"\x08\x00\x00\x00" "\x04\x00\x00\x00"
 				"blahblah"
 			));

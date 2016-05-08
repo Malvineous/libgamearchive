@@ -523,32 +523,32 @@ int main(int iArgC, char *cArgV[])
 				ga::ArchiveType::Certainty cert = i->isInstance(*psArchive);
 				switch (cert) {
 
-					case ga::ArchiveType::DefinitelyNo:
+					case ga::ArchiveType::Certainty::DefinitelyNo:
 						// Don't print anything (TODO: Maybe unless verbose?)
 						break;
 
-					case ga::ArchiveType::Unsure:
+					case ga::ArchiveType::Certainty::Unsure:
 						std::cout << "File could be a " << i->friendlyName()
 							<< " [" << i->code() << "]" << std::endl;
 						// If we haven't found a match already, use this one
 						if (!pArchType) pArchType = i;
 						break;
 
-					case ga::ArchiveType::PossiblyYes:
+					case ga::ArchiveType::Certainty::PossiblyYes:
 						std::cout << "File is likely to be a " << i->friendlyName()
 							<< " [" << i->code() << "]" << std::endl;
 						// Take this one as it's better than an uncertain match
 						pArchType = i;
 						break;
 
-					case ga::ArchiveType::DefinitelyYes:
+					case ga::ArchiveType::Certainty::DefinitelyYes:
 						std::cout << "File is definitely a " << i->friendlyName()
 							<< " [" << i->code() << "]" << std::endl;
 						pArchType = i;
 						// Don't bother checking any other formats if we got a 100% match
 						goto finishTesting;
 				}
-				if (cert != ga::ArchiveType::DefinitelyNo) {
+				if (cert != ga::ArchiveType::Certainty::DefinitelyNo) {
 					// We got a possible match, see if it requires any suppdata
 					auto suppList = i->getRequiredSupps(*psArchive, strFilename);
 					if (suppList.size() > 0) {
@@ -596,7 +596,7 @@ finishTesting:
 
 		if (!bCreate) {
 			// Check to see if the file is actually in this format
-			if (pArchType->isInstance(*psArchive) == ga::ArchiveType::DefinitelyNo) {
+			if (pArchType->isInstance(*psArchive) == ga::ArchiveType::Certainty::DefinitelyNo) {
 				if (bForceOpen) {
 					std::cerr << "Warning: " << strFilename << " is not a "
 						<< pArchType->friendlyName() << ", open forced." << std::endl;

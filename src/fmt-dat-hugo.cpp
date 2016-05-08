@@ -78,10 +78,10 @@ ArchiveType::Certainty ArchiveType_DAT_Hugo::isInstance(
 
 	// Because there's no header, an empty file could be in this format.
 	// TESTED BY: fmt_dat_hugo_isinstance_c04
-	if (lenArchive == 0) return PossiblyYes;
+	if (lenArchive == 0) return Certainty::PossiblyYes;
 
 	// TESTED BY: fmt_dat_hugo_isinstance_c02
-	if (lenArchive < DAT_FAT_ENTRY_LEN) return DefinitelyNo; // too short
+	if (lenArchive < DAT_FAT_ENTRY_LEN) return Certainty::DefinitelyNo; // too short
 
 	content.seekg(0, stream::start);
 
@@ -90,10 +90,10 @@ ArchiveType::Certainty ArchiveType_DAT_Hugo::isInstance(
 
 	// TESTED BY: fmt_dat_hugo_isinstance_c03
 	if (fatEnd + firstLen > lenArchive)
-		return DefinitelyNo; // first file finishes after EOF
+		return Certainty::DefinitelyNo; // first file finishes after EOF
 
 	// Last FAT entry is truncated
-	if (fatEnd % DAT_FAT_ENTRY_LEN != 0) return DefinitelyNo;
+	if (fatEnd % DAT_FAT_ENTRY_LEN != 0) return Certainty::DefinitelyNo;
 
 	uint32_t numFiles = fatEnd / DAT_FAT_ENTRY_LEN;
 
@@ -107,19 +107,19 @@ ArchiveType::Certainty ArchiveType_DAT_Hugo::isInstance(
 		// If a file entry points past the end of the archive then it's an invalid
 		// format.
 		// TESTED BY: fmt_dat_hugo_isinstance_c01
-		if (offEntry + lenEntry > lenArchive) return DefinitelyNo;
+		if (offEntry + lenEntry > lenArchive) return Certainty::DefinitelyNo;
 	}
 
 	if (offEntry + lenEntry != lenArchive) {
 		// There's trailing data at the end of the format, so it could be one
 		// of the other similar ones.
-		return Unsure;
+		return Certainty::Unsure;
 	}
 
 	// If we've made it this far, this is almost certainly a DAT file.
 
 	// TESTED BY: fmt_dat_hugo_isinstance_c00
-	return DefinitelyYes;
+	return Certainty::DefinitelyYes;
 }
 
 std::shared_ptr<Archive> ArchiveType_DAT_Hugo::create(
