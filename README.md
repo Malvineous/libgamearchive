@@ -1,16 +1,18 @@
 Camoto: Classic-game Modding Tools
-Copyright 2010-2015 Adam Nielsen <malvineous@shikadi.net>
-http://www.shikadi.net/camoto/
+==================================
+Copyright 2010-2016 Adam Nielsen <<malvineous@shikadi.net>>  
+http://www.shikadi.net/camoto/  
+Linux/OSX: [![Build Status](https://travis-ci.org/Malvineous/libgamearchive.svg?branch=master)](https://travis-ci.org/Malvineous/libgamearchive)
 
-Camoto is a collection of utilities for editing (modding) "classic games",
-those from the early to mid 1990s.
+Camoto is a collection of utilities for editing (modding) "classic" PC
+games - those running under MS-DOS from the 1980s and 1990s.
 
-This is libgamearchive, one component of the Camoto suite.  libgamearchive
+This is **libgamearchive**, one component of the Camoto suite.  libgamearchive
 is a library that provides access to different "archive" files used by games
 to store all their data files.  Just like a .zip file, many games squash all
-their data files together into one big data file, and this library provides
-access to those data files.  It currently supports full editing, so files can
-be extracted, added, removed and replaced from supported archive formats.
+their data into one big file, and this library provides access to it.  It
+currently supports full editing, so files can be extracted, replaced, added
+and removed from supported archive formats.
 
 File formats from the following games have been implemented:
 
@@ -95,33 +97,34 @@ compression/encryption algorithms used by these games:
 
 The library is compiled and installed in the usual way:
 
-  ./configure && make
-  sudo make install
-  sudo ldconfig
+    ./autogen.sh          # Only if compiling from git
+    ./configure && make
+    make check            # Optional, compile and run tests
+    sudo make install
+    sudo ldconfig
 
-You will need libgamecommon installed first.  If you downloaded the git
-release, run ./autogen.sh before the commands above.  You can also run
-"make check" to compile and run the tests.
+You will need the following prerequisites already installed:
 
-This distribution includes an example program "gamearch" which serves as both
+  * [libgamecommon](https://github.com/Malvineous/libgamecommon) >= 2.0
+  * Boost >= 1.59 (Boost >= 1.46 will work if not using `make check`)
+  * xmlto (optional for tarball releases, required for git version and if
+    manpages are to be changed)
+
+This distribution includes an example program `gamearch` which serves as both
 a command-line interface to the library as well as an example of how to use
-the library.  This program is installed as part of the "make install" process.
-See "man gamearch" for full details (note the manpage is currently documenting
-intended behaviour, but not everything has been implemented yet.)
+the library.  This program is installed as part of the `make install` process.
+See `man gamearch` for full details.
 
-A second example is also included ("gamecomp") which provides command line
+A second example `gamecomp` is also included which provides command line
 access to the compression algorithms implemented in the library.  Although
-gamearch will automatically decompress files on extraction, gamecomp can be
+`gamearch` will automatically decompress files on extraction, `gamecomp` can be
 used to decompress files that are not contained within an archive (such as
 the Zone 66 data files.)
 
-All supported file formats are fully documented on the ModdingWiki - see:
+All supported file formats are fully documented on the
+[ModdingWiki](http://www.shikadi.net/moddingwiki/Category:Archive_formats).
 
- * http://www.shikadi.net/moddingwiki/Category:Archive_formats
-
-If you'd like to contribute (please do!) there is a tutorial about how to add
-a new file format to the library here:
-
- * http://www.shikadi.net/camoto/help/archive/new
+If you'd like to contribute (please do!) there is a tutorial about [how to add a
+new file format to the library](http://www.shikadi.net/camoto/help/archive/new).
 
 This library is released under the GPLv3 license.
