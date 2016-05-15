@@ -57,6 +57,7 @@
 #include "fmt-glb-galactix.hpp"
 #include "fmt-glb-raptor.hpp"
 #include "fmt-grp-duke3d.hpp"
+#include "fmt-gwx-homebrew.hpp"
 #include "fmt-hog-descent.hpp"
 #include "fmt-lbr-vinyl.hpp"
 #include "fmt-lib-mythos.hpp"
@@ -98,6 +99,7 @@ const std::vector<std::shared_ptr<const ArchiveType> > CAMOTO_GAMEARCHIVE_API
 		ArchiveType_GLB_Galactix,
 		ArchiveType_GLB_Raptor,
 		ArchiveType_GRP_Duke3D,
+		ArchiveType_GWx_HomeBrew,
 		ArchiveType_HOG_Descent,
 		ArchiveType_LBR_Vinyl,
 		ArchiveType_LIB_Mythos,

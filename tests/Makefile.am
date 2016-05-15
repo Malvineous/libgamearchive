@@ -35,6 +35,7 @@ tests_SOURCES += test-fmt-gd-doofus.cpp
 tests_SOURCES += test-fmt-glb-galactix.cpp
 tests_SOURCES += test-fmt-glb-raptor.cpp
 tests_SOURCES += test-fmt-grp-duke3d.cpp
+tests_SOURCES += test-fmt-gwx-homebrew.cpp
 tests_SOURCES += test-fmt-hog-descent.cpp
 tests_SOURCES += test-fmt-lbr-vinyl.cpp
 tests_SOURCES += test-fmt-lib-mythos.cpp
