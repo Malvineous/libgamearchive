@@ -134,11 +134,12 @@ Archive_DAT_Zool::Archive_DAT_Zool(std::unique_ptr<stream::inout> content)
 		f->bValid = true;
 
 		// Read the data in from the FAT entry in the file
-		char filename[DAT_FILENAME_FIELD_LEN];
+		char filename[DAT_FILENAME_FIELD_LEN + 1];
 		this->content->read(filename, DAT_FILENAME_FIELD_LEN);
 
 		// Reached last file?
 		if (filename[0] == 0) break;
+		filename[DAT_FILENAME_FIELD_LEN] = 0;
 
 		// Remove filename padding
 		for (int i = DAT_FILENAME_FIELD_LEN - 1; i >= 0; i--) {
@@ -160,7 +161,7 @@ Archive_DAT_Zool::Archive_DAT_Zool(std::unique_ptr<stream::inout> content)
 	// Set size of last file
 	if (this->vcFAT.size()) {
 		this->content->seekg(0, stream::start);
-		uint16_t finalChunk;
+		unsigned long finalChunk;
 		*this->content >> u16le(finalChunk);
 		finalChunk *= DAT_CHUNK_SIZE;
 
