@@ -1,5 +1,5 @@
 /**
- * @file   test-arch-rff-blood_encrypted.cpp
+ * @file   test-fmt-rff-blood_encrypted.cpp
  * @brief  Test code for encrypted Blood .RFF archives.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>

@@ -1,5 +1,5 @@
 /**
- * @file   test-arch-epf-lionking.cpp
+ * @file   test-fmt-epf-lionking.cpp
  * @brief  Test code for The Lion King .EPF archives.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>

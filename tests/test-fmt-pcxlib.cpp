@@ -1,5 +1,5 @@
 /**
- * @file   test-arch-pcxlib.cpp
+ * @file   test-fmt-pcxlib.cpp
  * @brief  Test code for PCX library files.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>

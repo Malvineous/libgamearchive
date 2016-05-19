@@ -1,5 +1,5 @@
 /**
- * @file   test-arch-roads-skyroads.cpp
+ * @file   test-fmt-roads-skyroads.cpp
  * @brief  Test code for SkyRoads Roads archives.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>

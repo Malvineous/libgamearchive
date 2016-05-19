@@ -1,5 +1,5 @@
 /**
- * @file   test-arch-bpa-drally.cpp
+ * @file   test-fmt-bpa-drally.cpp
  * @brief  Test code for Death Rally .BPA archives.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>

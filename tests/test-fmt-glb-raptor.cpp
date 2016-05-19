@@ -1,5 +1,5 @@
 /**
- * @file   test-arch-glb-raptor.cpp
+ * @file   test-fmt-glb-raptor.cpp
  * @brief  Test code for Raptor .GLB archives.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>

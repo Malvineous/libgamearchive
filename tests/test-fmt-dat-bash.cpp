@@ -1,5 +1,5 @@
 /**
- * @file   test-arch-dat-bash.cpp
+ * @file   test-fmt-dat-bash.cpp
  * @brief  Test code for uncompressed Monster Bash .DAT files.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>

@@ -1,5 +1,5 @@
 /**
- * @file   test-arch-resource-tim-fat.cpp
+ * @file   test-fmt-resource-tim-fat.cpp
  * @brief  Test code for The Incredible Machine resource list archives.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>

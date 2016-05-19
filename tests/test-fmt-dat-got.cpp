@@ -1,5 +1,5 @@
 /**
- * @file   test-arch-dat-got.cpp
+ * @file   test-fmt-dat-got.cpp
  * @brief  Test code for God of Thunder .DAT archives.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>

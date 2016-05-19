@@ -1,5 +1,5 @@
 /**
- * @file   test-arch-resource-tim.cpp
+ * @file   test-fmt-resource-tim.cpp
  * @brief  Test code for The Incredible Machine resource archives.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>

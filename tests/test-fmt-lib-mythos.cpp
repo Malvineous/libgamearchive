@@ -1,5 +1,5 @@
 /**
- * @file   test-arch-lib-mythos.cpp
+ * @file   test-fmt-lib-mythos.cpp
  * @brief  Test code for Mythos Software .LIB archives.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>

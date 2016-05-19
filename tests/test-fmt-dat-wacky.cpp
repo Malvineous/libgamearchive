@@ -1,5 +1,5 @@
 /**
- * @file   test-arch-dat-wacky.cpp
+ * @file   test-fmt-dat-wacky.cpp
  * @brief  Test code for Wacky Wheels .DAT archives.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>

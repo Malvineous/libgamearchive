@@ -1,5 +1,5 @@
 /**
- * @file   test-arch-hog-descent.cpp
+ * @file   test-fmt-hog-descent.cpp
  * @brief  Test code for Descent .HOG archives.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>

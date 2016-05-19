@@ -1,5 +1,5 @@
 /**
- * @file   test-arch-wad-doom.cpp
+ * @file   test-fmt-wad-doom.cpp
  * @brief  Test code for Doom .WAD archives.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>

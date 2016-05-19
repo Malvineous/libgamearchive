@@ -1,5 +1,5 @@
 /**
- * @file   test-arch-pod-tv.cpp
+ * @file   test-fmt-pod-tv.cpp
  * @brief  Test code for Terminal Velocity .POD archives.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>

@@ -1,5 +1,5 @@
 /**
- * @file   test-arch-dat-sango.cpp
+ * @file   test-fmt-dat-sango.cpp
  * @brief  Test code for Sango Fighter archives.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>

@@ -1,5 +1,5 @@
 /**
- * @file   test-arch-lbr-vinyl.cpp
+ * @file   test-fmt-lbr-vinyl.cpp
  * @brief  Test code for Vinyl Goddess From Mars .LBR archives.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>

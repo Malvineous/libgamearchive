@@ -1,5 +1,5 @@
 /**
- * @file   test-arch-res-stellar7.cpp
+ * @file   test-fmt-res-stellar7.cpp
  * @brief  Test code for Stellar 7 .RES archives.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>

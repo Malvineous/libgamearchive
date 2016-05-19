@@ -1,5 +1,5 @@
 /**
- * @file   test-arch-vol-cosmo.cpp
+ * @file   test-fmt-vol-cosmo.cpp
  * @brief  Test code for Cosmo's Cosmic Adventure .VOL archives.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>

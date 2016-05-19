@@ -1,5 +1,5 @@
 /**
- * @file   test-arch-bnk-harry.cpp
+ * @file   test-fmt-bnk-harry.cpp
  * @brief  Test code for Halloween Harry .BNK archives.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>

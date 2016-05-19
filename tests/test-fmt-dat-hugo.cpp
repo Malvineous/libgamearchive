@@ -1,5 +1,5 @@
 /**
- * @file   test-arch-dat-hugo.cpp
+ * @file   test-fmt-dat-hugo.cpp
  * @brief  Test code for Hugo2/3 .DAT archives.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>

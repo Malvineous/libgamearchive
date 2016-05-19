@@ -1,5 +1,5 @@
 /**
- * @file   test-arch-dlt-stargunner.cpp
+ * @file   test-fmt-dlt-stargunner.cpp
  * @brief  Test code for Stargunner .DLT archives.
  *
  * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
