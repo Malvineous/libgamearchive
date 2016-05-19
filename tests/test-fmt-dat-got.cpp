@@ -2,7 +2,7 @@
  * @file   test-fmt-dat-got.cpp
  * @brief  Test code for God of Thunder .DAT archives.
  *
- * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2016 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

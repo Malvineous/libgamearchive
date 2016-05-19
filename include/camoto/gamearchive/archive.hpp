@@ -3,7 +3,7 @@
  * @brief Declaration of top-level Archive class, for accessing file
  *        archives storing game data.
  *
- * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2016 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

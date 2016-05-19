@@ -5,7 +5,7 @@
  * This algorithm is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/RES_Format_(Stellar_7)
  *
- * Copyright (C) 2010-2015 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2016 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
