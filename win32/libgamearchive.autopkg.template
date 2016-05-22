@@ -1,0 +1,78 @@
+nuget {
+	nuspec {
+		id = libgamearchive;
+		// "@version" is replaced by the current Appveyor build number in the
+		// pre-deployment script.
+		version: @version;
+		title: libgamearchive;
+		authors: {Adam Nielsen};
+		owners: {Malvineous};
+		licenseUrl: "http://www.gnu.org/licenses/gpl-3.0.en.html";
+		projectUrl: "https://github.com/Malvineous/libgamearchive";
+		iconUrl: "http://www.shikadi.net/gfx/malvineous.png";
+		copyright: "Copyright 2010-2016 Adam Nielsen";
+		requireLicenseAcceptance: false;
+		description: "Read/write/modify archive files used by DOS games";
+		releaseNotes: "Initial release.";
+		tags: {camoto, native, nativepackage};
+	}
+	dependencies {
+		packages : {
+			boost/1.60,
+			boost_system-vc140/1.60,
+			boost_filesystem-vc140/1.60,
+			boost_program_options-vc140/1.60,
+			libgamecommon/2.0.58
+		};
+	}
+	files {
+		#defines {
+			SDK_ROOT = "..\\";
+			SolutionDir = ".\\";
+		}
+		nestedIncludeBase: {
+			#destination = ${d_include}camoto;
+				"${SDK_ROOT}include\camoto\*.hpp"
+		};
+		nestedInclude: {
+			#destination = ${d_include}camoto\gamearchive;
+				"${SDK_ROOT}include\camoto\gamearchive\*.hpp"
+		};
+		docs: {
+			"${SDK_ROOT}README.md"
+		};
+		[x86,debug] {
+			bin: {
+				${SolutionDir}Debug\${pkgname}.dll,
+				${SolutionDir}Debug\game*.exe
+			};
+			lib: ${SolutionDir}Debug\${pkgname}.lib;
+			symbols: ${SolutionDir}Debug\${pkgname}.pdb;
+		}
+		[x86,release] {
+			bin: {
+				${SolutionDir}Release\${pkgname}.dll,
+				${SolutionDir}Release\game*.exe
+			};
+			lib: ${SolutionDir}Release\${pkgname}.lib;
+		}
+		[x64,debug] {
+			bin: {
+				${SolutionDir}x64\Debug\${pkgname}.dll,
+				${SolutionDir}x64\Debug\game*.exe
+			};
+			lib: ${SolutionDir}x64\Debug\${pkgname}.lib;
+			symbols: ${SolutionDir}x64\Debug\${pkgname}.pdb;
+		}
+		[x64,release] {
+			bin: {
+				${SolutionDir}x64\Release\${pkgname}.dll,
+				${SolutionDir}x64\Release\game*.exe
+			};
+			lib: ${SolutionDir}x64\Release\${pkgname}.lib;
+		}
+	}
+	targets {
+		Defines += HAS_LIBGAMEARCHIVE;
+	}
+}
