@@ -1,0 +1,261 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{13F5F363-4D3D-4EAC-A8FB-F260494E556F}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>libgamearchivetests</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <IncludePath>$(SolutionDir)..\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <DisableSpecificWarnings>4250;4251;4275</DisableSpecificWarnings>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <PostBuildEvent>
+      <Command>for /d %%d in ("$(SolutionDir)packages\boost_*") do for %%f in ("%%d\lib\native\address-model-32\lib\boost_*-gd-*.dll") do (echo "%%f" &amp;&amp; copy "%%f" "$(OutDir)")
+"$(TargetDir)$(TargetFileName)" --result_code=no --report_level=no</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;BOOST_ALL_DYN_LINK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <PostBuildEvent>
+      <Command>for /d %%d in ("$(SolutionDir)packages\boost_*") do for %%f in ("%%d\lib\native\address-model-64\lib\boost_*-gd-*.dll") do (echo "%%f" &amp;&amp; copy "%%f" "$(OutDir)")
+"$(TargetDir)$(TargetFileName)" --result_code=no --report_level=no</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <PostBuildEvent>
+      <Command>for /d %%d in ("$(SolutionDir)packages\boost_*") do for %%f in ("%%d\lib\native\address-model-32\lib\boost_*-mt-1*.dll") do (echo "%%f" &amp;&amp; copy "%%f" "$(OutDir)")
+"$(TargetDir)$(TargetFileName)" --result_code=no --report_level=no</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <PostBuildEvent>
+      <Command>for /d %%d in ("$(SolutionDir)packages\boost_*") do for %%f in ("%%d\lib\native\address-model-64\lib\boost_*-mt-1*.dll") do (echo "%%f" &amp;&amp; copy "%%f" "$(OutDir)")
+"$(TargetDir)$(TargetFileName)" --result_code=no --report_level=no</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\filter-bash-rle.cpp" />
+    <ClCompile Include="..\..\src\filter-bitswap.cpp" />
+    <ClCompile Include="..\..\src\filter-decomp-size.cpp" />
+    <ClCompile Include="..\..\src\filter-xor-blood.cpp" />
+    <ClCompile Include="..\..\src\filter-xor.cpp" />
+    <ClCompile Include="..\..\tests\test-archive.cpp" />
+    <ClCompile Include="..\..\tests\test-filter-bash-rle.cpp" />
+    <ClCompile Include="..\..\tests\test-filter-bitswap.cpp" />
+    <ClCompile Include="..\..\tests\test-filter-ddave-rle.cpp" />
+    <ClCompile Include="..\..\tests\test-filter-decomp-size.cpp" />
+    <ClCompile Include="..\..\tests\test-filter-glb-raptor.cpp" />
+    <ClCompile Include="..\..\tests\test-filter-got-lzss.cpp" />
+    <ClCompile Include="..\..\tests\test-filter-prehistorik.cpp" />
+    <ClCompile Include="..\..\tests\test-filter-sam.cpp" />
+    <ClCompile Include="..\..\tests\test-filter-xor-blood.cpp" />
+    <ClCompile Include="..\..\tests\test-filter-xor.cpp" />
+    <ClCompile Include="..\..\tests\test-filter-zone66.cpp" />
+    <ClCompile Include="..\..\tests\test-filter.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-bnk-harry.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-bpa-drally.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-cur-prehistorik.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-dat-bash-compressed.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-dat-bash.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-dat-got.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-dat-highway.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-dat-hocus.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-dat-hugo.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-dat-lostvikings.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-dat-mystic.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-dat-riptide.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-dat-sango.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-dat-wacky.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-dat-zool.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-dlt-stargunner.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-epf-lionking.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-gd-doofus.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-glb-galactix.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-glb-raptor.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-grp-duke3d.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-gwx-homebrew.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-hog-descent.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-lbr-vinyl.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-lib-mythos.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-pcxlib.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-pod-tv.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-res-stellar7.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-resource-tim-fat.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-resource-tim.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-rff-blood.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-rff-blood_encrypted.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-roads-skyroads.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-vol-cosmo.cpp" />
+    <ClCompile Include="..\..\tests\test-fmt-wad-doom.cpp" />
+    <ClCompile Include="..\..\tests\tests.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\tests\test-archive.hpp" />
+    <ClInclude Include="..\..\tests\test-filter.hpp" />
+    <ClInclude Include="..\..\tests\tests.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\libgamearchive\libgamearchive.vcxproj">
+      <Project>{3dccc660-d3eb-420a-afda-659261d67725}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\boost.1.60.0.0\build\native\boost.targets" Condition="Exists('..\packages\boost.1.60.0.0\build\native\boost.targets')" />
+    <Import Project="..\packages\boost_system-vc140.1.60.0.0\build\native\boost_system-vc140.targets" Condition="Exists('..\packages\boost_system-vc140.1.60.0.0\build\native\boost_system-vc140.targets')" />
+    <Import Project="..\packages\boost_filesystem-vc140.1.60.0.0\build\native\boost_filesystem-vc140.targets" Condition="Exists('..\packages\boost_filesystem-vc140.1.60.0.0\build\native\boost_filesystem-vc140.targets')" />
+    <Import Project="..\packages\boost_unit_test_framework-vc140.1.60.0.0\build\native\boost_unit_test_framework-vc140.targets" Condition="Exists('..\packages\boost_unit_test_framework-vc140.1.60.0.0\build\native\boost_unit_test_framework-vc140.targets')" />
+    <Import Project="..\packages\libgamecommon.redist.2.0.58\build\native\libgamecommon.redist.targets" Condition="Exists('..\packages\libgamecommon.redist.2.0.58\build\native\libgamecommon.redist.targets')" />
+    <Import Project="..\packages\libgamecommon.2.0.58\build\native\libgamecommon.targets" Condition="Exists('..\packages\libgamecommon.2.0.58\build\native\libgamecommon.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\boost.1.60.0.0\build\native\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost.1.60.0.0\build\native\boost.targets'))" />
+    <Error Condition="!Exists('..\packages\boost_system-vc140.1.60.0.0\build\native\boost_system-vc140.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_system-vc140.1.60.0.0\build\native\boost_system-vc140.targets'))" />
+    <Error Condition="!Exists('..\packages\boost_filesystem-vc140.1.60.0.0\build\native\boost_filesystem-vc140.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_filesystem-vc140.1.60.0.0\build\native\boost_filesystem-vc140.targets'))" />
+    <Error Condition="!Exists('..\packages\boost_unit_test_framework-vc140.1.60.0.0\build\native\boost_unit_test_framework-vc140.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_unit_test_framework-vc140.1.60.0.0\build\native\boost_unit_test_framework-vc140.targets'))" />
+    <Error Condition="!Exists('..\packages\libgamecommon.redist.2.0.58\build\native\libgamecommon.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libgamecommon.redist.2.0.58\build\native\libgamecommon.redist.targets'))" />
+    <Error Condition="!Exists('..\packages\libgamecommon.2.0.58\build\native\libgamecommon.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libgamecommon.2.0.58\build\native\libgamecommon.targets'))" />
+  </Target>
+</Project>

@@ -1,0 +1,302 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{3DCCC660-D3EB-420A-AFDA-659261D67725}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>libgamearchive</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup>
+    <IncludePath>$(ProjectDir)\..\..\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>CAMOTO_GAMEARCHIVE_API=_declspec(dllexport);LIBGAMEARCHIVE_EXPORTS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DisableSpecificWarnings>4018;4244;4250;4251;4275;4800;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;LIBGAMEARCHIVE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;LIBGAMEARCHIVE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;LIBGAMEARCHIVE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;LIBGAMEARCHIVE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\archive-fat.cpp" />
+    <ClCompile Include="..\..\src\archive.cpp" />
+    <ClCompile Include="..\..\src\archivetype.cpp" />
+    <ClCompile Include="..\..\src\filter-bash-rle.cpp" />
+    <ClCompile Include="..\..\src\filter-bash.cpp" />
+    <ClCompile Include="..\..\src\filter-bitswap.cpp" />
+    <ClCompile Include="..\..\src\filter-ddave-rle.cpp" />
+    <ClCompile Include="..\..\src\filter-decomp-size.cpp" />
+    <ClCompile Include="..\..\src\filter-epfs.cpp" />
+    <ClCompile Include="..\..\src\filter-glb-raptor.cpp" />
+    <ClCompile Include="..\..\src\filter-got-lzss.cpp" />
+    <ClCompile Include="..\..\src\filter-prehistorik.cpp" />
+    <ClCompile Include="..\..\src\filter-skyroads.cpp" />
+    <ClCompile Include="..\..\src\filter-stargunner.cpp" />
+    <ClCompile Include="..\..\src\filter-stellar7.cpp" />
+    <ClCompile Include="..\..\src\filter-xor-blood.cpp" />
+    <ClCompile Include="..\..\src\filter-xor-sagent.cpp" />
+    <ClCompile Include="..\..\src\filter-xor.cpp" />
+    <ClCompile Include="..\..\src\filter-zone66.cpp" />
+    <ClCompile Include="..\..\src\fixedarchive.cpp" />
+    <ClCompile Include="..\..\src\fmt-bnk-harry.cpp" />
+    <ClCompile Include="..\..\src\fmt-bpa-drally.cpp" />
+    <ClCompile Include="..\..\src\fmt-cur-prehistorik.cpp" />
+    <ClCompile Include="..\..\src\fmt-da-levels.cpp" />
+    <ClCompile Include="..\..\src\fmt-dat-bash.cpp" />
+    <ClCompile Include="..\..\src\fmt-dat-got.cpp" />
+    <ClCompile Include="..\..\src\fmt-dat-highway.cpp" />
+    <ClCompile Include="..\..\src\fmt-dat-hocus.cpp" />
+    <ClCompile Include="..\..\src\fmt-dat-hugo.cpp" />
+    <ClCompile Include="..\..\src\fmt-dat-lostvikings.cpp" />
+    <ClCompile Include="..\..\src\fmt-dat-mystic.cpp" />
+    <ClCompile Include="..\..\src\fmt-dat-riptide.cpp" />
+    <ClCompile Include="..\..\src\fmt-dat-sango.cpp" />
+    <ClCompile Include="..\..\src\fmt-dat-wacky.cpp" />
+    <ClCompile Include="..\..\src\fmt-dat-zool.cpp" />
+    <ClCompile Include="..\..\src\fmt-dlt-stargunner.cpp" />
+    <ClCompile Include="..\..\src\fmt-epf-lionking.cpp" />
+    <ClCompile Include="..\..\src\fmt-exe-ccaves.cpp" />
+    <ClCompile Include="..\..\src\fmt-exe-ddave.cpp" />
+    <ClCompile Include="..\..\src\fmt-gd-doofus.cpp" />
+    <ClCompile Include="..\..\src\fmt-glb-galactix.cpp" />
+    <ClCompile Include="..\..\src\fmt-glb-raptor.cpp" />
+    <ClCompile Include="..\..\src\fmt-grp-duke3d.cpp" />
+    <ClCompile Include="..\..\src\fmt-gwx-homebrew.cpp" />
+    <ClCompile Include="..\..\src\fmt-hog-descent.cpp" />
+    <ClCompile Include="..\..\src\fmt-lbr-vinyl.cpp" />
+    <ClCompile Include="..\..\src\fmt-lib-mythos.cpp" />
+    <ClCompile Include="..\..\src\fmt-pcxlib.cpp" />
+    <ClCompile Include="..\..\src\fmt-pod-tv.cpp" />
+    <ClCompile Include="..\..\src\fmt-res-stellar7.cpp" />
+    <ClCompile Include="..\..\src\fmt-resource-tim-fat.cpp" />
+    <ClCompile Include="..\..\src\fmt-resource-tim.cpp" />
+    <ClCompile Include="..\..\src\fmt-rff-blood.cpp" />
+    <ClCompile Include="..\..\src\fmt-roads-skyroads.cpp" />
+    <ClCompile Include="..\..\src\fmt-vol-cosmo.cpp" />
+    <ClCompile Include="..\..\src\fmt-wad-doom.cpp" />
+    <ClCompile Include="..\..\src\main.cpp" />
+    <ClCompile Include="..\..\src\stream_archfile.cpp" />
+    <ClCompile Include="..\..\src\util.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\camoto\gamearchive.hpp" />
+    <ClInclude Include="..\..\include\camoto\gamearchive\archive-fat.hpp" />
+    <ClInclude Include="..\..\include\camoto\gamearchive\archive.hpp" />
+    <ClInclude Include="..\..\include\camoto\gamearchive\archivetype.hpp" />
+    <ClInclude Include="..\..\include\camoto\gamearchive\filtertype.hpp" />
+    <ClInclude Include="..\..\include\camoto\gamearchive\fixedarchive.hpp" />
+    <ClInclude Include="..\..\include\camoto\gamearchive\manager.hpp" />
+    <ClInclude Include="..\..\include\camoto\gamearchive\stream_archfile.hpp" />
+    <ClInclude Include="..\..\include\camoto\gamearchive\util.hpp" />
+    <ClInclude Include="..\..\src\filter-bash-rle.hpp" />
+    <ClInclude Include="..\..\src\filter-bash.hpp" />
+    <ClInclude Include="..\..\src\filter-bitswap.hpp" />
+    <ClInclude Include="..\..\src\filter-ddave-rle.hpp" />
+    <ClInclude Include="..\..\src\filter-decomp-size.hpp" />
+    <ClInclude Include="..\..\src\filter-epfs.hpp" />
+    <ClInclude Include="..\..\src\filter-glb-raptor.hpp" />
+    <ClInclude Include="..\..\src\filter-got-lzss.hpp" />
+    <ClInclude Include="..\..\src\filter-prehistorik.hpp" />
+    <ClInclude Include="..\..\src\filter-skyroads.hpp" />
+    <ClInclude Include="..\..\src\filter-stargunner.hpp" />
+    <ClInclude Include="..\..\src\filter-stellar7.hpp" />
+    <ClInclude Include="..\..\src\filter-xor-blood.hpp" />
+    <ClInclude Include="..\..\src\filter-xor-sagent.hpp" />
+    <ClInclude Include="..\..\src\filter-xor.hpp" />
+    <ClInclude Include="..\..\src\filter-zone66.hpp" />
+    <ClInclude Include="..\..\src\fmt-bnk-harry.hpp" />
+    <ClInclude Include="..\..\src\fmt-bpa-drally.hpp" />
+    <ClInclude Include="..\..\src\fmt-cur-prehistorik.hpp" />
+    <ClInclude Include="..\..\src\fmt-da-levels.hpp" />
+    <ClInclude Include="..\..\src\fmt-dat-bash.hpp" />
+    <ClInclude Include="..\..\src\fmt-dat-got.hpp" />
+    <ClInclude Include="..\..\src\fmt-dat-highway.hpp" />
+    <ClInclude Include="..\..\src\fmt-dat-hocus.hpp" />
+    <ClInclude Include="..\..\src\fmt-dat-hugo.hpp" />
+    <ClInclude Include="..\..\src\fmt-dat-lostvikings.hpp" />
+    <ClInclude Include="..\..\src\fmt-dat-mystic.hpp" />
+    <ClInclude Include="..\..\src\fmt-dat-riptide.hpp" />
+    <ClInclude Include="..\..\src\fmt-dat-sango.hpp" />
+    <ClInclude Include="..\..\src\fmt-dat-wacky.hpp" />
+    <ClInclude Include="..\..\src\fmt-dat-zool.hpp" />
+    <ClInclude Include="..\..\src\fmt-dlt-stargunner.hpp" />
+    <ClInclude Include="..\..\src\fmt-epf-lionking.hpp" />
+    <ClInclude Include="..\..\src\fmt-exe-ccaves.hpp" />
+    <ClInclude Include="..\..\src\fmt-exe-ddave.hpp" />
+    <ClInclude Include="..\..\src\fmt-gd-doofus.hpp" />
+    <ClInclude Include="..\..\src\fmt-glb-galactix.hpp" />
+    <ClInclude Include="..\..\src\fmt-glb-raptor.hpp" />
+    <ClInclude Include="..\..\src\fmt-grp-duke3d.hpp" />
+    <ClInclude Include="..\..\src\fmt-gwx-homebrew.hpp" />
+    <ClInclude Include="..\..\src\fmt-hog-descent.hpp" />
+    <ClInclude Include="..\..\src\fmt-lbr-vinyl.hpp" />
+    <ClInclude Include="..\..\src\fmt-lib-mythos.hpp" />
+    <ClInclude Include="..\..\src\fmt-pcxlib.hpp" />
+    <ClInclude Include="..\..\src\fmt-pod-tv.hpp" />
+    <ClInclude Include="..\..\src\fmt-res-stellar7.hpp" />
+    <ClInclude Include="..\..\src\fmt-resource-tim-fat.hpp" />
+    <ClInclude Include="..\..\src\fmt-resource-tim.hpp" />
+    <ClInclude Include="..\..\src\fmt-rff-blood.hpp" />
+    <ClInclude Include="..\..\src\fmt-roads-skyroads.hpp" />
+    <ClInclude Include="..\..\src\fmt-vol-cosmo.hpp" />
+    <ClInclude Include="..\..\src\fmt-wad-doom.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\boost.1.60.0.0\build\native\boost.targets" Condition="Exists('..\packages\boost.1.60.0.0\build\native\boost.targets')" />
+    <Import Project="..\packages\boost_system-vc140.1.60.0.0\build\native\boost_system-vc140.targets" Condition="Exists('..\packages\boost_system-vc140.1.60.0.0\build\native\boost_system-vc140.targets')" />
+    <Import Project="..\packages\boost_filesystem-vc140.1.60.0.0\build\native\boost_filesystem-vc140.targets" Condition="Exists('..\packages\boost_filesystem-vc140.1.60.0.0\build\native\boost_filesystem-vc140.targets')" />
+    <Import Project="..\packages\libgamecommon.redist.2.0.58\build\native\libgamecommon.redist.targets" Condition="Exists('..\packages\libgamecommon.redist.2.0.58\build\native\libgamecommon.redist.targets')" />
+    <Import Project="..\packages\libgamecommon.2.0.58\build\native\libgamecommon.targets" Condition="Exists('..\packages\libgamecommon.2.0.58\build\native\libgamecommon.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\boost.1.60.0.0\build\native\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost.1.60.0.0\build\native\boost.targets'))" />
+    <Error Condition="!Exists('..\packages\boost_system-vc140.1.60.0.0\build\native\boost_system-vc140.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_system-vc140.1.60.0.0\build\native\boost_system-vc140.targets'))" />
+    <Error Condition="!Exists('..\packages\boost_filesystem-vc140.1.60.0.0\build\native\boost_filesystem-vc140.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_filesystem-vc140.1.60.0.0\build\native\boost_filesystem-vc140.targets'))" />
+    <Error Condition="!Exists('..\packages\libgamecommon.redist.2.0.58\build\native\libgamecommon.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libgamecommon.redist.2.0.58\build\native\libgamecommon.redist.targets'))" />
+    <Error Condition="!Exists('..\packages\libgamecommon.2.0.58\build\native\libgamecommon.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libgamecommon.2.0.58\build\native\libgamecommon.targets'))" />
+  </Target>
+</Project>
