@@ -1,3 +1,16 @@
+#define {
+	// Must match the PlatformToolset options in appveyor.yml
+	toolsets: "v140,v140_xp";
+}
+
+configurations {
+	UserPlatformToolset {
+		// Needed for VS2015 support
+		key = "PlatformToolset";
+		choices: ${toolsets};
+	};
+}
+
 nuget {
 	nuspec {
 		id = libgamearchive;
@@ -22,7 +35,7 @@ nuget {
 			boost_system-vc140/1.60,
 			boost_filesystem-vc140/1.60,
 			boost_program_options-vc140/1.60,
-			libgamecommon/2.0.58
+			libgamecommon/2.0.0-beta60
 		};
 	}
 	files {
@@ -41,35 +54,15 @@ nuget {
 		docs: {
 			"${SDK_ROOT}README.md"
 		};
-		[x86,debug] {
-			bin: {
-				${SolutionDir}Debug\${pkgname}.dll,
-				${SolutionDir}Debug\game*.exe
-			};
-			lib: ${SolutionDir}Debug\${pkgname}.lib;
-			symbols: ${SolutionDir}Debug\${pkgname}.pdb;
-		}
-		[x86,release] {
-			bin: {
-				${SolutionDir}Release\${pkgname}.dll,
-				${SolutionDir}Release\game*.exe
-			};
-			lib: ${SolutionDir}Release\${pkgname}.lib;
-		}
-		[x64,debug] {
-			bin: {
-				${SolutionDir}x64\Debug\${pkgname}.dll,
-				${SolutionDir}x64\Debug\game*.exe
-			};
-			lib: ${SolutionDir}x64\Debug\${pkgname}.lib;
-			symbols: ${SolutionDir}x64\Debug\${pkgname}.pdb;
-		}
-		[x64,release] {
-			bin: {
-				${SolutionDir}x64\Release\${pkgname}.dll,
-				${SolutionDir}x64\Release\game*.exe
-			};
-			lib: ${SolutionDir}x64\Release\${pkgname}.lib;
+		(${toolsets}, "Win32,x64", "release,debug") => {
+			[${0},${1},${2}] {
+				bin: {
+					${SolutionDir}${0}\${1}\${2}\${pkgname}.dll,
+					${SolutionDir}${0}\${1}\${2}\game*.exe
+				};
+				lib: ${SolutionDir}${0}\${1}\${2}\${pkgname}.lib;
+				symbols: ${SolutionDir}${0}\${1}\${2}\${pkgname}.pdb;
+			}
 		}
 	}
 	targets {
