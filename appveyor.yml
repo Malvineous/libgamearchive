@@ -66,10 +66,32 @@ before_deploy:
 
     Get-ChildItem .\*.nupkg | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
 
+
+    # Zip up the binaries so they can be deployed
+
+    7z a win32\libgamearchive-beta-win32.zip .\win32\v140_xp\Win32\Release\libgame*.dll .\win32\v140_xp\Win32\Release\*.exe
+
+    7z a win32\libgamearchive-beta-win64.zip .\win32\v140_xp\x64\Release\libgame*.dll .\win32\v140_xp\x64\Release\*.exe
+
+artifacts:
+- path: win32\*.zip
+  name: Zipped binaries
+
 deploy:
 - provider: NuGet
   api_key:
     secure: 9Rk3FyZ1qSjw0eyhiyhsfyOpir/jfoV6t1IkPA4L3VA/fLPMpmNdjOxDaniqoDxL
   artifact: /.*\.nupkg/
+  on:
+    branch: master
+
+- provider: GitHub
+  release: ci
+  description: 'Latest git build ($(APPVEYOR_BUILD_VERSION))'
+  auth_token:
+    secure: 8VrS2qHq9TRfRmNXyqVFOyVE0xj0m8xTKbQ+unYAwX3uQfgE/gV9EeMO0oIZmCyx
+  artifact: win32\*.zip
+  prerelease: true
+  force_update: true
   on:
     branch: master
