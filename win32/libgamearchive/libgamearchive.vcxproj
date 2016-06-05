@@ -286,8 +286,8 @@
     <Import Project="..\packages\boost.1.60.0.0\build\native\boost.targets" Condition="Exists('..\packages\boost.1.60.0.0\build\native\boost.targets')" />
     <Import Project="..\packages\boost_system-vc140.1.60.0.0\build\native\boost_system-vc140.targets" Condition="Exists('..\packages\boost_system-vc140.1.60.0.0\build\native\boost_system-vc140.targets')" />
     <Import Project="..\packages\boost_filesystem-vc140.1.60.0.0\build\native\boost_filesystem-vc140.targets" Condition="Exists('..\packages\boost_filesystem-vc140.1.60.0.0\build\native\boost_filesystem-vc140.targets')" />
-    <Import Project="..\packages\libgamecommon.redist.2.0.58\build\native\libgamecommon.redist.targets" Condition="Exists('..\packages\libgamecommon.redist.2.0.58\build\native\libgamecommon.redist.targets')" />
-    <Import Project="..\packages\libgamecommon.2.0.58\build\native\libgamecommon.targets" Condition="Exists('..\packages\libgamecommon.2.0.58\build\native\libgamecommon.targets')" />
+    <Import Project="..\packages\libgamecommon.redist.2.0.0-beta60\build\native\libgamecommon.redist.targets" Condition="Exists('..\packages\libgamecommon.redist.2.0.0-beta60\build\native\libgamecommon.redist.targets')" />
+    <Import Project="..\packages\libgamecommon.2.0.0-beta60\build\native\libgamecommon.targets" Condition="Exists('..\packages\libgamecommon.2.0.0-beta60\build\native\libgamecommon.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -296,7 +296,7 @@
     <Error Condition="!Exists('..\packages\boost.1.60.0.0\build\native\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost.1.60.0.0\build\native\boost.targets'))" />
     <Error Condition="!Exists('..\packages\boost_system-vc140.1.60.0.0\build\native\boost_system-vc140.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_system-vc140.1.60.0.0\build\native\boost_system-vc140.targets'))" />
     <Error Condition="!Exists('..\packages\boost_filesystem-vc140.1.60.0.0\build\native\boost_filesystem-vc140.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_filesystem-vc140.1.60.0.0\build\native\boost_filesystem-vc140.targets'))" />
-    <Error Condition="!Exists('..\packages\libgamecommon.redist.2.0.58\build\native\libgamecommon.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libgamecommon.redist.2.0.58\build\native\libgamecommon.redist.targets'))" />
-    <Error Condition="!Exists('..\packages\libgamecommon.2.0.58\build\native\libgamecommon.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libgamecommon.2.0.58\build\native\libgamecommon.targets'))" />
+    <Error Condition="!Exists('..\packages\libgamecommon.redist.2.0.0-beta60\build\native\libgamecommon.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libgamecommon.redist.2.0.0-beta60\build\native\libgamecommon.redist.targets'))" />
+    <Error Condition="!Exists('..\packages\libgamecommon.2.0.0-beta60\build\native\libgamecommon.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libgamecommon.2.0.0-beta60\build\native\libgamecommon.targets'))" />
   </Target>
 </Project>
