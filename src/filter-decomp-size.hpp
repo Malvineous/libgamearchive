@@ -57,7 +57,7 @@ class filter_decomp_size_remove: virtual public filter
 	protected:
 		/// The decompressed size, or -1 if not read in yet.  We will signal EOF
 		/// once this many bytes has been output.
-		int lenTarget;
+		stream::delta lenTarget;
 
 		/// Child stream to filter actual content through.
 		std::unique_ptr<filter> childFilter;
@@ -91,7 +91,7 @@ class filter_decomp_size_insert: virtual public filter
 	protected:
 		/// Original size of the data before any filtering, to write as a UINT32LE
 		/// at the start of the output.
-		long lenInput;
+		stream::delta lenInput;
 
 		/// Child stream to filter actual content through.
 		std::unique_ptr<filter> childFilter;

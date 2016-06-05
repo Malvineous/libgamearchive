@@ -1523,8 +1523,8 @@ void test_archive::test_new_manipulate_zero_length_files()
 	auto fat3 =
 		std::dynamic_pointer_cast<const Archive_FAT::FATEntry>(ep3);
 
-	int off1 = fat1->iOffset;
-	int off3 = fat3->iOffset;
+	auto off1 = fat1->iOffset;
+	auto off3 = fat3->iOffset;
 
 	// This will resize the second file.  Since all three files are zero-length,
 	// they currently all share the same offset.  This should result in file1

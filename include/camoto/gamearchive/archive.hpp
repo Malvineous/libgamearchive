@@ -420,7 +420,7 @@ inline bool operator& (const Archive::File::Attribute& a,
 	const Archive::File::Attribute& b)
 {
 	return
-		static_cast<unsigned int>(a) & static_cast<unsigned int>(b)
+		(static_cast<unsigned int>(a) & static_cast<unsigned int>(b)) != 0
 	;
 }
 

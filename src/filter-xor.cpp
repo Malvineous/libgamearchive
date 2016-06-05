@@ -67,7 +67,7 @@ void filter_xor_crypt::transform(uint8_t *out, stream::len *lenOut,
 	stream::len remOut = *lenOut - w;
 	if (remOut < rem) rem = remOut;
 
-	memcpy(out, in, rem);
+	memcpy(out, in, (size_t)rem);
 	w += rem;
 	*lenOut = w;
 	*lenIn = w;
