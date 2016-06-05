@@ -1,12 +1,12 @@
-version: 2.0.{build}
+version: 2.0.0-beta{build}
 
 install:
 - ps: >-
-    # Download nuget.exe 2.x as default version (3.x) produces corrupted native .nupkg files
+    # Download nuget.exe >= 3.4.4 as earlier versions produce corrupted native .nupkg files
 
     $nugetPath = "$($env:USERPROFILE)\nuget.exe"
 
-    (New-Object Net.WebClient).DownloadFile('https://nuget.org/nuget.exe', $nugetPath)
+    (New-Object Net.WebClient).DownloadFile('https://dist.nuget.org/win-x86-commandline/latest/nuget.exe', $nugetPath)
 
 
     # Make the nuget.exe folder come first in the path, so it gets picked up before anything else
@@ -37,43 +37,13 @@ nuget:
 
 build_script:
 - cmd: >-
-    @echo off
+    "%VS140COMNTOOLS%\VsMSBuildCmd.bat"
 
-    "%VS140COMNTOOLS%\VsMSBuildCmd.bat" && ^
+    appveyor-retry nuget restore win32\libgamearchive.sln
 
-    appveyor-retry nuget restore win32\libgamearchive.sln && ^
+    appveyor-retry nuget update win32\libgamearchive.sln
 
-    msbuild win32\libgamearchive\libgamearchive.vcxproj /p:Configuration=Debug /p:Platform=x86 /p:SolutionDir=..\ /v:minimal /nologo && ^
-
-    msbuild win32\libgamearchive\libgamearchive.vcxproj /p:Configuration=Release /p:Platform=x86 /p:SolutionDir=..\ /v:minimal /nologo && ^
-
-    msbuild win32\libgamearchive\libgamearchive.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:SolutionDir=..\ /v:minimal /nologo && ^
-
-    msbuild win32\libgamearchive\libgamearchive.vcxproj /p:Configuration=Release /p:Platform=x64 /p:SolutionDir=..\ /v:minimal /nologo && ^
-
-    msbuild win32\libgamearchive-tests\libgamearchive-tests.vcxproj /p:Configuration=Debug /p:Platform=x86 /p:SolutionDir=..\ /v:minimal /nologo && ^
-
-    msbuild win32\libgamearchive-tests\libgamearchive-tests.vcxproj /p:Configuration=Release /p:Platform=x86 /p:SolutionDir=..\ /v:minimal /nologo && ^
-
-    msbuild win32\libgamearchive-tests\libgamearchive-tests.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:SolutionDir=..\ /v:minimal /nologo && ^
-
-    msbuild win32\libgamearchive-tests\libgamearchive-tests.vcxproj /p:Configuration=Release /p:Platform=x64 /p:SolutionDir=..\ /v:minimal /nologo && ^
-
-    msbuild win32\gamearch\gamearch.vcxproj /p:Configuration=Debug /p:Platform=x86 /p:SolutionDir=..\ /v:minimal /nologo && ^
-
-    msbuild win32\gamearch\gamearch.vcxproj /p:Configuration=Release /p:Platform=x86 /p:SolutionDir=..\ /v:minimal /nologo && ^
-
-    msbuild win32\gamearch\gamearch.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:SolutionDir=..\ /v:minimal /nologo && ^
-
-    msbuild win32\gamearch\gamearch.vcxproj /p:Configuration=Release /p:Platform=x64 /p:SolutionDir=..\ /v:minimal /nologo && ^
-
-    msbuild win32\gamecomp\gamecomp.vcxproj /p:Configuration=Debug /p:Platform=x86 /p:SolutionDir=..\ /v:minimal /nologo && ^
-
-    msbuild win32\gamecomp\gamecomp.vcxproj /p:Configuration=Release /p:Platform=x86 /p:SolutionDir=..\ /v:minimal /nologo && ^
-
-    msbuild win32\gamecomp\gamecomp.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:SolutionDir=..\ /v:minimal /nologo && ^
-
-    msbuild win32\gamecomp\gamecomp.vcxproj /p:Configuration=Release /p:Platform=x64 /p:SolutionDir=..\ /v:minimal /nologo
+    FOR %%T IN (v140,v140_xp) DO ( FOR %%P IN (x86,x64) DO ( FOR %%C IN (Debug,Release) DO ( FOR %%F IN (libgamearchive,libgamearchive-tests,gamearch,gamecomp) DO ( echo *** Building %%F as %%T/%%P/%%C *** && msbuild win32\%%F\%%F.vcxproj /p:Configuration=%%C /p:Platform=%%P /p:PlatformToolset=%%T /p:SolutionDir=..\ /v:minimal /nologo || EXIT 1 ) ) ) )
 
 before_deploy:
 - ps: >-
