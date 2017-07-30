@@ -27,16 +27,13 @@ addons:
     - g++-4.8
     - xmlto
 
-before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
-
-# Install Boost 1.60 on OSX, using a custom GCC-compiled bottle if need be
 install:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install xmlto; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew unlink boost; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" && "$CXX" == "clang++" ]]; then brew install boost; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" && "$CXX" == "g++" ]]; then wget 'https://github.com/Malvineous/travis-homebrew-bottle/releases/download/boost1.60-gcc/boost-1.60.0_2.mavericks.bottle.tar.gz' && brew install *.bottle.tar.gz; fi
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+  - |-
+    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      brew install xmlto
+      brew unlink boost
+      brew install boost
+    fi
 
   # Prepare for local installs
   - export LOCAL_INSTALL="$HOME/local"; mkdir "$LOCAL_INSTALL" && export PKG_CONFIG_PATH="$LOCAL_INSTALL/lib/pkgconfig"
@@ -44,6 +41,7 @@ install:
   # Install Boost if Linux
   - |-
     if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      if [[ "$CXX" == "g++" ]]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
       pushd "$HOME"
       wget 'http://downloads.sourceforge.net/project/boost/boost/1.60.0/boost_1_60_0.tar.bz2'
       tar jxf boost_1_60_0.tar.bz2
