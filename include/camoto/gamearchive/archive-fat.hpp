@@ -56,8 +56,22 @@ class CAMOTO_GAMEARCHIVE_API Archive_FAT: virtual public Archive,
 			 */
 			unsigned int iIndex;
 
-			stream::pos iOffset;    ///< Offset of file in archive
-			stream::len lenHeader;  ///< Size of embedded FAT entry at start of file data
+			/// Offset of file in archive
+			/**
+			 * File data may not start at this point.  If lenHeader is nonzero, then
+			 * that many bytes must be skipped over to reach the start of the actual
+			 * file data.
+			 */
+			stream::pos iOffset;
+
+			/// Size of embedded FAT entry at start of file data
+			/**
+			 * This is the amount of data beginning at iOffset that belongs to the
+			 * archive format and is not considered part of the archive data.
+			 * Each file entry begins at iOffset, has lenHeader bytes until the
+			 * file data starts, then has storedSize bytes until the end of the file.
+			 */
+			stream::len lenHeader;
 
 			/// Empty constructor
 			FATEntry();
