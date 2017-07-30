@@ -517,7 +517,7 @@
 
 			<varlistentry>
 				<term>
-					<command>gamearch bash1.dat data1.bin --filetype image/bash-sprite
+					<command>gamearch bash1.dat -a data1.bin --filetype image/bash-sprite
 					-a data2.bin -a data3.bin</command>
 				</term>
 				<listitem>
@@ -532,7 +532,7 @@
 
 			<varlistentry>
 				<term>
-					<command>gamearch bash1.dat data1.bin --attribute compressed
+					<command>gamearch bash1.dat -a data1.bin --attribute compressed
 					-a data2.bin -a data3.bin --attribute hidden -a data4.bin
 					--attribute -compressed -a data5.bin</command>
 				</term>
