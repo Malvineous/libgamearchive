@@ -1,6 +1,6 @@
 Camoto: Classic-game Modding Tools
 ==================================
-Copyright 2010-2016 Adam Nielsen <<malvineous@shikadi.net>>  
+Copyright 2010-2017 Adam Nielsen <<malvineous@shikadi.net>>  
 http://www.shikadi.net/camoto/  
 Linux/OSX: [![Build Status](https://travis-ci.org/Malvineous/libgamearchive.svg?branch=master)](https://travis-ci.org/Malvineous/libgamearchive)
 
@@ -114,13 +114,14 @@ You will need the following prerequisites already installed:
 This distribution includes an example program `gamearch` which serves as both
 a command-line interface to the library as well as an example of how to use
 the library.  This program is installed as part of the `make install` process.
-See `man gamearch` for full details.
+See [`man gamearch`](http://www.shikadi.net/camoto/manpage/gamearch) for full
+details.
 
-A second example `gamecomp` is also included which provides command line
-access to the compression algorithms implemented in the library.  Although
-`gamearch` will automatically decompress files on extraction, `gamecomp` can be
-used to decompress files that are not contained within an archive (such as
-the Zone 66 data files.)
+A second example [`gamecomp`](http://www.shikadi.net/camoto/manpage/gamecomp)
+is also included which provides command line access to the compression
+algorithms implemented in the library.  Although `gamearch` will automatically
+decompress files on extraction, `gamecomp` can be used to decompress files that
+are not contained within an archive (such as the Zone 66 data files.)
 
 All supported file formats are fully documented on the
 [ModdingWiki](http://www.shikadi.net/moddingwiki/Category:Archive_formats).
