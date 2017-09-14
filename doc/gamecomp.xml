@@ -128,7 +128,8 @@
 	<refsect1 id="gamecomp-bugs">
 		<title id="bugs-title">Bugs and Questions</title>
 		<para>
-			Report bugs at <ulink url="http://www.shikadi.net/camoto/bugs/">http://www.shikadi.net/camoto/bugs/</ulink>
+			Report bugs at
+			<ulink url="https://github.com/Malvineous/libgamearchive/issues">https://github.com/Malvineous/libgamearchive/issues</ulink>
 		</para>
 		<para>
 			Ask questions about Camoto or modding in general at the <ulink
