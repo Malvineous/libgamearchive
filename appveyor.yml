@@ -1,5 +1,9 @@
 version: 2.0.0-beta{build}
 
+# Build on each push, not on each tag creation.  This stops a double build
+# when deployment creates a new tag.
+skip_tags: true
+
 install:
 - ps: >-
     # Download nuget.exe >= 3.4.4 as earlier versions produce corrupted native .nupkg files
