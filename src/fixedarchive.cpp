@@ -70,7 +70,7 @@ const Archive::FileHandle FixedArchive::find(const std::string& strFilename) con
 	for (auto& i : this->vcFixedEntries) {
 		const FixedEntry *entry = dynamic_cast<const FixedEntry *>(i.get());
 		const FixedArchiveFile *file = &this->vcFiles[entry->index];
-		if (boost::iequals(file->name, strFilename)) {
+		if (camoto::icasecmp(file->name, strFilename)) {
 			return i;  // i is the original shared_ptr
 		}
 	}

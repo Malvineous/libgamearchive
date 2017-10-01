@@ -20,7 +20,6 @@
 
 #include <functional>
 #define BOOST_FILESYSTEM_VERSION 3
-#include <boost/algorithm/string.hpp> // for case-insensitive string compare
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <camoto/stream_file.hpp>

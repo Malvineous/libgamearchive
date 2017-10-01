@@ -262,20 +262,20 @@ void Archive_DAT_Bash::updateFileName(const FATEntry *pid, const std::string& st
 	int typeNum;
 	int newLen = strNewName.length();
 	std::string ext = strNewName.substr(newLen - 4);
-	if (boost::iequals(ext, ".mif")) typeNum = 0;
-	else if (boost::iequals(ext, ".mbg")) typeNum = 1;
-	else if (boost::iequals(ext, ".mfg")) typeNum = 2;
-	else if (boost::iequals(ext, ".tbg")) typeNum = 3;
-	else if (boost::iequals(ext, ".tfg")) typeNum = 4;
-	else if (boost::iequals(ext, ".tbn")) typeNum = 5;
-	else if (boost::iequals(ext, ".sgl")) typeNum = 6;
-	else if (boost::iequals(ext, ".msp")) typeNum = 7;
-	else if (boost::iequals(ext, ".snd")) typeNum = 8;
-	else if (boost::iequals(ext, ".pbg")) typeNum = 12;
-	else if (boost::iequals(ext, ".pfg")) typeNum = 13;
-	else if (boost::iequals(ext, ".pal")) typeNum = 14;
-	else if (boost::iequals(ext, ".pbn")) typeNum = 16;
-	else if (boost::iequals(ext, ".spr")) typeNum = 64;
+	if (camoto::icasecmp(ext, ".mif")) typeNum = 0;
+	else if (camoto::icasecmp(ext, ".mbg")) typeNum = 1;
+	else if (camoto::icasecmp(ext, ".mfg")) typeNum = 2;
+	else if (camoto::icasecmp(ext, ".tbg")) typeNum = 3;
+	else if (camoto::icasecmp(ext, ".tfg")) typeNum = 4;
+	else if (camoto::icasecmp(ext, ".tbn")) typeNum = 5;
+	else if (camoto::icasecmp(ext, ".sgl")) typeNum = 6;
+	else if (camoto::icasecmp(ext, ".msp")) typeNum = 7;
+	else if (camoto::icasecmp(ext, ".snd")) typeNum = 8;
+	else if (camoto::icasecmp(ext, ".pbg")) typeNum = 12;
+	else if (camoto::icasecmp(ext, ".pfg")) typeNum = 13;
+	else if (camoto::icasecmp(ext, ".pal")) typeNum = 14;
+	else if (camoto::icasecmp(ext, ".pbn")) typeNum = 16;
+	else if (camoto::icasecmp(ext, ".spr")) typeNum = 64;
 	else typeNum = 32;
 
 	std::string strNativeName; // name to write to .dat file
@@ -342,19 +342,19 @@ void Archive_DAT_Bash::preInsertFile(const FATEntry *idBeforeThis,
 	int newLen = pNewEntry->strName.length();
 	std::string ext = pNewEntry->strName.substr(newLen - 4);
 	if (
-		boost::iequals(ext, ".mif") ||
-		boost::iequals(ext, ".mbg") ||
-		boost::iequals(ext, ".mfg") ||
-		boost::iequals(ext, ".tbg") ||
-		boost::iequals(ext, ".tfg") ||
-		boost::iequals(ext, ".tbn") ||
-		boost::iequals(ext, ".sgl") ||
-		boost::iequals(ext, ".msp") ||
-		boost::iequals(ext, ".pbg") ||
-		boost::iequals(ext, ".pfg") ||
-		boost::iequals(ext, ".pal") ||
-		boost::iequals(ext, ".pbn") ||
-		boost::iequals(ext, ".spr")
+		camoto::icasecmp(ext, ".mif") ||
+		camoto::icasecmp(ext, ".mbg") ||
+		camoto::icasecmp(ext, ".mfg") ||
+		camoto::icasecmp(ext, ".tbg") ||
+		camoto::icasecmp(ext, ".tfg") ||
+		camoto::icasecmp(ext, ".tbn") ||
+		camoto::icasecmp(ext, ".sgl") ||
+		camoto::icasecmp(ext, ".msp") ||
+		camoto::icasecmp(ext, ".pbg") ||
+		camoto::icasecmp(ext, ".pfg") ||
+		camoto::icasecmp(ext, ".pal") ||
+		camoto::icasecmp(ext, ".pbn") ||
+		camoto::icasecmp(ext, ".spr")
 	) {
 		newLen -= 4; // don't count the fake extension in the length limit
 	}
@@ -394,20 +394,20 @@ void Archive_DAT_Bash::postInsertFile(FATEntry *pNewEntry)
 
 	int newLen = pNewEntry->strName.length();
 	std::string ext = pNewEntry->strName.substr(newLen - 4);
-	if (boost::iequals(ext, ".mif")) typeNum = 0;
-	else if (boost::iequals(ext, ".mbg")) typeNum = 1;
-	else if (boost::iequals(ext, ".mfg")) typeNum = 2;
-	else if (boost::iequals(ext, ".tbg")) typeNum = 3;
-	else if (boost::iequals(ext, ".tfg")) typeNum = 4;
-	else if (boost::iequals(ext, ".tbn")) typeNum = 5;
-	else if (boost::iequals(ext, ".sgl")) typeNum = 6;
-	else if (boost::iequals(ext, ".msp")) typeNum = 7;
-	else if (boost::iequals(ext, ".snd")) typeNum = 8;
-	else if (boost::iequals(ext, ".pbg")) typeNum = 12;
-	else if (boost::iequals(ext, ".pfg")) typeNum = 13;
-	else if (boost::iequals(ext, ".pal")) typeNum = 14;
-	else if (boost::iequals(ext, ".pbn")) typeNum = 16;
-	else if (boost::iequals(ext, ".spr")) typeNum = 64;
+	if (camoto::icasecmp(ext, ".mif")) typeNum = 0;
+	else if (camoto::icasecmp(ext, ".mbg")) typeNum = 1;
+	else if (camoto::icasecmp(ext, ".mfg")) typeNum = 2;
+	else if (camoto::icasecmp(ext, ".tbg")) typeNum = 3;
+	else if (camoto::icasecmp(ext, ".tfg")) typeNum = 4;
+	else if (camoto::icasecmp(ext, ".tbn")) typeNum = 5;
+	else if (camoto::icasecmp(ext, ".sgl")) typeNum = 6;
+	else if (camoto::icasecmp(ext, ".msp")) typeNum = 7;
+	else if (camoto::icasecmp(ext, ".snd")) typeNum = 8;
+	else if (camoto::icasecmp(ext, ".pbg")) typeNum = 12;
+	else if (camoto::icasecmp(ext, ".pfg")) typeNum = 13;
+	else if (camoto::icasecmp(ext, ".pal")) typeNum = 14;
+	else if (camoto::icasecmp(ext, ".pbn")) typeNum = 16;
+	else if (camoto::icasecmp(ext, ".spr")) typeNum = 64;
 	else typeNum = 32;
 
 	if ((typeNum != 32) && (typeNum != 8)) {

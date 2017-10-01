@@ -41,9 +41,9 @@ bool isCompressed(const std::string& name)
 {
 	std::string ext = name.substr(name.find_last_of('.') + 1);
 	return
-		boost::iequals(ext, "MDI")
-		|| boost::iequals(ext, "PC1")
-		|| boost::iequals(ext, "MAT")
+		camoto::icasecmp(ext, "MDI")
+		|| camoto::icasecmp(ext, "PC1")
+		|| camoto::icasecmp(ext, "MAT")
 	;
 }
 

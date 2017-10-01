@@ -24,7 +24,6 @@
 #include <fcntl.h>
 #endif
 
-#include <boost/algorithm/string.hpp> // for case-insensitive string compare
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <functional>

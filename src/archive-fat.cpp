@@ -80,7 +80,7 @@ const Archive::FileHandle Archive_FAT::find(const std::string& strFilename) cons
 	// TESTED BY: fmt_grp_duke3d_*
 	for (const auto& i : this->vcFAT) {
 		auto pFAT = dynamic_cast<const FATEntry *>(&*i);
-		if (boost::iequals(pFAT->strName, strFilename)) {
+		if (camoto::icasecmp(pFAT->strName, strFilename)) {
 			return i;
 		}
 	}

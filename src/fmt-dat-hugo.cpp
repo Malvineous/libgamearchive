@@ -153,7 +153,7 @@ SuppFilenames ArchiveType_DAT_Hugo::getRequiredSupps(stream::input& content,
 	} else {
 		filenameBase = filename;
 	}
-	if (boost::iequals(filenameBase, "scenery2.dat")) {
+	if (camoto::icasecmp(filenameBase, "scenery2.dat")) {
 		std::string firstFilename = filename;
 		firstFilename[firstFilename.length() - 5] = '1';
 		supps[SuppItem::FAT] = firstFilename;
