@@ -849,7 +849,7 @@ finishTesting:
 					}
 
 				} else if (i.string_key.compare("rename") == 0) {
-					if ((!bAltDest) || (boost::equals(strArchFile, strLocalFile))) {
+					if ((!bAltDest) || (strArchFile.compare(strLocalFile) == 0)) {
 						std::cout << "ignoring attempt to rename " << strArchFile
 							<< " into the same name" << std::endl;
 					} else {
