@@ -21,10 +21,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/algorithm/string.hpp>
+#include <cassert>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/util.hpp>
-
 #include "fmt-gwx-homebrew.hpp"
 
 #define GWx_FAT_OFFSET            0x40
@@ -196,7 +195,7 @@ void Archive_GWx_HomeBrew::preInsertFile(const FATEntry *idBeforeThis, FATEntry 
 
 	this->content->seekp(GWx_FATENTRY_OFFSET(pNewEntry), stream::start);
 	this->content->insert(GWx_FAT_ENTRY_LEN);
-	boost::to_upper(pNewEntry->strName);
+	camoto::uppercase(pNewEntry->strName);
 
 	// Write out the entry
 	*this->content

@@ -21,10 +21,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/algorithm/string.hpp>
+#include <cassert>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/util.hpp>
-
 #include "fmt-res-stellar7.hpp"
 
 #define RES_FAT_OFFSET            0
@@ -223,7 +222,7 @@ void Archive_RES_Stellar7_Folder::preInsertFile(const FATEntry *idBeforeThis,
 
 	this->content->seekp(pNewEntry->iOffset, stream::start);
 	this->content->insert(RES_FAT_ENTRY_LEN);
-	boost::to_upper(pNewEntry->strName);
+	camoto::uppercase(pNewEntry->strName);
 	*this->content << nullPadded(pNewEntry->strName, RES_MAX_FILENAME_LEN);
 	*this->content << u32le(pNewEntry->storedSize);
 

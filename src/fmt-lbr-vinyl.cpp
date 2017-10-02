@@ -23,7 +23,6 @@
 
 #include <string>
 #include <sstream>
-
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/util.hpp> // std::make_unique
 #include "fmt-lbr-vinyl.hpp"

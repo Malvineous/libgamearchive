@@ -21,10 +21,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/algorithm/string.hpp>
+#include <cassert>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/util.hpp>
-
 #include "fmt-hog-descent.hpp"
 
 #define HOG_HEADER_LEN            3

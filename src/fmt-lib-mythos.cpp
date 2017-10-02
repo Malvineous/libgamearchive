@@ -21,10 +21,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/algorithm/string.hpp>
+#include <cassert>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/util.hpp> // std::make_unique
-
 #include "fmt-lib-mythos.hpp"
 
 #define LIB_HEADER_LEN          4  // "LIB\x1A"
@@ -200,7 +199,7 @@ void Archive_LIB_Mythos::preInsertFile(const FATEntry *idBeforeThis, FATEntry *p
 
 	this->content->seekp(LIB_FATENTRY_OFFSET(pNewEntry), stream::start);
 	this->content->insert(LIB_FAT_ENTRY_LEN);
-	boost::to_upper(pNewEntry->strName);
+	camoto::uppercase(pNewEntry->strName);
 
 	*this->content
 		<< nullPadded(pNewEntry->strName, LIB_FILENAME_FIELD_LEN)

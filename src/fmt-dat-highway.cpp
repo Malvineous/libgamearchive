@@ -21,10 +21,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/algorithm/string.hpp>
+#include <cassert>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/util.hpp>
-
 #include "fmt-dat-highway.hpp"
 
 #define DATHH_FATLEN_OFFSET       0
@@ -230,7 +229,7 @@ void Archive_DAT_Highway::preInsertFile(const FATEntry *idBeforeThis, FATEntry *
 
 	this->content->seekp(DATHH_FATENTRY_OFFSET(pNewEntry), stream::start);
 	this->content->insert(DATHH_FAT_ENTRY_LEN);
-	boost::to_lower(pNewEntry->strName);
+	camoto::lowercase(pNewEntry->strName);
 
 	// Update the offsets now there's a new FAT entry taking up space.
 	this->shiftFiles(

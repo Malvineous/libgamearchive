@@ -5,7 +5,7 @@
  * This file format is fully documented on the ModdingWiki:
  *   http://www.shikadi.net/moddingwiki/DAT_Format_(God_of_Thunder)
  *
- * Copyright (C) 2011 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2017 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,11 +21,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/algorithm/string.hpp>
+#include <cassert>
 #include <functional>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/util.hpp>
-
 #include "fmt-dat-got.hpp"
 
 #define GOT_MAX_FILES         256
@@ -299,7 +298,7 @@ void Archive_DAT_GoT::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNew
 	// updated on return.
 	this->fatStream->seekp(GOT_FATENTRY_OFFSET(pNewEntry), stream::start);
 	this->fatStream->insert(GOT_FAT_ENTRY_LEN);
-	boost::to_upper(pNewEntry->strName);
+	camoto::uppercase(pNewEntry->strName);
 
 	// Because the FAT is a fixed size we have to remove a blank entry to
 	// compensate for the entry we just added.

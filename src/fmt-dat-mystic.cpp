@@ -21,9 +21,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/algorithm/string.hpp>
+#include <cassert>
 #include <camoto/iostream_helpers.hpp>
-#include <camoto/util.hpp> // std::make_unique
+#include <camoto/util.hpp>
 #include "fmt-dat-mystic.hpp"
 
 #define DAT_FATOFFSET_OFFSET          8
@@ -230,7 +230,7 @@ void Archive_DAT_Mystic::preInsertFile(const FATEntry *idBeforeThis,
 	pNewEntry->lenHeader = 0;
 
 	// Prepare filename field
-	boost::to_upper(pNewEntry->strName);
+	camoto::uppercase(pNewEntry->strName);
 
 	// Add the new entry into the on-disk FAT.  This has to happen here (rather
 	// than in postInsertFile()) because on return Archive_FAT will update the

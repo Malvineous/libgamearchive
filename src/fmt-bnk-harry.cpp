@@ -21,10 +21,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/algorithm/string.hpp>
+#include <cassert>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/util.hpp>
-
 #include "fmt-bnk-harry.hpp"
 
 #define BNK_FIRST_FILE_OFFSET     0
@@ -240,7 +239,7 @@ void Archive_BNK_Harry::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pN
 	pNewEntry->lenHeader = BNK_EFAT_ENTRY_LEN;
 
 	uint8_t lenByte = len;
-	boost::to_upper(pNewEntry->strName);
+	camoto::uppercase(pNewEntry->strName);
 
 	// Write out the new embedded FAT entry
 	this->content->seekp(pNewEntry->iOffset, stream::start);

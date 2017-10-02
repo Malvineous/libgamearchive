@@ -21,7 +21,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/algorithm/string.hpp>
+#include <cassert>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/util.hpp>
 #include "fmt-vol-cosmo.hpp"
@@ -240,7 +240,7 @@ void Archive_VOL_Cosmo::preInsertFile(const FATEntry *idBeforeThis,
 	}
 	this->content->seekp(pNewEntry->iIndex * VOL_FAT_ENTRY_LEN, stream::start);
 	this->content->insert(VOL_FAT_ENTRY_LEN);
-	boost::to_upper(pNewEntry->strName);
+	camoto::uppercase(pNewEntry->strName);
 
 	// Write out the entry
 	*this->content

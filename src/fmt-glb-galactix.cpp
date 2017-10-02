@@ -21,7 +21,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/algorithm/string.hpp>
+#include <cassert>
+#include <camoto/util.hpp>
 #include <camoto/iostream_helpers.hpp>
 #include "fmt-glb-galactix.hpp"
 
@@ -194,7 +195,7 @@ void Archive_GLB_Galactix::preInsertFile(const FATEntry *idBeforeThis, FATEntry 
 	this->content->seekp(GLB_FATENTRY_OFFSET(pNewEntry), stream::start);
 	this->content->insert(GLB_FAT_ENTRY_LEN);
 
-	boost::to_upper(pNewEntry->strName);
+	camoto::uppercase(pNewEntry->strName);
 
 	*this->content
 		<< u32le(pNewEntry->iOffset)

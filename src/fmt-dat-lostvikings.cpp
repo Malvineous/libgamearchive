@@ -21,10 +21,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/algorithm/string.hpp>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/util.hpp>
-
 #include "fmt-dat-lostvikings.hpp"
 
 #define DAT_FAT_ENTRY_LEN     4  // u32le offset

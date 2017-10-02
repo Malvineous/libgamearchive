@@ -21,10 +21,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/algorithm/string.hpp>
+#include <cassert>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/util.hpp>
-
 #include "fmt-grp-duke3d.hpp"
 
 #define GRP_FILECOUNT_OFFSET    12
@@ -197,7 +196,7 @@ void Archive_GRP_Duke3D::preInsertFile(const FATEntry *idBeforeThis,
 
 	this->content->seekp(GRP_FATENTRY_OFFSET(pNewEntry), stream::start);
 	this->content->insert(GRP_FAT_ENTRY_LEN);
-	boost::to_upper(pNewEntry->strName);
+	camoto::uppercase(pNewEntry->strName);
 
 	*this->content
 		<< nullPadded(pNewEntry->strName, GRP_FILENAME_FIELD_LEN)

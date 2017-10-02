@@ -21,7 +21,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/algorithm/string.hpp>
+#include <cassert>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/util.hpp>
 
@@ -262,7 +262,7 @@ void Archive_CUR_Prehistorik::preInsertFile(const FATEntry *idBeforeThis,
 
 	this->content->seekp(offEntry, stream::start);
 	this->content->insert(lenEntry);
-	boost::to_upper(pNewEntry->strName);
+	camoto::uppercase(pNewEntry->strName);
 
 	*this->content
 		<< u32le(pNewEntry->storedSize)

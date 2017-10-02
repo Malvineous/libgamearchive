@@ -21,10 +21,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/algorithm/string.hpp>
-
 #include <camoto/iostream_helpers.hpp>
-#include <camoto/util.hpp> // std::make_unique
+#include <camoto/util.hpp>
 #include "fmt-dat-hugo.hpp"
 
 #define DAT_FAT_ENTRY_LEN        8  // u32le offset + u32le size

@@ -21,7 +21,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/algorithm/string.hpp>
+#include <cassert>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/stream_string.hpp>
 #include <camoto/util.hpp> // std::make_unique
@@ -426,7 +426,7 @@ void Archive_RFF_Blood::preInsertFile(const FATEntry *idBeforeThis,
 
 	// Prepare filename field
 	std::string base, ext;
-	boost::to_upper(pNewEntry->strName);
+	camoto::uppercase(pNewEntry->strName);
 	this->splitFilename(pNewEntry->strName, &base, &ext);
 
 	// Add the new entry into the on-disk FAT.  This has to happen here (rather

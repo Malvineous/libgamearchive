@@ -18,9 +18,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
+#include <cassert>
 #include <functional>
-#include <boost/algorithm/string.hpp>
-#include <camoto/util.hpp> // createString
+#include <camoto/util.hpp>
 #include <camoto/gamearchive/archive-fat.hpp>
 #include <camoto/gamearchive/stream_archfile.hpp>
 

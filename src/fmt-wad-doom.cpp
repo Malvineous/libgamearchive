@@ -21,7 +21,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/algorithm/string.hpp>
+#include <cassert>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/util.hpp>
 #include "fmt-wad-doom.hpp"
@@ -250,7 +250,7 @@ void Archive_WAD_Doom::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNe
 
 	this->content->seekp(WAD_FATENTRY_OFFSET(pNewEntry), stream::start);
 	this->content->insert(WAD_FAT_ENTRY_LEN);
-	boost::to_upper(pNewEntry->strName);
+	camoto::uppercase(pNewEntry->strName);
 
 	*this->content
 		<< u32le(pNewEntry->iOffset)

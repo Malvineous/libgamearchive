@@ -21,7 +21,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/algorithm/string.hpp>
+#include <cassert>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/util.hpp>
 #include "fmt-bpa-drally.hpp"
@@ -246,7 +246,7 @@ void Archive_BPA_DRally::preInsertFile(const FATEntry *idBeforeThis,
 	}
 	this->content->seekp(BPA_FATENTRY_OFFSET(pNewEntry->iIndex), stream::start);
 	this->content->insert(BPA_FAT_ENTRY_LEN);
-	boost::to_upper(pNewEntry->strName);
+	camoto::uppercase(pNewEntry->strName);
 
 	std::string nameEncrypted;
 	for (unsigned int j = 0; j < pNewEntry->strName.length(); j++) {

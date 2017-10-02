@@ -23,7 +23,6 @@
 
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/util.hpp> // std::make_unique
-
 #include "fmt-dat-sango.hpp"
 
 #define DAT_FAT_ENTRY_LEN       4  // u32le offset

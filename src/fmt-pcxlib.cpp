@@ -21,10 +21,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/algorithm/string.hpp>
+#include <cassert>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/util.hpp>
-
 #include "fmt-pcxlib.hpp"
 
 #define PCX_MAX_FILES         65535
@@ -345,7 +344,7 @@ void Archive_PCXLib::preInsertFile(const FATEntry *idBeforeThis,
 	}
 	this->content->seekp(PCX_FATENTRY_OFFSET(pNewEntry), stream::start);
 	this->content->insert(PCX_FAT_ENTRY_LEN);
-	boost::to_upper(pNewEntry->strName);
+	camoto::uppercase(pNewEntry->strName);
 
 	int pos = pNewEntry->strName.find_last_of('.');
 	std::string name = pNewEntry->strName.substr(0, pos);

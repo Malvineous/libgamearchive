@@ -21,7 +21,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/algorithm/string.hpp>
+#include <cassert>
 #include <functional>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/stream_string.hpp>
@@ -287,7 +287,7 @@ void Archive_GLB_Raptor::preInsertFile(const FATEntry *idBeforeThis, FATEntry *p
 	this->content->seekp(GLB_FATENTRY_OFFSET(pNewEntry), stream::start);
 	this->content->insert(GLB_FAT_ENTRY_LEN);
 
-	boost::to_upper(pNewEntry->strName);
+	camoto::uppercase(pNewEntry->strName);
 
 	uint32_t flags = 0;
 	if (pNewEntry->fAttr & File::Attribute::Compressed) flags = 1;

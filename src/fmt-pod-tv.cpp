@@ -21,10 +21,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/algorithm/string.hpp>
+#include <cassert>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/util.hpp>
-
 #include "fmt-pod-tv.hpp"
 
 #define POD_DESCRIPTION_OFFSET    4
@@ -250,7 +249,7 @@ void Archive_POD_TV::preInsertFile(const FATEntry *idBeforeThis, FATEntry *pNewE
 
 	this->content->seekp(POD_FATENTRY_OFFSET(pNewEntry), stream::start);
 	this->content->insert(POD_FAT_ENTRY_LEN);
-	boost::to_upper(pNewEntry->strName);
+	camoto::uppercase(pNewEntry->strName);
 
 	// Write out the entry
 	*this->content

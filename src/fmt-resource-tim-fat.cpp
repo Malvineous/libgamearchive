@@ -21,10 +21,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/algorithm/string.hpp>
+#include <cassert>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/util.hpp>
-
 #include "fmt-resource-tim-fat.hpp"
 
 #define TIM_FIRST_FILE_OFFSET     6
@@ -208,7 +207,7 @@ void Archive_Resource_TIM_FAT::preInsertFile(const FATEntry *idBeforeThis, FATEn
 	// Set the format-specific variables
 	pNewEntry->lenHeader = TIM_EFAT_ENTRY_LEN;
 
-	boost::to_upper(pNewEntry->strName);
+	camoto::uppercase(pNewEntry->strName);
 
 	// Write out the new embedded FAT entry
 	this->content->seekp(pNewEntry->iOffset, stream::start);

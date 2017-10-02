@@ -21,10 +21,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/algorithm/string.hpp>
+#include <cassert>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/util.hpp>
-
 #include "fmt-dat-riptide.hpp"
 
 #define DATRIP_FILECOUNT_OFFSET    0
@@ -224,7 +223,7 @@ void Archive_DAT_Riptide::preInsertFile(const FATEntry *idBeforeThis, FATEntry *
 
 	this->content->seekp(DATRIP_FATENTRY_OFFSET(pNewEntry), stream::start);
 	this->content->insert(DATRIP_FAT_ENTRY_LEN);
-	boost::to_upper(pNewEntry->strName);
+	camoto::uppercase(pNewEntry->strName);
 
 	// Update the offsets now there's a new FAT entry taking up space.
 	this->shiftFiles(

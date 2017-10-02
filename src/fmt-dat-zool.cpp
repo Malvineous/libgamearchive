@@ -21,10 +21,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/algorithm/string.hpp>
+#include <cassert>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/util.hpp>
-
 #include "fmt-dat-zool.hpp"
 
 #define DAT_CHUNK_SIZE          512
@@ -278,7 +277,7 @@ void Archive_DAT_Zool::preInsertFile(const FATEntry *idBeforeThis,
 
 	this->content->seekp(DAT_FATENTRY_OFFSET(pNewEntry), stream::start);
 	this->content->insert(DAT_FAT_ENTRY_LEN);
-	boost::to_upper(pNewEntry->strName);
+	camoto::uppercase(pNewEntry->strName);
 
 	std::string paddedName(DAT_FILENAME_FIELD_LEN, ' ');
 	for (int i = 0; i < std::min<int>(pNewEntry->strName.length(), DAT_FILENAME_FIELD_LEN); i++) {

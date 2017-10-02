@@ -22,10 +22,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/algorithm/string.hpp>
+#include <cassert>
 #include <camoto/iostream_helpers.hpp>
 #include <camoto/util.hpp>
-
 #include "fmt-epf-lionking.hpp"
 
 #define EPF_HEADER_LEN               11
@@ -295,7 +294,7 @@ void Archive_EPF_LionKing::postInsertFile(FATEntry *pNewEntry)
 
 	this->content->seekp(this->offFAT + pNewEntry->iIndex * EPF_FAT_ENTRY_LEN, stream::start);
 	this->content->insert(EPF_FAT_ENTRY_LEN);
-	boost::to_upper(pNewEntry->strName);
+	camoto::uppercase(pNewEntry->strName);
 	uint8_t flags = 0;
 	if (pNewEntry->fAttr & File::Attribute::Compressed) flags = 1;
 	*this->content
