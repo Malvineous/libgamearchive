@@ -21,8 +21,8 @@
 #ifndef _CAMOTO_FILTER_SKYROADS_LZS_HPP_
 #define _CAMOTO_FILTER_SKYROADS_LZS_HPP_
 
+#include <array>
 #include <camoto/bitstream.hpp>
-#include <boost/shared_array.hpp>
 #include <camoto/filter.hpp>
 #include <camoto/gamearchive/filtertype.hpp>
 
@@ -39,13 +39,16 @@ class filter_skyroads_unlzs: virtual public filter
 			const uint8_t *in, stream::len *lenIn);
 
 	protected:
+		/// Size of the SkyRoads dictionary, in bytes
+		constexpr static int DictionarySize = 4096;
+
 		bitstream data;
 
 		unsigned int width1, width2, width3;
 		unsigned int dist;
 		unsigned int lzsDictPos;
 		unsigned int lzsLength;
-		boost::shared_array<uint8_t> dictionary;
+		std::array<uint8_t, DictionarySize> dictionary;
 		unsigned int dictPos;
 		enum {
 			S0_READ_LEN,     ///< Read the header

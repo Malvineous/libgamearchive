@@ -27,11 +27,11 @@
 namespace camoto {
 namespace gamearchive {
 
-#define SKYROADS_DICT_SIZE 4096
+#warning TODO: Unit test
 
 #define ADD_DICT(c) \
 	this->dictionary[this->dictPos] = c; \
-	this->dictPos = (this->dictPos + 1) % SKYROADS_DICT_SIZE;
+	this->dictPos = (this->dictPos + 1) % DictionarySize;
 
 filter_skyroads_unlzs::filter_skyroads_unlzs()
 	:	data(bitstream::bigEndian)
@@ -42,7 +42,7 @@ void filter_skyroads_unlzs::reset(stream::len lenInput)
 {
 	this->state = S0_READ_LEN;
 	this->lzsLength = 0;
-	this->dictionary.reset(new uint8_t[SKYROADS_DICT_SIZE]);
+	this->dictionary.fill(0);
 	this->dictPos = 0;
 	return;
 }
@@ -147,7 +147,7 @@ void filter_skyroads_unlzs::transform(uint8_t *out, stream::len *lenOut,
 				}
 				this->lzsLength = 2 + code;
 
-				if (this->lzsLength > SKYROADS_DICT_SIZE) {
+				if (this->lzsLength > DictionarySize) {
 					std::cerr << "lzs-skyroads: Length is > dict size, data is probably "
 						"corrupt, aborting." << std::endl;
 					throw stream::error("SkyRoads compressed data has backreference "
@@ -156,7 +156,7 @@ void filter_skyroads_unlzs::transform(uint8_t *out, stream::len *lenOut,
 				}
 
 				this->state = S7_COPY_OFFSET;
-				this->lzsDictPos = (SKYROADS_DICT_SIZE + this->dictPos - this->dist) % SKYROADS_DICT_SIZE;
+				this->lzsDictPos = (DictionarySize + this->dictPos - this->dist) % DictionarySize;
 				break;
 
 			case S7_COPY_OFFSET:
@@ -170,7 +170,7 @@ void filter_skyroads_unlzs::transform(uint8_t *out, stream::len *lenOut,
 				ADD_DICT(*out);
 				out++;
 				w++;
-				this->lzsDictPos %= SKYROADS_DICT_SIZE;
+				this->lzsDictPos %= DictionarySize;
 				this->lzsLength--;
 				break;
 
