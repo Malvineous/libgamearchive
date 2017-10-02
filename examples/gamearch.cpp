@@ -2,7 +2,7 @@
  * @file  gamearch.cpp
  * @brief Command-line interface to libgamearchive.
  *
- * Copyright (C) 2010-2016 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2017 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,15 +19,13 @@
  */
 
 #include <functional>
-#define BOOST_FILESYSTEM_VERSION 3
 #include <boost/program_options.hpp>
-#include <boost/filesystem.hpp>
 #include <camoto/stream_file.hpp>
 #include <camoto/util.hpp>
 #include <camoto/gamearchive.hpp>
 
 namespace po = boost::program_options;
-namespace fs = boost::filesystem;
+namespace fs = camoto::filesystem; // until C++17, then std::filesystem
 namespace ga = camoto::gamearchive;
 namespace stream = camoto::stream;
 

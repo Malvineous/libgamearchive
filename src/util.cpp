@@ -2,7 +2,7 @@
  * @file  util.cpp
  * @brief Utility functions.
  *
- * Copyright (C) 2010-2016 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2010-2017 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,14 +18,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define BOOST_FILESYSTEM_VERSION 3
-#include <boost/filesystem.hpp>
-
+#include <camoto/util.hpp>
 #include <camoto/gamearchive/util.hpp>
 #include <camoto/gamearchive/archive-fat.hpp>
 #include <camoto/gamearchive/fixedarchive.hpp>
 
-namespace fs = boost::filesystem;
+namespace fs = camoto::filesystem; // until C++17, then std::filesystem
 
 namespace camoto {
 namespace gamearchive {
@@ -66,7 +64,7 @@ void findFile(std::shared_ptr<Archive> *pArchive,
 	// The file doesn't exist, it's not an index, see if it can be split up
 	// into subfolders.
 	std::shared_ptr<Archive> destArchive = *pArchive;
-	for (const auto& i : fs::path(filename)) {
+	for (const auto& i : fs::split_path(filename)) { // [C++17] fs::path(filename)
 
 		if (destArchive->isValid(id)) {
 			// The ID is valid, which means it was set to a file in the
@@ -77,7 +75,7 @@ void findFile(std::shared_ptr<Archive> *pArchive,
 			break;
 		}
 
-		auto j = destArchive->find(i.string());
+		auto j = destArchive->find(i); // [C++17] find(i.string());
 		if ((!j) || (!destArchive->isValid(j))) break;
 
 		if (j->fAttr & Archive::File::Attribute::Folder) {

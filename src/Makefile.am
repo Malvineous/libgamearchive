@@ -128,5 +128,4 @@ AM_LDFLAGS = $(BOOST_LDFLAGS)
 libgamearchive_la_LDFLAGS = $(AM_LDFLAGS)
 libgamearchive_la_LDFLAGS += -version-info 2:0:0
 
-libgamearchive_la_LIBADD  = $(BOOST_FILESYSTEM_LIB)
-libgamearchive_la_LIBADD += $(libgamecommon_LIBS)
+libgamearchive_la_LIBADD  = $(libgamecommon_LIBS)
